@@ -1,12 +1,12 @@
 <template>
   <button
-      :type="type"
-      :disabled="disabled"
-      :class="[
+    :type="type"
+    :disabled="disabled"
+    :class="[
       'base-button',
       `variant-${variant}`,
       { 'is-disabled': disabled },
-      { 'full-width': fullWidth }
+      { 'full-width': fullWidth },
     ]"
   >
     <slot />
@@ -17,11 +17,11 @@
 const props = defineProps({
   type: {
     type: String,
-    default: 'button',
+    default: "button",
   },
   variant: {
     type: String,
-    default: 'primary', // primary, secondary, outline 등
+    default: "primary", // primary, secondary, outline 등
   },
   disabled: {
     type: Boolean,
@@ -31,7 +31,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-})
+});
 </script>
 
 <style scoped>
@@ -55,7 +55,7 @@ const props = defineProps({
 /* 상태별 스타일 */
 .variant-primary {
   background-color: var(--color-accent);
-  color: white;
+  color: var(--color-white);
   border: none;
 }
 

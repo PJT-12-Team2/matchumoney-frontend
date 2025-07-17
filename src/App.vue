@@ -1,6 +1,6 @@
 <!-- App.vue -->
 <script setup>
-import DefaultLayout from '@/components/layouts/DefaultLayout.vue';
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 </script>
 
 <template>
@@ -13,8 +13,4 @@ import DefaultLayout from '@/components/layouts/DefaultLayout.vue';
   </DefaultLayout>
 </template>
 
-
-
-<style scoped>
-
-</style>
+<style scoped></style>
