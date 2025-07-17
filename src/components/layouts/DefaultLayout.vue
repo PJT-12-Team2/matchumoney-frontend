@@ -6,11 +6,11 @@ import Footer from './Footer.vue';
 
 <template>
   <div class="container">
-    <Header />
+    <Header/>
     <div class="content my-5 px-3">
       <slot></slot>
       <!-- 페이지 컨텐츠가 들어갈 슬롯 -->
     </div>
-    <Footer />
+    <Footer/>
   </div>
 </template>
