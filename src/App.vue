@@ -1,14 +1,19 @@
 <!-- App.vue -->
+<script setup>
+import DefaultLayout from '@/components/layouts/DefaultLayout.vue';
+</script>
+
 <template>
-  <Header />
-  <main class="page-content">
-    <router-view />
-  </main>
+  <DefaultLayout>
+    <!--
+      라우터 뷰 컴포넌트
+      - 라우팅 테이블에 정의된 경로에 따라 표시되는 컴포넌트를 나타냄
+    -->
+    <RouterView />
+  </DefaultLayout>
 </template>
 
-<script setup>
-import Header from '@/layout/Header.vue'
-</script>
+
 
 <style scoped>
 
