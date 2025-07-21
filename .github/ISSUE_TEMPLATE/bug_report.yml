@@ -1,12 +1,3 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
----
-
 name: Fix
 description: 기능상 발견한 오류를 수정합니다.
 title: "[Fix] "
