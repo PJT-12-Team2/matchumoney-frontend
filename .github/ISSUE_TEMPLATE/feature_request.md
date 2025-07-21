@@ -1,0 +1,24 @@
+---
+name: Feature request
+about: Suggest an idea for this project
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+name: Feat
+description: 새로운 기능을 추가합니다.
+title: "[Feat] "
+labels: [feat]
+body:
+  - type: textarea
+    attributes:
+      label: 📌 기능 설명
+      description: 어떤 기능을 개발할 예정인가요?
+      placeholder: 예) 사용자 로그인 API를 구현한다.
+
+  - type: textarea
+    attributes:
+      label: 📝 참고 사항
+      description: API 명세서, 디자인, 기타 참고 링크가 있다면 적어주세요.
