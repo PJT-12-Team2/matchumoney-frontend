@@ -1,51 +1,64 @@
-import { createRouter, createWebHistory } from "vue-router";
-import HomePage from "@/pages/HomePage.vue";
-import PersonaSurveyPage from '../pages/PersonaSurveyPage.vue'
-import TurtleResult from '@/pages/persona/TurtleResult.vue';
-import SquirrelResult from '@/pages/persona/SquirrelResult.vue';
-import AntResult from '@/pages/persona/AntResult.vue';
-import OwlResult from '@/pages/persona/OwlResult.vue';
-import RabbitResult from '@/pages/persona/RabbitResult.vue';
-import CatResult from '@/pages/persona/CatResult.vue';
-import TigerResult from '@/pages/persona/TigerResult.vue';
-import PenguinResult from '@/pages/persona/PenguinResult.vue';
-import CardTestPage from '@/pages/PersonaTestPage.vue';
-import PersonaCardList from "@/pages/PersonaCardList.vue";
+import { createRouter, createWebHistory } from 'vue-router'
 
+/* ── 페이지 컴포넌트 ─────────────────────── */
+import HomePage              from '@/pages/HomePage.vue'
+import PersonaSurveyPage     from '@/pages/persona/PersonaSurveyPage.vue'
+import PersonaSurveyStart    from '@/pages/persona/PersonaSurveyStartPage.vue'
+import PersonaCardAllList    from '@/pages/persona/PersonaCardAllList.vue'
+
+/*  결과 페이지 (동적)  */
+const ResultPage   = () => import('@/pages/ResultPage.vue')
+const NotFoundPage = () => import('@/pages/NotFound.vue')
+
+/* 8종 페르소나 코드 */
+const personaCodes = [
+  'turtle', 'squirrel', 'ant', 'owl', 'rabbit', 'cat', 'tiger', 'penguin'
+]
 
 const routes = [
-  {
-    path: "/",
-    name: "home",
-    component: HomePage,
-  },
-  {
-    path: "/survey",
-    name: "survey",
-    component: PersonaSurveyPage,
-  },
-  { path: '/turtle', name: 'turtle', component: TurtleResult },
-  { path: '/squirrel', name: 'squirrel', component: SquirrelResult },
-  { path: '/ant', name: 'ant', component: AntResult },
-  { path: '/owl', name: 'owl', component: OwlResult },
-  { path: '/rabbit', name: 'rabbit', component: RabbitResult },
-  { path: '/cat', name: 'cat', component: CatResult },
-  { path: '/tiger', name: 'tiger', component: TigerResult },
-  { path: '/penguin', name: 'penguin', component: PenguinResult },
-  {
-    path: '/personatest',
-    name: 'CardTest',
-    component: CardTestPage
-  },
-  { path: '/personaCardList',
-    name : 'personaCardList',
-    component: PersonaCardList
-  },
-];
+  /* ── 홈 ─────────────────────────────────── */
+  { path: '/', name: 'home', component: HomePage },
 
-const router = createRouter({
+  /* ── persona 그룹 (prefix) ───────────────── */
+  {
+    path: '/persona',
+    children: [
+      /* 설문 시작 화면   → /persona/test  (예: 소개·스타트) */
+      { path: 'test',      name: 'PersonaTest',   component: PersonaSurveyStart },
+
+      /* 설문 본문       → /persona/survey */
+      { path: 'survey',    name: 'PersonaSurvey', component: PersonaSurveyPage },
+
+      /* 카드 전체 리스트 → /persona/cards */
+      { path: 'cards',     name: 'PersonaCards',  component: PersonaCardAllList },
+
+      /* 결과 페이지      → /persona/result/:code */
+      {
+        path: 'result/:code',
+        name: 'PersonaResult',
+        component: ResultPage,
+        props: true,
+        beforeEnter: (to, _, next) => {
+          if (personaCodes.includes(to.params.code)) next()
+          else next('/404')
+        }
+      }
+    ]
+  },
+
+  /* ── 예전 경로 리다이렉트 (SEO·북마크 유지) ───────────── */
+  { path: '/survey',       redirect: '/persona/survey' },
+  { path: '/personatest',  redirect: '/persona/test'   },
+  { path: '/personaCardList', redirect: '/persona/cards' },
+  ...personaCodes.map(c => ({ path: `/${c}`, redirect: `/persona/result/${c}` })),
+
+  /* 404 */
+  { path: '/404', name: 'NotFound', component: NotFoundPage },
+  { path: '/:pathMatch(.*)*', redirect: '/404' }
+]
+
+export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-});
-
-export default router;
+  scrollBehavior: () => ({ top: 0 })
+})

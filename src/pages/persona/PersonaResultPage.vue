@@ -1,68 +1,94 @@
 <template>
-    <div class="result-wrapper">
-      <div class="result-container">
+    <div class="result-wrapper" v-if="loaded && persona">
+      <div class="result-container fade-in">
         <!-- 프로필 -->
         <div class="profile-section">
           <img
-            src="@/assets/character_images/squirrel.png"
-            alt="다람쥐"
+            :src="persona.image_url"
+            :alt="persona.name_ko"
             class="persona-image"
           />
-          <h3 class="type-describe">“저축은 습관입니다. 목표를 세우고 꾸준히 가야죠.”</h3>
+          <h3 class="type-describe">“{{ persona.quote }}”</h3>
           <div class="persona-text">
-            <p class="label">머니버그님의 페르소나 동물은</p>
-            <h2 class="type-name">다람쥐</h2>
-            <br>
+            <p class="label">{{users.nickname}}님의 페르소나 동물은</p>
+            <h2 class="type-name">{{ persona.name_ko }}</h2>
+            <br />
             <div class="tags">
-              <span>#우대 조건</span>
-              <span>#목표 설정</span>
-              <span>#자동화</span>
-              <span>#계획적인 소비</span>
+              <span v-for="tag in tags" :key="tag">#{{ tag }}</span>
             </div>
           </div>
         </div>
   
         <!-- 성향 설명 -->
         <section class="section-box">
-          <h3>✨ 당신은 계획적인 절약가형 사용자입니다</h3>
-          <p style="white-space: pre-line;">
-            당신은 다람쥐처럼 겨울을 대비해 먹이를 하나하나 저장하는 거처럼 알뜰하고 체계적인 성향이에요.
-            계획적인 소비와 저축에 집중하며 미래 대비에 강해요. 체계적이며 자동이체나 목표 설정에 능숙해요.
-          </p>
+          <h3>✨ 당신은 {{ persona.user_type }}입니다</h3>
+          <p>{{ persona.description }}</p>
         </section>
   
         <!-- 추천 상품 성향 -->
         <section class="section-box">
-        <h3>💡 이런 성향이라면 이런 상품이 잘 맞아요</h3>
-        <ul class="checklist">
-            <li>
-            ✅ <strong>목표 설정형 예·적금</strong><br />
-            저축 목표를 세우고, 자동이체로 꾸준히 모으는 습관이 있어요.
+          <h3>💡 이런 성향이라면 이런 상품이 잘 맞아요</h3>
+          <ul class="checklist">
+            <li v-for="rec in recommendations" :key="rec.rec_id">
+              ✅ <strong>{{ rec.title }}</strong><br />
+              {{ rec.detail }}
             </li>
-            <li>
-            ✅ <strong>우대 조건 활용 상품</strong><br />
-            급여이체나 카드 실적 등 조건을 꼼꼼히 따져 혜택을 챙겨요.
-            </li>
-            <li>
-            ✅ <strong>계획 소비 리워드형 카드</strong><br />
-            무실적보다는 계획적 사용에 따라 리워드를 받는 구조를 선호해요.
-            </li>
-        </ul>
+          </ul>
         </section>
-
-
   
         <!-- 버튼 -->
-        <button class="cta-button">내게 맞는 상품 보러 가기</button>
+        <RouterLink
+          class="cta-button text-decoration-none"
+          :to="`/products?persona=${persona.code}`"
+        >
+          내게 맞는 상품 보러 가기
+        </RouterLink>
       </div>
+    </div>
+  
+    <!-- 로딩 & 에러 -->
+    <div v-else class="result-wrapper align-center justify-center">
+      <p v-if="error">{{ error }}</p>
+      <p v-else>로딩 중...</p>
     </div>
   </template>
   
   <script setup>
-  // 버튼에 router.push('/recommendation') 등 연결 가능
+  import { ref, onMounted } from 'vue'
+  import { useRoute, RouterLink } from 'vue-router'
+  import axios from 'axios'
+  
+  const route = useRoute()
+  const persona = ref(null)
+  const tags = ref([])
+  const recommendations = ref([])
+  const loaded = ref(false)
+  const error = ref('')
+  
+  onMounted(async () => {
+    try {
+      const code = route.params.code || 'ant'
+      // 기본 정보
+      const { data: base } = await axios.get(`/api/persona/${code}`)
+      persona.value = base
+  
+      // 태그
+      const { data: tagList } = await axios.get(`/api/persona/${code}/tags`)
+      tags.value = tagList
+  
+      // 추천 상품
+      const { data: recList } = await axios.get(`/api/persona/${code}/recommendations`)
+      recommendations.value = recList
+    } catch (e) {
+      error.value = '데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'
+    } finally {
+      loaded.value = true
+    }
+  })
   </script>
   
   <style scoped>
+  /***** 기존 스타일 그대로 *****/
   .result-wrapper {
     background-color: #f4f6f8;
     padding: 2rem;
@@ -154,11 +180,13 @@
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s;
+    text-align: center;
   }
   
   .cta-button:hover {
     background-color: #388e3c;
   }
+  
   .type-describe {
     font-size: 1.3rem;
     font-weight: bold;
