@@ -1,256 +1,391 @@
 <template>
-    <div class="recommendation-page">
-      <!-- ✅ 카드 추천 3개 꽉차게 -->
-      <section class="recommendation-section">
-        <h2><span class="highlight">토끼형</span> 유형에게 추천되는 카드</h2>
-        <div class="card-row">
-          <div class="card-box" v-for="card in recommendedCards" :key="card.name">
-            <img :src="card.image" class="card-image" />
-            <div class="card-title">{{ card.name }}</div>
-            <div class="card-benefit">{{ card.benefit }}</div>
+  <div class="card-product-search">
+    <main class="main-content">
+      <h1 class="page-title">페르소나 추천</h1>
+
+      <!-- 🐰 캐러셀 추천 -->
+      <section class="persona-carousel-section">
+        <h2 class="persona-carousel-title">
+          <span class="highlight">토끼형</span>    유형에게 추천되는 카드
+        </h2>
+        <div class="carousel-card-list">
+          <div
+            v-for="card in carouselCards"
+            :key="card.id"
+            class="carousel-card"
+            @click="selectProduct(card)"
+          >
+            <img :src="card.image" :alt="card.name" class="carousel-card-image" />
+            <div class="carousel-card-name">{{ card.name }}</div>
+            <div class="carousel-card-benefit">{{ card.benefit }}</div>
           </div>
         </div>
       </section>
-  
-      <!-- ✅ 필터링 바 -->
-      <section class="filter-section">
-        <div class="search-count">{{cardFilterCount}}개 신용카드 검색 결과</div>
-  
-        <div class="filter-bar">
-          <div class="filter-group">
-            <label>연회비</label>
-            <input type="range" v-model="filters.feeRange" min="0" max="5" />
-          </div>
-          <div class="filter-group">
-            <label>전월실적</label>
-            <input type="range" v-model="filters.performanceRange" min="0" max="5" />
-          </div>
-          <select v-model="filters.company">
-            <option value="">전체카드사</option>
-            <option value="신한">신한</option>
-            <option value="KB">KB</option>
-          </select>
-          <select v-model="filters.brand">
-            <option value="">전체브랜드</option>
-          </select>
-          <select v-model="filters.sort">
-            <option value="popular">인기순</option>
-          </select>
-          <button class="reset-btn" @click="resetFilter">⟲</button>
+      <br>
+<hr>
+  <br>
+  <h1 class="page-title">직접 찾아보는 카드</h1>
+      <!-- ✅ 카드 종류 + 혜택 선택 영역 -->
+      <section class="filter-selection-section">
+        <h3 class="filter-label">카드 종류 선택</h3>
+        <div class="card-type-toggle">
+          <button :class="['type-btn', filters.creditCard ? 'active' : '']" @click="filters.creditCard = !filters.creditCard">신용카드</button>
+          <button :class="['type-btn', filters.debitCard ? 'active' : '']" @click="filters.debitCard = !filters.debitCard">체크카드</button>
         </div>
-  
-        <div class="filter-buttons">
-          <button class="gray-btn">모든가맹점</button>
-          <button class="yellow-btn" @click="applyFilter">재검색</button>
+
+        <h3 class="filter-label">카드 혜택 선택</h3>
+        <div class="benefit-grid">
+          <div
+            v-for="benefit in benefitCategories"
+            :key="benefit.id"
+            class="benefit-button"
+            :class="{ selected: filters.selectedBenefits.includes(benefit.id) }"
+            @click="toggleBenefit(benefit.id)"
+          >
+            <span class="emoji">{{ benefit.emoji }}</span>
+            <span>{{ benefit.name }}</span>
+          </div>
+        </div>
+
+        <div class="search-button-wrap">
+          <button class="search-button" @click="searchProducts">검색된 카드 보기</button>
         </div>
       </section>
-  
-      <!-- ✅ 필터링된 카드 목록 -->
-      <section class="card-list">
-        <div class="card-item" v-for="(card, idx) in filteredCards" :key="idx">
-          <img :src="card.image" class="card-thumb" />
-          <div class="card-info">
-            <div class="card-name">{{ card.name }}</div>
-            <div class="card-desc">{{ card.benefit }}</div>
+
+      <!-- 🔍 검색 결과 -->
+      <section class="search-results" v-if="showSearchResults">
+        <h2 class="results-title">검색한 카드 상품</h2>
+
+        <div v-if="loading" class="loading-state">
+          <div class="spinner"></div>
+          <div>상품을 검색하고 있습니다...</div>
+        </div>
+
+        <div v-else-if="searchResults.length === 0" class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div>검색 조건에 맞는 상품이 없습니다.</div>
+          <div>다른 조건으로 검색해보세요.</div>
+        </div>
+
+        <div v-else class="search-results-grid">
+          <div
+            v-for="product in searchResults"
+            :key="product.id"
+            class="product-card"
+            @click="selectProduct(product)"
+          >
+            <div class="product-header">
+              <div class="bank-logo">
+                <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" />
+              </div>
+              <div class="product-info">
+                <div class="bank-name">{{ product.bank }}</div>
+                <h4>{{ product.name }}</h4>
+                <div class="product-details" v-html="product.details"></div>
+              </div>
+            </div>
           </div>
-          <button class="detail-btn">자세히 보기</button>
         </div>
       </section>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref, computed } from 'vue'
-  
-  const recommendedCards = [
-    {
-      name: '신한 딥드림 카드',
-      image: new URL('@/assets/card.png', import.meta.url).href,
-      benefit: '캐시백 + 포인트 이중 혜택',
-    },
-    {
-      name: 'KB 올쇼핑 카드',
-      image: new URL('@/assets/card.png', import.meta.url).href,
-      benefit: '온라인 쇼핑 10% 할인',
-    },
-    {
-      name: '우리 캐시백 체크카드',
-      image: new URL('@/assets/card.png', import.meta.url).href,
-      benefit: '간편결제 최대 2% 적립',
-    },
-  ]
-  
-  const allCards = ref([
-    ...recommendedCards,
-    {
-      name: '삼성 iD SIMPLE 카드',
-      image: new URL('@/assets/card.png', import.meta.url).href,
-      benefit: '영화 3,000원 할인, 온라인쇼핑 50% 할인',
-      feeRange: 2,
-      performanceRange: 1,
-      company: '삼성',
-    },
-    {
-      name: '현대카드 ZERO Up',
-      image: new URL('@/assets/card.png', import.meta.url).href,
-      benefit: '27.5만원 캐시백, 실적 없음',
-      feeRange: 1,
-      performanceRange: 0,
-      company: '현대',
-    },
-  ])
-  
-  const filters = ref({
-    feeRange: 5,
-    performanceRange: 5,
-    company: '',
-    brand: '',
-    sort: 'popular',
-  })
-  
-  const resetFilter = () => {
-    filters.value = {
-      feeRange: 5,
-      performanceRange: 5,
-      company: '',
-      brand: '',
-      sort: 'popular',
+    </main>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue'
+
+export default {
+  name: 'CardSearchPage',
+  setup() {
+    const loading = ref(false)
+    const showSearchResults = ref(false)
+
+    const filters = ref({
+      creditCard: true,
+      debitCard: true,
+      selectedBenefits: []
+    })
+
+    const toggleBenefit = (id) => {
+      const index = filters.value.selectedBenefits.indexOf(id)
+      if (index === -1) filters.value.selectedBenefits.push(id)
+      else filters.value.selectedBenefits.splice(index, 1)
+    }
+
+    const benefitCategories = ref([
+      { id: 'transport', name: '교통', emoji: '🚌' },
+      { id: 'gas', name: '주유', emoji: '⛽' },
+      { id: 'mart', name: '마트/편의점', emoji: '🛒' },
+      { id: 'telecom', name: '통신', emoji: '📱' },
+      { id: 'shopping', name: '쇼핑', emoji: '🛍️' },
+      { id: 'cafe', name: '카페/디저트', emoji: '☕' },
+      { id: 'beauty', name: '뷰티/피트니스', emoji: '💅' },
+      { id: 'ott', name: 'OTT/영화', emoji: '🎬' },
+      { id: 'hospital', name: '병원/약국', emoji: '💊' },
+      { id: 'education', name: '교육', emoji: '📚' }
+    ])
+
+    const carouselCards = ref([
+      {
+        id: 'card1',
+        name: 'KB국민 My WE:SH 카드',
+        image: 'https://d1c5n4ri2guedi.cloudfront.net/card/13/card_img/28201/13card.png',
+        benefit: '음식점 및 편의점 10%'
+      },
+      {
+        id: 'card2',
+        name: 'KB국민 My WE:SH 카드',
+        image: 'https://d1c5n4ri2guedi.cloudfront.net/card/2376/card_img/27725/2376card.png',
+        benefit: 'OTT 30%'
+      },
+      {
+        id: 'card3',
+        name: 'KB국민 My WE:SH 카드',
+        image: 'https://d1c5n4ri2guedi.cloudfront.net/card/2846/card_img/42434/2846card_1.png',
+        benefit: '카페 5%'
+      }
+    ])
+
+    const allProducts = ref([
+      {
+        id: 1,
+        name: '신한카드 Deep Dream',
+        bank: '신한카드',
+        bankInitial: 'shinhan',
+        details: '주유 10% / 마트 5% / 교통 10%',
+        categories: ['gas', 'mart', 'transport'],
+        cardType: 'credit'
+      },
+      {
+        id: 2,
+        name: '하나카드 원큐페이',
+        bank: '하나카드',
+        bankInitial: 'hana',
+        details: '쇼핑 15% / 카페 10% / 뷰티 5%',
+        categories: ['shopping', 'cafe', 'beauty'],
+        cardType: 'debit'
+      }
+    ])
+
+    const searchResults = ref([])
+
+    const getBankLogo = (initial) => {
+      const logos = {
+        shinhan: 'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png',
+        hana: 'https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png'
+      }
+      return logos[initial] || 'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png'
+    }
+
+    const selectProduct = (product) => {
+      alert(`${product.name}을 선택했습니다.`)
+    }
+
+    const searchProducts = () => {
+      loading.value = true
+      showSearchResults.value = true
+
+      setTimeout(() => {
+        let result = allProducts.value
+
+        if (filters.value.creditCard || filters.value.debitCard) {
+          result = result.filter(p =>
+            (filters.value.creditCard && p.cardType === 'credit') ||
+            (filters.value.debitCard && p.cardType === 'debit')
+          )
+        }
+
+        if (filters.value.selectedBenefits.length > 0) {
+          result = result.filter(p =>
+            filters.value.selectedBenefits.some(tag => p.categories.includes(tag))
+          )
+        }
+
+        searchResults.value = result
+        loading.value = false
+      }, 800)
+    }
+
+    return {
+      loading,
+      showSearchResults,
+      filters,
+      benefitCategories,
+      toggleBenefit,
+      searchProducts,
+      carouselCards,
+      searchResults,
+      getBankLogo,
+      selectProduct
     }
   }
-  
-  const filteredCards = computed(() => {
-    return allCards.value.filter(card => {
-      return (
-        (card.feeRange ?? 0) <= filters.value.feeRange &&
-        (card.performanceRange ?? 0) <= filters.value.performanceRange &&
-        (!filters.value.company || card.company === filters.value.company)
-      )
-    })
-  })
-  
-  const applyFilter = () => {}
-  </script>
-  
-  <style scoped>
-  .recommendation-page {
-    padding: 2rem;
-    background-color: #f9f9f9;
-    font-family: 'Noto Sans KR';
-  }
-  .recommendation-section h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-  .highlight {
-    color: #ff6600;
-  }
-  .card-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .card-box {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    padding: 1rem;
-    flex: 1;
-    text-align: center;
-  }
-  .card-image {
-    width: 100%;
-    border-radius: 8px;
-  }
-  .card-title {
-    font-weight: bold;
-    margin: 0.5rem 0;
-  }
-  .card-benefit {
-    color: #555;
-  }
-  
-  .filter-section {
-    background: white;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 2rem;
-  }
-  .search-count {
-    font-size: 1.3rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
-  .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-  }
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-  }
-  .reset-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-  .filter-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  .gray-btn, .yellow-btn {
-    border-radius: 10px;
-    padding: 0.5rem 1.2rem;
-    font-weight: bold;
-  }
-  .gray-btn {
-    background: #eee;
-    color: #000;
-  }
-  .yellow-btn {
-    background: #ffc940;
-    color: black;
-  }
-  
-  .card-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  .card-item {
-    display: flex;
-    background: white;
-    border-radius: 12px;
-    padding: 1rem;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  }
-  .card-thumb {
-    width: 80px;
-    border-radius: 10px;
-  }
-  .card-info {
-    flex: 1;
-    margin-left: 1rem;
-  }
-  .card-name {
-    font-size: 1.2rem;
-    font-weight: bold;
-  }
-  .card-desc {
-    color: #777;
-  }
-  .detail-btn {
-    background: black;
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-  }
-  </style>
-  
+}
+</script>
+
+<style scoped>
+.card-product-search {
+  font-family: 'Noto Sans', sans-serif;
+  background: #fff;
+  min-height: 100vh;
+}
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+}
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+}
+.persona-carousel-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.carousel-card-list {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+.carousel-card {
+  width: 300px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 16px;
+  cursor: pointer;
+}
+.carousel-card-image {
+  width: 100%;
+  border-radius: 8px;
+}
+.carousel-card-name {
+  font-size : 22px;
+  font-weight: bold;
+  margin: 10px 0 4px;
+}
+.carousel-card-benefit {
+  font-size: 18px;
+  color: #666;
+}
+.filter-selection-section {
+  text-align: left;
+  margin-bottom: 40px;
+  padding: 30px;
+  border: 2px solid #ccc;
+  border-radius: 16px;
+  background: #fafafa;
+}
+.card-type-toggle {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+.type-btn {
+  padding: 10px 20px;
+  margin: 0 5px;
+  border: 2px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.type-btn.active {
+  background: #609966;
+  color: white;
+  border-color: #609966;
+}
+.benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.benefit-button {
+  padding: 12px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: bold;
+}
+.benefit-button.selected {
+  background: #609966;
+  color: white;
+  border-color: #609966;
+}
+.benefit-button .emoji {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.search-button-wrap {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.search-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  background: #609966;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+.product-card {
+  background: #f5f7f9;
+  border-radius: 20px;
+  padding: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+}
+.product-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bank-logo img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+.product-info h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+.bank-name {
+  font-size: 14px;
+  color: #888;
+}
+.product-details {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #444;
+}
+.highlight{
+  font-size : 30px;
+  text-decoration: underline;
+}
+.filter-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #40513b;
+  margin-bottom: 12px;
+  text-align: left;
+}
+</style>

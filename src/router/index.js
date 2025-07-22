@@ -5,7 +5,8 @@ import HomePage              from '@/pages/HomePage.vue'
 import PersonaSurveyPage     from '@/pages/persona/PersonaSurveyPage.vue'
 import PersonaSurveyStart    from '@/pages/persona/PersonaSurveyStartPage.vue'
 import PersonaCardAllList    from '@/pages/persona/PersonaCardAllList.vue'
-import DepositList from '@/pages/persona/DepositListPage.vue'
+import PersonaDepositAllList from '@/pages/persona/PersonaDepositAllListPage.vue'
+import PersonaSavingAllList from '@/pages/persona/PersonaSavingAllListPage.vue'
 /*  결과 페이지 (동적)  */
 const ResultPage   = () => import('@/pages/persona/PersonaResultPage.vue')
 
@@ -31,7 +32,8 @@ const routes = [
 
       /* 카드 전체 리스트 → /persona/cards */
       { path: 'cards',     name: 'PersonaCards',  component: PersonaCardAllList },
-      { path:'deposit', name : 'DepositList', component : DepositList},
+      { path: 'savings',     name: 'PersonaSavings',  component: PersonaSavingAllList },
+      { path: 'deposits',     name: 'PersonaDeposits',  component: PersonaDepositAllList },
 
       /* 결과 페이지      → /persona/result/:code */
       {
