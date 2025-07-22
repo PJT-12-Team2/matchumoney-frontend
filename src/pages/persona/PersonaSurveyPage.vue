@@ -176,9 +176,9 @@ const questions = [
 /* ------------------------------------------------------------------ */
 /* ③ 진척도 & 애니메이션                                               */
 /* ------------------------------------------------------------------ */
-const totalQuestions       = questions.length
-const currentQuestionIndex = ref(0)
-const animatedIndex        = ref(1)
+const totalQuestions       = questions.length;
+const currentQuestionIndex = ref(0);
+const animatedIndex        = ref(1);
 
 /* ------------------------------------------------------------------ */
 /* ④ 로직                                                              */
