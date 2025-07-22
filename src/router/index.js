@@ -5,10 +5,10 @@ import HomePage              from '@/pages/HomePage.vue'
 import PersonaSurveyPage     from '@/pages/persona/PersonaSurveyPage.vue'
 import PersonaSurveyStart    from '@/pages/persona/PersonaSurveyStartPage.vue'
 import PersonaCardAllList    from '@/pages/persona/PersonaCardAllList.vue'
-
+import DepositList from '@/pages/persona/DepositListPage.vue'
 /*  결과 페이지 (동적)  */
-const ResultPage   = () => import('@/pages/ResultPage.vue')
-const NotFoundPage = () => import('@/pages/NotFound.vue')
+const ResultPage   = () => import('@/pages/persona/PersonaResultPage.vue')
+
 
 /* 8종 페르소나 코드 */
 const personaCodes = [
@@ -24,13 +24,14 @@ const routes = [
     path: '/persona',
     children: [
       /* 설문 시작 화면   → /persona/test  (예: 소개·스타트) */
-      { path: 'test',      name: 'PersonaTest',   component: PersonaSurveyStart },
+      { path: 'start',      name: 'PersonaTest',   component: PersonaSurveyStart },
 
       /* 설문 본문       → /persona/survey */
       { path: 'survey',    name: 'PersonaSurvey', component: PersonaSurveyPage },
 
       /* 카드 전체 리스트 → /persona/cards */
       { path: 'cards',     name: 'PersonaCards',  component: PersonaCardAllList },
+      { path:'deposit', name : 'DepositList', component : DepositList},
 
       /* 결과 페이지      → /persona/result/:code */
       {
@@ -40,7 +41,7 @@ const routes = [
         props: true,
         beforeEnter: (to, _, next) => {
           if (personaCodes.includes(to.params.code)) next()
-          else next('/404')
+          else next('/')
         }
       }
     ]
@@ -51,10 +52,6 @@ const routes = [
   { path: '/personatest',  redirect: '/persona/test'   },
   { path: '/personaCardList', redirect: '/persona/cards' },
   ...personaCodes.map(c => ({ path: `/${c}`, redirect: `/persona/result/${c}` })),
-
-  /* 404 */
-  { path: '/404', name: 'NotFound', component: NotFoundPage },
-  { path: '/:pathMatch(.*)*', redirect: '/404' }
 ]
 
 export default createRouter({
