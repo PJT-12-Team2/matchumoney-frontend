@@ -40,12 +40,12 @@
             </div>
           </div>
           <div class="amount-filter-container">
-            <h3 class="filter-label">예치 금액 선택 (달)</h3>
+            <h3 class="filter-label">매월 저축 금액 설정</h3>
             <div class="slider-box">
               <input
                 type="range"
                 v-model="selectedAmount"
-                :min="0"
+                :min="10000"
                 :max="1000000"
                 :step="1000"
                 class="amount-slider"
@@ -102,7 +102,7 @@
   
   const loading = ref(false)
   const showSearchResults = ref(false)
-  const selectedAmount = ref(0)
+  const selectedAmount = ref(10000)
 
   
   const filters = ref({

@@ -113,17 +113,31 @@ export default {
     }
 
     const benefitCategories = ref([
-      { id: 'transport', name: '교통', emoji: '🚌' },
-      { id: 'gas', name: '주유', emoji: '⛽' },
-      { id: 'mart', name: '마트/편의점', emoji: '🛒' },
-      { id: 'telecom', name: '통신', emoji: '📱' },
-      { id: 'shopping', name: '쇼핑', emoji: '🛍️' },
-      { id: 'cafe', name: '카페/디저트', emoji: '☕' },
-      { id: 'beauty', name: '뷰티/피트니스', emoji: '💅' },
-      { id: 'ott', name: 'OTT/영화', emoji: '🎬' },
-      { id: 'hospital', name: '병원/약국', emoji: '💊' },
-      { id: 'education', name: '교육', emoji: '📚' }
-    ])
+  { id: 'all', name: '모든가맹점', emoji: '🏢' },
+  { id: 'transport', name: '교통', emoji: '🚗' },
+  { id: 'gas', name: '주유', emoji: '🛢️' },
+  { id: 'telecom', name: '통신', emoji: '📱' },
+  { id: 'mart', name: '마트/편의점', emoji: '🛒' },
+  { id: 'shopping', name: '쇼핑', emoji: '🎁' },
+  { id: 'food', name: '푸드', emoji: '🍽️' },
+  { id: 'cafe', name: '카페/디저트', emoji: '☕' },
+  { id: 'beauty', name: '뷰티/피트니스', emoji: '🚨' },
+  { id: 'noCondition', name: '무실적', emoji: '💰' },
+  { id: 'rental', name: '공과금/렌탈', emoji: '🧾' },
+  { id: 'hospital', name: '병원/약국', emoji: '🏥' },
+  { id: 'pet', name: '애완동물', emoji: '🐱' },
+  { id: 'childcare', name: '교육/육아', emoji: '✏️' },
+  { id: 'car', name: '자동차/하이패스', emoji: '🚗' },
+  { id: 'sports', name: '레저/스포츠', emoji: '⚾' },
+  { id: 'ott', name: 'OTT/영화/문화', emoji: '🎬' },
+  { id: 'easyPayment', name: '간편결제', emoji: '💳' },
+  { id: 'airline', name: '항공마일리지', emoji: '✈️' },
+  { id: 'airportLounge', name: '공항라운지/PP', emoji: '💺' },
+  { id: 'premium', name: '프리미엄', emoji: '💎' },
+  { id: 'travel', name: '여행/숙박', emoji: '🧳' },
+  { id: 'abroad', name: '해외', emoji: '🌍' },
+  { id: 'business', name: '비즈니스', emoji: '💼' }
+])
 
     const carouselCards = ref([
       {
@@ -300,10 +314,11 @@ export default {
 }
 .benefit-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 16px;
   margin-top: 20px;
   margin-bottom: 20px;
+  padding: 0 12px;
 }
 .benefit-button {
   padding: 12px;

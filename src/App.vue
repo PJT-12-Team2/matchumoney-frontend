@@ -1,10 +1,12 @@
 <!-- App.vue -->
 <script setup>
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import ChatBot from "./components/ChatBot.vue";
 </script>
 
 <template>
   <DefaultLayout>
+    <ChatBot/>
     <!--
       라우터 뷰 컴포넌트
       - 라우팅 테이블에 정의된 경로에 따라 표시되는 컴포넌트를 나타냄

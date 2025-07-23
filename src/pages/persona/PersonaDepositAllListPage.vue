@@ -39,7 +39,7 @@
             </div>
           </div>
           <div class="amount-filter-container">
-            <h3 class="filter-label">예치 금액 선택</h3>
+            <h3 class="filter-label">예치 금액 설정</h3>
             <div class="slider-box">
               <input
                 type="range"
@@ -101,7 +101,7 @@
   
   const loading = ref(false)
   const showSearchResults = ref(false)
-  const selectedAmount = ref(0)
+  const selectedAmount = ref(10000)
 
   
   const filters = ref({
