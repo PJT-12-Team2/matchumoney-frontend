@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomePage from "@/pages/HomePage.vue";
-import MyPage from "@/pages/MyPage.vue";
+import MyPage from "@/pages/user/MyPage.vue";
 import RecommendDeposit from "@/pages/deposit/RecommendDeposit.vue";
-import UpdateUserInfoPage from "@/pages/UpdateUserInfoPage.vue";
-import UpdatePasswordPage from "@/pages/UpdatePasswordPage.vue";
+import UpdateUserInfoPage from "@/pages/user/UpdateUserInfoPage.vue";
+import UpdatePasswordPage from "@/pages/user/UpdatePasswordPage.vue";
 
 const routes = [
   {
