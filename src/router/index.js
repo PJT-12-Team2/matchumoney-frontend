@@ -33,6 +33,8 @@ const routes = [
     path: "/login",
     name: "Login",
     component: LoginPage,
+  },
+  {
     path: "/mypage/update",
     name: "updateUserInfo",
     component: UpdateUserInfoPage,
