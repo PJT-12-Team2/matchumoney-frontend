@@ -2,14 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 /* ── 페이지 컴포넌트 ─────────────────────── */
 import HomePage              from '@/pages/HomePage.vue'
+import MyPage                from '@/pages/user/MyPage.vue'
+import RecommendDeposit      from '@/pages/deposit/RecommendDeposit.vue'
+import UpdateUserInfoPage    from '@/pages/user/UpdateUserInfoPage.vue'
+import UpdatePasswordPage    from '@/pages/user/UpdatePasswordPage.vue'
 import PersonaSurveyPage     from '@/pages/persona/PersonaSurveyPage.vue'
 import PersonaSurveyStart    from '@/pages/persona/PersonaSurveyStartPage.vue'
 import PersonaCardAllList    from '@/pages/persona/PersonaCardAllList.vue'
 import PersonaDepositAllList from '@/pages/persona/PersonaDepositAllListPage.vue'
-import PersonaSavingAllList from '@/pages/persona/PersonaSavingAllListPage.vue'
-/*  결과 페이지 (동적)  */
-const ResultPage   = () => import('@/pages/persona/PersonaResultPage.vue')
+import PersonaSavingAllList  from '@/pages/persona/PersonaSavingAllListPage.vue'
 
+/*  결과 페이지 (동적)  */
+const ResultPage = () => import('@/pages/persona/PersonaResultPage.vue')
 
 /* 8종 페르소나 코드 */
 const personaCodes = [
@@ -17,25 +21,35 @@ const personaCodes = [
 ]
 
 const routes = [
-  /* ── 홈 ─────────────────────────────────── */
   { path: '/', name: 'home', component: HomePage },
-
-  /* ── persona 그룹 (prefix) ───────────────── */
+  {
+    path: '/mypage',
+    name: 'mypage',
+    component: MyPage,
+  },
+  {
+    path: '/api/deposits/recommendations/history',
+    name: 'RecommendDeposit',
+    component: RecommendDeposit,
+  },
+  {
+    path: '/mypage/update',
+    name: 'updateUserInfo',
+    component: UpdateUserInfoPage,
+  },
+  {
+    path: '/mypage/update/password',
+    name: 'updatePassword',
+    component: UpdatePasswordPage,
+  },
   {
     path: '/persona',
     children: [
-      /* 설문 시작 화면   → /persona/test  (예: 소개·스타트) */
-      { path: 'start',      name: 'PersonaTest',   component: PersonaSurveyStart },
-
-      /* 설문 본문       → /persona/survey */
-      { path: 'survey',    name: 'PersonaSurvey', component: PersonaSurveyPage },
-
-      /* 카드 전체 리스트 → /persona/cards */
-      { path: 'cards',     name: 'PersonaCards',  component: PersonaCardAllList },
-      { path: 'savings',     name: 'PersonaSavings',  component: PersonaSavingAllList },
-      { path: 'deposits',     name: 'PersonaDeposits',  component: PersonaDepositAllList },
-
-      /* 결과 페이지      → /persona/result/:code */
+      { path: 'start', name: 'PersonaTest', component: PersonaSurveyStart },
+      { path: 'survey', name: 'PersonaSurvey', component: PersonaSurveyPage },
+      { path: 'cards', name: 'PersonaCards', component: PersonaCardAllList },
+      { path: 'savings', name: 'PersonaSavings', component: PersonaSavingAllList },
+      { path: 'deposits', name: 'PersonaDeposits', component: PersonaDepositAllList },
       {
         path: 'result/:code',
         name: 'PersonaResult',
@@ -48,10 +62,8 @@ const routes = [
       }
     ]
   },
-
-  /* ── 예전 경로 리다이렉트 (SEO·북마크 유지) ───────────── */
-  { path: '/survey',       redirect: '/persona/survey' },
-  { path: '/personatest',  redirect: '/persona/test'   },
+  { path: '/survey', redirect: '/persona/survey' },
+  { path: '/personatest', redirect: '/persona/test' },
   { path: '/personaCardList', redirect: '/persona/cards' },
   ...personaCodes.map(c => ({ path: `/${c}`, redirect: `/persona/result/${c}` })),
 ]

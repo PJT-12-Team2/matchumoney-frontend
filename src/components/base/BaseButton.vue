@@ -2,13 +2,7 @@
   <button
     :type="type"
     :disabled="disabled"
-    :class="[
-      'base-button',
-      `variant-${variant}`,
-      { 'is-disabled': disabled },
-      { 'full-width': fullWidth },
-    ]"
-  >
+    :class="['base-button', `variant-${variant}`, { 'is-disabled': disabled }, { 'full-width': fullWidth }]">
     <slot />
   </button>
 </template>
