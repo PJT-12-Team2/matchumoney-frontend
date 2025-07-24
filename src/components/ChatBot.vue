@@ -108,7 +108,7 @@
       return '⚠️ 서버 오류가 발생했습니다.'
     }
   }
-
+  
   const typeMessage = async (text, role = 'bot') => {
     const delay = 30 // typing speed (ms)
     let typedText = ''
@@ -118,7 +118,6 @@
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
-  
   const sendMessage = async () => {
     if (!input.value.trim()) return
     const userText = input.value

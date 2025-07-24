@@ -98,6 +98,7 @@
   
   <script setup>
   import { ref } from 'vue'
+  import axios from 'axios'
   
   const loading = ref(false)
   const showSearchResults = ref(false)
@@ -172,10 +173,23 @@
     alert(`${product.name}을 선택했습니다.`)
   }
   
-  const searchProducts = () => {
+  const searchProducts = async () => {
     loading.value = true
     showSearchResults.value = true
-  
+    try {
+    const res = await axios.get('/api/deposits', {
+      params: {
+        term: filters.value.term,
+        amount: selectedAmount.value
+      }
+    })
+    searchResults.value = res.data
+  } catch (err) {
+    console.error("백엔드 API 에러:", err)
+    searchResults.value = []
+  } finally {
+    loading.value = false
+  }
     setTimeout(() => {
       let result = allProducts.value
   
