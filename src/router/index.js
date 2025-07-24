@@ -4,7 +4,6 @@ import RecommendDeposit from "@/pages/deposit/RecommendDeposit.vue";
 import SignupPage from "@/pages/auth/SignupPage.vue";
 import LoginPage from "@/pages/auth/LoginPage.vue";
 import MyPage from "@/pages/user/MyPage.vue";
-import RecommendDeposit from "@/pages/deposit/RecommendDeposit.vue";
 import UpdateUserInfoPage from "@/pages/user/UpdateUserInfoPage.vue";
 import UpdatePasswordPage from "@/pages/user/UpdatePasswordPage.vue";
 
@@ -21,17 +20,17 @@ const routes = [
   },
   {
     path: "/api/deposits/recommendations/history",
-    name: "RecommendDeposit",
+    name: "recommendDeposit",
     component: RecommendDeposit,
   },
   {
     path: "/signup",
-    name: "Signup",
+    name: "signup",
     component: SignupPage,
   },
   {
     path: "/login",
-    name: "Login",
+    name: "login",
     component: LoginPage,
   },
   {
