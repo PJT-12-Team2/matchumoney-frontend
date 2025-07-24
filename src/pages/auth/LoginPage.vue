@@ -1,27 +1,22 @@
 <template>
   <div class="login-container">
-    <!-- 로고 -->
     <div class="login-logo">
-      <img src="@/assets/logo.png" alt="맞추머니 로고" />
+      <img src="@/assets/Logo.png" alt="맞추머니 로고" />
     </div>
 
-    <!-- 로그인 카드 -->
     <div class="login-card">
       <h1 class="login-title">로그인</h1>
 
-      <!-- 이메일 -->
       <div class="login-row">
         <label class="login-label">이메일</label>
         <input v-model="email" type="text" class="login-input" placeholder="이메일" />
       </div>
 
-      <!-- 비밀번호 -->
       <div class="login-row">
         <label class="login-label">비밀번호</label>
         <input v-model="password" type="password" class="login-input" placeholder="비밀번호" />
       </div>
 
-      <!-- 상태 유지 & 비밀번호 찾기 -->
       <div class="login-options">
         <label class="keep-login">
           <input type="checkbox" v-model="keepLogin" />
@@ -30,21 +25,16 @@
         <a class="find-pw" href="/find-password">비밀번호 찾기</a>
       </div>
 
-      <!-- 로그인 버튼 -->
       <button class="login-btn" @click="handleLogin">로그인</button>
 
-      <!-- SNS 로그인 구분선 -->
       <div class="sns-divider">
         <span>SNS 로그인</span>
       </div>
 
-      <!-- 카카오 로그인 -->
       <button class="kakao-btn">
-        <span class="kakao-icon">💬</span>
-        카카오계정으로 로그인
+        <img src="@/assets/kakao_login_medium_wide.png" alt="카카오계정으로 로그인" />
       </button>
 
-      <!-- 회원가입 링크 -->
       <div class="signup-link">
         계정이 없으신가요?
         <a href="/signup">회원가입 하러가기</a>
@@ -55,19 +45,16 @@
 
 <script setup>
 import { ref } from "vue";
-
 const email = ref("");
 const password = ref("");
 const keepLogin = ref(false);
 
 const handleLogin = () => {
   console.log("로그인 시도", { email: email.value, password: password.value, keepLogin: keepLogin.value });
-  // TODO: 실제 로그인 로직
 };
 </script>
 
 <style scoped>
-/* 컨테이너 */
 .login-container {
   min-height: 100vh;
   background: #fff;
@@ -77,55 +64,55 @@ const handleLogin = () => {
   justify-content: center;
 }
 
-/* 로고 */
-.login-logo img {
-  height: 50px;
+.login-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 2rem;
 }
+.login-logo img {
+  height: 100px;
+}
 
-/* 카드 */
 .login-card {
-  width: 360px;
-  padding: 2rem;
+  width: 435px; /* 좌우로 넓게 */
+  padding: 3rem;
   border: 1px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
   background: #fff;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
-/* 타이틀 */
 .login-title {
-  font-size: 1.4rem;
-  font-weight: 600;
   text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
   margin-bottom: 2rem;
 }
 
-/* 입력 행 */
 .login-row {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 .login-label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   margin-bottom: 0.3rem;
   color: #333;
 }
 .login-input {
-  height: 40px;
+  height: 44px;
   padding: 0 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-/* 옵션 영역 */
 .login-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
-  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  margin-bottom: 1.8rem;
 }
 .keep-login {
   display: flex;
@@ -137,26 +124,25 @@ const handleLogin = () => {
   text-decoration: none;
 }
 
-/* 로그인 버튼 */
 .login-btn {
   width: 100%;
-  height: 44px;
+  height: 50px;
   background: #4d7a4d;
   color: #fff;
-  font-weight: 600;
   border: none;
   border-radius: 4px;
-  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 2rem;
   cursor: pointer;
 }
 
-/* 구분선 */
 .sns-divider {
   position: relative;
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #888;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 .sns-divider::before,
 .sns-divider::after {
@@ -174,26 +160,22 @@ const handleLogin = () => {
   right: 0;
 }
 
-/* 카카오 버튼 */
 .kakao-btn {
   width: 100%;
-  height: 44px;
-  background: #ffe812;
+  background: none;
   border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 0;
+  margin-bottom: 2rem;
 }
-.kakao-icon {
-  margin-right: 0.4rem;
+.kakao-btn img {
+  width: 100%;
+  height: 50px; /* 로그인 버튼 높이와 동일하게 */
+  object-fit: contain; /* 비율 유지하면서 맞추기 */
+  display: block;
 }
 
-/* 회원가입 */
 .signup-link {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-align: center;
 }
 .signup-link a {
