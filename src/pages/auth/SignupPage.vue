@@ -1,6 +1,10 @@
 <template>
-  <div class="container mt-5">
-    <BaseCardGrey class="rounded-xl signup-card">
+  <div class="signup-container">
+    <div class="login-logo">
+      <img src="@/assets/Logo.png" alt="맞추머니 로고" />
+    </div>
+
+    <BaseCardGrey class="signup-card">
       <template #title>회원가입</template>
 
       <template #content>
@@ -88,13 +92,22 @@ const handleJoin = () => {
 </script>
 
 <style scoped>
+/* 로고 영역 */
+.login-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.login-logo img {
+  height: 150px;
+}
+
 .signup-card {
-  background-color: var(--color-light);
-  box-shadow: var(--shadow-card);
-  width: 900px;
-  max-width: 90%;
-  margin: 0 auto;
-  padding: 3rem 7rem !important; /* increased padding for more inner spacing */
+  width: 700px;
+  max-width: 100%;
+
+  padding: 3rem !important; /* increased padding for more inner spacing */
 }
 
 .form-wrapper {
@@ -109,13 +122,14 @@ const handleJoin = () => {
   color: var(--color-title);
 }
 
-.container {
-  max-width: 100%;
-  margin: 0 auto;
+.signup-container {
+  min-height: 100vh;
+  background: var(--bg-body);
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 7rem;
 }
 
 .form-row {

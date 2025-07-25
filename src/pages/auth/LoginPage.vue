@@ -78,7 +78,8 @@ const handleLogin = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 7rem;
 }
 
 /* 로고 영역 */
@@ -95,6 +96,7 @@ const handleLogin = () => {
 /* BaseCardGrey 커스터마이징 */
 .login-card {
   width: 435px;
+  height: 600px;
   padding: 3rem;
 }
 
