@@ -28,35 +28,40 @@
         </h1>
   
         <!-- ✅ 필터 영역 -->
-        <section class="filter-selection-section">
-          <div class="term-selector">
-            <div
-              v-for="(term, idx) in terms"
-              :key="term.value"
-              :class="['term-button', { active: filters.term === term.value }]"
-              @click="filters.term = term.value"
-            >
-              {{ term.label }}
-            </div>
-          </div>
-          <div class="amount-filter-container">
-            <h3 class="filter-label">매월 저축 금액 설정</h3>
-            <div class="slider-box">
-              <input
-                type="range"
-                v-model="selectedAmount"
-                :min="10000"
-                :max="1000000"
-                :step="1000"
-                class="amount-slider"
-              />
-              <div class="slider-value">{{ formatCurrency(selectedAmount) }}</div>
-            </div>
-          </div>
-          <div class="text-center" style="margin-top: 20px">
-            <button class="confirm-btn" @click="searchProducts">검색된 카드 보기</button>
-          </div>
-        </section>
+<section class="filter-selection-section">
+  <h3 class="filter-label">은행을 선택해주세요</h3>
+  <div class="bank-grid">
+    <div
+      v-for="bank in bankOptions"
+      :key="bank.name"
+      :class="['bank-logo-option', { selected: filters.bank === bank.name }]"
+      @click="filters.bank = bank.name"
+    >
+      <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
+      <div class="bank-label">{{ bank.name }}</div>
+    </div>
+  </div>
+
+  <div class="amount-filter-container">
+    <br><br><br>
+    <h3 class="filter-label">매월 저축 금액 설정</h3>
+    <div class="slider-box">
+      <input
+        type="range"
+        v-model="selectedAmount"
+        :min="10000"
+        :max="1000000"
+        :step="1000"
+        class="amount-slider"
+      />
+      <div class="slider-value">{{ formatCurrency(selectedAmount) }}</div>
+    </div>
+  </div>
+
+  <div class="text-center" style="margin-top: 20px">
+    <button class="confirm-btn" @click="searchProducts">검색된 적금 보기</button>
+  </div>
+</section>
   
         <!-- 🔍 검색 결과 -->
         <section class="search-results" v-if="showSearchResults">
@@ -80,16 +85,21 @@
               class="product-card"
               @click="selectProduct(product)"
             >
-              <div class="product-header">
-                <div class="bank-logo">
-                  <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" />
-                </div>
-                <div class="product-info">
-                  <div class="bank-name">{{ product.bank }}</div>
-                  <h4>{{ product.name }}</h4>
-                  <div class="product-details" v-html="product.details"></div>
-                </div>
-              </div>
+            <div class="product-header">
+  <div class="bank-logo">
+    <img
+      :src="getBankLogo(product.bankInitial)"
+      alt="은행 로고"
+      class="clickable-logo"
+      @click="selectProduct(product)"
+    />
+  </div>
+  <div class="product-info">
+    <div class="bank-name">{{ product.bank }}</div>
+    <h4>{{ product.name }}</h4>
+    <div class="product-details" v-html="product.details"></div>
+  </div>
+</div>
             </div>
           </div>
         </section>
@@ -99,7 +109,19 @@
   
   <script setup>
   import { ref } from 'vue'
-  
+
+  const bankOptions = [
+  { name: '국민은행', logo: new URL('@/assets/kb.png', import.meta.url).href },
+  { name: '신한은행', logo: new URL('@/assets/shinhan.png', import.meta.url).href },
+  { name: '우리은행', logo: new URL('@/assets/woori.png', import.meta.url).href },
+  { name: '하나은행', logo: new URL('@/assets/hana.png', import.meta.url).href },
+  { name: '카카오뱅크', logo: new URL('@/assets/kakao.png', import.meta.url).href },
+  { name: '토스뱅크', logo: new URL('@/assets/toss.png', import.meta.url).href },
+  { name: '농협은행', logo: new URL('@/assets/nh.png', import.meta.url).href },
+  { name: '기타', logo: new URL('@/assets/plus.png', import.meta.url).href },
+]
+
+
   const loading = ref(false)
   const showSearchResults = ref(false)
   const selectedAmount = ref(10000)
@@ -109,7 +131,8 @@
     term: '전체',
     amount: null,
   })
-  
+  filters.value.bank = null
+
   const terms = [
     { label: '전체', value: '전체' },
     { label: '6개월', value: '6개월' },
@@ -168,7 +191,10 @@
     }
     return logos[initial] || logos['shinhan']
   }
-  
+  if (filters.value.bank) {
+  result = result.filter(p => p.bank === filters.value.bank)
+}
+
   const selectProduct = (product) => {
     alert(`${product.name}을 선택했습니다.`)
   }
@@ -256,11 +282,11 @@
     font-size: 26px;
     text-decoration: underline;
   }
-  .filter-selection-section {
+.filter-selection-section {
     padding: 20px;
     border: 2px solid #ccc;
     border-radius: 12px;
-    background: #fafafa;
+    background: #ffffff;
     margin-bottom: 40px;
   }
   .term-selector {
@@ -412,5 +438,81 @@
   color: #40513b;
   margin-bottom: 12px;
   text-align: left;
+}
+.bank-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  justify-content: center; /* ✅ 가운데 정렬 */
+  margin: 0 auto;           /* ✅ 중간정렬 보조 */
+  place-items: center;
+}
+
+.bank-logo-option {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 10px;
+  background: white;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.bank-logo-option:hover {
+  transform: translateY(-4px);
+  border-color: #ccc;
+}
+
+.bank-logo-option.selected {
+  border-color: #4caf50;
+  background: #e6f4ea;
+}
+
+
+
+.bank-label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+.bank-button {
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background-color: transparent;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.bank-button:hover {
+  border-color: #4caf50;
+  background-color: #e6f4ea;
+}
+
+.bank-logo-img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;     /* 이미지 비율 유지하면서 여백 채우기 */
+  background-color: white; /* 필요시 배경 추가 */
+  border-radius: 50%;
+  padding: 4px;             /* 이미지 안 잘리게 */
+}
+.clickable-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clickable-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
   </style>
