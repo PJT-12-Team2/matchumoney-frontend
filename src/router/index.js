@@ -9,7 +9,6 @@ import SignupPage from "@/pages/auth/SignupPage.vue"
 import LoginPage from "@/pages/auth/LoginPage.vue"
 import UpdateUserInfoPage from '@/pages/user/UpdateUserInfoPage.vue'
 import UpdatePasswordPage from '@/pages/user/UpdatePasswordPage.vue'
-
 import PersonaSurveyPage from '@/pages/persona/PersonaSurveyPage.vue'
 import PersonaSurveyStart from '@/pages/persona/PersonaSurveyStartPage.vue'
 import PersonaCardAllList from '@/pages/persona/PersonaCardAllList.vue'

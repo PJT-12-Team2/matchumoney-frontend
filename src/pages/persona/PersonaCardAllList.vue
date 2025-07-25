@@ -37,13 +37,13 @@
 				<div class="card-type-toggle">
 					<button
 						:class="['type-btn', filters.creditCard ? 'active' : '']"
-						@click="filters.creditCard = !filters.creditCard"
+						@click="() => { filters.creditCard = !filters.creditCard; searchProducts(); }"
 					>
 						신용카드
 					</button>
 					<button
 						:class="['type-btn', filters.debitCard ? 'active' : '']"
-						@click="filters.debitCard = !filters.debitCard"
+						@click="() => { filters.debitCard = !filters.debitCard; searchProducts(); }"
 					>
 						체크카드
 					</button>
@@ -65,11 +65,6 @@
 					</div>
 				</div>
 
-				<div class="search-button-wrap">
-					<button class="search-button" @click="searchProducts">
-						검색된 카드 보기
-					</button>
-				</div>
 			</section>
 
 			<!-- 🔍 검색 결과 -->
@@ -94,28 +89,23 @@
 						class="product-card"
 						@click="selectProduct(product)"
 					>
-						<div class="product-header">
-							<!-- <div class="bank-logo">
-                                <img
-                                    :src="getBankLogo(product.bankInitial)"
-                                    alt="은행 로고"
-                                />
-                            </div> -->
+						<div class="product-content" style="display: flex; align-items: center; gap: 20px;">
+							<img
+								:src="product.imageUrl"
+								:alt="product.name"
+								style="height: 100px; width: auto; border-radius: 10px;"
+							/>
 							<div class="product-info">
-								<!-- <div class="bank-name">{{ product.bank }}</div> -->
 								<h4>{{ product.name }}</h4>
-								<div>
-									{{ product.type === '신용' ? '신용카드' : '체크카드' }}
+								<div>{{ product.issuer || '카드사 미정' }}</div>
+								<div style="margin-top: 10px">
+									<strong>전월실적금액:</strong>
+									{{ product.pre_month_money || '정보 없음' }}
 								</div>
-								<!-- <div
-                                    class="product-details"
-                                    v-html="product.details"
-                                ></div> -->
-								<img
-									:src="product.imageUrl"
-									:alt="product.name"
-									style="height: 60px; margin-top: 10px"
-								/>
+								<div style="margin-top: 5px">
+									<strong>연회비 정보:</strong>
+									{{ product.annualFee || '정보 없음' }}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -126,7 +116,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 export default {
@@ -145,6 +135,7 @@ export default {
 			const index = filters.value.selectedBenefits.indexOf(id);
 			if (index === -1) filters.value.selectedBenefits.push(id);
 			else filters.value.selectedBenefits.splice(index, 1);
+			searchProducts(); // trigger filter
 		};
 
 		const benefitCategories = ref([
@@ -235,7 +226,11 @@ export default {
 				loading.value = false;
 			}
 		};
-
+		onMounted(() => {
+			searchProducts(); // 페이지 로드시 자동 실행
+		});
+		// Always show the search results section
+		showSearchResults.value = true;
 		return {
 			loading,
 			showSearchResults,
@@ -312,16 +307,19 @@ export default {
 }
 .card-type-toggle {
 	margin-bottom: 20px;
-	display: flex;
-	justify-content: center;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	padding: 0 12px;
 }
 .type-btn {
-	padding: 10px 20px;
-	margin: 0 5px;
+	width: 100%;
+	padding: 12px;
 	border: 2px solid #ccc;
 	background: #fff;
 	cursor: pointer;
 	border-radius: 8px;
+	font-size: 16px;
 }
 .type-btn.active {
 	background: #609966;
@@ -387,12 +385,6 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 16px;
-}
-.bank-logo img {
-	width: 80px;
-	height: 80px;
-	object-fit: contain;
-	border-radius: 10px;
 }
 .product-info h4 {
 	margin: 0;
