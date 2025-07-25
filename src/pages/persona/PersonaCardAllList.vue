@@ -215,7 +215,9 @@ export default {
 				const response = await axios.post('/api/persona/cardsearch', {
 					creditCard: filters.value.creditCard,
 					debitCard: filters.value.debitCard,
-					selectedBenefits: filters.value.selectedBenefits,
+					selectedBenefits: filters.value.selectedBenefits
+						.map(id => benefitCategories.value.find(b => b.id === id)?.name)
+						.filter(Boolean),
 				});
 
 				searchResults.value = response.data; // ← 백엔드에서 내려준 카드 리스트
