@@ -100,7 +100,7 @@
 								<div>{{ product.issuer || '카드사 미정' }}</div>
 								<div style="margin-top: 10px">
 									<strong>전월실적금액:</strong>
-									{{ product.pre_month_money || '정보 없음' }}
+									{{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
 								</div>
 								<div style="margin-top: 5px">
 									<strong>연회비 정보:</strong>
