@@ -6,7 +6,8 @@
 			<!-- 🐰 캐러셀 추천 -->
 			<section class="persona-carousel-section">
 				<h2 class="persona-carousel-title">
-					<span class="highlight">토끼형</span> 유형에게 추천되는 카드
+					<span class="highlight">{{ personaName }}</span> 유형에게 추천하는
+					카드
 				</h2>
 				<div class="carousel-card-list">
 					<div
@@ -37,13 +38,23 @@
 				<div class="card-type-toggle">
 					<button
 						:class="['type-btn', filters.creditCard ? 'active' : '']"
-						@click="() => { filters.creditCard = !filters.creditCard; searchProducts(); }"
+						@click="
+							() => {
+								filters.creditCard = !filters.creditCard;
+								searchProducts();
+							}
+						"
 					>
 						신용카드
 					</button>
 					<button
 						:class="['type-btn', filters.debitCard ? 'active' : '']"
-						@click="() => { filters.debitCard = !filters.debitCard; searchProducts(); }"
+						@click="
+							() => {
+								filters.debitCard = !filters.debitCard;
+								searchProducts();
+							}
+						"
 					>
 						체크카드
 					</button>
@@ -64,7 +75,6 @@
 						<span>{{ benefit.name }}</span>
 					</div>
 				</div>
-
 			</section>
 
 			<!-- 🔍 검색 결과 -->
@@ -89,18 +99,25 @@
 						class="product-card"
 						@click="selectProduct(product)"
 					>
-						<div class="product-content" style="display: flex; align-items: center; gap: 20px;">
+						<div
+							class="product-content"
+							style="display: flex; align-items: center; gap: 20px"
+						>
 							<img
 								:src="product.imageUrl"
 								:alt="product.name"
-								style="height: 100px; width: auto; border-radius: 10px;"
+								style="height: 100px; width: auto; border-radius: 10px"
 							/>
 							<div class="product-info">
 								<h4>{{ product.name }}</h4>
 								<div>{{ product.issuer || '카드사 미정' }}</div>
 								<div style="margin-top: 10px">
 									<strong>전월실적금액:</strong>
-									{{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
+									{{
+										product.preMonthMoney
+											? product.preMonthMoney.toLocaleString() + '원'
+											: '정보 없음'
+									}}
 								</div>
 								<div style="margin-top: 5px">
 									<strong>연회비 정보:</strong>
@@ -165,29 +182,26 @@ export default {
 			{ id: '비즈니스', name: '비즈니스', emoji: '💼' },
 		]);
 
-		const carouselCards = ref([
-			{
-				id: 'card1',
-				name: 'KB국민 My WE:SH 카드',
-				image:
-					'https://d1c5n4ri2guedi.cloudfront.net/card/13/card_img/28201/13card.png',
-				benefit: '음식점 및 편의점 10%',
-			},
-			{
-				id: 'card2',
-				name: 'KB국민 My WE:SH 카드',
-				image:
-					'https://d1c5n4ri2guedi.cloudfront.net/card/2376/card_img/27725/2376card.png',
-				benefit: 'OTT 30%',
-			},
-			{
-				id: 'card3',
-				name: 'KB국민 My WE:SH 카드',
-				image:
-					'https://d1c5n4ri2guedi.cloudfront.net/card/2846/card_img/42434/2846card_1.png',
-				benefit: '카페 5%',
-			},
-		]);
+		const carouselCards = ref([]);
+		const personaName = ref('');
+
+		const fetchRecommendedCards = async () => {
+			try {
+				const personaId = 1; // TODO: 실제 사용자 personaId로 대체
+				const response = await axios.get(
+					`/api/persona/${personaId}/recommendations`
+				);
+
+				carouselCards.value = response.data.cards.map((card) => ({
+					id: card.cardProductId,
+					name: card.name,
+					image: card.cardImageUrl,
+				}));
+				personaName.value = response.data.persona.personaName;
+			} catch (error) {
+				console.error('추천 카드 불러오기 실패:', error);
+			}
+		};
 
 		const searchResults = ref([]);
 
@@ -227,6 +241,7 @@ export default {
 			}
 		};
 		onMounted(() => {
+			fetchRecommendedCards();
 			searchProducts(); // 페이지 로드시 자동 실행
 		});
 		// Always show the search results section
