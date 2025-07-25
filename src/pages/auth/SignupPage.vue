@@ -129,7 +129,7 @@ const handleJoin = () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 7rem;
+  padding-top: 5vh; /* 화면 높이의 5% */
 }
 
 .form-row {
