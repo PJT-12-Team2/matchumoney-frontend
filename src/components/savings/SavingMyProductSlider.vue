@@ -45,13 +45,13 @@
     </SwiperSlide>
   </Swiper>
 
-  <CardConnectModal
+  <SavingConnectModal
     v-model:visible="showModal"
     v-model:loading="isLoading"
     @update:visible="showModal = $event"
     @submit="handleSync"
   >
-  </CardConnectModal>
+  </SavingConnectModal>
 </template>
 
 <script setup>
@@ -60,7 +60,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import SavingMyProductCard from './SavingMyProductCard.vue';
 import savingApi from '@/api/savings';
-import CardConnectModal from './CardConnectModal.vue';
+import SavingConnectModal from './SavingConnectModal.vue';
 const isLoading = ref(false);
 const showModal = ref(false);
 
