@@ -28,10 +28,4 @@ export default {
     const { data } = await api.post(`/api/auth/email/verify`, { email, code });
     return data;
   },
-
-  // // 내 정보 조회
-  // async getMyInfo() {
-  //   const { data } = await api.get(`${BASE_URL}/me`);
-  //   return data;
-  // },
 };

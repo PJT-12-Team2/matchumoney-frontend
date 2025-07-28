@@ -18,12 +18,7 @@
         <!-- 닉네임 -->
         <div class="form-group form-row">
           <label for="nickname" class="form-label nickname-label">닉네임</label>
-          <input
-            id="nickname"
-            v-model="nickname"
-            type="text"
-            class="form-input nickname-input"
-            placeholder="닉네임을 입력하세요" />
+          <input id="nickname" v-model="nickname" type="text" class="form-input nickname-input" />
         </div>
 
         <!-- 성별 -->
@@ -31,11 +26,11 @@
           <span class="gender-label">성별</span>
           <div class="gender-center">
             <label>
-              <input type="radio" value="남자" v-model="gender" />
+              <input type="radio" value="MALE" v-model="gender" />
               남자
             </label>
             <label>
-              <input type="radio" value="여자" v-model="gender" />
+              <input type="radio" value="FEMALE" v-model="gender" />
               여자
             </label>
           </div>
@@ -73,7 +68,8 @@
 import BaseCard from "@/components/base/BaseCardGrey.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import "@/assets/main.css";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import userApi from "@/api/user";
 
 const nickname = ref("");
 const gender = ref("");
@@ -84,6 +80,28 @@ const day = ref("");
 const years = computed(() => {
   const currentYear = new Date().getFullYear();
   return Array.from({ length: 100 }, (_, i) => currentYear - i);
+});
+
+onMounted(async () => {
+  try {
+    const res = await userApi.getMyInfo();
+    console.log("유저 정보 불러오기 성공:", res);
+    console.log("닉네임:", res.result.nickname);
+    console.log("성별:", res.result.gender);
+    console.log("생년월일:", res.result.birthDate);
+    console.log("프로필 이미지:", res.result.profileImageUrl);
+
+    nickname.value = res.result.nickname;
+    gender.value = res.result.gender;
+    if (res.result.birthDate) {
+      const [yyyy, mm, dd] = res.result.birthDate.split("-");
+      year.value = Number(yyyy);
+      month.value = Number(mm);
+      day.value = Number(dd);
+    }
+  } catch (err) {
+    console.error("유저 정보 불러오기 실패:", err);
+  }
 });
 
 const submitForm = () => {
