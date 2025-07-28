@@ -26,17 +26,17 @@
         <div class="card-content">
           <div class="card-title">
             <template v-if="savingList.length === 0">
-              내 적금 불러오기
+              내 예/적금 불러오기
             </template>
-            <template v-else> 적금 다시 불러오기</template>
+            <template v-else> 예/적금 다시 불러오기</template>
           </div>
           <div class="card-info label">
             <template v-if="savingList.length === 0">
-              적금 정보를 불러와<br />
+              예/적금 정보를 불러와<br />
               지금 바로 시작해보세요!
             </template>
             <template v-else>
-              적금 정보를 다시 불러와<br />
+              예/적금 정보를 다시 불러와<br />
               최신 상태로 확인해보세요!
             </template>
           </div>
@@ -95,11 +95,11 @@ const handleSync = async (loginDto) => {
     const res = await savingApi.syncAccounts(loginDto);
     savingList.value = res;
 
-    alert('적금 연결 성공!');
+    alert('예/적금 연결 성공!');
     showModal.value = false;
   } catch (e) {
-    // console.error(e);
-    alert('적금 연결 실패');
+    console.error(e);
+    alert('예/적금 연결 실패');
   } finally {
     isLoading.value = false;
     emit('select', savingList.value[0].id);
