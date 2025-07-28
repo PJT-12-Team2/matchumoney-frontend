@@ -8,4 +8,9 @@ export default {
     const { data } = await api.get(`${BASE_URL}/me`);
     return data;
   },
+  // 회원 정보 수정
+  async updateUserInfo(updateDto) {
+    const { data } = await api.patch(`${BASE_URL}/update`, updateDto);
+    return data;
+  },
 };

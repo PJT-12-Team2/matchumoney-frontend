@@ -104,8 +104,26 @@ onMounted(async () => {
   }
 });
 
-const submitForm = () => {
-  console.log(nickname.value, gender.value, year.value, month.value, day.value);
+const submitForm = async () => {
+  const birthDate =
+    year.value && month.value && day.value
+      ? `${year.value}-${String(month.value).padStart(2, "0")}-${String(day.value).padStart(2, "0")}`
+      : null;
+
+  const updateDto = {
+    nickname: nickname.value,
+    gender: gender.value,
+    birthDate: birthDate,
+  };
+
+  try {
+    const res = await userApi.updateUserInfo(updateDto);
+    console.log("회원정보 수정 성공:", res);
+    alert("회원정보가 성공적으로 수정되었습니다.");
+  } catch (err) {
+    console.error("회원정보 수정 실패:", err);
+    alert("회원정보 수정에 실패했습니다.");
+  }
 };
 </script>
 
