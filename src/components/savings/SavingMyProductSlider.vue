@@ -4,6 +4,7 @@
     :space-between="16"
     :loop="false"
     class="saving-swiper"
+    :pagination="{ clickable: true }"
     @slideChange="onSlideChange"
     ref="swiperRef"
   >
@@ -58,12 +59,14 @@
 import { ref, onMounted, watch, nextTick } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 import SavingMyProductCard from './SavingMyProductCard.vue';
 import savingApi from '@/api/savings';
 import SavingConnectModal from './SavingConnectModal.vue';
 const isLoading = ref(false);
 const showModal = ref(false);
-
+const swiperRef = ref(null);
 const emit = defineEmits(['select']);
 
 const onSlideChange = (swiper) => {
@@ -86,7 +89,9 @@ const savingList = ref([]);
 onMounted(async () => {
   const data = await savingApi.getList();
   savingList.value = data;
-  if (data.length > 0) emit('select', data[0].id);
+  if (data.length > 0) {
+    emit('select', data[0].id);
+  }
 });
 
 const handleSync = async (loginDto) => {
@@ -97,12 +102,12 @@ const handleSync = async (loginDto) => {
 
     alert('예/적금 연결 성공!');
     showModal.value = false;
+    window.location.reload();
   } catch (e) {
     console.error(e);
     alert('예/적금 연결 실패');
   } finally {
     isLoading.value = false;
-    emit('select', savingList.value[0].id);
   }
 };
 </script>
