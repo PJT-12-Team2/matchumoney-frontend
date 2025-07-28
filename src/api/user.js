@@ -13,4 +13,9 @@ export default {
     const { data } = await api.patch(`${BASE_URL}/update`, updateDto);
     return data;
   },
+  // 비밀번호 수정
+  async updatePassword(passwordDto) {
+    const { data } = await api.patch(`${BASE_URL}/update/password`, passwordDto);
+    return data;
+  },
 };
