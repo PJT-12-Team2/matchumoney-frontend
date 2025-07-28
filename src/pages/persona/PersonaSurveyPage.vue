@@ -44,6 +44,7 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 /* ------------------------------------------------------------------ */
 /* ① 상태 & 상수                                                       */
 /* ------------------------------------------------------------------ */
@@ -183,7 +184,7 @@ const animatedIndex        = ref(1);
 /* ------------------------------------------------------------------ */
 /* ④ 로직                                                              */
 /* ------------------------------------------------------------------ */
-function nextQuestion (choice) {
+async function nextQuestion (choice) {
   // 1) 점수 누적
   scores.value[choice.persona]++
   answers.value.push(choice)      // ⭐ push
@@ -193,7 +194,21 @@ function nextQuestion (choice) {
     currentQuestionIndex.value++
   } else {
     const winner = pickWinner(scores.value)
-    router.push(`/${winner}`)         // ex) /turtle
+    const personaIdMap = {
+      turtle: '1',
+      squirrel: '2',
+      ant: '3',
+      owl: '4',
+      rabbit: '5',
+      cat: '6',
+      tiger: '7',
+      penguin: '8'
+    }
+    const winnerId = personaIdMap[winner]
+    await axios.patch('/user/update/persona', null, {
+      params: { persona_id: winnerId }
+    })
+    router.push(`/${winner}`)
   }
 }
 

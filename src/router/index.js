@@ -37,6 +37,18 @@ const routes = [
   { path: '/signup', name: 'signup', component: SignupPage },
   { path: '/login', name: 'login', component: LoginPage },
   { path: '/mypage', name: 'mypage', component: MyPage },
+
+  {
+    path: '/mypage/update',
+    name: 'updateUserInfo',
+    component: UpdateUserInfoPage,
+  },
+  {
+    path: '/mypage/update/password',
+    name: 'updatePassword',
+    component: UpdatePasswordPage,
+  },
+
   {
     path: '/mypage/update',
     name: 'updateUserInfo',
@@ -48,7 +60,7 @@ const routes = [
     component: UpdatePasswordPage,
   },
   {
-    path: '/api/deposits/recommendations/history',
+    path: '/deposits/recommendations/history',
     name: 'RecommendDeposit',
     component: RecommendDeposit,
   },
