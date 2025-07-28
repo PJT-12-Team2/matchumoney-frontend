@@ -16,6 +16,7 @@ import PersonaCardAllList from '@/pages/persona/PersonaCardAllList.vue';
 import PersonaDepositAllList from '@/pages/persona/PersonaDepositAllListPage.vue';
 import PersonaSavingAllList from '@/pages/persona/PersonaSavingAllListPage.vue';
 
+import RecommendSavings from '@/pages/savings/recommendations/RecommendSavings.vue';
 /* 결과 페이지 (동적 import) */
 const ResultPage = () => import('@/pages/persona/PersonaResultPage.vue');
 
@@ -36,6 +37,18 @@ const routes = [
   { path: '/signup', name: 'signup', component: SignupPage },
   { path: '/login', name: 'login', component: LoginPage },
   { path: '/mypage', name: 'mypage', component: MyPage },
+
+  {
+    path: '/mypage/update',
+    name: 'updateUserInfo',
+    component: UpdateUserInfoPage,
+  },
+  {
+    path: '/mypage/update/password',
+    name: 'updatePassword',
+    component: UpdatePasswordPage,
+  },
+
   {
     path: '/mypage/update',
     name: 'updateUserInfo',
@@ -50,6 +63,11 @@ const routes = [
     path: '/deposits/recommendations/history',
     name: 'RecommendDeposit',
     component: RecommendDeposit,
+  },
+  {
+    path: '/savings/recommendations/history',
+    name: 'RecommendSavings',
+    component: RecommendSavings,
   },
   {
     path: '/persona',

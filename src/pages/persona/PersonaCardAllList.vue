@@ -37,13 +37,13 @@
 				<div class="card-type-toggle">
 					<button
 						:class="['type-btn', filters.creditCard ? 'active' : '']"
-						@click="filters.creditCard = !filters.creditCard"
+						@click="() => { filters.creditCard = !filters.creditCard; searchProducts(); }"
 					>
 						신용카드
 					</button>
 					<button
 						:class="['type-btn', filters.debitCard ? 'active' : '']"
-						@click="filters.debitCard = !filters.debitCard"
+						@click="() => { filters.debitCard = !filters.debitCard; searchProducts(); }"
 					>
 						체크카드
 					</button>
@@ -65,11 +65,6 @@
 					</div>
 				</div>
 
-				<div class="search-button-wrap">
-					<button class="search-button" @click="searchProducts">
-						검색된 카드 보기
-					</button>
-				</div>
 			</section>
 
 			<!-- 🔍 검색 결과 -->
@@ -94,28 +89,23 @@
 						class="product-card"
 						@click="selectProduct(product)"
 					>
-						<div class="product-header">
-							<!-- <div class="bank-logo">
-                                <img
-                                    :src="getBankLogo(product.bankInitial)"
-                                    alt="은행 로고"
-                                />
-                            </div> -->
+						<div class="product-content" style="display: flex; align-items: center; gap: 20px;">
+							<img
+								:src="product.imageUrl"
+								:alt="product.name"
+								style="height: 100px; width: auto; border-radius: 10px;"
+							/>
 							<div class="product-info">
-								<!-- <div class="bank-name">{{ product.bank }}</div> -->
 								<h4>{{ product.name }}</h4>
-								<div>
-									{{ product.type === '신용' ? '신용카드' : '체크카드' }}
+								<div>{{ product.issuer || '카드사 미정' }}</div>
+								<div style="margin-top: 10px">
+									<strong>전월실적금액:</strong>
+									{{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
 								</div>
-								<!-- <div
-                                    class="product-details"
-                                    v-html="product.details"
-                                ></div> -->
-								<img
-									:src="product.imageUrl"
-									:alt="product.name"
-									style="height: 60px; margin-top: 10px"
-								/>
+								<div style="margin-top: 5px">
+									<strong>연회비 정보:</strong>
+									{{ product.annualFee || '정보 없음' }}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -126,7 +116,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 export default {
@@ -145,6 +135,7 @@ export default {
 			const index = filters.value.selectedBenefits.indexOf(id);
 			if (index === -1) filters.value.selectedBenefits.push(id);
 			else filters.value.selectedBenefits.splice(index, 1);
+			searchProducts(); // trigger filter
 		};
 
 		const benefitCategories = ref([
@@ -224,7 +215,9 @@ export default {
 				const response = await axios.post('/api/persona/cardsearch', {
 					creditCard: filters.value.creditCard,
 					debitCard: filters.value.debitCard,
-					selectedBenefits: filters.value.selectedBenefits,
+					selectedBenefits: filters.value.selectedBenefits
+						.map(id => benefitCategories.value.find(b => b.id === id)?.name)
+						.filter(Boolean),
 				});
 
 				searchResults.value = response.data; // ← 백엔드에서 내려준 카드 리스트
@@ -235,7 +228,11 @@ export default {
 				loading.value = false;
 			}
 		};
-
+		onMounted(() => {
+			searchProducts(); // 페이지 로드시 자동 실행
+		});
+		// Always show the search results section
+		showSearchResults.value = true;
 		return {
 			loading,
 			showSearchResults,
@@ -251,172 +248,199 @@ export default {
 	},
 };
 </script>
-
 <style scoped>
 .card-product-search {
-	font-family: 'Noto Sans', sans-serif;
-	background: #fff;
-	min-height: 100vh;
+  font-family: 'Noto Sans', sans-serif;
+  background: var(--color-white);
+  min-height: 100vh;
 }
 .main-content {
-	max-width: 1200px;
-	margin: 0 auto;
-	padding: 40px;
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: var(--spacing-2xl);
 }
 .page-title {
-	font-size: 28px;
-	font-weight: 700;
-	margin-bottom: 30px;
-	text-align: center;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
 }
 .persona-carousel-title {
-	font-size: 22px;
-	margin-bottom: 20px;
-	text-align: center;
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
 }
 .carousel-card-list {
-	display: flex;
-	gap: 20px;
-	justify-content: center;
-	flex-wrap: wrap;
-	margin-bottom: 40px;
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: nowrap;
+  margin-bottom: var(--spacing-2xl);
+  overflow-x: hidden;
 }
 .carousel-card {
-	width: 300px;
-	background: #fff;
-	border-radius: 12px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-	padding: 16px;
-	cursor: pointer;
+  width: calc((100% - 2rem) / 3);
+  background: var(--color-white);
+  border-radius: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 .carousel-card-image {
-	width: 100%;
-	border-radius: 8px;
+  width: 100%;
+  border-radius: var(--spacing-sm);
 }
 .carousel-card-name {
-	font-size: 22px;
-	font-weight: bold;
-	margin: 10px 0 4px;
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
 }
 .carousel-card-benefit {
-	font-size: 18px;
-	color: #666;
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
 }
 .filter-selection-section {
-	text-align: left;
-	margin-bottom: 40px;
-	padding: 30px;
-	border: 2px solid #ccc;
-	border-radius: 16px;
-	background: #fafafa;
+  text-align: left;
+  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-xl);
+  border: 2px solid var(--border-light);
+  border-radius: var(--spacing-xl);
+  background: var(--bg-content);
 }
 .card-type-toggle {
-	margin-bottom: 20px;
-	display: flex;
-	justify-content: center;
+  margin-bottom: var(--spacing-lg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  padding: 0 var(--spacing-md);
 }
 .type-btn {
-	padding: 10px 20px;
-	margin: 0 5px;
-	border: 2px solid #ccc;
-	background: #fff;
-	cursor: pointer;
-	border-radius: 8px;
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-light);
+  background: var(--color-white);
+  cursor: pointer;
+  border-radius: var(--spacing-md);
+  font-size: var(--font-size-base);
 }
 .type-btn.active {
-	background: #609966;
-	color: white;
-	border-color: #609966;
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
 }
 .benefit-grid {
-	display: grid;
-	grid-template-columns: repeat(8, 1fr);
-	gap: 16px;
-	margin-top: 20px;
-	margin-bottom: 20px;
-	padding: 0 12px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+  padding: 0 var(--spacing-md);
 }
 .benefit-button {
-	padding: 12px;
-	border: 2px solid #ccc;
-	border-radius: 10px;
-	background: #fff;
-	cursor: pointer;
-	font-weight: bold;
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-light);
+  border-radius: var(--spacing-md);
+  background: var(--color-white);
+  cursor: pointer;
+  font-weight: bold;
 }
 .benefit-button.selected {
-	background: #609966;
-	color: white;
-	border-color: #609966;
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
 }
 .benefit-button .emoji {
-	display: block;
-	font-size: 20px;
-	margin-bottom: 4px;
+  display: block;
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-xs);
 }
 .search-button-wrap {
-	margin-top: 20px;
-	display: flex;
-	justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+  display: flex;
+  justify-content: flex-end;
 }
 .search-button {
-	padding: 12px 24px;
-	font-size: 16px;
-	background: #609966;
-	color: white;
-	border: none;
-	border-radius: 8px;
-	cursor: pointer;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-base);
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--spacing-md);
+  cursor: pointer;
 }
 .search-results-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-	gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+@media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
+  .benefit-grid {
+    display: flex;
+    overflow-x: auto;
+    padding: var(--spacing-sm);
+    gap: var(--spacing-md);
+    scroll-snap-type: x mandatory;
+  }
+  .benefit-button {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    min-width: 6rem;
+  }
+  .carousel-card-list {
+    justify-content: center;
+    overflow-x: hidden;
+  }
+  .carousel-card {
+    width: calc((100% - 2rem) / 3);
+  }
+  .carousel-card-name {
+    font-size: var(--font-size-sm);
+  }
+  .carousel-card-benefit {
+    font-size: var(--font-size-xs);
+  }
 }
 .product-card {
-	background: #f5f7f9;
-	border-radius: 20px;
-	padding: 30px;
-	cursor: pointer;
-	transition: all 0.3s ease;
+  background: var(--bg-content);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 .product-card:hover {
-	transform: translateY(-5px);
+  transform: translateY(-0.3125rem);
 }
 .product-header {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-}
-.bank-logo img {
-	width: 80px;
-	height: 80px;
-	object-fit: contain;
-	border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 .product-info h4 {
-	margin: 0;
-	font-size: 18px;
-	font-weight: bold;
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: bold;
 }
 .bank-name {
-	font-size: 14px;
-	color: #888;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
 }
 .product-details {
-	margin-top: 6px;
-	font-size: 14px;
-	color: #444;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 .highlight {
-	font-size: 30px;
-	text-decoration: underline;
+  font-size: var(--font-size-2xl);
+  text-decoration: underline;
 }
 .filter-label {
-	font-size: 18px;
-	font-weight: 700;
-	color: #40513b;
-	margin-bottom: 12px;
-	text-align: left;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-md);
+  text-align: left;
 }
 </style>

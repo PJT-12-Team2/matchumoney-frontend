@@ -1,7 +1,7 @@
 <template>
     <div class="chatbot-container">
       <button class="chat-toggle" @click="toggleChat" :class="{blurred: isOpen}">
-        <img src="@/assets/chatbot.png" alt="챗봇 버튼" />
+        <img src="@/assets/chatbot_images/chatbot.png" alt="챗봇 버튼" />
         <div class="chat-label">챗봇</div>
       </button>
   
@@ -9,7 +9,7 @@
         <div class="chat-window" v-if="isOpen">
           <div class="chat-header">
             <span class="chat-title">
-              <img src="@/assets/mini-chatbot.png" class="icon" />
+              <img src="@/assets/chatbot_images/mini-chatbot.png" class="icon" />
               맞추머니 챗봇
             </span>
           </div>
@@ -52,7 +52,7 @@
               placeholder="궁금한 내용을 입력해주세요."
             />
             <button @click="sendMessage">
-              <img src="@/assets/send-button.png" alt="전송" />
+              <img src="@/assets/chatbot_images/send-button.png" alt="전송" />
             </button>
           </div>
         </div>
@@ -99,7 +99,7 @@
   
   const sendToGPT = async (text) => {
     try {
-      const res = await axios.post('http://localhost:8080/api/chatbot', {
+      const res = await axios.post('/api/chatbot', {
         message: text,
       })
       return res.data.reply
