@@ -54,6 +54,7 @@
 
 <script setup>
 import { ref } from "vue";
+import axios from "axios";
 import BaseCard from "@/components/base/BaseCardGrey.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 
@@ -61,12 +62,34 @@ const email = ref("");
 const password = ref("");
 const keepLogin = ref(false);
 
-const handleLogin = () => {
-  console.log("로그인 시도", {
-    email: email.value,
-    password: password.value,
-    keepLogin: keepLogin.value,
-  });
+const handleLogin = async () => {
+  try {
+    const res = await axios.post(
+      "http://localhost:8080/auth/login",
+      {
+        email: email.value,
+        password: password.value,
+      },
+      {
+        withCredentials: true, // 쿠키 기반 refreshToken을 받기 위함
+      }
+    );
+    console.log("✅ 로그인 성공!", res.data);
+    const tokenData = res.data.data; // SuccessResponse 안의 data
+    // accessToken, userId, nickname 사용 가능
+    console.log("AccessToken:", tokenData.accessToken);
+    console.log("UserId:", tokenData.userId);
+    console.log("Nickname:", tokenData.nickname);
+
+    // accessToken을 로컬 스토리지 등에 저장
+    localStorage.setItem("accessToken", tokenData.accessToken);
+
+    alert(`${tokenData.nickname}님 환영합니다!`);
+    // 이후 라우터 이동이나 메인페이지 이동 가능
+  } catch (err) {
+    console.error("❌ 로그인 실패", err);
+    alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+  }
 };
 </script>
 
