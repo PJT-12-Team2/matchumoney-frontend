@@ -20,5 +20,8 @@ export const useAuthStore = defineStore("auth", {
       this.nickname = null;
       localStorage.removeItem("accessToken");
     },
+    getToken() {
+      return this.accessToken || localStorage.getItem("accessToken");
+    },
   },
 });

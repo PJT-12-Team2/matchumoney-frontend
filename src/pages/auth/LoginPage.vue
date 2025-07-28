@@ -54,38 +54,35 @@
 
 <script setup>
 import { ref } from "vue";
-import axios from "axios";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 import BaseCard from "@/components/base/BaseCardGrey.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
+import authApi from "@/api/auth"; // ✅ 새로 추가된 import
 
 const email = ref("");
 const password = ref("");
 const keepLogin = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
 
 const handleLogin = async () => {
   try {
-    const res = await axios.post(
-      "http://localhost:8080/auth/login",
-      {
-        email: email.value,
-        password: password.value,
-      },
-      {
-        withCredentials: true, // 쿠키 기반 refreshToken을 받기 위함
-      }
-    );
-    console.log("✅ 로그인 성공!", res.data);
-    const tokenData = res.data.data; // SuccessResponse 안의 data
-    // accessToken, userId, nickname 사용 가능
-    console.log("AccessToken:", tokenData.accessToken);
-    console.log("UserId:", tokenData.userId);
-    console.log("Nickname:", tokenData.nickname);
+    console.log("로그인 시도:", { email: email.value, password: password.value });
+    const response = await authApi.login({
+      email: email.value,
+      password: password.value,
+    });
 
-    // accessToken을 로컬 스토리지 등에 저장
-    localStorage.setItem("accessToken", tokenData.accessToken);
+    const tokenDto = response.result;
 
-    alert(`${tokenData.nickname}님 환영합니다!`);
-    // 이후 라우터 이동이나 메인페이지 이동 가능
+    authStore.setAuth(tokenDto);
+    console.log("AccessToken:", tokenDto.accessToken);
+    console.log("UserId:", tokenDto.userId);
+    console.log("Nickname:", tokenDto.nickname);
+
+    alert(`${tokenDto.nickname}님 환영합니다!`);
+    router.push("/");
   } catch (err) {
     console.error("❌ 로그인 실패", err);
     alert("이메일 또는 비밀번호가 올바르지 않습니다.");
