@@ -17,6 +17,18 @@ export default {
     return data;
   },
 
+  // 인증번호 전송
+  async sendVerificationEmail(email) {
+    const { data } = await api.post(`${BASE_URL}/signup/email/send`, { email });
+    return data;
+  },
+
+  // 인증번호 검증
+  async verifyEmailCode(email, code) {
+    const { data } = await api.post(`/api/auth/email/verify`, { email, code });
+    return data;
+  },
+
   // // 내 정보 조회
   // async getMyInfo() {
   //   const { data } = await api.get(`${BASE_URL}/me`);
