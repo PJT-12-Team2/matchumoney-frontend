@@ -16,7 +16,7 @@
       <nav class="header-nav">
         <!-- ① 데스크탑 메뉴 -->
         <ul class="nav-menu d-none d-lg-flex">
-          <li><RouterLink to="/recommend"  active-class="active">상품추천</RouterLink></li>
+          <li><RouterLink to="/persona/start"  active-class="active">상품추천</RouterLink></li>
           <li><RouterLink to="/asset"      active-class="active">자산관리</RouterLink></li>
           <li><RouterLink to="/card"       active-class="active">카드</RouterLink></li>
           <li><RouterLink to="/loan"       active-class="active">대출</RouterLink></li>
@@ -54,7 +54,7 @@
           </div>
 
           <!-- 🙍‍♂️ 프로필(데스크탑) -->
-          <RouterLink to="/profile" class="profile-link d-none d-md-flex">
+          <RouterLink to="/mypage" class="profile-link d-none d-md-flex">
             <img
               :src="profileImageSrc"
               alt="프로필"

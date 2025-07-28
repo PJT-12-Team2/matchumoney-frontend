@@ -5,7 +5,7 @@
         <h1 class="page-title">페르소나 추천</h1>
         <section class="persona-carousel-section">
           <h2 class="persona-carousel-title">
-            <span class="highlight">토끼형</span> 유형에게 추천되는 적금
+            <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천되는 적금
           </h2>
           <div class="carousel-deposit-list">
             <div
@@ -193,26 +193,19 @@ const getRateWithTerm = (product, type) => {
 ]
 
   
-  const carouselDeposits = ref([
-    {
-      id: 'd1',
-      name: '우리 SUPER 주거래 적금',
-      image: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
-      benefit: `- 1개월 이내 : 기본이율 X 50%\n- 1개월 초과  ~ 3개월 이내 : 기본이율 X 30%\n- 3개월 초과 : 0.1%\n금리 : 연 1% ~ 연 4%`
-    },
-    {
-      id: 'd2',
-      name: 'KB 특★한 적금',
-      image: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
-      benefit: `- 1개월 이내 : 기본이율 X 50%\n- 1개월 초과  ~ 3개월 이내 : 기본이율 X 30%\n- 3개월 초과 : 0.1%\n금리 : 연 1% ~ 연 4%`
-    },
-    {
-      id: 'd3',
-      name: 'WON 적금',
-      image: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
-      benefit: `- 1개월 이내 : 기본이율 X 50%\n- 1개월 초과  ~ 3개월 이내 : 기본이율 X 30%\n- 3개월 초과 : 0.1%\n금리 : 연 1% ~ 연 4%`
-    }
-  ])
+const userPersonaType = ref('토끼형') // 예: 로그인 사용자 정보 기반
+
+const carouselDeposits = computed(() => {
+  return allProducts.value
+    .filter(p => p.personaType === userPersonaType.value)
+    .slice(0, 3)
+    .map(p => ({
+      id: p.id,
+      name: p.name,
+      image: getBankLogo(p.bankInitial),
+      benefit: p.benefit || '혜택 정보 없음'
+    }))
+})
   
 const allProducts = ref([])
 
@@ -322,175 +315,108 @@ const formatCurrency = (val) => {
 }
   </script>
   
-  <style scoped>
-  .deposit-search-page {
-    font-family: 'Noto Sans', sans-serif;
-    background: #fff;
-    min-height: 100vh;
-  }
-  .main-content {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 40px;
-  }
-  .page-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 30px;
-    text-align: center;
-  }
-  .persona-carousel-title {
-    font-size: 22px;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  .carousel-deposit-list {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: nowrap;
-  overflow-x: auto;   /* ✅ 넘치면 스크롤 */
-    margin-bottom: 40px;
-  }
-  .carousel-deposit {
-    width: 300px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 16px;
-    cursor: pointer;
-  }
-  .carousel-deposit-image {
-    width: 100%;
-    border-radius: 8px;
-  }
-  .carousel-deposit-name {
-    font-size: 20px;
-    font-weight: bold;
-    margin: 10px 0 4px;
-  }
-  .carousel-deposit-benefit {
-    font-size: 16px;
-    color: #666;
-  }
-  .highlight {
-    font-size: 26px;
-    text-decoration: underline;
-  }
-.filter-selection-section {
-    padding: 20px;
-    border: 2px solid #ccc;
-    border-radius: 12px;
-    background: #ffffff;
-    margin-bottom: 40px;
-  }
-  .term-selector {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .term-button {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    color: gray;
-  }
-  .term-button.active {
-    color: #4caf50;
-    border-color: #4caf50;
-    font-weight: bold;
-  }
-  .amount-input-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-  }
-  .amount-input {
-    flex: 1;
-    padding: 12px;
-    font-size: 16px;
-    border: none;
-    border-bottom: 2px solid #ccc;
-  }
-  .clear-btn {
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-  }
-  .confirm-btn {
-    padding: 10px 20px;
-    background: #ccc;
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .confirm-btn:enabled {
-    background: #4caf50;
-  }
-  .info-text {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    font-size: 12px;
-    color: #999;
-    margin-top: 4px;
-  }
-  .search-results-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 24px;
-  }
-  .product-card {
-    background: #f5f7f9;
-    border-radius: 20px;
-    padding: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  .product-card:hover {
-    transform: translateY(-5px);
-  }
-  .product-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .bank-logo img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    border-radius: 10px;
-  }
-  .product-info h4 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: bold;
-  }
-  .bank-name {
-    font-size: 14px;
-    color: #888;
-  }
-  .product-details {
-    margin-top: 6px;
-    font-size: 14px;
-    color: #444;
-  }
+<style scoped>
+.deposit-search-page {
+  font-family: 'Noto Sans', sans-serif;
+  background: var(--color-white);
+  min-height: 100vh;
+}
 
-  .amount-filter-container {
-  margin: 40px 0;
+.main-content {
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: var(--spacing-2xl);
+}
+
+.page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+}
+
+.persona-carousel-title {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.carousel-deposit-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.carousel-deposit {
+  background: var(--bg-card);
+  border-radius: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.carousel-deposit-image {
+  width: 50%;
+  border-radius: var(--spacing-sm);
+}
+
+.carousel-deposit-name {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
+}
+
+.carousel-deposit-benefit {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+}
+
+.highlight {
+  font-size: var(--font-size-3xl);
+  text-decoration: underline;
+}
+
+.filter-selection-section {
+  padding: var(--spacing-xl);
+  border: 2px solid var(--border-light);
+  border-radius: var(--spacing-xl);
+  background: var(--bg-card);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.term-selector {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.term-button {
+  flex: 1;
+  text-align: center;
+  padding: var(--spacing-md);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.term-button.active {
+  color: var(--color-success);
+  border-color: var(--color-success);
+  font-weight: bold;
+}
+
+.amount-filter-container {
+  margin: var(--spacing-2xl) 0;
 }
 
 .slider-box {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--spacing-lg);
 }
 
 .amount-slider {
@@ -498,48 +424,40 @@ const formatCurrency = (val) => {
   appearance: none;
   height: 6px;
   border-radius: 3px;
-  background: #ddd;
+  background: var(--color-gray-300);
   outline: none;
 }
 
-.amount-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  background: #609966;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
+.amount-slider::-webkit-slider-thumb,
 .amount-slider::-moz-range-thumb {
   width: 18px;
   height: 18px;
-  background: #609966;
-  border: none;
+  background: var(--color-accent);
   border-radius: 50%;
   cursor: pointer;
+  border: none;
 }
 
 .slider-value {
   min-width: 120px;
   font-weight: bold;
-  font-size: 18px;
-  color: #333;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
 }
-.filter-label{
-    font-size: 18px;
+
+.filter-label {
+  font-size: var(--font-size-lg);
   font-weight: 700;
-  color: #40513b;
-  margin-bottom: 12px;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-md);
   text-align: left;
 }
+
 .bank-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  justify-content: center; /* ✅ 가운데 정렬 */
-  margin: 0 auto;           /* ✅ 중간정렬 보조 */
+  gap: var(--spacing-lg);
+  justify-content: center;
   place-items: center;
 }
 
@@ -551,93 +469,56 @@ const formatCurrency = (val) => {
   align-items: center;
   justify-content: center;
   border: 2px solid transparent;
-  border-radius:20px;
-  padding: 10px;
-  background: white;
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-md);
+  background: var(--color-white);
   transition: all 0.3s ease;
   text-align: center;
 }
 
 .bank-logo-option:hover {
   transform: translateY(-4px);
-  border-color: #ccc;
+  border-color: var(--border-medium);
 }
 
 .bank-logo-option.selected {
-  border-color: #4caf50;
-  background: #e6f4ea;
+  border-color: var(--color-success);
+  background: var(--color-success-light);
 }
-
-
 
 .bank-label {
-  font-size: 14px;
-  color: #333;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
   font-weight: 600;
-}
-.bank-button {
-  border: 2px solid transparent;
-  border-radius: 12px;
-  background-color: transparent;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.bank-button:hover {
-  border-color: #4caf50;
-  background-color: #e6f4ea;
 }
 
 .bank-logo-img {
   width: 110px;
   height: 110px;
-  object-fit: contain;     /* 이미지 비율 유지하면서 여백 채우기 */
-  background-color: white; /* 필요시 배경 추가 */
-  border-radius: 50%;
-  padding: 4px;             /* 이미지 안 잘리게 */
-}
-.clickable-logo {
-  width: 80px;
-  height: 80px;
   object-fit: contain;
-  border-radius: 12px;
+  background-color: var(--color-white);
+  border-radius: 50%;
+  padding: 4px;
+}
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xl);
+}
+
+.product-card {
+  background: var(--bg-card);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
 }
 
-.clickable-logo:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-}
-.product-interest-rate {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.product-card:hover {
+  transform: translateY(-5px);
 }
 
-.rate-max {
-  font-size: 18px;
-  font-weight: bold;
-  color: #2e7d32;
-}
-
-.rate-base {
-  font-size: 16px;
-  color: #666;
-  margin-top: 2px;
-}
-
-.highlight-max {
-  color: #2e7d32;
-  font-weight: 700;
-}
-
-.highlight-base {
-  color: #888;
-  font-weight: 600;
-}
 .card-content {
   display: flex;
   align-items: center;
@@ -647,7 +528,7 @@ const formatCurrency = (val) => {
 .product-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-md);
 }
 
 .product-logo {
@@ -663,9 +544,14 @@ const formatCurrency = (val) => {
 }
 
 .product-name {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
-  color: #222;
+  color: var(--text-primary);
+}
+
+.bank-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
 }
 
 .product-right {
@@ -676,26 +562,64 @@ const formatCurrency = (val) => {
 }
 
 .rate-max {
-  font-size: 16px;
+  font-size: var(--font-size-base);
   font-weight: 600;
-  color: #2e7d32;
+  color: var(--color-success-dark);
 }
 
 .rate-base {
-  font-size: 15px;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
 .highlight-max {
-  color: #2e7d32;
+  color: var(--color-success-dark);
   font-weight: 700;
 }
 
 .highlight-base {
-  color: #888;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
+@media (max-width: 768px) {
+  .carousel-deposit-list {
+    grid-template-columns: 1fr;
+  }
 
-  </style>
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .term-selector {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .term-button {
+    flex: 0 0 auto;
+    border-radius: var(--spacing-sm);
+    border: 1px solid var(--border-light);
+    background: var(--bg-card);
+  }
+
+  .bank-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    justify-content: flex-start;
+  }
+
+  .bank-logo-option {
+    flex: 0 0 auto;
+    width: 100px;
+    height: auto;
+  }
+
+  .carousel-deposit-name,
+  .carousel-deposit-benefit {
+    font-size: var(--font-size-sm);
+  }
+}
+</style>
