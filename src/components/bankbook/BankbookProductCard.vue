@@ -11,9 +11,16 @@
     <div class="product-card__body" @click="onClick">
       <div class="product-card__logo-box">
         <img
-          src="../../assets/bank-Logos/BK_HANA_Profile.png"
+          :src="saving.company_image"
           alt="logo"
           class="product-card__logo"
+          v-if="saving.company_image"
+        />
+        <img
+          src="../../assets/Logo_dis.png"
+          alt="logo"
+          class="product-card__logo"
+          v-else
         />
         <CompareButton @click="onCompareClick" />
       </div>
@@ -111,7 +118,6 @@ const onClick = () => {
   align-items: center;
   gap: var(--spacing-xs);
   width: 24%;
-  height: 100%;
   text-align: center;
 }
 
@@ -119,7 +125,8 @@ const onClick = () => {
   width: 100%;
   object-fit: contain;
   border-radius: 50%;
-  margin: auto;
+
+  padding: var(--spacing-md);
 }
 
 .product-card__info {
