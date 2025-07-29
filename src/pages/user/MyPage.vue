@@ -85,7 +85,7 @@ function handleLogout() {
 }
 
 function handleDeleteAccount() {
-  console.log("회원 탈퇴 클릭");
+  // console.log("회원 탈퇴 클릭");
   // 실제 탈퇴 API 연동 필요
 }
 </script>

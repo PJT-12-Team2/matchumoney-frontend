@@ -68,7 +68,7 @@ const router = useRouter();
 
 const handleLogin = async () => {
   try {
-    console.log("로그인 시도:", { email: email.value, password: password.value });
+    // console.log("로그인 시도:", { email: email.value, password: password.value });
     const response = await authApi.login({
       email: email.value,
       password: password.value,
@@ -77,14 +77,14 @@ const handleLogin = async () => {
     const tokenDto = response.result;
 
     authStore.setAuth(tokenDto);
-    console.log("AccessToken:", tokenDto.accessToken);
-    console.log("UserId:", tokenDto.userId);
-    console.log("Nickname:", tokenDto.nickname);
+    // console.log("AccessToken:", tokenDto.accessToken);
+    // console.log("UserId:", tokenDto.userId);
+    // console.log("Nickname:", tokenDto.nickname);
 
     alert(`${tokenDto.nickname}님 환영합니다!`);
     router.push("/");
   } catch (err) {
-    console.error("❌ 로그인 실패", err);
+    // console.error("❌ 로그인 실패", err);
     alert("이메일 또는 비밀번호가 올바르지 않습니다.");
   }
 };

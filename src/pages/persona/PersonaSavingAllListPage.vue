@@ -16,7 +16,10 @@
             >
               <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
               <div class="carousel-deposit-name">{{ deposit.name }}</div>
-              <div class="carousel-deposit-benefit" v-html="deposit.benefit.replace(/\n/g, '<br>')"></div>
+              <div class="carousel-deposit-rates-inline">
+                <span>최고 금리: <strong>{{ deposit.maxRate }}</strong></span>
+                <span>기본 금리: <strong>{{ deposit.baseRate }}</strong></span>
+              </div>
             </div>
           </div>
         </section>
@@ -33,7 +36,7 @@
             <div
               v-for="(term, idx) in terms"
               :key="term.value"
-              :class="['term-button', { active: filters.term === term.value }]"
+              :class="['term-button', { active: filters?.term === term.value }]"
               @click="filters.term = term.value"
             >
               {{ term.label }}
@@ -60,8 +63,8 @@
     <div
       v-for="bank in bankOptions"
       :key="bank.name"
-      :class="['bank-logo-option', { selected: filters.bank === bank.name }]"
-      @click="filters.bank = (filters.bank === bank.name ? null : bank.name)"
+      :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
+      @click="filters.bank = (filters?.bank === bank.name ? null : bank.name)"
     >
       <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
       <div class="bank-label">{{ bank.name }}</div>
@@ -89,26 +92,20 @@
   class="product-card"
   @click="selectProduct(product)"
 >
-  <div class="card-content">
-    <!-- 왼쪽: 은행 로고 + 이름 + 상품명 -->
-    <div class="product-left">
-      <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="product-logo" />
-      <div class="product-info">
-        <div class="bank-name">{{ product.bank }}</div>
-        <div class="product-name">{{ product.name }}</div>
-      </div>
+  <div class="product-card-horizontal">
+    <div class="bank-logo-container">
+      <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
     </div>
-
-    <!-- 오른쪽: 금리 정보 -->
-<div class="product-right">
-  <div class="rate-max">
-    최고 <span class="highlight-max">{{ getRateWithTerm(product, 'max') }}</span>
-  </div>
-  <div class="rate-base">
-    기본 <span class="highlight-base">{{ getRateWithTerm(product, 'base') }}</span>
-  </div>
-</div>
-
+    <div class="product-name-block">
+      <div class="bank-name-bold">{{ product.bank }}</div>
+      <div class="product-name-bold">{{ product.name }}</div>
+    </div>
+    <div class="product-info-block">
+      <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
+      <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
+      <div class="rate-line">최소 가입 금액 : 100만원</div>
+      <div class="rate-line">기준 기간 : 12개월</div>
+    </div>
   </div>
 </div>
 
@@ -140,8 +137,8 @@ import { onMounted } from 'vue'
   const showSearchResults = ref(false)
   const selectedAmount = ref(10000)
 
-const getRate = (product, type) => {
-  const selectedTerm = filters.value.term
+  const getRate = (product, type) => {
+    const selectedTerm = filters.value?.term
 
   if (!product.savingOptions || product.savingOptions.length === 0) return '-%'
 
@@ -161,7 +158,7 @@ const getRate = (product, type) => {
 const getRateWithTerm = (product, type) => {
   if (!product.savingOptions || product.savingOptions.length === 0) return '-%'
 
-  const selectedTerm = filters.value.term
+  const selectedTerm = filters.value?.term
 
   if (selectedTerm === '전체') {
     const sorted = [...product.savingOptions].sort((a, b) => {
@@ -170,16 +167,19 @@ const getRateWithTerm = (product, type) => {
       return valB - valA
     })
     const best = sorted[0]
-    return `${(type === 'base' ? best.intrRate : best.intrRate2).toFixed(2)}% (${best.saveTrm}개월)`
+    if (!best) return '-%'
+    const val = type === 'base' ? best.intrRate : best.intrRate2
+    return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
   }
 
   const match = product.savingOptions.find(opt => opt.saveTrm === selectedTerm)
   if (!match) return '-%'
-  return `${(type === 'base' ? match.intrRate : match.intrRate2).toFixed(2)}% (${match.saveTrm}개월)`
+  const value = type === 'base' ? match.intrRate : match.intrRate2
+  return typeof value === 'number' ? `${value.toFixed(2)}%` : '-%'
 }
 
   const filters = ref({
-    term: '6',
+    term: '12',
     amount: null,
   })
   filters.value.bank = null
@@ -192,45 +192,77 @@ const getRateWithTerm = (product, type) => {
   { label: '36개월', value: '36' }
 ]
 
-  
-const userPersonaType = ref('토끼형') // 예: 로그인 사용자 정보 기반
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const userPersonaType = ref('') // default 빈값
+
+const get12MonthRate = (product, type) => {
+  if (!product.savingOptions || product.savingOptions.length === 0) return '-%'
+  const match = product.savingOptions.find(opt => opt.saveTrm === '12')
+  if (!match) return '-%'
+  const val = type === 'base' ? match.intrRate : match.intrRate2
+  return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
+}
 
 const carouselDeposits = computed(() => {
   return allProducts.value
     .filter(p => p.personaType === userPersonaType.value)
     .slice(0, 3)
-    .map(p => ({
-      id: p.id,
-      name: p.name,
-      image: getBankLogo(p.bankInitial),
-      benefit: p.benefit || '혜택 정보 없음'
-    }))
+    .map(p => {
+      return {
+        id: p.id,
+        name: p.name,
+        image: getBankLogo(p.bankInitial),
+        maxRate: get12MonthRate(p, 'max'),
+        baseRate: get12MonthRate(p, 'base')
+      }
+    })
 })
   
 const allProducts = ref([])
 
 onMounted(async () => {
+  const personaCode = route.query.persona_id
   try {
-    const res = await axios.post('/api/saving/search', {
+    const personaRes = await axios.get(`/api/persona/${personaCode}`)
+    userPersonaType.value = personaRes.data.nameKo || '토끼형'
+  } catch (err) {
+    console.error('❌ 페르소나 정보 로딩 실패:', err)
+    userPersonaType.value = '토끼형'
+  }
+
+  try {
+    // 1. 전체 적금 리스트
+    const allRes = await axios.post('/api/saving/search', {
       korCoNm: '',
       maxLimit: null
     })
-    console.log('🎯 적금 API 응답:', res.data)
-    allProducts.value = res.data.map(item => ({
-  id: item.savingProductId,
-  name: item.finPrdtNm,
-  bank: item.korCoNm,
-  bankInitial: getBankInitial(item.korCoNm),
-  savingOptions: item.savingOptions,
-  baseRate: item.intrRate?.toFixed(2) ?? '-',
-  maxRate: item.intrRate2?.toFixed(2) ?? '-',
-  image: item.image || ''
-}))
+    const fullList = allRes.data.map(item => ({
+      id: item.savingProductId,
+      name: item.finPrdtNm,
+      bank: item.korCoNm,
+      bankInitial: getBankInitial(item.korCoNm),
+      savingOptions: item.savingOptions,
+      baseRate: item.intrRate?.toFixed(2) ?? '-',
+      maxRate: item.intrRate2?.toFixed(2) ?? '-',
+      image: item.image || '',
+      personaType: item.personaType || ''
+    }))
+    allProducts.value = fullList
 
-
-
+    // 2. 페르소나 추천 반영
+    const recRes = await axios.get('/api/persona-saving/recommendation', {
+      params: { personaId: personaCode }
+    })
+    const recommendedIds = recRes.data.map(d => d.savingProductId)
+    fullList.forEach(p => {
+      if (recommendedIds.includes(p.id)) {
+        p.personaType = userPersonaType.value
+      }
+    })
   } catch (err) {
-    console.error('❌ 적금 데이터 로딩 실패:', err)
+    console.error('❌ 적금 상품 불러오기 실패:', err)
   }
 })
 
@@ -285,17 +317,17 @@ const selectProduct = (product) => {
 const filteredProducts = computed(() => {
   let result = [...allProducts.value]
 
-  // 기간 필터
-  if (filters.value.term !== '전체') {
+  // 기간 필터: "전체"가 아닌 다른 값이 선택된 경우에만 필터링
+  if (filters.value?.term && filters.value?.term !== '전체') {
     result = result.filter(p =>
-      p.savingOptions?.some(opt => opt.saveTrm === filters.value.term)
+      p.savingOptions?.some(opt => String(opt.saveTrm) === filters.value?.term)
     )
   }
 
   // 은행 필터
-  if (filters.value.bank && filters.value.bank !== '기타') {
-    result = result.filter(p => p.bank.includes(filters.value.bank))
-  } else if (filters.value.bank === '기타') {
+  if (filters.value?.bank && filters.value?.bank !== '기타') {
+    result = result.filter(p => p.bank.includes(filters.value?.bank))
+  } else if (filters.value?.bank === '기타') {
     result = result.filter(
       p =>
         !['국민은행', '신한은행', '우리은행', '하나은행', '카카오뱅크', '토스뱅크', '농협은행'].some(bank =>
@@ -303,6 +335,13 @@ const filteredProducts = computed(() => {
         )
     )
   }
+
+  // 🔽 최대 금리 기준 내림차순 정렬
+  result.sort((a, b) => {
+    const aMax = Math.max(...(a.savingOptions?.map(opt => opt.intrRate2) || [0]))
+    const bMax = Math.max(...(b.savingOptions?.map(opt => opt.intrRate2) || [0]))
+    return bMax - aMax
+  })
 
   return result
 })
@@ -342,10 +381,10 @@ const formatCurrency = (val) => {
 }
 
 .carousel-deposit-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-2xl);
+  overflow-x: auto;
 }
 
 .carousel-deposit {
@@ -507,80 +546,98 @@ const formatCurrency = (val) => {
   gap: var(--spacing-xl);
 }
 
+/* ---- Product Card Horizontal Layout ---- */
 .product-card {
-  background: var(--bg-card);
-  border-radius: var(--spacing-xl);
-  padding: var(--spacing-xl);
+  background: var(--color-light);
+  border-radius: 16px;
+  padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-card);
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-accent);
 }
 
-.card-content {
+/* --- 3-column product card horizontal --- */
+.product-card-horizontal {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-lg);
 }
 
-.product-left {
+/* Left: logo */
+.bank-logo-container {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
 }
 
-.product-logo {
-  width: 60px;
-  height: 60px;
+.bank-logo-round {
+  width: 5rem;
+  height: 5rem;
   border-radius: 50%;
   object-fit: contain;
+  background: var(--color-white);
+  box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.04);
+  border: 0.1rem solid var(--color-gray-200);
 }
 
-.product-info {
+/* Center: name block */
+.product-name-block {
+  flex: 1;
+  padding: 0 var(--spacing-md);
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
-.product-name {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.bank-name {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-.product-right {
+/* Right: info block */
+.product-info-block {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  min-width: 90px;
+  gap: 0.1rem;
 }
 
-.rate-max {
+.bank-name-bold {
   font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--color-success-dark);
+  font-weight: 700;
+  color: #1e2b4e; /* strong navy blue */
+  margin-bottom: 0.1rem;
 }
 
-.rate-base {
+.product-name-bold {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.rate-line {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin-top: 2px;
+  margin-bottom: 0.1rem;
 }
 
-.highlight-max {
-  color: var(--color-success-dark);
-  font-weight: 700;
+.label-bold {
+  font-weight: bold;
+  color: var(--color-dark);
 }
 
-.highlight-base {
-  color: var(--text-muted);
-  font-weight: 600;
+.highlight-rate {
+  font-size: 18px;
+  color: #609966;
+  font-weight: bold;
 }
 
 @media (max-width: 768px) {
@@ -592,34 +649,45 @@ const formatCurrency = (val) => {
     grid-template-columns: 1fr;
   }
 
-  .term-selector {
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-  }
-
-  .term-button {
-    flex: 0 0 auto;
-    border-radius: var(--spacing-sm);
-    border: 1px solid var(--border-light);
-    background: var(--bg-card);
-  }
-
   .bank-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-    justify-content: flex-start;
-  }
-
-  .bank-logo-option {
-    flex: 0 0 auto;
-    width: 100px;
-    height: auto;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .carousel-deposit-name,
   .carousel-deposit-benefit {
     font-size: var(--font-size-sm);
   }
+  .product-card-horizontal {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+  .bank-logo-container {
+    width: 4rem;
+    height: 4rem;
+  }
+  .bank-logo-round {
+    width: 4rem;
+    height: 4rem;
+  }
+  .product-info-block {
+    align-items: flex-start;
+    width: 100%;
+  }
+}
+</style>
+<style scoped>
+/* .carousel-deposit-rates {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  text-align: center;
+} */
+.carousel-deposit-rates-inline {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-sm);
 }
 </style>
