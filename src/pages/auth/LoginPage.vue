@@ -6,7 +6,7 @@
     </div>
 
     <!-- BaseCardGrey 적용 -->
-    <BaseCard class="login-card">
+    <BaseCardGrey class="login-card">
       <template #content>
         <h1 class="login-title">로그인</h1>
 
@@ -48,7 +48,7 @@
           <a href="/signup">회원가입 하러가기</a>
         </div>
       </template>
-    </BaseCard>
+    </BaseCardGrey>
   </div>
 </template>
 
@@ -56,7 +56,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import BaseCard from "@/components/base/BaseCardGrey.vue";
+import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import authApi from "@/api/auth"; // ✅ 새로 추가된 import
 
