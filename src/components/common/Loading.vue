@@ -18,7 +18,6 @@ const props = defineProps({
   width: 100%;
   height: 100%;
   background-color: var(--color-modal-bg);
-  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
