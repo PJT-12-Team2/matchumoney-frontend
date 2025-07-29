@@ -7,30 +7,25 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue';
+import { computed, defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
   modelValue: {
-    type: Boolean,
+    type: Boolean, // "true" / "false" 문자열로 전달됨
     required: true,
   },
 });
 
 const emit = defineEmits(['update:modelValue']);
 
-const isActive = ref(props.modelValue);
-
-watch(
-  () => props.modelValue,
-  (val) => {
-    isActive.value = val;
-  }
-);
+const isActive = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val), // ✅ 올바른 setter
+});
 
 const toggle = () => {
   isActive.value = !isActive.value;
-  console.log('즐겨찾기 변경');
-  emit('update:modelValue', isActive.value);
+  console.log('즐겨찾기 변경:', isActive.value);
 };
 </script>
 
