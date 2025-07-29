@@ -2,10 +2,9 @@ import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 
 const instance = axios.create({
-  timeout: 300000, //30초
-  //  codef 적금 불러오기 시간초과 발생 방지를 위해 길게 설정
+  baseURL: '/api', // ✅ Vite 프록시 경로로 설정
+  timeout: 300000,
 });
-
 instance.interceptors.request.use(
   (config) => {
     // 토큰을 Pinia 스토어에서 가져오기

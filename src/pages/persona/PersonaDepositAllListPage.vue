@@ -5,7 +5,7 @@
         <h1 class="page-title">페르소나 추천</h1>
         <section class="persona-carousel-section">
           <h2 class="persona-carousel-title">
-            <span class="highlight">토끼형</span> 유형에게 추천되는 예금
+            <span class="highlight">{{ personaName }}</span> 유형에게 추천되는 예금
           </h2>
           <div class="carousel-deposit-list">
             <div
@@ -97,7 +97,7 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   import axios from 'axios'
   
   const loading = ref(false)
@@ -117,26 +117,31 @@
     { label: '24개월', value: '24개월' },
   ]
   
-  const carouselDeposits = ref([
-    {
-      id: 'd1',
-      name: 'KB Star 정기예금',
-      image: new URL('@/assets/shinhan.jpeg', import.meta.url).href,
-      benefit: `- 1개월 이내 : 기본이율 X 50%\n- 1개월 초과 ~ 3개월 이내 : 기본이율 X 30%\n- 3개월 초과 : 0.1%\n가입금액 : 1백만원 이상`
-    },
-    {
-      id: 'd2',
-      name: '쏠편한 정기예금',
-      image: new URL('@/assets/hana.jpg', import.meta.url).href,
-      benefit: `- 1개월 이하: (일반) 정기예금 기본금리 1/2\n- 1개월 초과~6개월 이하: 기본금리의 1/4\n- 6개월 초과: 0.10%\n가입금액 : 1만원 이상`
-    },
-    {
-      id: 'd3',
-      name: 'WON플러스예금',
-      image: new URL('@/assets/woori.jpg', import.meta.url).href,
-      benefit: `- 1개월이내 : 만기시점약정이율×50%\n- 6개월이내: 만기시점약정이율×30%\n- 6개월초과 : ×20%\n가입금액 : 1만원 이상`
+  const userPersonaId = ref(null)
+  const carouselDeposits = ref([])
+  const personaName = ref('')
+
+  onMounted(async () => {
+    try {
+      // 사용자 정보에서 persona_id를 가져오는 API 호출
+      const userRes = await axios.get('/api/user/info')
+      userPersonaId.value = userRes.data.persona_id
+
+      // 해당 persona_id로 추천 saving_product 리스트 조회
+      const depositRes = await axios.get('/api/saving-products/recommendation', {
+        params: {
+          persona_id: userPersonaId.value
+        }
+      })
+      carouselDeposits.value = depositRes.data.slice(0, 3) // 최대 3개만 노출
+
+      // persona name 가져오기
+      const personaRes = await axios.get(`/api/persona-types/${userPersonaId.value}`)
+      personaName.value = personaRes.data.name
+    } catch (err) {
+      console.error('추천 예금 로딩 실패:', err)
     }
-  ])
+  })
   
   const allProducts = ref([
     {

@@ -109,7 +109,6 @@ onBeforeUnmount(() => {
   
   <style scoped>
   .card-recommendation-wrapper {
-    background-color: #f9f9f9;
     font-family: 'Noto Sans KR', sans-serif;
     min-height: 100vh;
     display: flex;

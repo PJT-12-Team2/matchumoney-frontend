@@ -5,12 +5,20 @@ import Footer from './Footer.vue';
 </script>
 
 <template>
-  <div class="container">
-    <Header/>
-    <div class="content my-5 px-3">
+  <div class="default-layout">
+    <Header />
+    <div class="content">
       <slot></slot>
       <!-- 페이지 컨텐츠가 들어갈 슬롯 -->
     </div>
-    <Footer/>
+    <Footer />
   </div>
 </template>
+
+<style scoped>
+.default-layout {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-xl) var(--spacing-md);
+}
+</style>

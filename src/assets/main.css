@@ -9,6 +9,7 @@
 
 /* CSS 변수 정의 */
 :root {
+  --header-height: 4.5rem;
   /* 메인 색상 팔레트 */
   --color-primary: #edf1d6; /* 연한 베이지/그린 */
   --color-secondary: #9dc08b; /* 연한 그린 */
@@ -178,8 +179,8 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden; /* ✅ 좌우 스크롤 방지 */
-  
+  overflow-x: hidden; /* ✅ 좌우 스크롤 방지 */
+  padding-top: var(--header-height);
 }
 
 /* 타이포그래피 */

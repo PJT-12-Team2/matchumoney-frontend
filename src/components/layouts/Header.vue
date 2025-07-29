@@ -1,4 +1,3 @@
-<!-- src/components/MainHeader.vue -->
 <template>
   <!-- 🟢 상단 헤더 -->
   <header class="header">
@@ -59,7 +58,7 @@
               :src="profileImageSrc"
               alt="프로필"
               class="rounded-circle"
-              style="width: 36px; height: 36px; object-fit: cover"
+              style="width: 2.25rem; height: 2.25rem; object-fit: cover"
             />
           </RouterLink>
 
@@ -126,34 +125,48 @@ onMounted(() => window.addEventListener('keydown', onKey))
 @import "@/assets/main.css";          /* 필요하면 경로 수정 */
 
 /* ─────────── 헤더 레이아웃 ─────────── */
-.header { background:#40513b; color:#fff; padding:20px 40px; position:sticky; top:0; z-index:100; }
-.header-content { display:flex; justify-content:space-between; align-items:center; max-width:1160px; margin:0 auto; }
-
+.header {
+  background: #40513b;
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 0;
+}
+.header-content {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width: 100%;
+  padding: 1.25rem 2.5rem; /* horizontal padding moved here */
+}
 /* 로고 */
-.logo-section { display:flex; align-items:center; gap:15px; }
-.logo { width:45px; height:45px; background:#609966; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; }
-.app-name { font-weight:700; font-size:24px; }
+.logo-section { display:flex; align-items:center; gap:0.9375rem; }
+.logo { width:2.8125rem; height:2.8125rem; background:#609966; border-radius:0.75rem; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.125rem; }
+.app-name { font-weight:700; font-size:1.5rem; }
 
 /* 메뉴 */
-.header-nav   { display:flex; align-items:center; gap:30px; justify-content: flex-end; }
-.nav-menu     { display:flex; gap:25px; list-style:none; margin:0; padding:0; }
-.nav-menu a   { color:inherit; padding:8px 16px; border-radius:8px; transition:background .3s; }
+.header-nav   { display:flex; align-items:center; gap:1.875rem; justify-content: flex-end; }
+.nav-menu     { display:flex; gap:1.5625rem; list-style:none; margin:0; padding:0; }
+.nav-menu a   { color:inherit; padding:0.5rem 1rem; border-radius:0.5rem; transition:background .3s; }
 .nav-menu a:hover { background:rgba(255,255,255,.1); }
 .nav-menu .active { background:rgba(255,255,255,.2); font-weight:700; }
 
 /* 액션 영역 */
-.header-actions { display:flex; align-items:center; gap:20px; }
+.header-actions { display:flex; align-items:center; gap:1.25rem; }
 
 /* 알림 */
-.notification      { position:relative; font-size:20px; cursor:pointer; }
-.notification-dot  { position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:#ff0000; border-radius:50%; }
-.noti-dropdown     { min-width:220px; max-height:240px; overflow-y:auto; font-size:.85rem; }
+.notification      { position:relative; font-size:1.25rem; cursor:pointer; }
+.notification-dot  { position:absolute; top:-0.125rem; right:-0.125rem; width:0.5rem; height:0.5rem; background:#ff0000; border-radius:50%; }
+.noti-dropdown     { min-width:13.75rem; max-height:15rem; overflow-y:auto; font-size:.85rem; }
 
 /* 프로필 */
 .profile-link { display:flex; align-items:center; }
 
 /* 로그인 버튼(모바일) */
-.login-btn { background:transparent; border:2px solid rgba(255,255,255,.3); color:#fff; padding:8px 16px; border-radius:25px; font-size:14px; font-weight:600; }
+.login-btn { background:transparent; border:0.125rem solid rgba(255,255,255,.3); color:#fff; padding:0.5rem 1rem; border-radius:1.5625rem; font-size:0.875rem; font-weight:600; }
 
 /* 햄버거 버튼(모바일) */
 .btn.fs-4 { line-height:1; }
@@ -162,12 +175,15 @@ onMounted(() => window.addEventListener('keydown', onKey))
 @media (max-width: 992px) { /* lg 미만 */
   .nav-menu { display:none; }
 }
-/* MainHeader.vue <style scoped> 맨 아래에 추가 */
+/* MainHeader.vue <styl scoped> 맨 아래에 추가 */
 .notification .noti-dropdown {
   background-color: #fff;           /* 투명 → 흰 배경 */
-  box-shadow: 0 8px 16px rgba(0,0,0,.12); /* 그림자 부드럽게 단일화 */
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.12); /* 그림자 부드럽게 단일화 */
   backdrop-filter: none;            /* 혹시 상속됐다면 해제 */
   right: 0; left: auto;             /* 아이콘 오른쪽 정렬 */
 }
-.logo-img { width:45px; height:45px; object-fit:contain; border-radius:12px; }
+.logo-img { width:2.8125rem; height:2.8125rem; object-fit:contain; border-radius:0.75rem; }
+
+/* Add margin below header to visually separate from content, if content is not offset by padding */
+
 </style>
