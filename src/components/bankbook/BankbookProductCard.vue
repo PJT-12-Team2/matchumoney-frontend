@@ -11,7 +11,7 @@
     <div class="product-card__body" @click="onClick">
       <div class="product-card__logo-box">
         <img
-          :src="saving.company_image"
+          src="../../assets/bankLogo_images/BK_HANA_Profile.png"
           alt="logo"
           class="product-card__logo"
           v-if="saving.company_image"
