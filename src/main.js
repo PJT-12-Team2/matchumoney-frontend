@@ -1,5 +1,7 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
+import { useAuthStore } from "@/stores/auth";
+
 import router from "./router";
 import App from "./App.vue";
 
@@ -13,6 +15,14 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 /* ─── 3. 앱 생성 ─── */
 const app = createApp(App);
-app.use(createPinia());
+const pinia = createPinia();
+app.use(pinia);
+
+const token = localStorage.getItem("accessToken");
+if (token) {
+  const authStore = useAuthStore();
+  authStore.accessToken = token;
+}
+
 app.use(router);
 app.mount("#app");

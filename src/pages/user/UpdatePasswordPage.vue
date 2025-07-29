@@ -66,6 +66,8 @@ import BaseButton from "@/components/base/BaseButton.vue";
 import "@/assets/main.css";
 import { ref, watch } from "vue";
 
+import userApi from "@/api/user";
+
 const currentPw = ref("");
 const newPw = ref("");
 const confirmPw = ref("");
@@ -80,17 +82,32 @@ watch([newPw, confirmPw], ([newVal, confirmVal]) => {
   }
 });
 
-const handleChangePassword = () => {
+const handleChangePassword = async () => {
   if (newPw.value !== confirmPw.value) {
     errorMessage.value = "비밀번호가 일치하지 않습니다";
     return;
   }
-  errorMessage.value = "";
-  console.log("비밀번호 변경 요청", {
-    current: currentPw.value,
-    new: newPw.value,
-  });
-  // TODO: 실제 API 요청
+
+  try {
+    await userApi.updatePassword({
+      currentPassword: currentPw.value,
+      newPassword: newPw.value,
+      confirmPassword: confirmPw.value,
+    });
+    alert("비밀번호가 성공적으로 변경되었습니다.");
+    currentPw.value = "";
+    newPw.value = "";
+    confirmPw.value = "";
+  } catch (err) {
+    const msg = err.response?.data?.message;
+    if (msg === "비밀번호가 일치하지 않습니다") {
+      errorMessage.value = msg;
+    } else {
+      alert(msg || "비밀번호 변경에 실패했습니다.");
+      errorMessage.value = ""; // Reset error message for other cases
+    }
+    console.error("비밀번호 변경 실패:", err);
+  }
 };
 </script>
 

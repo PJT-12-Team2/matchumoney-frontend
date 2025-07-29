@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios from "axios";
+import { useAuthStore } from "@/stores/auth";
 
 const instance = axios.create({
   baseURL: '/api', // ✅ Vite 프록시 경로로 설정
@@ -6,16 +7,12 @@ const instance = axios.create({
 });
 instance.interceptors.request.use(
   (config) => {
-    // const { getToken } = useAuthStore();
-    // const token = getToken();
-    const token =
-      'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoZW9uZ3Nlb2IxMUBnbWFpbC5jb20iLCJpYXQiOjE3NTM2ODg0MzgsImV4cCI6MTc1MzY4ODczOH0.u5n5Dvb0GiJiWOe1r2EzUQmNZnXJ1Zwami1bmDjlXQk';
-    //실제 로그인 토큰 값으로 변경
-    //현재 프론트 로그인 미구현으로 임시 이용
+    // 토큰을 Pinia 스토어에서 가져오기
+    const token = useAuthStore().getToken();
 
     //토큰 값 있으면 헤더에 자동 추가
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },

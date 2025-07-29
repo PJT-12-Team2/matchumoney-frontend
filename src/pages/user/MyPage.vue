@@ -5,30 +5,35 @@
     <main class="content flex flex-column align-center mt-5">
       <!-- 프로필 이미지 -->
       <div class="profile-img">
-        <span class="user-icon">👤</span>
+        <template v-if="user?.profileImageUrl">
+          <img :src="user.profileImageUrl" alt="프로필 이미지" class="profile-picture" />
+        </template>
+        <template v-else>
+          <span class="user-icon">👤</span>
+        </template>
       </div>
 
       <!-- 사용자 정보 리스트 -->
       <div class="info-list card mt-5">
         <div class="info-item">
           <span class="label text-dark">이메일</span>
-          <span class="value text-secondary">abcd1234@gmail.com</span>
+          <span class="value text-secondary">{{ user?.email }}</span>
         </div>
         <router-link to="/mypage/update" class="info-item clickable">
           <span class="label text-dark">닉네임</span>
-          <span class="value text-secondary">홍길동</span>
+          <span class="value text-secondary">{{ user?.nickname }}</span>
           <span class="arrow text-accent">></span>
         </router-link>
 
         <router-link to="/mypage/update" class="info-item clickable">
           <span class="label text-dark">성별</span>
-          <span class="value text-secondary">남성</span>
+          <span class="value text-secondary">{{ user?.gender }}</span>
           <span class="arrow text-accent">></span>
         </router-link>
 
         <router-link to="/mypage/update" class="info-item clickable">
           <span class="label text-dark">생년월일</span>
-          <span class="value text-secondary">2001.12.03</span>
+          <span class="value text-secondary">{{ formattedBirthDate }}</span>
           <span class="arrow text-accent">></span>
         </router-link>
 
@@ -53,22 +58,36 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "MyPage",
-  methods: {
-    handleLogout() {
-      // 로그아웃 로직
-      console.log("로그아웃 클릭");
-      // 예시: this.$router.push('/login');
-    },
-    handleDeleteAccount() {
-      // 회원 탈퇴 로직
-      console.log("회원 탈퇴 클릭");
-      // 예시: API 호출 후 메인 페이지로 이동
-    },
-  },
-};
+<script setup>
+import { ref, onMounted, computed } from "vue";
+import userApi from "@/api/user";
+
+const user = ref(null);
+
+const formattedBirthDate = computed(() => {
+  if (!user.value?.birthDate) return "";
+  const date = new Date(user.value.birthDate);
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+});
+
+onMounted(async () => {
+  try {
+    const res = await userApi.getMyInfo();
+    user.value = res.result;
+  } catch (err) {
+    console.error("내 정보 조회 실패", err);
+  }
+});
+
+function handleLogout() {
+  // Assuming logout logic is handled elsewhere or needs to be added
+  window.location.href = "/login";
+}
+
+function handleDeleteAccount() {
+  console.log("회원 탈퇴 클릭");
+  // 실제 탈퇴 API 연동 필요
+}
 </script>
 
 <style scoped>
@@ -93,6 +112,13 @@ a.info-item {
   align-items: center;
   font-size: 64px;
   background-color: var(--color-primary-10);
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .info-list {
