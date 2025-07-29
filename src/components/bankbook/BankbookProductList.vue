@@ -27,26 +27,13 @@
 }
 </style>
 <script setup>
-import { ref, watch, defineProps } from 'vue';
+import { defineProps } from 'vue';
 import BankbookProductCard from './BankbookProductCard.vue';
-import savingApi from '@/api/savings';
+
 const props = defineProps({
   selectedId: String,
-});
-const savings = ref([]);
-
-watch(
-  () => props.selectedId,
-  async (newId) => {
-    if (newId == -1) {
-      savings.value = [];
-    } else if (newId) {
-      const data = await savingApi.getRecommendSavings(newId);
-      savings.value = data;
-
-      console.log(savings.value);
-    }
+  savings: {
+    type: Array,
   },
-  { immediate: true } // 초기 selectedId 값 있을 때도 실행됨
-);
+});
 </script>

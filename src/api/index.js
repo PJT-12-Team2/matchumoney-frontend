@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios from "axios";
+import { useAuthStore } from "@/stores/auth";
 
 const instance = axios.create({
   timeout: 300000, //30초
@@ -7,16 +8,12 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
   (config) => {
-    // const { getToken } = useAuthStore();
-    // const token = getToken();
-    const token =
-      'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYW1waW5rNDMyMkBuYXZlci5jb20iLCJpYXQiOjE3NTM0NDE3MDAsImV4cCI6MTc1MzQ0MjAwMH0.C0rTbtyGBPwovGljNjVxXkia3dbnoHHUWzcQYZxHPf8';
-    //실제 로그인 토큰 값으로 변경
-    //현재 프론트 로그인 미구현으로 임시 이용
+    // 토큰을 Pinia 스토어에서 가져오기
+    const token = useAuthStore().getToken();
 
     //토큰 값 있으면 헤더에 자동 추가
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
