@@ -1,6 +1,6 @@
 import api from "@/api";
 
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/user`;
+const BASE_URL = `user`;
 
 export default {
   // 내 정보 조회

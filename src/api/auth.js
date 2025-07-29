@@ -1,6 +1,6 @@
 import api from "@/api";
 
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth`;
+const BASE_URL = `auth`;
 
 export default {
   // 로그인
@@ -31,7 +31,7 @@ export default {
 
   // 인증번호 검증
   async verifyEmailCode(email, code) {
-    const { data } = await api.post(`/api/auth/email/verify`, { email, code });
+    const { data } = await api.post(`${BASE_URL}email/verify`, { email, code });
     return data;
   },
 };
