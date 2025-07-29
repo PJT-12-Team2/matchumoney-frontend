@@ -293,8 +293,14 @@ export default {
   margin-bottom: var(--spacing-2xl);
   overflow-x: hidden;
 }
+/* Uniform card sizes and container style for carousel cards */
 .carousel-card {
-  width: calc((100% - 2rem) / 3);
+  width: 18.75rem; /* 300px */
+  height: 25rem;    /* 400px */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   background: var(--color-white);
   border-radius: var(--spacing-lg);
   box-shadow: var(--shadow-md);
@@ -302,18 +308,26 @@ export default {
   cursor: pointer;
   flex-shrink: 0;
 }
+
 .carousel-card-image {
   width: 100%;
+  height: 65%;
+  object-fit: contain;
   border-radius: var(--spacing-sm);
 }
+
 .carousel-card-name {
-  font-size: var(--font-size-xl);
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-base);
   font-weight: bold;
-  margin: var(--spacing-sm) 0 var(--spacing-xs);
+  text-align: center;
 }
+
 .carousel-card-benefit {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
+  text-align: center;
+  margin-top: var(--spacing-xs);
 }
 .filter-selection-section {
   text-align: left;
@@ -352,12 +366,19 @@ export default {
   padding: 0 var(--spacing-md);
 }
 .benefit-button {
+  width: 6.5rem;
+  height: 6.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: var(--spacing-md);
   border: 2px solid var(--border-light);
   border-radius: var(--spacing-md);
   background: var(--color-white);
   cursor: pointer;
   font-weight: bold;
+  text-align: center;
 }
 .benefit-button.selected {
   background: var(--color-accent);
@@ -365,9 +386,10 @@ export default {
   border-color: var(--color-accent);
 }
 .benefit-button .emoji {
+  font-size: 1.5rem;
   display: block;
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--spacing-xs);
+  line-height: 1;
+  margin-bottom: 0.25rem;
 }
 .search-button-wrap {
   margin-top: var(--spacing-lg);
@@ -409,13 +431,8 @@ export default {
     overflow-x: hidden;
   }
   .carousel-card {
-    width: calc((100% - 2rem) / 3);
-  }
-  .carousel-card-name {
-    font-size: var(--font-size-sm);
-  }
-  .carousel-card-benefit {
-    font-size: var(--font-size-xs);
+    width: 220px;
+    height: 320px;
   }
 }
 .product-card {
