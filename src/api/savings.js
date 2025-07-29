@@ -1,7 +1,6 @@
-import api from '@/api';
+import api from "@/api";
 
-//임시 설정
-const BASE_URL = 'http://localhost:8080/api/user/me/savings';
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/user/me/savings`;
 
 export default {
   // 적금 리스트 조회
