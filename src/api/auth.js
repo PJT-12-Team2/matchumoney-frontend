@@ -11,6 +11,12 @@ export default {
     return data;
   },
 
+  // 카카오 로그인
+  async kakaoLogin(code) {
+    const { data } = await api.post(`${BASE_URL}/kakao-login`, { code });
+    return data;
+  },
+
   // 회원가입
   async signup(signupDto) {
     const { data } = await api.post(`${BASE_URL}/signup`, signupDto);

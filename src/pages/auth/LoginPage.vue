@@ -38,7 +38,7 @@
         </div>
 
         <!-- 카카오 로그인 버튼 -->
-        <button class="kakao-btn">
+        <button class="kakao-btn" @click="handleKakaoLogin">
           <img src="@/assets/kakao_login_medium_wide.png" alt="카카오계정으로 로그인" />
         </button>
 
@@ -87,6 +87,13 @@ const handleLogin = async () => {
     console.error("❌ 로그인 실패", err);
     alert("이메일 또는 비밀번호가 올바르지 않습니다.");
   }
+};
+
+const handleKakaoLogin = () => {
+  const clientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
+  const redirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+  const kakaoLoginUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&through_account=true`;
+  window.location.href = kakaoLoginUrl;
 };
 </script>
 

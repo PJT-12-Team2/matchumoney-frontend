@@ -57,7 +57,19 @@
 
         <!-- 정보 수정 버튼 -->
         <div class="mt-4">
-          <BaseButton variant="primary" :fullWidth="true" @click="submitForm">정보 수정</BaseButton>
+          <RouterLink to="/mypage" custom v-slot="{ navigate }">
+            <BaseButton
+              variant="primary"
+              :fullWidth="true"
+              @click="
+                async () => {
+                  await submitForm();
+                  navigate();
+                }
+              ">
+              정보 수정
+            </BaseButton>
+          </RouterLink>
         </div>
       </template>
     </BaseCard>
@@ -70,6 +82,8 @@ import BaseButton from "@/components/base/BaseButton.vue";
 import "@/assets/main.css";
 import { ref, computed, onMounted } from "vue";
 import userApi from "@/api/user";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 const nickname = ref("");
 const gender = ref("");
@@ -120,6 +134,7 @@ const submitForm = async () => {
     const res = await userApi.updateUserInfo(updateDto);
     console.log("회원정보 수정 성공:", res);
     alert("회원정보가 성공적으로 수정되었습니다.");
+    router.push("/mypage");
   } catch (err) {
     console.error("회원정보 수정 실패:", err);
     alert("회원정보 수정에 실패했습니다.");
