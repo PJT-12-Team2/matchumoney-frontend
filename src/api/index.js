@@ -5,8 +5,8 @@ const instance = axios.create({
   withCredentials: true, // 쿠키를 포함한 요청
   timeout: 300000, //30초
   //  codef 적금 불러오기 시간초과 발생 방지를 위해 길게 설정
+  baseURL: '/api', // ✅ Vite 프록시 경로로 
 });
-
 instance.interceptors.request.use(
   (config) => {
     // 토큰을 Pinia 스토어에서 가져오기

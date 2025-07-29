@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import axios from 'axios'
+import api from '@/api'
 /* ------------------------------------------------------------------ */
 /* ① 상태 & 상수                                                       */
 /* ------------------------------------------------------------------ */
@@ -205,7 +205,7 @@ async function nextQuestion (choice) {
       penguin: '8'
     }
     const winnerId = personaIdMap[winner]
-    await axios.patch('/user/update/persona', null, {
+    await api.patch('/user/update/persona', null, {
       params: { persona_id: winnerId }
     })
     router.push(`/${winner}`)
