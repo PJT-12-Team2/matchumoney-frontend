@@ -99,11 +99,11 @@ const years = computed(() => {
 onMounted(async () => {
   try {
     const res = await userApi.getMyInfo();
-    console.log("유저 정보 불러오기 성공:", res);
-    console.log("닉네임:", res.result.nickname);
-    console.log("성별:", res.result.gender);
-    console.log("생년월일:", res.result.birthDate);
-    console.log("프로필 이미지:", res.result.profileImageUrl);
+    // console.log("유저 정보 불러오기 성공:", res);
+    // console.log("닉네임:", res.result.nickname);
+    // console.log("성별:", res.result.gender);
+    // console.log("생년월일:", res.result.birthDate);
+    // console.log("프로필 이미지:", res.result.profileImageUrl);
 
     nickname.value = res.result.nickname;
     gender.value = res.result.gender;
@@ -132,11 +132,11 @@ const submitForm = async () => {
 
   try {
     const res = await userApi.updateUserInfo(updateDto);
-    console.log("회원정보 수정 성공:", res);
+    // console.log("회원정보 수정 성공:", res);
     alert("회원정보가 성공적으로 수정되었습니다.");
     router.push("/mypage");
   } catch (err) {
-    console.error("회원정보 수정 실패:", err);
+    // console.error("회원정보 수정 실패:", err);
     alert("회원정보 수정에 실패했습니다.");
   }
 };
