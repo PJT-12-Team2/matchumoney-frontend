@@ -1,6 +1,6 @@
 <template>
   <i
-    :class="[modelValue ? 'fas fa-star' : 'far fa-star', 'favorite-icon']"
+    :class="[isActive ? 'fas fa-star' : 'far fa-star', 'favorite-icon']"
     @click="toggle"
     title="즐겨찾기"
   ></i>
@@ -20,7 +20,7 @@ const emit = defineEmits(['update:modelValue']);
 
 const isActive = computed({
   get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val.toString()), // ✅ 올바른 setter
+  set: (val) => emit('update:modelValue', val), // ✅ 올바른 setter
 });
 
 const toggle = () => {
