@@ -229,7 +229,9 @@ export default {
 				const response = await axios.post('/api/persona/cardsearch', {
 					creditCard: filters.value.creditCard,
 					debitCard: filters.value.debitCard,
-					selectedBenefits: filters.value.selectedBenefits,
+					selectedBenefits: filters.value.selectedBenefits
+						.map(id => benefitCategories.value.find(b => b.id === id)?.name)
+						.filter(Boolean),
 				});
 
 				searchResults.value = response.data; // ← 백엔드에서 내려준 카드 리스트
@@ -261,169 +263,199 @@ export default {
 	},
 };
 </script>
-
 <style scoped>
 .card-product-search {
-	font-family: 'Noto Sans', sans-serif;
-	background: #fff;
-	min-height: 100vh;
+  font-family: 'Noto Sans', sans-serif;
+  background: var(--color-white);
+  min-height: 100vh;
 }
 .main-content {
-	max-width: 1200px;
-	margin: 0 auto;
-	padding: 40px;
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: var(--spacing-2xl);
 }
 .page-title {
-	font-size: 28px;
-	font-weight: 700;
-	margin-bottom: 30px;
-	text-align: center;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
 }
 .persona-carousel-title {
-	font-size: 22px;
-	margin-bottom: 20px;
-	text-align: center;
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
 }
 .carousel-card-list {
-	display: flex;
-	gap: 20px;
-	justify-content: center;
-	flex-wrap: wrap;
-	margin-bottom: 40px;
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: nowrap;
+  margin-bottom: var(--spacing-2xl);
+  overflow-x: hidden;
 }
 .carousel-card {
-	width: 300px;
-	background: #fff;
-	border-radius: 12px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-	padding: 16px;
-	cursor: pointer;
+  width: calc((100% - 2rem) / 3);
+  background: var(--color-white);
+  border-radius: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 .carousel-card-image {
-	width: 100%;
-	border-radius: 8px;
+  width: 100%;
+  border-radius: var(--spacing-sm);
 }
 .carousel-card-name {
-	font-size: 22px;
-	font-weight: bold;
-	margin: 10px 0 4px;
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
 }
 .carousel-card-benefit {
-	font-size: 18px;
-	color: #666;
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
 }
 .filter-selection-section {
-	text-align: left;
-	margin-bottom: 40px;
-	padding: 30px;
-	border: 2px solid #ccc;
-	border-radius: 16px;
-	background: #fafafa;
+  text-align: left;
+  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-xl);
+  border: 2px solid var(--border-light);
+  border-radius: var(--spacing-xl);
+  background: var(--bg-content);
 }
 .card-type-toggle {
-	margin-bottom: 20px;
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 16px;
-	padding: 0 12px;
+  margin-bottom: var(--spacing-lg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  padding: 0 var(--spacing-md);
 }
 .type-btn {
-	width: 100%;
-	padding: 12px;
-	border: 2px solid #ccc;
-	background: #fff;
-	cursor: pointer;
-	border-radius: 8px;
-	font-size: 16px;
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-light);
+  background: var(--color-white);
+  cursor: pointer;
+  border-radius: var(--spacing-md);
+  font-size: var(--font-size-base);
 }
 .type-btn.active {
-	background: #609966;
-	color: white;
-	border-color: #609966;
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
 }
 .benefit-grid {
-	display: grid;
-	grid-template-columns: repeat(8, 1fr);
-	gap: 16px;
-	margin-top: 20px;
-	margin-bottom: 20px;
-	padding: 0 12px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+  padding: 0 var(--spacing-md);
 }
 .benefit-button {
-	padding: 12px;
-	border: 2px solid #ccc;
-	border-radius: 10px;
-	background: #fff;
-	cursor: pointer;
-	font-weight: bold;
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-light);
+  border-radius: var(--spacing-md);
+  background: var(--color-white);
+  cursor: pointer;
+  font-weight: bold;
 }
 .benefit-button.selected {
-	background: #609966;
-	color: white;
-	border-color: #609966;
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
 }
 .benefit-button .emoji {
-	display: block;
-	font-size: 20px;
-	margin-bottom: 4px;
+  display: block;
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-xs);
 }
 .search-button-wrap {
-	margin-top: 20px;
-	display: flex;
-	justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+  display: flex;
+  justify-content: flex-end;
 }
 .search-button {
-	padding: 12px 24px;
-	font-size: 16px;
-	background: #609966;
-	color: white;
-	border: none;
-	border-radius: 8px;
-	cursor: pointer;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-base);
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--spacing-md);
+  cursor: pointer;
 }
 .search-results-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-	gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+@media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
+  .benefit-grid {
+    display: flex;
+    overflow-x: auto;
+    padding: var(--spacing-sm);
+    gap: var(--spacing-md);
+    scroll-snap-type: x mandatory;
+  }
+  .benefit-button {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    min-width: 6rem;
+  }
+  .carousel-card-list {
+    justify-content: center;
+    overflow-x: hidden;
+  }
+  .carousel-card {
+    width: calc((100% - 2rem) / 3);
+  }
+  .carousel-card-name {
+    font-size: var(--font-size-sm);
+  }
+  .carousel-card-benefit {
+    font-size: var(--font-size-xs);
+  }
 }
 .product-card {
-	background: #f5f7f9;
-	border-radius: 20px;
-	padding: 30px;
-	cursor: pointer;
-	transition: all 0.3s ease;
+  background: var(--bg-content);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 .product-card:hover {
-	transform: translateY(-5px);
+  transform: translateY(-0.3125rem);
 }
 .product-header {
-	display: flex;
-	align-items: center;
-	gap: 16px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 .product-info h4 {
-	margin: 0;
-	font-size: 18px;
-	font-weight: bold;
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: bold;
 }
 .bank-name {
-	font-size: 14px;
-	color: #888;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
 }
 .product-details {
-	margin-top: 6px;
-	font-size: 14px;
-	color: #444;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 .highlight {
-	font-size: 30px;
-	text-decoration: underline;
+  font-size: var(--font-size-2xl);
+  text-decoration: underline;
 }
 .filter-label {
-	font-size: 18px;
-	font-weight: 700;
-	color: #40513b;
-	margin-bottom: 12px;
-	text-align: left;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-md);
+  text-align: left;
 }
 </style>

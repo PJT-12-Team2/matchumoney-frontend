@@ -88,12 +88,18 @@
           >
             <div class="product-header">
               <div class="bank-logo">
-                <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" />
+                <img :src="getBankLogo(product.bankName)" alt="은행 로고" />
               </div>
               <div class="product-info">
-                <div class="bank-name">{{ product.bank }}</div>
-                <h4>{{ product.name }}</h4>
-                <div class="product-details" v-html="product.details"></div>
+                <div class="bank-name">{{ product.bankName }}</div>
+                <h4>{{ product.productName }}</h4>
+                <!-- <div class="product-details" v-html="product.etcNote"></div> -->
+                <p class="maxIntrRate2">
+                  최고 금리 : {{ product.maxIntrRate2 }}%
+                </p>
+                <p>최저 금리 : {{ product.maxIntrRate }}%</p>
+                <p>최소 가입 금액 : {{ product.minAmount }}</p>
+                <p>기준 기간 : {{ product.maxSaveTrm }}개월</p>
               </div>
             </div>
           </div>
@@ -103,267 +109,282 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
 
-export default {
-  name: 'DepositRecommendations',
-  setup() {
-    const loading = ref(true);
-    const currentSlide = ref(0);
-    const isSwiping = ref(false);
+// 반응형 데이터
+const products = ref([]);
+const loading = ref(true);
+const currentSlide = ref(0);
+const isSwiping = ref(false);
 
-    // 터치/마우스 이벤트 관련
-    const startX = ref(0);
-    const currentX = ref(0);
-    const isDragging = ref(false);
-    const threshold = 50; // 스와이프 감지 임계값
+// 터치/마우스 이벤트 관련
+const startX = ref(0);
+const currentX = ref(0);
+const isDragging = ref(false);
+const threshold = 50; // 스와이프 감지 임계값
 
-    const getBankLogo = (bankInitial) => {
-      const logoMap = {
-        KB: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
-          .href,
-        하나: new URL(
-          '@/assets/bank-Logos/BK_Hana_Profile.png',
-          import.meta.url
-        ).href,
-        NH: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url)
-          .href,
-        신한: new URL(
-          '@/assets/bank-Logos/BK_Shinhan_Profile.png',
-          import.meta.url
-        ).href,
-        // 필요 시 더 추가
-      };
-
-      return logoMap[bankInitial] || '';
-    };
-
-    const accounts = ref([
-      {
-        name: 'KB 올인원 급여 통장',
-        balance: 1374575,
-        accountNumber: '******-04-181553',
-        ownerName: '혜진',
-      },
-      {
-        name: '신한 My Car 통장',
-        balance: 2856320,
-        accountNumber: '******-12-456789',
-        ownerName: '혜진',
-      },
-      {
-        name: '하나 Dream 적금',
-        balance: 5420100,
-        accountNumber: '******-98-741852',
-        ownerName: '혜진',
-      },
-      {
-        name: '우리 WON 통장',
-        balance: 892140,
-        accountNumber: '******-55-963741',
-        ownerName: '혜진',
-      },
-    ]);
-
-    const products = ref([
-      {
-        id: 1,
-        name: 'KB Star 정기 예금',
-        bank: 'KB 국민은행',
-        bankInitial: 'KB',
-        details: `최고 금리&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.45%</span><br>
-                 기본 금리&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.15%</span><br>
-                 금액&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연 1백만원 이상<br>
-                 개월 수&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12개월`,
-      },
-      {
-        id: 2,
-        name: '행복 3·6·9 정기예금',
-        bank: '하나은행',
-        bankInitial: '하나',
-        details: `최고 금리&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.30%</span><br>
-                 기본 금리&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.30%</span><br>
-                 금액&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연 1백만원 이상<br>
-                 개월 수&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12개월`,
-      },
-      {
-        id: 3,
-        name: 'NH올원뱅크 정기예금',
-        bank: '농협은행',
-        bankInitial: 'NH',
-        details: `최고 금리&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.35%</span><br>
-                 기본 금리&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.20%</span><br>
-                 금액&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연 50만원 이상<br>
-                 개월 수&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6/12개월`,
-      },
-      {
-        id: 4,
-        name: '신한 쏠편한 정기예금',
-        bank: '신한은행',
-        bankInitial: '신한',
-        details: `최고 금리&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.40%</span><br>
-                 기본 금리&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="rate-highlight">연 2.25%</span><br>
-                 금액&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연 1백만원 이상<br>
-                 개월 수&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12/24개월`,
-      },
-    ]);
-
-    const currentAccount = computed(() => {
-      return accounts.value[currentSlide.value] || accounts.value[0];
-    });
-
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('ko-KR').format(amount) + ' 원';
-    };
-
-    const goToSlide = (index) => {
-      if (index >= 0 && index < accounts.value.length) {
-        currentSlide.value = index;
-      }
-    };
-
-    const nextSlide = () => {
-      currentSlide.value = (currentSlide.value + 1) % accounts.value.length;
-    };
-
-    const prevSlide = () => {
-      currentSlide.value =
-        currentSlide.value === 0
-          ? accounts.value.length - 1
-          : currentSlide.value - 1;
-    };
-
-    // 터치 이벤트 핸들러
-    const handleTouchStart = (e) => {
-      startX.value = e.touches[0].clientX;
-      isDragging.value = true;
-      isSwiping.value = true;
-    };
-
-    const handleTouchMove = (e) => {
-      if (!isDragging.value) return;
-      currentX.value = e.touches[0].clientX;
-    };
-
-    const handleTouchEnd = () => {
-      if (!isDragging.value) return;
-
-      const deltaX = startX.value - currentX.value;
-
-      if (Math.abs(deltaX) > threshold) {
-        if (deltaX > 0) {
-          nextSlide();
-        } else {
-          prevSlide();
-        }
-      }
-
-      isDragging.value = false;
-      isSwiping.value = false;
-    };
-
-    // 마우스 이벤트 핸들러 (데스크톱 지원)
-    const handleMouseDown = (e) => {
-      startX.value = e.clientX;
-      isDragging.value = true;
-      isSwiping.value = true;
-      e.preventDefault();
-    };
-
-    const handleMouseMove = (e) => {
-      if (!isDragging.value) return;
-      currentX.value = e.clientX;
-      e.preventDefault();
-    };
-
-    const handleMouseUp = () => {
-      if (!isDragging.value) return;
-
-      const deltaX = startX.value - currentX.value;
-
-      if (Math.abs(deltaX) > threshold) {
-        if (deltaX > 0) {
-          nextSlide();
-        } else {
-          prevSlide();
-        }
-      }
-
-      isDragging.value = false;
-      isSwiping.value = false;
-    };
-
-    const searchProducts = () => {
-      loading.value = true;
-      setTimeout(() => {
-        loading.value = false;
-        // 검색 결과 업데이트 로직
-      }, 1500);
-    };
-
-    const selectProduct = (product) => {
-      // 실제로는 이벤트 emit이나 라우터 네비게이션
-      console.log(`${product.name} 상품을 선택했습니다.`);
-      // this.$emit('product-selected', product)
-      // 또는 this.$router.push(`/products/${product.id}`)
-    };
-
-    // 자동 슬라이드 (옵션)
-    let autoSlideInterval = null;
-
-    const startAutoSlide = () => {
-      autoSlideInterval = setInterval(() => {
-        if (!isDragging.value) {
-          nextSlide();
-        }
-      }, 5000);
-    };
-
-    const stopAutoSlide = () => {
-      if (autoSlideInterval) {
-        clearInterval(autoSlideInterval);
-        autoSlideInterval = null;
-      }
-    };
-
-    onMounted(() => {
-      // 초기 로딩
-      setTimeout(() => {
-        loading.value = false;
-      }, 1000);
-
-      // 자동 슬라이드 시작 (선택사항)
-      // startAutoSlide()
-    });
-
-    onUnmounted(() => {
-      stopAutoSlide();
-    });
-
-    return {
-      loading,
-      currentSlide,
-      isSwiping,
-      accounts,
-      products,
-      currentAccount,
-      formatCurrency,
-      goToSlide,
-      nextSlide,
-      prevSlide,
-      handleTouchStart,
-      handleTouchMove,
-      handleTouchEnd,
-      handleMouseDown,
-      handleMouseMove,
-      handleMouseUp,
-      searchProducts,
-      selectProduct,
-      getBankLogo,
-    };
+// 계좌 정보
+const accounts = ref([
+  {
+    name: 'KB 올인원 급여 통장',
+    balance: 1374575,
+    accountNumber: '******-04-181553',
+    ownerName: '혜진',
   },
+  {
+    name: '신한 My Car 통장',
+    balance: 2856320,
+    accountNumber: '******-12-456789',
+    ownerName: '혜진',
+  },
+  {
+    name: '하나 Dream 적금',
+    balance: 5420100,
+    accountNumber: '******-98-741852',
+    ownerName: '혜진',
+  },
+  {
+    name: '우리 WON 통장',
+    balance: 892140,
+    accountNumber: '******-55-963741',
+    ownerName: '혜진',
+  },
+]);
+
+const currentAccount = computed(() => {
+  return accounts.value[currentSlide.value] || accounts.value[0];
+});
+
+// 메서드
+const fetchProducts = async () => {
+  try {
+    const response = await axios.get(
+      'http://localhost:8080/api/deposits/products'
+    );
+    products.value = response.data; // 백엔드에서 넘어온 상품 리스트
+  } catch (error) {
+  } finally {
+    loading.value = false;
+  }
 };
+
+const getBankLogo = (bankName) => {
+  // 공통 로고 파일
+  const busanLogo = new URL(
+    '@/assets/bank-Logos/BK_BUSAN_Profile.png',
+    import.meta.url
+  ).href;
+  const hanaLogo = new URL(
+    '@/assets/bank-Logos/BK_HANA_Profile.png',
+    import.meta.url
+  ).href;
+
+  const logoMap = {
+    // 주요 시중은행
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
+      .href,
+    하나은행: hanaLogo,
+    농협은행주식회사: new URL(
+      '@/assets/bank-Logos/BK_NH_Profile.png',
+      import.meta.url
+    ).href,
+    신한은행: new URL(
+      '@/assets/bank-Logos/BK_Shinhan_Profile.png',
+      import.meta.url
+    ).href,
+    우리은행: new URL(
+      '@/assets/bank-Logos/BK_Woori_Profile.png',
+      import.meta.url
+    ).href,
+
+    // 특수은행
+    중소기업은행: new URL(
+      '@/assets/bank-Logos/BK_IBK_Profile.png',
+      import.meta.url
+    ).href,
+    한국산업은행: new URL(
+      '@/assets/bank-Logos/BK_KDB_Profile.png',
+      import.meta.url
+    ).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url)
+      .href,
+
+    // 지방은행
+    경남은행: busanLogo,
+    부산은행: busanLogo,
+    광주은행: new URL(
+      '@/assets/bank-Logos/BK_KWANGJU_Profile.png',
+      import.meta.url
+    ).href,
+    전북은행: new URL(
+      '@/assets/bank-Logos/BK_JEONBUK_Profile.png',
+      import.meta.url
+    ).href,
+    제주은행: new URL(
+      '@/assets/bank-Logos/BK_JEJU_Profile.png',
+      import.meta.url
+    ).href,
+    아이엠뱅크: new URL(
+      '@/assets/bank-Logos/BK_DAEGU_Profile.png',
+      import.meta.url
+    ).href,
+
+    // 외국계은행
+    한국스탠다드차타드은행: new URL(
+      '@/assets/bank-Logos/BK_SC_Profile.png',
+      import.meta.url
+    ).href,
+
+    // 인터넷은행
+    '주식회사 카카오뱅크': new URL(
+      '@/assets/bank-Logos/BK_KAKAO_Profile.png',
+      import.meta.url
+    ).href,
+    '주식회사 케이뱅크': new URL(
+      '@/assets/bank-Logos/BK_K_Profile.png',
+      import.meta.url
+    ).href,
+    '토스뱅크 주식회사': new URL(
+      '@/assets/bank-Logos/BK_TOSS_Profile.png',
+      import.meta.url
+    ).href,
+
+    // 주식회사 명칭 포함
+    '주식회사 하나은행': hanaLogo,
+  };
+
+  return logoMap[bankName] || '';
+};
+
+const selectProduct = (product) => {
+  // 클릭한 상품 처리 예시
+};
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('ko-KR').format(amount) + ' 원';
+};
+
+const goToSlide = (index) => {
+  if (index >= 0 && index < accounts.value.length) {
+    currentSlide.value = index;
+  }
+};
+
+const nextSlide = () => {
+  currentSlide.value = (currentSlide.value + 1) % accounts.value.length;
+};
+
+const prevSlide = () => {
+  currentSlide.value =
+    currentSlide.value === 0
+      ? accounts.value.length - 1
+      : currentSlide.value - 1;
+};
+
+// 터치 이벤트 핸들러
+const handleTouchStart = (e) => {
+  startX.value = e.touches[0].clientX;
+  isDragging.value = true;
+  isSwiping.value = true;
+};
+
+const handleTouchMove = (e) => {
+  if (!isDragging.value) return;
+  currentX.value = e.touches[0].clientX;
+};
+
+const handleTouchEnd = () => {
+  if (!isDragging.value) return;
+
+  const deltaX = startX.value - currentX.value;
+
+  if (Math.abs(deltaX) > threshold) {
+    if (deltaX > 0) {
+      nextSlide();
+    } else {
+      prevSlide();
+    }
+  }
+
+  isDragging.value = false;
+  isSwiping.value = false;
+};
+
+// 마우스 이벤트 핸들러 (데스크톱 지원)
+const handleMouseDown = (e) => {
+  startX.value = e.clientX;
+  isDragging.value = true;
+  isSwiping.value = true;
+  e.preventDefault();
+};
+
+const handleMouseMove = (e) => {
+  if (!isDragging.value) return;
+  currentX.value = e.clientX;
+  e.preventDefault();
+};
+
+const handleMouseUp = () => {
+  if (!isDragging.value) return;
+
+  const deltaX = startX.value - currentX.value;
+
+  if (Math.abs(deltaX) > threshold) {
+    if (deltaX > 0) {
+      nextSlide();
+    } else {
+      prevSlide();
+    }
+  }
+
+  isDragging.value = false;
+  isSwiping.value = false;
+};
+
+const searchProducts = () => {
+  loading.value = true;
+  setTimeout(() => {
+    loading.value = false;
+    // 검색 결과 업데이트 로직
+  }, 1500);
+};
+
+// 자동 슬라이드 (옵션)
+let autoSlideInterval = null;
+
+const startAutoSlide = () => {
+  autoSlideInterval = setInterval(() => {
+    if (!isDragging.value) {
+      nextSlide();
+    }
+  }, 5000);
+};
+
+const stopAutoSlide = () => {
+  if (autoSlideInterval) {
+    clearInterval(autoSlideInterval);
+    autoSlideInterval = null;
+  }
+};
+
+// 라이프사이클 훅
+onMounted(() => {
+  fetchProducts();
+
+  // 초기 로딩
+  setTimeout(() => {
+    loading.value = false;
+  }, 1000);
+
+  // 자동 슬라이드 시작 (선택사항)
+  // startAutoSlide()
+});
+
+onUnmounted(() => {
+  stopAutoSlide();
+});
 </script>
 
 <style scoped>
@@ -588,22 +609,21 @@ export default {
 }
 
 .bank-logo {
-  width: 80px;
-  height: 80px;
   flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: bold;
   color: #609966;
-}
-.bank-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
   border-radius: 12px;
 }
 
+.bank-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
 .product-info {
   flex: 1;
   display: flex;
@@ -613,8 +633,8 @@ export default {
 }
 
 .product-info h4 {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 24px !important;
+  font-weight: 600;
   color: var(--color-dark);
   margin-bottom: 12px;
 }
@@ -728,11 +748,6 @@ export default {
     font-size: 16px;
   }
 
-  .bank-logo {
-    width: 50px;
-    height: 50px;
-  }
-
   .dropdown-arrow {
     display: none; /* 작은 화면일 땐 안보이게 */
   }
@@ -769,7 +784,8 @@ export default {
   }
 
   .bank-logo {
-    margin-right: 80px;
+    margin-right: 30px;
+    align-items: center;
   }
 
   .product-info h4 {
@@ -778,6 +794,12 @@ export default {
 
   .product-details {
     font-size: 13px;
+  }
+
+  .maxIntrRate2 {
+    font-weight: 700;
+    font-size: large;
+    color: var(--color-accent);
   }
 }
 </style>
