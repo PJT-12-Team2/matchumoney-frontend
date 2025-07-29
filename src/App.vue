@@ -10,7 +10,7 @@ const route = useRoute();
 
 <template>
   <!-- 로그인 페이지가 아닐 때만 기본 레이아웃 적용 -->
-  <DefaultLayout v-if="route.path !== '/login' && route.path !== '/signup'">
+  <DefaultLayout v-if="route.path !== '/login' && route.path !== '/signup' && route.path !== '/reset-password'">
     <ChatBot />
     <!--
       라우터 뷰 컴포넌트

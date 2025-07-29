@@ -1,5 +1,6 @@
 // router/index.js 또는 router.js
 import { createRouter, createWebHistory } from "vue-router";
+import KakaoCallbackPage from "@/pages/auth/KakaoCallbackPage.vue";
 
 /* ── 페이지 컴포넌트 ─────────────────────── */
 import HomePage from "@/pages/HomePage.vue";
@@ -7,6 +8,7 @@ import MyPage from "@/pages/user/MyPage.vue";
 import RecommendDeposit from "@/pages/deposit/RecommendDeposit.vue";
 import SignupPage from "@/pages/auth/SignupPage.vue";
 import LoginPage from "@/pages/auth/LoginPage.vue";
+import ResetPasswordPage from "@/pages/auth/ResetPasswordPage.vue";
 import UpdateUserInfoPage from "@/pages/user/UpdateUserInfoPage.vue";
 import UpdatePasswordPage from "@/pages/user/UpdatePasswordPage.vue";
 
@@ -30,7 +32,12 @@ const routes = [
   {
     path: "/oauth/kakao/callback",
     name: "KakaoCallback",
-    component: () => import("@/pages/auth/KakaoCallbackPage.vue"),
+    component: KakaoCallbackPage,
+  },
+  {
+    path: "/reset-password",
+    name: "resetPassword",
+    component: ResetPasswordPage,
   },
   { path: "/mypage", name: "mypage", component: MyPage },
   {
