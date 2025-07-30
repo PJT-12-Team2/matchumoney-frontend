@@ -1,6 +1,7 @@
 // router/index.js 또는 router.js
 import { createRouter, createWebHistory } from "vue-router";
 import KakaoCallbackPage from "@/pages/auth/KakaoCallbackPage.vue";
+import KakaoCallbackPage from "@/pages/auth/KakaoCallbackPage.vue";
 
 /* ── 페이지 컴포넌트 ─────────────────────── */
 import HomePage from "@/pages/HomePage.vue";
@@ -32,6 +33,12 @@ const routes = [
   {
     path: "/oauth/kakao/callback",
     name: "KakaoCallback",
+    component: KakaoCallbackPage,
+  },
+  {
+    path: "/reset-password",
+    name: "resetPassword",
+    component: ResetPasswordPage,
     component: KakaoCallbackPage,
   },
   {

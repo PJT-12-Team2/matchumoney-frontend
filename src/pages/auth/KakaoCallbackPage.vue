@@ -30,7 +30,7 @@ onMounted(async () => {
     alert("카카오 로그인 성공!");
     router.push("/");
   } catch (err) {
-    console.error("카카오 로그인 실패:", err);
+    // console.error("카카오 로그인 실패:", err);
     alert("카카오 로그인에 실패했습니다.");
     router.push("/login");
   }
