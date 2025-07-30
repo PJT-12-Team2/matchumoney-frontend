@@ -1,15 +1,34 @@
 <template>
-  <div class="loading-overlay">
-    <img src="../../assets/loading/loading_character.gif" style="width: 8rem" />
+  <div v-if="shouldShow" class="loading-overlay">
+    <img src="@/assets/loading/loading_character.gif" style="width: 8rem" />
   </div>
 </template>
+
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 
 const props = defineProps({
   loading: Boolean,
 });
+
+const shouldShow = ref(false);
+let timeoutId = null;
+
+watch(
+  () => props.loading,
+  (newVal) => {
+    clearTimeout(timeoutId);
+    if (newVal) {
+      timeoutId = setTimeout(() => {
+        shouldShow.value = true;
+      }, 150); // 100ms 지연
+    } else {
+      shouldShow.value = false;
+    }
+  }
+);
 </script>
+
 <style scoped>
 .loading-overlay {
   position: absolute;
