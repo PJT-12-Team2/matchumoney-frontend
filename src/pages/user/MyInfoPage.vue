@@ -1,5 +1,5 @@
 <template>
-  <div class="mypage container fade-in">
+  <div class="myInfoPage container fade-in">
     <!-- 헤더는 App.vue에서 공통으로 렌더링된다고 가정 -->
 
     <main class="content flex flex-column align-center mt-5">
@@ -19,25 +19,25 @@
           <span class="label text-dark">이메일</span>
           <span class="value text-secondary">{{ user?.email }}</span>
         </div>
-        <router-link to="/mypage/update" class="info-item clickable">
+        <router-link to="/myinfo/update" class="info-item clickable">
           <span class="label text-dark">닉네임</span>
           <span class="value text-secondary">{{ user?.nickname }}</span>
           <span class="arrow text-accent">></span>
         </router-link>
 
-        <router-link to="/mypage/update" class="info-item clickable">
+        <router-link to="/myinfo/update" class="info-item clickable">
           <span class="label text-dark">성별</span>
           <span class="value text-secondary">{{ user?.gender }}</span>
           <span class="arrow text-accent">></span>
         </router-link>
 
-        <router-link to="/mypage/update" class="info-item clickable">
+        <router-link to="/myinfo/update" class="info-item clickable">
           <span class="label text-dark">생년월일</span>
           <span class="value text-secondary">{{ formattedBirthDate }}</span>
           <span class="arrow text-accent">></span>
         </router-link>
 
-        <router-link to="/mypage/update/password" class="info-item clickable">
+        <router-link to="/myinfo/update/password" class="info-item clickable">
           <span class="label">비밀번호 변경</span>
           <span class="value"></span>
           <span class="arrow">></span>
@@ -97,7 +97,7 @@ a.info-item {
   color: inherit; /* 글자 색도 부모 색상 유지 */
 }
 
-.mypage {
+.myInfoPage {
   background-color: var(--bg-body);
   color: var(--text-primary);
 }
