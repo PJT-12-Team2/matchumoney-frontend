@@ -4,18 +4,22 @@ import SavingMyProductSlider from '@/components/savings/SavingMyProductSlider.vu
 import BankbookProductList from '@/components/bankbook/BankbookProductList.vue';
 import RecommendationLayout from '@/components/layouts/RecommendationLayout.vue';
 import savingApi from '@/api/savings';
-
+import Loading from '@/components/common/Loading.vue';
 const selectedId = ref(null);
 const savings = ref([]);
+const loading = ref(false);
 
-// ✅ selectedId 자체를 감시하세요.
 watch(
   selectedId,
   async (newId) => {
     if (newId != null) {
-      const data = await savingApi.getRecommendSavings(newId);
-      savings.value = data;
-      console.log(savings.value);
+      loading.value = true;
+      try {
+        const data = await savingApi.getRecommendSavings(newId);
+        savings.value = data;
+      } finally {
+        loading.value = false;
+      }
     }
   },
   { immediate: true }
@@ -25,7 +29,10 @@ watch(
 <template>
   <RecommendationLayout title="적금 추천">
     <template #slider>
-      <SavingMyProductSlider @select="(id) => (selectedId = id)" />
+      <SavingMyProductSlider
+        @select="(id) => (selectedId = id)"
+        v-model:loading="loading"
+      />
     </template>
 
     <!-- 다시 불러오기 의 경우 -->
@@ -42,7 +49,12 @@ watch(
       지금보다 더 좋은 상품을 찾지 못했어요.
     </template>
     <template #content v-if="savings.length > 0">
-      <BankbookProductList :selectedId="selectedId" :savings="savings" />
+      <BankbookProductList
+        :selectedId="selectedId"
+        :savings="savings"
+        v-model="loading"
+      />
     </template>
   </RecommendationLayout>
+  <Loading :loading="loading" />
 </template>
