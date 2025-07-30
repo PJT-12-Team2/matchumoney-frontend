@@ -1,399 +1,234 @@
 <template>
   <div class="deposit-recommendations">
-    <!-- 메인 컨텐츠 -->
     <main class="main-content">
       <h2 class="page-title">예금 추천</h2>
 
-      <!-- 계좌 카드 슬라이더 -->
-      <div class="account-slider">
-        <div class="slider-container">
-          <div
-            class="slider-wrapper"
-            :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
-            @touchstart="handleTouchStart"
-            @touchmove="handleTouchMove"
-            @touchend="handleTouchEnd"
-            @mousedown="handleMouseDown"
-            @mousemove="handleMouseMove"
-            @mouseup="handleMouseUp"
-            @mouseleave="handleMouseUp"
-          >
-            <div
-              v-for="(account, index) in accounts"
-              :key="index"
-              class="account-card p-5"
-              :class="{ swiping: isSwiping }"
-            >
-              <div class="account-name">{{ account.name }}</div>
-              <div class="account-details">
-                <div class="balance-section">
-                  <h4>잔액</h4>
-                  <div class="balance-amount">
-                    {{ formatCurrency(account.balance) }}
-                  </div>
-                </div>
-                <div class="account-section">
-                  <h4>계좌 번호</h4>
-                  <div class="account-number">{{ account.accountNumber }}</div>
-                </div>
-                <div class="dropdown-arrow">
-                  <h4>▶</h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 슬라이더 인디케이터 -->
-        <div class="slider-indicators">
-          <div
-            v-for="(account, index) in accounts"
-            :key="`indicator-${index}`"
-            class="indicator"
-            :class="{ active: currentSlide === index }"
-            @click="goToSlide(index)"
-          ></div>
-        </div>
-      </div>
+      <!-- 계좌 슬라이더 컴포넌트 -->
+      <AccountSlider
+        :accounts="accounts"
+        :loading="accountsLoading"
+        :error="error"
+        :current-slide="currentSlide"
+        @refresh="refreshAccounts"
+        @slide-change="handleSlideChange"
+      />
 
       <!-- 검색 버튼 -->
       <div class="search-section">
-        <button class="search-btn" @click="searchProducts" :disabled="loading">
-          {{ loading ? '검색 중...' : '검 색' }}
+        <button
+          class="search-btn"
+          @click="searchProducts"
+          :disabled="loading || accountsLoading || !currentAccount"
+        >
+          {{ loading ? '검색 중...' : '가입 가능한 상품 검색' }}
         </button>
       </div>
 
-      <!-- 추천 메시지 -->
-      <div v-if="!loading" class="recommendation-message slide-up fade-in">
-        <div class="recommendation-text">
-          <span class="recommendation-icon">✨</span>
-          {{ currentAccount.ownerName }}님에게 적합한 예금 상품을 찾았어요!
-        </div>
-      </div>
-
-      <!-- 상품 리스트 -->
-      <section class="products-section">
-        <div v-if="loading" class="loading">
-          <div class="spinner"></div>
-          <div>맞춤 상품을 찾고 있습니다...</div>
-        </div>
-
-        <div v-else class="product-list fade-in">
-          <div
-            v-for="(product, index) in products"
-            :key="product.id"
-            class="product-card"
-            @click="selectProduct(product)"
-            :style="{ animationDelay: `${index * 0.1}s` }"
-          >
-            <div class="product-header">
-              <div class="bank-logo">
-                <img :src="getBankLogo(product.bankName)" alt="은행 로고" />
-              </div>
-              <div class="product-info">
-                <div class="bank-name">{{ product.bankName }}</div>
-                <h4>{{ product.productName }}</h4>
-                <!-- <div class="product-details" v-html="product.etcNote"></div> -->
-                <p class="maxIntrRate2">
-                  최고 금리 : {{ product.maxIntrRate2 }}%
-                </p>
-                <p>최저 금리 : {{ product.maxIntrRate }}%</p>
-                <p>최소 가입 금액 : {{ product.minAmount }}</p>
-                <p>기준 기간 : {{ product.maxSaveTrm }}개월</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <!-- 상품 리스트 컴포넌트 -->
+      <ProductList
+        :products="products"
+        :loading="loading"
+        :has-searched="hasSearched"
+        :customer-name="currentAccount?.nickname || '고객'"
+        :balance="currentAccount?.formattedBalance || ''"
+        @product-select="selectProduct"
+      />
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import AccountSlider from './AccountSlider.vue';
+import ProductList from './ProductList.vue';
 
 // 반응형 데이터
 const products = ref([]);
-const loading = ref(true);
+const accounts = ref([]);
+const loading = ref(false);
+const accountsLoading = ref(true);
 const currentSlide = ref(0);
-const isSwiping = ref(false);
+const error = ref(null);
+const hasSearched = ref(false);
+const searchCache = ref({});
 
-// 터치/마우스 이벤트 관련
-const startX = ref(0);
-const currentX = ref(0);
-const isDragging = ref(false);
-const threshold = 50; // 스와이프 감지 임계값
+const userId = ref('3'); // 테스트 데이터
 
-// 계좌 정보
-const accounts = ref([
-  {
-    name: 'KB 올인원 급여 통장',
-    balance: 1374575,
-    accountNumber: '******-04-181553',
-    ownerName: '혜진',
+// Props
+const props = defineProps({
+  userId: {
+    type: String,
+    required: true,
   },
-  {
-    name: '신한 My Car 통장',
-    balance: 2856320,
-    accountNumber: '******-12-456789',
-    ownerName: '혜진',
-  },
-  {
-    name: '하나 Dream 적금',
-    balance: 5420100,
-    accountNumber: '******-98-741852',
-    ownerName: '혜진',
-  },
-  {
-    name: '우리 WON 통장',
-    balance: 892140,
-    accountNumber: '******-55-963741',
-    ownerName: '혜진',
-  },
-]);
+});
 
+// Computed
 const currentAccount = computed(() => {
   return accounts.value[currentSlide.value] || accounts.value[0];
 });
 
-// 메서드
-const fetchProducts = async () => {
+// 계좌 정보 가져오기
+const fetchAccounts = async () => {
+  accountsLoading.value = true;
+  error.value = null;
+
   try {
-    const response = await axios.get(
-      'http://localhost:8080/api/deposits/products'
+    const response = await axios.get(`/api/deposits/accounts/${userId.value}`);
+    accounts.value = response.data;
+  } catch (err) {
+    console.error(err);
+    // 에러 발생 시 기본 계좌 정보 사용 (fallback)
+    accounts.value = [
+      {
+        accountName: 'KB 올인원 급여 통장',
+        formattedBalance: '1,374,575원',
+        accountNo: '******-04-181553',
+        nickname: '혜진',
+      },
+      {
+        accountName: '신한 My Car 통장',
+        formattedBalance: '2,374,575원',
+        accountNo: '******-12-456789',
+        nickname: '혜진',
+      },
+      {
+        accountName: '하나 Dream 적금',
+        formattedBalance: '3,374,575원',
+        accountNo: '******-98-741852',
+        nickname: '혜진',
+      },
+      {
+        accountName: '우리 WON 통장',
+        formattedBalance: '4,374,575원',
+        accountNo: '******-55-963741',
+        nickname: '혜진',
+      },
+    ];
+  } finally {
+    accountsLoading.value = false;
+  }
+};
+
+// 계좌 새로고침
+const refreshAccounts = () => {
+  fetchAccounts();
+};
+
+// 슬라이드 변경 핸들러
+const handleSlideChange = (index) => {
+  currentSlide.value = index;
+  loadCachedResults();
+};
+
+// 캐시된 검색 결과 로드
+const loadCachedResults = () => {
+  const currentAccountData = currentAccount.value;
+  if (!currentAccountData) return;
+
+  const accountKey = currentAccountData.accountNo || currentSlide.value;
+  const cachedData = searchCache.value[accountKey];
+
+  if (cachedData) {
+    hasSearched.value = true;
+    products.value = cachedData.products;
+    console.log(`캐시된 결과 로드: ${cachedData.products.length}개 상품`);
+  } else {
+    hasSearched.value = false;
+    products.value = [];
+  }
+};
+
+// 검색 결과 캐시 저장
+const saveCachedResults = (accountData, searchResults) => {
+  const accountKey = accountData.accountNo || currentSlide.value;
+  searchCache.value[accountKey] = {
+    products: [...searchResults],
+    timestamp: Date.now(),
+    accountInfo: {
+      accountNo: accountData.accountNo,
+      balance: accountData.formattedBalance,
+    },
+  };
+  console.log(
+    `검색 결과 캐시 저장: ${accountKey}, ${searchResults.length}개 상품`
+  );
+};
+
+// 상품 검색
+const searchProducts = async () => {
+  loading.value = true;
+
+  try {
+    const currentAccountData = currentAccount.value;
+
+    if (!currentAccountData) {
+      console.error('선택된 계좌가 없습니다.');
+      return;
+    }
+
+    // 캐시 확인
+    const accountKey = currentAccountData.accountNo || currentSlide.value;
+    const cachedData = searchCache.value[accountKey];
+
+    if (cachedData) {
+      console.log('캐시된 결과 사용:', cachedData.products.length, '개 상품');
+      hasSearched.value = true;
+      products.value = cachedData.products;
+      loading.value = false;
+      return;
+    }
+
+    // 잔액 추출
+    const balanceString = currentAccountData.formattedBalance || '0원';
+    const balance = parseInt(balanceString.replace(/[^\d]/g, '')) || 0;
+
+    console.log('검색 요청 데이터:', {
+      userId: userId.value,
+      balance: balance,
+      accountNumber: currentAccountData.accountNo,
+    });
+
+    // API 호출
+    const response = await axios.post(
+      '/api/deposits/recommendations/byBalance',
+      {
+        userId: userId.value,
+        balance: balance,
+        accountNumber: currentAccountData.accountNo,
+      }
     );
-    products.value = response.data; // 백엔드에서 넘어온 상품 리스트
+
+    hasSearched.value = true;
+    products.value = response.data;
+
+    // 캐시에 저장
+    saveCachedResults(currentAccountData, response.data);
+
+    console.log('추천 상품 조회 성공:', response.data);
   } catch (error) {
+    console.error('상품 검색 오류:', error);
+    hasSearched.value = true;
+    products.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-const getBankLogo = (bankName) => {
-  // 공통 로고 파일
-  const busanLogo = new URL(
-    '@/assets/bank-Logos/BK_BUSAN_Profile.png',
-    import.meta.url
-  ).href;
-  const hanaLogo = new URL(
-    '@/assets/bank-Logos/BK_HANA_Profile.png',
-    import.meta.url
-  ).href;
-
-  const logoMap = {
-    // 주요 시중은행
-    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
-      .href,
-    하나은행: hanaLogo,
-    농협은행주식회사: new URL(
-      '@/assets/bank-Logos/BK_NH_Profile.png',
-      import.meta.url
-    ).href,
-    신한은행: new URL(
-      '@/assets/bank-Logos/BK_Shinhan_Profile.png',
-      import.meta.url
-    ).href,
-    우리은행: new URL(
-      '@/assets/bank-Logos/BK_Woori_Profile.png',
-      import.meta.url
-    ).href,
-
-    // 특수은행
-    중소기업은행: new URL(
-      '@/assets/bank-Logos/BK_IBK_Profile.png',
-      import.meta.url
-    ).href,
-    한국산업은행: new URL(
-      '@/assets/bank-Logos/BK_KDB_Profile.png',
-      import.meta.url
-    ).href,
-    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url)
-      .href,
-
-    // 지방은행
-    경남은행: busanLogo,
-    부산은행: busanLogo,
-    광주은행: new URL(
-      '@/assets/bank-Logos/BK_KWANGJU_Profile.png',
-      import.meta.url
-    ).href,
-    전북은행: new URL(
-      '@/assets/bank-Logos/BK_JEONBUK_Profile.png',
-      import.meta.url
-    ).href,
-    제주은행: new URL(
-      '@/assets/bank-Logos/BK_JEJU_Profile.png',
-      import.meta.url
-    ).href,
-    아이엠뱅크: new URL(
-      '@/assets/bank-Logos/BK_DAEGU_Profile.png',
-      import.meta.url
-    ).href,
-
-    // 외국계은행
-    한국스탠다드차타드은행: new URL(
-      '@/assets/bank-Logos/BK_SC_Profile.png',
-      import.meta.url
-    ).href,
-
-    // 인터넷은행
-    '주식회사 카카오뱅크': new URL(
-      '@/assets/bank-Logos/BK_KAKAO_Profile.png',
-      import.meta.url
-    ).href,
-    '주식회사 케이뱅크': new URL(
-      '@/assets/bank-Logos/BK_K_Profile.png',
-      import.meta.url
-    ).href,
-    '토스뱅크 주식회사': new URL(
-      '@/assets/bank-Logos/BK_TOSS_Profile.png',
-      import.meta.url
-    ).href,
-
-    // 주식회사 명칭 포함
-    '주식회사 하나은행': hanaLogo,
-  };
-
-  return logoMap[bankName] || '';
-};
-
+// 상품 선택 핸들러
 const selectProduct = (product) => {
-  // 클릭한 상품 처리 예시
+  console.log('선택된 상품:', product);
+  // 상품 선택 로직 구현
 };
 
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('ko-KR').format(amount) + ' 원';
-};
-
-const goToSlide = (index) => {
-  if (index >= 0 && index < accounts.value.length) {
-    currentSlide.value = index;
-  }
-};
-
-const nextSlide = () => {
-  currentSlide.value = (currentSlide.value + 1) % accounts.value.length;
-};
-
-const prevSlide = () => {
-  currentSlide.value =
-    currentSlide.value === 0
-      ? accounts.value.length - 1
-      : currentSlide.value - 1;
-};
-
-// 터치 이벤트 핸들러
-const handleTouchStart = (e) => {
-  startX.value = e.touches[0].clientX;
-  isDragging.value = true;
-  isSwiping.value = true;
-};
-
-const handleTouchMove = (e) => {
-  if (!isDragging.value) return;
-  currentX.value = e.touches[0].clientX;
-};
-
-const handleTouchEnd = () => {
-  if (!isDragging.value) return;
-
-  const deltaX = startX.value - currentX.value;
-
-  if (Math.abs(deltaX) > threshold) {
-    if (deltaX > 0) {
-      nextSlide();
-    } else {
-      prevSlide();
-    }
-  }
-
-  isDragging.value = false;
-  isSwiping.value = false;
-};
-
-// 마우스 이벤트 핸들러 (데스크톱 지원)
-const handleMouseDown = (e) => {
-  startX.value = e.clientX;
-  isDragging.value = true;
-  isSwiping.value = true;
-  e.preventDefault();
-};
-
-const handleMouseMove = (e) => {
-  if (!isDragging.value) return;
-  currentX.value = e.clientX;
-  e.preventDefault();
-};
-
-const handleMouseUp = () => {
-  if (!isDragging.value) return;
-
-  const deltaX = startX.value - currentX.value;
-
-  if (Math.abs(deltaX) > threshold) {
-    if (deltaX > 0) {
-      nextSlide();
-    } else {
-      prevSlide();
-    }
-  }
-
-  isDragging.value = false;
-  isSwiping.value = false;
-};
-
-const searchProducts = () => {
-  loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
-    // 검색 결과 업데이트 로직
-  }, 1500);
-};
-
-// 자동 슬라이드 (옵션)
-let autoSlideInterval = null;
-
-const startAutoSlide = () => {
-  autoSlideInterval = setInterval(() => {
-    if (!isDragging.value) {
-      nextSlide();
-    }
-  }, 5000);
-};
-
-const stopAutoSlide = () => {
-  if (autoSlideInterval) {
-    clearInterval(autoSlideInterval);
-    autoSlideInterval = null;
-  }
-};
-
-// 라이프사이클 훅
-onMounted(() => {
-  fetchProducts();
-
-  // 초기 로딩
-  setTimeout(() => {
-    loading.value = false;
-  }, 1000);
-
-  // 자동 슬라이드 시작 (선택사항)
-  // startAutoSlide()
-});
-
-onUnmounted(() => {
-  stopAutoSlide();
+// 라이프사이클
+onMounted(async () => {
+  await fetchAccounts();
 });
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* ===== 기본 설정 ===== */
 .deposit-recommendations {
   font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, sans-serif;
@@ -403,18 +238,11 @@ onUnmounted(() => {
   min-height: 100vh;
 }
 
-.mobile-container {
-  max-width: 393px;
-  margin: 0 auto;
-  background: white;
-  min-height: 100vh;
-  position: relative;
-}
-
-/* 메인 컨텐츠 */
 .main-content {
+  padding: 20px;
 }
 
+/* ===== 페이지 제목 ===== */
 .page-title {
   font-size: 24px;
   font-weight: 700;
@@ -423,108 +251,7 @@ onUnmounted(() => {
   margin-bottom: 10px;
 }
 
-/* 계좌 카드 슬라이더 */
-.account-slider {
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.slider-container {
-  overflow: hidden;
-  border-radius: 20px;
-}
-
-.slider-wrapper {
-  display: flex;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  padding-bottom: 5px;
-}
-
-.account-card {
-  min-width: 100%;
-  background-color: var(--color-primary);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* 아래쪽 그림자만 */
-  padding: 20px;
-  border-radius: 20px;
-  position: relative;
-  cursor: pointer;
-  user-select: none;
-  /* margin-right 제거 → 옆 카드 안 보이게 */
-}
-
-.account-name {
-  font-size: 24px;
-  font-weight: 700;
-  color: #40513b;
-  margin-bottom: 15px;
-}
-
-.account-details {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.balance-section h4 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #636363;
-  margin-bottom: 5px;
-}
-
-.balance-amount {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-accent);
-  line-height: 1.4;
-}
-
-.account-section h4 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #636363;
-  margin-bottom: 8px;
-}
-
-.account-number {
-  font-size: 20px;
-  font-weight: 700;
-  color: #636363;
-  line-height: 1.4;
-}
-
-.dropdown-arrow {
-  top: 20px;
-  right: 20px;
-  font-size: 16px;
-  font-weight: 900;
-  color: #40513b;
-}
-
-/* 슬라이더 인디케이터 */
-.slider-indicators {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 15px;
-}
-
-.indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #d9d9d9;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.indicator.active {
-  background: #609966;
-  transform: scale(1.2);
-}
-
-/* 검색 버튼 */
+/* ===== 검색 섹션 ===== */
 .search-section {
   display: flex;
   justify-content: flex-end;
@@ -541,6 +268,7 @@ onUnmounted(() => {
   font-weight: 900;
   cursor: pointer;
   letter-spacing: 2px;
+  transition: all 0.3s ease;
 }
 
 .search-btn:disabled {
@@ -548,258 +276,29 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
-/* 추천 메시지 */
-.recommendation-message {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 25px;
-  border-left: 4px solid #609966;
+.search-btn:hover:not(:disabled) {
+  background: #507a55;
+  transform: translateY(-1px);
 }
 
-.recommendation-text {
-  font-size: 14px;
-  font-weight: 700;
-  color: #609966;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.recommendation-icon {
-  font-size: 16px;
-}
-
-/* 상품 리스트 */
-.products-section h3 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #636363;
-  margin-bottom: 20px;
-}
-
-.product-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-}
-
-.product-card {
-  background-color: var(--color-light);
-  box-shadow: var(--shadow-card);
-  border-radius: 16px;
-  padding: 20px;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  width: 100%;
-  cursor: pointer;
-}
-
-.product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border-color: #609966;
-}
-
-.product-header {
-  display: flex;
-  flex-direction: row; /* 가로 정렬 */
-  align-items: center; /* 로고를 세로 중앙 정렬 */
-  gap: 16px;
-}
-
-.bank-logo {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  color: #609966;
-  border-radius: 12px;
-}
-
-.bank-logo img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.product-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-}
-
-.product-info h4 {
-  font-size: 24px !important;
-  font-weight: 600;
-  color: var(--color-dark);
-  margin-bottom: 12px;
-}
-
-.bank-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #636363;
-}
-
-.product-details {
-  font-size: 14px;
-  color: #555;
-  line-height: 1.5;
-  white-space: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rate-highlight {
-  color: #609966;
-  font-weight: 700;
-}
-
-/* 로딩 애니메이션 */
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #636363;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f4f6;
-  border-top: 3px solid #609966;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 15px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* 애니메이션 */
-.fade-in {
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.slide-up {
-  animation: slideUp 0.6s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 터치 스와이프 효과 */
-.account-card.swiping {
-  transition: none;
-}
-
-/* 반응형 디자인 - 웹사이트 전체 화면 대응 */
+/* ===== 반응형 디자인 ===== */
 @media (max-width: 393px) {
-  .deposit-recommendations {
-    padding: 20px;
+  .main-content {
+    padding: 15px;
   }
 
-  .mobile-container {
-    max-width: 100%;
-    box-shadow: none;
-    border-radius: 20px;
-    overflow: hidden;
-  }
-
-  .account-name {
+  .page-title {
     font-size: 20px;
   }
-
-  .balance-section h4,
-  .account-section h4 {
-    font-size: 12px;
-  }
-
-  .balance-amount,
-  .account-number {
-    font-size: 16px;
-  }
-
-  .dropdown-arrow {
-    display: none; /* 작은 화면일 땐 안보이게 */
-  }
-
-  .product-list {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
 }
 
-/* 태블릿 사이즈 */
-@media (min-width: 769px) {
-  .bank-logo {
-    margin: 0 100px 0 100px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .mobile-container {
+@media (min-width: 768px) {
+  .deposit-recommendations {
+    max-width: 80%;
     margin: 0 auto;
     border-radius: 25px;
     overflow: hidden;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.15);
-    max-width: 800px;
-  }
-
-  .product-list {
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-
-  .product-card {
-    padding: 18px;
-  }
-
-  .bank-logo {
-    margin-right: 30px;
-    align-items: center;
-  }
-
-  .product-info h4 {
-    font-size: 16px;
-  }
-
-  .product-details {
-    font-size: 13px;
-  }
-
-  .maxIntrRate2 {
-    font-weight: 700;
-    font-size: large;
-    color: var(--color-accent);
   }
 }
 </style>
