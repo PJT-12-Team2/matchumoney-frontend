@@ -29,6 +29,12 @@ const props = defineProps({
 </script>
 
 <style scoped>
+.recommendation-layout {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .section-title {
   font-size: var(--font-size-xl);
   font-weight: bold;

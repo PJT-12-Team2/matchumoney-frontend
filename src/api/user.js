@@ -1,0 +1,21 @@
+import api from "@/api";
+
+const BASE_URL = `user`;
+
+export default {
+  // 내 정보 조회
+  async getMyInfo() {
+    const { data } = await api.get(`${BASE_URL}/me`);
+    return data;
+  },
+  // 회원 정보 수정
+  async updateUserInfo(updateDto) {
+    const { data } = await api.patch(`${BASE_URL}/update`, updateDto);
+    return data;
+  },
+  // 비밀번호 수정
+  async updatePassword(passwordDto) {
+    const { data } = await api.patch(`${BASE_URL}/update/password`, passwordDto);
+    return data;
+  },
+};

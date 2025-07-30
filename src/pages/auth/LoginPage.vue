@@ -6,7 +6,7 @@
     </div>
 
     <!-- BaseCardGrey 적용 -->
-    <BaseCard class="login-card">
+    <BaseCardGrey class="login-card">
       <template #content>
         <h1 class="login-title">로그인</h1>
 
@@ -38,7 +38,7 @@
         </div>
 
         <!-- 카카오 로그인 버튼 -->
-        <button class="kakao-btn">
+        <button class="kakao-btn" @click="handleKakaoLogin">
           <img src="@/assets/kakao_login_medium_wide.png" alt="카카오계정으로 로그인" />
         </button>
 
@@ -48,25 +48,52 @@
           <a href="/signup">회원가입 하러가기</a>
         </div>
       </template>
-    </BaseCard>
+    </BaseCardGrey>
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import BaseCard from "@/components/base/BaseCardGrey.vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
+import authApi from "@/api/auth"; // ✅ 새로 추가된 import
 
 const email = ref("");
 const password = ref("");
 const keepLogin = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
 
-const handleLogin = () => {
-  console.log("로그인 시도", {
-    email: email.value,
-    password: password.value,
-    keepLogin: keepLogin.value,
-  });
+const handleLogin = async () => {
+  try {
+    // console.log("로그인 시도:", { email: email.value, password: password.value });
+    const response = await authApi.login({
+      email: email.value,
+      password: password.value,
+    });
+
+    const tokenDto = response.result;
+
+    authStore.setAuth(tokenDto);
+    // console.log("AccessToken:", tokenDto.accessToken);
+    // console.log("UserId:", tokenDto.userId);
+    // console.log("Nickname:", tokenDto.nickname);
+
+    alert(`${tokenDto.nickname}님 환영합니다!`);
+    router.push("/");
+  } catch (err) {
+    // console.error("❌ 로그인 실패", err);
+    alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+  }
+};
+
+const handleKakaoLogin = () => {
+  const clientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
+  const redirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+  const kakaoLoginUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&through_account=true`;
+  window.location.href = kakaoLoginUrl;
 };
 </script>
 
