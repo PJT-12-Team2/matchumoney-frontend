@@ -93,7 +93,7 @@ watch([newPassword, confirmPassword], ([pw, confirmPw]) => {
 
 const handleSendCode = async () => {
   try {
-    await authApi.sendVerificationEmail(email.value);
+    await authApi.sendResetVerificationEmail(email.value);
     alert("📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.");
   } catch (err) {
     alert(err?.response?.data?.message || "인증번호 전송 중 오류가 발생했습니다.");
@@ -103,7 +103,8 @@ const handleSendCode = async () => {
 const handleVerifyCode = async () => {
   try {
     const result = await authApi.verifyEmailCode(email.value, authCode.value);
-    if (result) {
+    console.log("인증 결과:", result);
+    if (result.result) {
       isEmailVerified.value = true;
       alert("✅ 인증번호가 확인되었습니다.");
     } else {
@@ -121,15 +122,15 @@ const handleResetPassword = async () => {
   }
 
   if (newPassword.value !== confirmPassword.value) {
-    errorMessage.value = "비밀번호가 일치하지 않습니다";
+    alert("비밀번호가 일치하지 않습니다.");
     return;
   }
 
   try {
     await authApi.resetPassword({
       email: email.value,
-      password: newPassword.value,
-      passwordCheck: confirmPassword.value,
+      newPassword: newPassword.value,
+      confirmPassword: confirmPassword.value,
     });
 
     alert("🎉 비밀번호가 성공적으로 재설정되었습니다.");
