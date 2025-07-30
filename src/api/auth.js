@@ -29,9 +29,21 @@ export default {
     return data;
   },
 
+  // 비밀번호 재설정 인증번호 전송
+  async sendResetVerificationEmail(email) {
+    const { data } = await api.post(`${BASE_URL}/reset/email/send`, { email });
+    return data;
+  },
+
   // 인증번호 검증
   async verifyEmailCode(email, code) {
-    const { data } = await api.post(`${BASE_URL}email/verify`, { email, code });
+    const { data } = await api.post(`${BASE_URL}/email/verify`, { email, code });
+    return data;
+  },
+
+  // 비밀번호 재설정
+  async resetPassword(resetDto) {
+    const { data } = await api.patch(`${BASE_URL}/reset/password`, resetDto);
     return data;
   },
 };
