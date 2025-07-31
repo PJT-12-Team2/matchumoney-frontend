@@ -19,11 +19,21 @@ import PersonaDepositAllList from "@/pages/persona/PersonaDepositAllListPage.vue
 import PersonaSavingAllList from "@/pages/persona/PersonaSavingAllListPage.vue";
 
 import RecommendSavings from "@/pages/savings/recommendations/RecommendSavings.vue";
+import MyDataCardPage from "@/pages/mydata/MyDataCardPage.vue";
 /* 결과 페이지 (동적 import) */
 const ResultPage = () => import("@/pages/persona/PersonaResultPage.vue");
 
 /* 8종 페르소나 코드 */
-const personaCodes = ["turtle", "squirrel", "ant", "owl", "rabbit", "cat", "tiger", "penguin"];
+const personaCodes = [
+  "turtle",
+  "squirrel",
+  "ant",
+  "owl",
+  "rabbit",
+  "cat",
+  "tiger",
+  "penguin",
+];
 
 const routes = [
   { path: "/", name: "home", component: HomePage },
@@ -70,6 +80,11 @@ const routes = [
     path: "/savings/recommendations/history",
     name: "RecommendSavings",
     component: RecommendSavings,
+  },
+  {
+    path: "/mydata/cards",
+    name: "MyDataCards",
+    component: MyDataCardPage,
   },
   {
     path: "/persona",
