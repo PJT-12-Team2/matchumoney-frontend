@@ -5,41 +5,41 @@
         <h3>KB카드 연동</h3>
         <button class="btn-close" @click="closeModal">&times;</button>
       </div>
-      
+
       <div class="modal-body">
         <p class="description">
           KB카드 마이데이터를 연동하여 카드 정보를 가져옵니다.
         </p>
-        
+
         <form @submit.prevent="handleSync">
           <div class="form-group">
             <label for="cardId">카드 ID</label>
-            <input 
-              type="text" 
-              id="cardId" 
+            <input
+              type="text"
+              id="cardId"
               v-model="formData.cardId"
               placeholder="카드 ID를 입력하세요"
               required
             />
           </div>
-          
+
           <div class="form-group">
             <label for="cardPw">카드 비밀번호</label>
-            <input 
-              type="password" 
-              id="cardPw" 
+            <input
+              type="password"
+              id="cardPw"
               v-model="formData.cardPw"
               placeholder="카드 비밀번호를 입력하세요"
               required
             />
           </div>
-          
+
           <div class="form-actions">
             <button type="button" class="btn-cancel" @click="closeModal">
               취소
             </button>
             <button type="submit" class="btn-sync" :disabled="isLoading">
-              {{ isLoading ? '연동 중...' : '연동하기' }}
+              {{ isLoading ? "연동 중..." : "연동하기" }}
             </button>
           </div>
         </form>
@@ -49,36 +49,36 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive } from "vue";
 
 const props = defineProps({
   isVisible: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(['close', 'sync']);
+const emit = defineEmits(["close", "sync"]);
 
 const isLoading = ref(false);
 const formData = reactive({
-  cardId: '',
-  cardPw: ''
+  cardId: "",
+  cardPw: "",
 });
 
 const closeModal = () => {
-  formData.cardId = '';
-  formData.cardPw = '';
-  emit('close');
+  formData.cardId = "";
+  formData.cardPw = "";
+  emit("close");
 };
 
 const handleSync = async () => {
   isLoading.value = true;
   try {
-    await emit('sync', { ...formData });
+    await emit("sync", { ...formData });
     closeModal();
   } catch (error) {
-    console.error('카드 연동 실패:', error);
+    console.error("카드 연동 실패:", error);
   } finally {
     isLoading.value = false;
   }
