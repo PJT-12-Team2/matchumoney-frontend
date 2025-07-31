@@ -42,7 +42,23 @@
               {{ errors.password || '비밀번호가 입력되었습니다.' }}
             </p>
           </div>
-
+          <div class="input-group" v-if="requireBirthdate">
+            <label for="birth">
+              생년월일(YYYY-MM-DD)
+              <span class="required">*</span>
+            </label>
+            <input
+              id="birth"
+              v-model="birth"
+              type="date"
+              class="modal-input"
+              autocomplete="current-birth"
+              placeholder="생년월일을 입력해주세요."
+            />
+            <p class="input-error" :class="{ hidden: !errors.birth }">
+              {{ errors.birth || '생년월일이 입력되었습니다.' }}
+            </p>
+          </div>
           <div class="button-group">
             <button type="button" class="btn cancel" @click="close">
               닫기
@@ -63,17 +79,26 @@ import { ref, computed, watchEffect, defineProps, defineEmits } from 'vue';
 const props = defineProps({
   visible: Boolean,
   loading: Boolean,
+  requireBirthdate: Boolean,
 });
 
 const emit = defineEmits(['update:visible', 'update:loading', 'submit']);
 
 const userId = ref('');
 const password = ref('');
-const errors = ref({ userId: '', password: '' });
+const birth = ref('');
+const errors = ref({ userId: '', password: '', birth: '' });
 
-const isFormValid = computed(
-  () => userId.value.trim() !== '' && password.value.trim() !== ''
-);
+const isFormValid = computed(() => {
+  if (props.requireBirthdate) {
+    return (
+      userId.value.trim() !== '' &&
+      password.value.trim() !== '' &&
+      birth.value.trim() !== ''
+    );
+  }
+  return userId.value.trim() !== '' && password.value.trim() !== '';
+});
 
 function close() {
   emit('update:visible', false);
@@ -84,13 +109,24 @@ function validate() {
     userId.value.trim() === '' ? '아이디는 필수입니다.' : '';
   errors.value.password =
     password.value.trim() === '' ? '비밀번호는 필수입니다.' : '';
-  return !errors.value.userId && !errors.value.password;
+  if (props.requireBirthdate) {
+    errors.value.birth =
+      !birth.value || formatToYyyymmdd(birth.value).trim() === ''
+        ? '생년월일은 필수입니다.'
+        : '';
+  }
+  return !errors.value.userId && !errors.value.password && !errors.value.birth;
 }
+
+const formatToYyyymmdd = (dateStr) => {
+  return dateStr.replaceAll('-', '');
+};
 
 function submit() {
   if (!validate()) return;
 
   emit('submit', {
+    birthDate: formatToYyyymmdd(birth.value),
     id: userId.value,
     password: password.value,
   });
