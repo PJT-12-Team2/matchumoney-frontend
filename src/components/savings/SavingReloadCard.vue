@@ -35,6 +35,7 @@
       v-model:visible="showModal"
       v-model:loading="isLoading"
       @submit="handleSync"
+      :requireBirthdate="requireBirth"
     />
   </div>
 </template>
@@ -43,6 +44,8 @@
 import { ref, defineProps, computed } from 'vue';
 import SavingConnectModal from './SavingConnectModal.vue';
 import savingApi from '@/api/savings';
+const showModal = ref(false);
+const requireBirth = ref(false);
 
 const props = defineProps({
   listLength: {
@@ -56,7 +59,7 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(['update:loading']);
-const showModal = ref(false);
+
 // 부모와 양방향 바인딩
 const isLoading = computed({
   get: () => props.loading,
@@ -76,7 +79,18 @@ const handleSync = async (loginDto) => {
     window.location.reload();
   } catch (e) {
     console.error(e);
-    alert('예/적금 연결 실패');
+    const errorList = e.response?.data?.errors || [];
+    let errorMessage = '';
+    for (const error of errorList) {
+      console.log(error.code);
+      if (error.code === 'CF-12855') {
+        console.log('생일 입력 필요!!');
+        requireBirth.value = true;
+      }
+      errorMessage += (error.message || '') + '\n';
+    }
+
+    alert('예/적금 연결 실패\n' + errorMessage);
   } finally {
     isLoading.value = false;
   }
