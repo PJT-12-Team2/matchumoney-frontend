@@ -16,6 +16,7 @@
           >
             <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
             <div class="carousel-saving-name">{{ saving.name }}</div>
+            <div>{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
               <span>최고 금리: <strong style="color:#2e7d32">{{ saving.maxRate }}</strong></span>
               <br />
@@ -226,6 +227,7 @@ const carouselSavings = computed(() => {
   return personaRecommendedSavings.value.map(d => ({
     id: d.savingId,
     name: d.savingName, // ← 변경: API 응답에 따라 이름 우선순위 설정
+    bankName: d.bankName,
     image: d.companyImage,
     maxRate: `${d.maxRate.toFixed(2)}%`,
     baseRate: `${d.basicRate.toFixed(2)}%`
@@ -256,6 +258,7 @@ onMounted(async () => {
     personaRecommendedSavings.value = (result.savings || []).map((item) => ({
       savingId: item.savingId,
       savingName: item.savingName,
+      bankName : item.bankName,
       companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
       maxRate: item.maxRate ?? 0,
       basicRate: item.basicRate ?? 0

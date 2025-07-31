@@ -17,6 +17,7 @@
           >
             <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
             <div class="carousel-deposit-name">{{ deposit.name }}</div>
+            <div>{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>최고 금리: <strong style="color:#2e7d32">{{ deposit.maxRate }}</strong></span>
               <br />
@@ -278,6 +279,7 @@ const carouselDeposits = computed(() => {
   return personaRecommendedDeposits.value.map(d => ({
     id: d.depositId,
     name: d.productName,
+    bankName : d.bankName,
     image: d.companyImage,
     maxRate: `${d.maxRate.toFixed(2)}%`,
     baseRate: `${d.basicRate.toFixed(2)}%`
@@ -306,6 +308,7 @@ onMounted(async () => {
     personaRecommendedDeposits.value = (result.deposits || []).map((item) => ({
       depositId: item.depositId,
       productName: item.productName,
+      bankName : item.bankName,
       companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
       maxRate: item.maxRate ?? 0,
       basicRate: item.basicRate ?? 0
