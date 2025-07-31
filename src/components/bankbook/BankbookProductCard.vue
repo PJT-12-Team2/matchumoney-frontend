@@ -5,7 +5,11 @@
         <div class="product-card__company">{{ saving.company }}</div>
         <div class="product-card__title">{{ saving.title }}</div>
       </div>
-      <FavoriteToggle v-model="saving.is_starred" />
+      <FavoriteToggle
+        v-model="saving.is_starred"
+        :productId="saving.id"
+        :productType="productType"
+      />
     </div>
 
     <div class="product-card__body" @click="onClick">
@@ -58,6 +62,9 @@ import { defineProps } from 'vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
 import { roundToTwoDecimalPlaces } from '@/util/numberFormatter';
+import { ProductType } from '@/constants/productTypes';
+
+const productType = ProductType.SAVING;
 const props = defineProps({
   saving: {
     type: Object,
