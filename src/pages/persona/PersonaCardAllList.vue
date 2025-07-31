@@ -138,7 +138,7 @@
 -->
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import api from '@/api';
 
 // 📦 로딩 및 검색 결과 표시 상태
 const loading = ref(false);
@@ -194,11 +194,11 @@ const fetchRecommendedCards = async () => {
     };
 
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await axios.get('/api/cards/recommendations/user/persona-id', config);
+    const personaIdRes = await api.get('/cards/recommendations/user/persona-id', config);
     const personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 카드 추천 가져오기
-    const recommendationRes = await axios.get('/api/cards/recommendations/user/recommendation', config);
+    const recommendationRes = await api.get('/cards/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
     userPersonaType.value = result.personaName || '토끼형';
@@ -225,7 +225,7 @@ const searchProducts = async () => {
   loading.value = true;
   showSearchResults.value = true;
   try {
-    const response = await axios.post('/api/persona/cardsearch', {
+    const response = await api.post('/persona/cardsearch', {
       creditCard: filters.value.creditCard,
       debitCard: filters.value.debitCard,
       selectedBenefits: filters.value.selectedBenefits

@@ -125,7 +125,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import axios from 'axios'
+import api from '@/api'
 import { onMounted } from 'vue'
 import { watch } from 'vue'
 
@@ -297,11 +297,11 @@ onMounted(async () => {
 
   try {
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await axios.get('/api/deposits/recommendations/user/persona-id', config);
+    const personaIdRes = await api.get('/deposits/recommendations/user/persona-id', config);
     personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 예금 추천 가져오기
-    const recommendationRes = await axios.get('/api/deposits/recommendations/user/recommendation', config);
+    const recommendationRes = await api.get('/deposits/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
     userPersonaType.value = result.personaName || '토끼형';
@@ -321,7 +321,7 @@ onMounted(async () => {
 
   try {
     // 전체 적금 리스트
-    const allRes = await axios.post('/api/deposit/search', {
+    const allRes = await api.post('/deposit/search', {
       korCoNm: '',
       maxLimit: null
     });

@@ -129,8 +129,8 @@ class="product-card"
 
 <script setup>
 import { ref, computed } from 'vue'
-import axios from 'axios'
 import { onMounted } from 'vue'
+import api from "@/api"
 
 const bankOptions = [
 { name: '국민은행', logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href },
@@ -247,11 +247,11 @@ onMounted(async () => {
 
   try {
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await axios.get('/api/savings/recommendations/user/persona-id', config);
+    const personaIdRes = await api.get('/savings/recommendations/user/persona-id', config);
     personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 적금 추천 가져오기
-    const recommendationRes = await axios.get('/api/savings/recommendations/user/recommendation', config);
+    const recommendationRes = await api.get('/savings/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
     userPersonaType.value = result.personaName || '토끼형';
@@ -271,7 +271,7 @@ onMounted(async () => {
 
   try {
     // 전체 적금 리스트
-    const allRes = await axios.post('/api/saving/search', {
+    const allRes = await api.post('/saving/search', {
       korCoNm: '',
       maxLimit: null
     });

@@ -74,7 +74,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
-import axios from 'axios';
+import api from '@/api';
 
 const route = useRoute();
 const persona = ref(null);
@@ -86,7 +86,7 @@ onMounted(async () => {
         const code = route.params.code || 'ant';
 
         // 한 번의 API 호출로 모든 데이터 가져오기
-        const { data } = await axios.get(`/api/persona/${code}`);
+        const { data } = await api.get(`/persona/${code}`);
         persona.value = data;
 
         console.log('Received data:', data); // 디버깅용
