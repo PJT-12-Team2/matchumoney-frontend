@@ -11,7 +11,6 @@
         :productType="productType"
       />
     </div>
-
     <div class="product-card__body" @click="onClick">
       <div class="product-card__logo-box">
         <img
