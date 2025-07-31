@@ -3,45 +3,72 @@
     <main class="main-content">
       <h2 class="page-title">예금 추천</h2>
 
-      <!-- 계좌 슬라이더 컴포넌트 -->
-      <AccountSlider
-        :accounts="accounts"
-        :loading="accountsLoading"
-        :error="error"
-        :current-slide="currentSlide"
-        @refresh="refreshAccounts"
-        @slide-change="handleSlideChange"
-      />
-
-      <!-- 검색 버튼 -->
-      <div class="search-section">
-        <button
-          class="search-btn"
-          @click="searchProducts"
-          :disabled="loading || accountsLoading || !currentAccount"
-        >
-          {{ loading ? '검색 중...' : '가입 가능한 상품 검색' }}
-        </button>
+      <!-- 로그인하지 않은 경우-->
+      <div v-if="!isLoggedIn" class="auth-required">
+        <div class="auth-message">
+          <div class="auth-icon">🔐</div>
+          <div class="auth-text">
+            <h3>로그인이 필요합니다</h3>
+            <p>맞춤형 예금 상품 추천을 받으려면<br />먼저 로그인해주세요.</p>
+          </div>
+          <button @click="redirectToLogin" class="login-button">
+            로그인하기
+          </button>
+        </div>
       </div>
 
-      <!-- 상품 리스트 컴포넌트 -->
-      <ProductList
-        :products="products"
-        :loading="loading"
-        :has-searched="hasSearched"
-        :customer-name="currentAccount?.nickname || '고객'"
-        :balance="currentAccount?.formattedBalance || ''"
-        @product-select="selectProduct"
-      />
+      <!-- 로그인한 경우 기존 기능 -->
+      <template v-else>
+        <!-- 계좌 슬라이더 컴포넌트 -->
+        <AccountSlider
+          :accounts="accounts"
+          :loading="accountsLoading"
+          :error="error"
+          :current-slide="currentSlide"
+          :user-id="effectiveUserId"
+          @refresh="refreshAccounts"
+          @slide-change="handleSlideChange"
+          @connect-success="handleConnectSuccess"
+        />
+
+        <!-- 검색 버튼 - 계좌가 있을 때만 표시 -->
+        <div v-if="accounts.length > 0" class="search-section">
+          <button
+            class="search-btn"
+            @click="searchProducts"
+            :disabled="loading || accountsLoading || !currentAccount"
+          >
+            {{ loading ? '검색 중...' : '가입 가능한 상품 검색' }}
+          </button>
+        </div>
+
+        <!-- 상품 리스트 컴포넌트 -->
+        <ProductList
+          :products="products"
+          :loading="loading"
+          :has-searched="hasSearched"
+          :customer-name="
+            currentAccount?.nickname || currentUser?.nickname || '고객'
+          "
+          :balance="currentAccount?.formattedBalance || ''"
+          @product-select="selectProduct"
+        />
+      </template>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '@/stores/auth';
 import AccountSlider from './AccountSlider.vue';
 import ProductList from './ProductList.vue';
+
+// 🆕 기존 인증 스토어 사용
+const authStore = useAuthStore();
+const router = useRouter();
 
 // 반응형 데이터
 const products = ref([]);
@@ -53,14 +80,31 @@ const error = ref(null);
 const hasSearched = ref(false);
 const searchCache = ref({});
 
-const userId = ref('3'); // 테스트 데이터
-
-// Props
+// Props (선택사항)
 const props = defineProps({
   userId: {
     type: String,
-    required: true,
+    required: false,
   },
+});
+
+// 실제 사용할 userId (auth store 구조에 맞게 수정)
+const effectiveUserId = computed(() => {
+  return props.userId || authStore.userId || null;
+});
+
+// 로그인 상태 확인 (auth store 구조에 맞게 수정)
+const isLoggedIn = computed(() => {
+  return !!(authStore.accessToken && authStore.userId);
+});
+
+// 현재 사용자 정보 (auth store 구조에 맞게 수정)
+const currentUser = computed(() => {
+  if (!authStore.userId) return null;
+  return {
+    userId: authStore.userId,
+    nickname: authStore.nickname,
+  };
 });
 
 // Computed
@@ -68,43 +112,53 @@ const currentAccount = computed(() => {
   return accounts.value[currentSlide.value] || accounts.value[0];
 });
 
+// 로그인 페이지로 리다이렉트
+const redirectToLogin = () => {
+  router.push('/login');
+};
+
 // 계좌 정보 가져오기
 const fetchAccounts = async () => {
+  if (!effectiveUserId.value) {
+    console.warn('사용자 ID가 없습니다.');
+    accountsLoading.value = false;
+    return;
+  }
+
   accountsLoading.value = true;
   error.value = null;
 
   try {
-    const response = await axios.get(`/api/deposits/accounts/${userId.value}`);
+    console.log(`사용자 ${effectiveUserId.value}의 계좌 정보 조회 중...`);
+
+    const response = await axios.get(
+      `/api/deposits/accounts/${effectiveUserId.value}`
+    );
     accounts.value = response.data;
+
+    console.log(`${response.data.length}개의 계좌를 찾았습니다.`);
+
+    // 계좌 연결 후 첫 번째 계좌로 슬라이드 초기화
+    if (response.data.length > 0) {
+      currentSlide.value = 0;
+    }
   } catch (err) {
-    console.error(err);
-    // 에러 발생 시 기본 계좌 정보 사용 (fallback)
-    accounts.value = [
-      {
-        accountName: 'KB 올인원 급여 통장',
-        formattedBalance: '1,374,575원',
-        accountNo: '******-04-181553',
-        nickname: '혜진',
-      },
-      {
-        accountName: '신한 My Car 통장',
-        formattedBalance: '2,374,575원',
-        accountNo: '******-12-456789',
-        nickname: '혜진',
-      },
-      {
-        accountName: '하나 Dream 적금',
-        formattedBalance: '3,374,575원',
-        accountNo: '******-98-741852',
-        nickname: '혜진',
-      },
-      {
-        accountName: '우리 WON 통장',
-        formattedBalance: '4,374,575원',
-        accountNo: '******-55-963741',
-        nickname: '혜진',
-      },
-    ];
+    console.error('계좌 조회 실패:', err);
+
+    // 실제 에러 발생 시 빈 배열로 설정 (연결 카드 표시)
+    if (err.response?.status === 404) {
+      console.log('연결된 계좌가 없습니다. 계좌 연결 카드를 표시합니다.');
+      accounts.value = [];
+    } else if (err.response?.status === 500) {
+      console.error('서버 오류가 발생했습니다.');
+      accounts.value = [];
+      error.value = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    } else {
+      // 네트워크 오류 등의 경우 에러 메시지 표시
+      accounts.value = [];
+      error.value =
+        '계좌 정보를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.';
+    }
   } finally {
     accountsLoading.value = false;
   }
@@ -112,7 +166,18 @@ const fetchAccounts = async () => {
 
 // 계좌 새로고침
 const refreshAccounts = () => {
+  // 검색 상태도 함께 초기화
+  hasSearched.value = false;
+  products.value = [];
+  searchCache.value = {};
+
   fetchAccounts();
+};
+
+// 계좌 연결 성공 핸들러
+const handleConnectSuccess = () => {
+  console.log('계좌 연결 성공! 계좌 목록을 새로고침합니다.');
+  refreshAccounts();
 };
 
 // 슬라이드 변경 핸들러
@@ -157,6 +222,11 @@ const saveCachedResults = (accountData, searchResults) => {
 
 // 상품 검색
 const searchProducts = async () => {
+  if (!effectiveUserId.value) {
+    console.error('사용자 ID가 없습니다.');
+    return;
+  }
+
   loading.value = true;
 
   try {
@@ -184,7 +254,7 @@ const searchProducts = async () => {
     const balance = parseInt(balanceString.replace(/[^\d]/g, '')) || 0;
 
     console.log('검색 요청 데이터:', {
-      userId: userId.value,
+      userId: effectiveUserId.value,
       balance: balance,
       accountNumber: currentAccountData.accountNo,
     });
@@ -193,7 +263,7 @@ const searchProducts = async () => {
     const response = await axios.post(
       '/api/deposits/recommendations/byBalance',
       {
-        userId: userId.value,
+        userId: effectiveUserId.value,
         balance: balance,
         accountNumber: currentAccountData.accountNo,
       }
@@ -221,9 +291,78 @@ const selectProduct = (product) => {
   // 상품 선택 로직 구현
 };
 
+// 로그인 상태 변경 감지 (auth store 구조에 맞게 수정)
+watch(isLoggedIn, (newValue, oldValue) => {
+  if (newValue && !oldValue) {
+    // 로그인됨
+    console.log('로그인 감지됨. 계좌 정보를 조회합니다.');
+    refreshAccounts();
+  } else if (!newValue && oldValue) {
+    // 로그아웃됨
+    console.log('로그아웃 감지됨. 데이터를 초기화합니다.');
+    accounts.value = [];
+    products.value = [];
+    hasSearched.value = false;
+    searchCache.value = {};
+    accountsLoading.value = false;
+  }
+});
+
+// 사용자 ID 변경 감지
+watch(
+  effectiveUserId,
+  (newUserId, oldUserId) => {
+    if (newUserId && newUserId !== oldUserId) {
+      console.log(`사용자 ID 변경: ${oldUserId} -> ${newUserId}`);
+      refreshAccounts();
+    }
+  },
+  { immediate: false }
+);
+
 // 라이프사이클
 onMounted(async () => {
-  await fetchAccounts();
+  // 임시 로그인 테스트 - 개발 환경에서만 임시 로그인 자동 설정
+  // if (import.meta.env.DEV) {
+  //   console.log('🔧 개발 환경: 임시 로그인 강제 설정');
+
+  //   // 개발 환경에서는 항상 특정 사용자로 강제 설정
+  //   authStore.logout(); // 기존 상태 클리어
+
+  //   // 새로운 임시 사용자로 설정
+  //   authStore.setAuth({
+  //     accessToken: 'dev-temp-token',
+  //     userId: '5', // 이미 계좌가 있는 사용자로 다시 변경
+  //     nickname: '개발테스트',
+  //     email: 'dev@test.com',
+  //   });
+
+  //   // Vue의 반응성 업데이트 대기
+  //   await nextTick();
+
+  //   console.log('임시 로그인 후 상태:', {
+  //     isLoggedIn: isLoggedIn.value,
+  //     currentUser: currentUser.value,
+  //     effectiveUserId: effectiveUserId.value,
+  //   });
+  // }
+
+  // 최종 조건 체크 후 계좌 정보 조회
+  console.log('최종 상태 체크:', {
+    isLoggedIn: isLoggedIn.value,
+    effectiveUserId: effectiveUserId.value,
+  });
+
+  if (isLoggedIn.value && effectiveUserId.value) {
+    console.log('✅ 조건 만족: 계좌 정보 조회 시작');
+    await fetchAccounts();
+  } else {
+    console.log('❌ 조건 불만족:', {
+      isLoggedIn: isLoggedIn.value,
+      effectiveUserId: effectiveUserId.value,
+    });
+    accountsLoading.value = false;
+  }
 });
 </script>
 
@@ -232,7 +371,7 @@ onMounted(async () => {
 .deposit-recommendations {
   font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, sans-serif;
-  color: #1a1a1a;
+  color: black;
   line-height: 1.6;
   width: 100%;
   min-height: 100vh;
@@ -246,9 +385,65 @@ onMounted(async () => {
 .page-title {
   font-size: 24px;
   font-weight: 700;
-  color: #636363;
+  color: var(--color-title);
   text-align: center;
   margin-bottom: 10px;
+}
+
+/* ===== 🆕 인증 필요 메시지 ===== */
+.auth-required {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.auth-message {
+  background: var(--color-light);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+
+.auth-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+}
+
+.auth-text h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-title);
+  margin-bottom: 15px;
+}
+
+.auth-text p {
+  font-size: 16px;
+  color: var(--color-title);
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.login-button {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(96, 153, 102, 0.3);
+}
+
+.login-button:hover {
+  background: var(--color-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(96, 153, 102, 0.4);
 }
 
 /* ===== 검색 섹션 ===== */
@@ -259,7 +454,7 @@ onMounted(async () => {
 }
 
 .search-btn {
-  background: #609966;
+  background: var(--color-accent);
   color: white;
   border: none;
   padding: 8px 20px;
@@ -277,7 +472,7 @@ onMounted(async () => {
 }
 
 .search-btn:hover:not(:disabled) {
-  background: #507a55;
+  background: var(--color-dark);
   transform: translateY(-1px);
 }
 
@@ -289,6 +484,27 @@ onMounted(async () => {
 
   .page-title {
     font-size: 20px;
+  }
+
+  .auth-message {
+    padding: 30px 20px;
+  }
+
+  .auth-icon {
+    font-size: 50px;
+  }
+
+  .auth-text h3 {
+    font-size: 20px;
+  }
+
+  .auth-text p {
+    font-size: 14px;
+  }
+
+  .login-button {
+    padding: 10px 25px;
+    font-size: 14px;
   }
 }
 
