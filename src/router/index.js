@@ -20,6 +20,9 @@ import PersonaSavingAllList from "@/pages/persona/PersonaSavingAllListPage.vue";
 
 import RecommendSavings from "@/pages/savings/recommendations/RecommendSavings.vue";
 import MyDataCardPage from "@/pages/mydata/MyDataCardPage.vue";
+
+import CardRecommendationPage from "@/pages/cards/CardRecommendationPage.vue";
+
 /* 결과 페이지 (동적 import) */
 const ResultPage = () => import("@/pages/persona/PersonaResultPage.vue");
 
@@ -81,11 +84,22 @@ const routes = [
     name: "RecommendSavings",
     component: RecommendSavings,
   },
-  
+
   {
     path: "/mydata/cards",
     name: "MyDataCards",
     component: MyDataCardPage,
+  },
+  {
+    path: "/cards/recommendations",
+    name: "CardRecommendations",
+    component: CardRecommendationPage,
+  },
+  {
+    path: "/cards/recommendations/:cardId",
+    name: "CardRecommendation",
+    component: CardRecommendationPage,
+    props: true,
   },
   {
     path: "/persona",
