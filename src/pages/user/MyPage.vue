@@ -296,7 +296,7 @@ function selectProduct(product) {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-3xl);
   box-sizing: border-box;
   padding: var(--spacing-sm);
 }
@@ -317,40 +317,40 @@ function selectProduct(product) {
   min-width: 200px;
   max-width: 600px;
   box-sizing: border-box;
-  padding: var(--spacing-xs);
+  padding: var(--spacing-md);
 }
 
 .user-name {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   font-weight: 800;
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
 }
 
 .user-name .edit {
   font-size: var(--font-size-base);
-  margin-left: var(--spacing-md);
+  margin-left: var(--spacing-lg);
   color: var(--color-accent);
   cursor: pointer;
 }
 
 .nickname {
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-4xl);
   font-weight: 800;
 }
 
 .level-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 500;
   margin-left: var(--spacing-xs);
 }
 
 .user-type {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   font-weight: 500;
 }
 
 .user-level {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   display: flex;
   align-items: flex-end;
   gap: var(--spacing-sm);
@@ -358,20 +358,21 @@ function selectProduct(product) {
 }
 
 .level-value {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   font-weight: 800;
 }
 
 .level-bar {
   width: 100%;
-  height: 6px;
-  background-color: var(--color-secondary-10);
+  height: 10px;
+  background-color: var(--color-secondary);
   border-radius: 5px;
 }
 .fill {
   height: 100%;
-  background-color: var(--color-accent);
+  background-color: var(--color-dark);
   width: 60%;
+  border-radius: 5px;
 }
 
 .change-type {
