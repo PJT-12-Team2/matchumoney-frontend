@@ -70,15 +70,30 @@
               v-for="(product, index) in getProductsByTab"
               :key="index"
               class="product-card"
-              @click="selectProduct(product)"
+              @click="!product.isFallback && selectProduct(product)"
               :style="{ animationDelay: `${index * 0.1}s` }">
               <div class="product-header">
                 <div class="bank-logo">
-                  <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
-                  <img v-else :src="getBankLogo(product.bankName)" alt="은행 로고" />
+                  <template v-if="product.isFallback">
+                    <img
+                      v-if="selectedTab === '예금'"
+                      src="@/assets/logo_dis.png"
+                      alt="예금 이모지"
+                      style="width: 100px; height: 100px" />
+                    <img
+                      v-else-if="selectedTab === '적금'"
+                      src="@/assets/logo_dis.png"
+                      alt="적금 이모지"
+                      style="width: 100px; height: 100px" />
+                    <img v-else src="@/assets/logo_dis.png" alt="카드 이모지" style="width: 100px; height: 100px" />
+                  </template>
+                  <template v-else>
+                    <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
+                    <img v-else :src="getBankLogo(product.bankName)" alt="은행 로고" />
+                  </template>
                 </div>
                 <div class="product-info">
-                  <h3>{{ product.productName }}</h3>
+                  <h3>{{ product.isFallback ? "상품 없음" : product.productName }}</h3>
                 </div>
               </div>
             </div>
@@ -148,25 +163,36 @@ onMounted(async () => {
 });
 
 function updateProducts() {
+  let items = [];
   if (selectedTab.value === "적금") {
-    products.value = favoriteSavings.value.map((item) => ({
+    items = favoriteSavings.value.map((item) => ({
       bankName: item.company,
       productName: item.title,
       type: "적금",
     }));
   } else if (selectedTab.value === "예금") {
-    products.value = favoriteDeposits.value.map((item) => ({
+    items = favoriteDeposits.value.map((item) => ({
       bankName: item.bankName,
       productName: item.productName,
       type: "예금",
     }));
   } else if (selectedTab.value === "카드") {
-    products.value = favoriteCards.value.map((item) => ({
+    items = favoriteCards.value.map((item) => ({
       productName: item.name,
       productImage: item.imageUrl,
       type: "카드",
     }));
   }
+
+  if (items.length < 2) {
+    const missing = 2 - items.length;
+    const fallback = { isFallback: true, type: selectedTab.value };
+    items = [...items, ...Array(missing).fill(fallback)];
+  } else {
+    items = items.slice(0, 2);
+  }
+
+  products.value = items;
 }
 
 import { watch } from "vue";
