@@ -66,7 +66,7 @@ export default {
   async getCardBenefits(cardId) {
     // console.log("💰 카드 혜택 조회 요청:", cardId);
     const { data } = await api.get(
-      `/v1/card-recommendation/cards/${cardId}/benefits`
+      `/card-recommendation/cards/${cardId}/benefits`
     );
     // console.log("✅ 카드 혜택 응답:", data);
     return data;
@@ -76,7 +76,7 @@ export default {
   async getCardRecommendations(cardId) {
     // console.log("🎯 카드 추천 조회 요청:", cardId);
     const { data } = await api.get(
-      `/v1/card-recommendation/cards/${cardId}/recommendations`
+      `/card-recommendation/cards/${cardId}/recommendations`
     );
     // console.log("✅ 카드 추천 응답:", data);
     return data;
@@ -85,7 +85,7 @@ export default {
   // 사용자 보유 카드 전체 혜택 조회
   async getMyCardsBenefits() {
     // console.log("📊 보유 카드 혜택 조회 요청");
-    const { data } = await api.get(`/v1/card-recommendation/my-cards/benefits`);
+    const { data } = await api.get(`/card-recommendation/my-cards/benefits`);
     // console.log("✅ 보유 카드 혜택 응답:", data);
     return data;
   },
@@ -94,7 +94,7 @@ export default {
   async getSavedRecommendations(cardId) {
     // console.log("💾 저장된 추천 조회 요청:", cardId);
     const { data } = await api.get(
-      `/v1/card-recommendation/cards/${cardId}/saved-recommendations`
+      `/card-recommendation/cards/${cardId}/saved-recommendations`
     );
     // console.log("✅ 저장된 추천 응답:", data);
     return data;
@@ -104,7 +104,7 @@ export default {
   async getAllSavedRecommendations() {
     // console.log("📋 모든 저장된 추천 조회 요청");
     const { data } = await api.get(
-      `/v1/card-recommendation/saved-recommendations`
+      `/card-recommendation/saved-recommendations`
     );
     // console.log("✅ 모든 저장된 추천 응답:", data);
     return data;
@@ -114,7 +114,7 @@ export default {
   async deleteSavedRecommendations(cardId) {
     // console.log("🗑️ 저장된 추천 삭제 요청:", cardId);
     const { data } = await api.delete(
-      `/v1/card-recommendation/cards/${cardId}/saved-recommendations`
+      `/card-recommendation/cards/${cardId}/saved-recommendations`
     );
     // console.log("✅ 저장된 추천 삭제 응답:", data);
     return data;
