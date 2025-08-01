@@ -1,12 +1,9 @@
-
-
 /* CSS Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
 /* CSS 변수 정의 */
 :root {
   --header-height: 4.5rem;
@@ -167,13 +164,13 @@
 
 /* 기본 HTML 요소 스타일 */
 html {
-  font-size: 16px;
+  font-size: clamp(11px, 1.6vw, 24px);
   line-height: 1.5;
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--bg-body);
   color: var(--text-primary);
   line-height: 1.6;
@@ -577,9 +574,6 @@ a:hover {
 }
 
 /* 알림/토스트 스타일 */
-
-
-
 
 /* 배지 스타일 */
 .badge {
