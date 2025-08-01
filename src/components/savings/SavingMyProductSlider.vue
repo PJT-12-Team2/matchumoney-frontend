@@ -49,7 +49,7 @@ const onSlideChange = (swiper) => {
 
   // 불러오기 카드인 경우: 마지막 인덱스는 emit 생략
   if (currentIndex === savingList.value.length) {
-    emit('select', -1);
+    emit('select', '-1');
     return;
   }
 

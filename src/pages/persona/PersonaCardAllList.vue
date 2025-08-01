@@ -1,12 +1,11 @@
 <template>
 	<div class="card-product-search">
 		<main class="main-content">
+			<!-- 🔷 페르소나 추천 캐러셀 -->
 			<h1 class="page-title">페르소나 추천</h1>
-
-			<!-- 🐰 캐러셀 추천 -->
 			<section class="persona-carousel-section">
 				<h2 class="persona-carousel-title">
-					<span class="highlight">{{ personaName }}</span> 유형에게 추천하는
+					<span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는
 					카드
 				</h2>
 				<div class="carousel-card-list">
@@ -23,7 +22,9 @@
 						/>
 						<div class="carousel-card-name">{{ card.name }}</div>
 						<div class="carousel-card-benefit">
-							{{ card.benefit }}
+							<div><strong>카드사:</strong> {{ card.issuer || '카드사 미정' }}</div>
+							<div><strong>전월실적:</strong> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
+							<div><strong>연회비:</strong> {{ card.annualFee || '정보 없음' }}</div>
 						</div>
 					</div>
 				</div>
@@ -31,8 +32,8 @@
 			<br />
 			<hr />
 			<br />
+			<!-- 🔷 직접 검색 필터 영역 -->
 			<h1 class="page-title">직접 찾아보는 카드</h1>
-			<!-- ✅ 카드 종류 + 혜택 선택 영역 -->
 			<section class="filter-selection-section">
 				<h3 class="filter-label">카드 종류 선택</h3>
 				<div class="card-type-toggle">
@@ -77,7 +78,7 @@
 				</div>
 			</section>
 
-			<!-- 🔍 검색 결과 -->
+			<!-- 🔷 직접 검색 결과 리스트 -->
 			<section class="search-results" v-if="showSearchResults">
 				<h2 class="results-title">검색한 카드 상품</h2>
 
@@ -132,138 +133,147 @@
 	</div>
 </template>
 
-<script>
+<!--
+  name: 'CardSearchPage'
+-->
+<script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import api from '@/api';
 
-export default {
-	name: 'CardSearchPage',
-	setup() {
-		const loading = ref(false);
-		const showSearchResults = ref(false);
+// 📦 로딩 및 검색 결과 표시 상태
+const loading = ref(false);
+const showSearchResults = ref(true); // Always show the search results section
 
-		const filters = ref({
-			creditCard: true,
-			debitCard: true,
-			selectedBenefits: [],
-		});
+// 📦 필터 상태 정의
+const filters = ref({
+  creditCard: true,
+  debitCard: true,
+  selectedBenefits: [],
+});
 
-		const toggleBenefit = (id) => {
-			const index = filters.value.selectedBenefits.indexOf(id);
-			if (index === -1) filters.value.selectedBenefits.push(id);
-			else filters.value.selectedBenefits.splice(index, 1);
-			searchProducts(); // trigger filter
-		};
+// 📦 혜택 카테고리 정의
+const benefitCategories = ref([
+  { id: '모든가맹점', name: '모든가맹점', emoji: '🏢' },
+  { id: '교통', name: '교통', emoji: '🚗' },
+  { id: '주유', name: '주유', emoji: '🛢️' },
+  { id: '통신', name: '통신', emoji: '📱' },
+  { id: '마트/편의점', name: '마트/편의점', emoji: '🛒' },
+  { id: '쇼핑', name: '쇼핑', emoji: '🎁' },
+  { id: '푸드', name: '푸드', emoji: '🍽️' },
+  { id: '카페/디저트', name: '카페/디저트', emoji: '☕' },
+  { id: '뷰티/피트니스', name: '뷰티/피트니스', emoji: '🚨' },
+  { id: '무실적', name: '무실적', emoji: '💰' },
+  { id: '공과금/렌탈', name: '공과금/렌탈', emoji: '🧾' },
+  { id: '병원/약국', name: '병원/약국', emoji: '🏥' },
+  { id: '애완동물', name: '애완동물', emoji: '🐱' },
+  { id: '교육/육아', name: '교육/육아', emoji: '✏️' },
+  { id: '자동차/하이패스', name: '자동차/하이패스', emoji: '🚗' },
+  { id: '레저/스포츠', name: '레저/스포츠', emoji: '⚾' },
+  { id: 'OTT/영화/문화', name: 'OTT/영화/문화', emoji: '🎬' },
+  { id: '간편결제', name: '간편결제', emoji: '💳' },
+  { id: '항공마일리지', name: '항공마일리지', emoji: '✈️' },
+  { id: '공항라운지/PP', name: '공항라운지/PP', emoji: '💺' },
+  { id: '프리미엄', name: '프리미엄', emoji: '💎' },
+  { id: '여행/숙박', name: '여행/숙박', emoji: '🧳' },
+  { id: '해외', name: '해외', emoji: '🌍' },
+  { id: '비즈니스', name: '비즈니스', emoji: '💼' },
+]);
 
-		const benefitCategories = ref([
-			{ id: '모든가맹점', name: '모든가맹점', emoji: '🏢' },
-			{ id: '교통', name: '교통', emoji: '🚗' },
-			{ id: '주유', name: '주유', emoji: '🛢️' },
-			{ id: '통신', name: '통신', emoji: '📱' },
-			{ id: '마트/편의점', name: '마트/편의점', emoji: '🛒' },
-			{ id: '쇼핑', name: '쇼핑', emoji: '🎁' },
-			{ id: '푸드', name: '푸드', emoji: '🍽️' },
-			{ id: '카페/디저트', name: '카페/디저트', emoji: '☕' },
-			{ id: '뷰티/피트니스', name: '뷰티/피트니스', emoji: '🚨' },
-			{ id: '무실적', name: '무실적', emoji: '💰' },
-			{ id: '공과금/렌탈', name: '공과금/렌탈', emoji: '🧾' },
-			{ id: '병원/약국', name: '병원/약국', emoji: '🏥' },
-			{ id: '애완동물', name: '애완동물', emoji: '🐱' },
-			{ id: '교육/육아', name: '교육/육아', emoji: '✏️' },
-			{ id: '자동차/하이패스', name: '자동차/하이패스', emoji: '🚗' },
-			{ id: '레저/스포츠', name: '레저/스포츠', emoji: '⚾' },
-			{ id: 'OTT/영화/문화', name: 'OTT/영화/문화', emoji: '🎬' },
-			{ id: '간편결제', name: '간편결제', emoji: '💳' },
-			{ id: '항공마일리지', name: '항공마일리지', emoji: '✈️' },
-			{ id: '공항라운지/PP', name: '공항라운지/PP', emoji: '💺' },
-			{ id: '프리미엄', name: '프리미엄', emoji: '💎' },
-			{ id: '여행/숙박', name: '여행/숙박', emoji: '🧳' },
-			{ id: '해외', name: '해외', emoji: '🌍' },
-			{ id: '비즈니스', name: '비즈니스', emoji: '💼' },
-		]);
+// 📦 추천 캐러셀 카드 및 페르소나명
+const carouselCards = ref([]);
+const userPersonaType = ref('');
 
-		const carouselCards = ref([]);
-		const personaName = ref('');
+// 📦 추천 카드 불러오기
+const fetchRecommendedCards = async () => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
 
-		const fetchRecommendedCards = async () => {
-			try {
-				const personaId = 1; // TODO: 실제 사용자 personaId로 대체
-				const response = await axios.get(
-					`/api/persona/${personaId}/recommendations`
-				);
+    // 1. 사용자 personaId 가져오기
+    const personaIdRes = await api.get('/cards/recommendations/user/persona-id', config);
+    const personaCode = personaIdRes.data.personaId;
 
-				carouselCards.value = response.data.cards.map((card) => ({
-					id: card.cardProductId,
-					name: card.name,
-					image: card.cardImageUrl,
-				}));
-				personaName.value = response.data.persona.personaName;
-			} catch (error) {
-				console.error('추천 카드 불러오기 실패:', error);
-			}
-		};
+    // 2. 사용자 페르소나 카드 추천 가져오기
+    const recommendationRes = await api.get('/cards/recommendations/user/recommendation', config);
+    const result = recommendationRes.data.result;
 
-		const searchResults = ref([]);
-
-		const getBankLogo = (initial) => {
-			const logos = {
-				shinhan:
-					'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png',
-				hana: 'https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png',
-			};
-			return (
-				logos[initial] ||
-				'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png'
-			);
-		};
-
-		const selectProduct = (product) => {
-			alert(`${product.name}을 선택했습니다.`);
-		};
-
-		const searchProducts = async () => {
-			loading.value = true;
-			showSearchResults.value = true;
-
-			try {
-				const response = await axios.post('/api/persona/cardsearch', {
-					creditCard: filters.value.creditCard,
-					debitCard: filters.value.debitCard,
-					selectedBenefits: filters.value.selectedBenefits
-						.map(id => benefitCategories.value.find(b => b.id === id)?.name)
-						.filter(Boolean),
-				});
-
-				searchResults.value = response.data; // ← 백엔드에서 내려준 카드 리스트
-			} catch (error) {
-				console.error('카드 검색 오류:', error);
-				searchResults.value = [];
-			} finally {
-				loading.value = false;
-			}
-		};
-		onMounted(() => {
-			fetchRecommendedCards();
-			searchProducts(); // 페이지 로드시 자동 실행
-		});
-		// Always show the search results section
-		showSearchResults.value = true;
-		return {
-			loading,
-			showSearchResults,
-			filters,
-			benefitCategories,
-			toggleBenefit,
-			searchProducts,
-			carouselCards,
-			searchResults,
-			getBankLogo,
-			selectProduct,
-		};
-	},
+    userPersonaType.value = result.personaName || '토끼형';
+    carouselCards.value = (result.cards || []).map((item) => ({
+      id: item.cardId,
+      name: item.cardName,
+      image: item.cardImageUrl || '',
+      issuer: item.issuer || '',
+      preMonthMoney: item.preMonthMoney,
+      annualFee: item.annualFee,
+    }));
+  } catch (err) {
+    console.error('❌ 사용자 기반 페르소나 카드 불러오기 실패:', err);
+    userPersonaType.value = '토끼형';
+    carouselCards.value = [];
+  }
 };
+
+// 📦 카드 검색 결과
+const searchResults = ref([]);
+
+// 📦 카드 검색 API 호출
+const searchProducts = async () => {
+  loading.value = true;
+  showSearchResults.value = true;
+  try {
+    const response = await api.post('/persona/cardsearch', {
+      creditCard: filters.value.creditCard,
+      debitCard: filters.value.debitCard,
+      selectedBenefits: filters.value.selectedBenefits
+        .map(id => benefitCategories.value.find(b => b.id === id)?.name)
+        .filter(Boolean),
+    });
+    searchResults.value = response.data; // ← 백엔드에서 내려준 카드 리스트
+  } catch (error) {
+    console.error('카드 검색 오류:', error);
+    searchResults.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 📦 혜택 토글 함수
+const toggleBenefit = (id) => {
+  const index = filters.value.selectedBenefits.indexOf(id);
+  if (index === -1) filters.value.selectedBenefits.push(id);
+  else filters.value.selectedBenefits.splice(index, 1);
+  searchProducts(); // trigger filter
+};
+
+// 📦 카드 선택 동작
+const selectProduct = (product) => {
+  alert(`${product.name}을 선택했습니다.`);
+};
+
+// 📦 은행 로고 가져오기 (for compatibility)
+const getBankLogo = (initial) => {
+  const logos = {
+    shinhan:
+      'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png',
+    hana: 'https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png',
+  };
+  return (
+    logos[initial] ||
+    'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png'
+  );
+};
+
+onMounted(() => {
+  fetchRecommendedCards();
+  searchProducts(); // 페이지 로드시 자동 실행
+});
 </script>
 <style scoped>
+/* 🔷 Layout 및 전체 구조 */
 .card-product-search {
   font-family: 'Noto Sans', sans-serif;
   background: var(--color-white);
@@ -280,6 +290,8 @@ export default {
   margin-bottom: var(--spacing-xl);
   text-align: center;
 }
+
+/* 🔷 페르소나 추천 캐러셀 스타일 */
 .persona-carousel-title {
   font-size: var(--font-size-xl);
   margin-bottom: var(--spacing-lg);
@@ -308,27 +320,26 @@ export default {
   cursor: pointer;
   flex-shrink: 0;
 }
-
 .carousel-card-image {
   width: 100%;
   height: 65%;
   object-fit: contain;
   border-radius: var(--spacing-sm);
 }
-
 .carousel-card-name {
   margin-top: var(--spacing-sm);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-lg);
   font-weight: bold;
   text-align: center;
 }
-
 .carousel-card-benefit {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   text-align: center;
   margin-top: var(--spacing-xs);
 }
+
+/* 🔷 필터 영역 스타일 */
 .filter-selection-section {
   text-align: left;
   margin-bottom: var(--spacing-2xl);
@@ -405,35 +416,12 @@ export default {
   border-radius: var(--spacing-md);
   cursor: pointer;
 }
+
+/* 🔷 검색 결과 카드 스타일 */
 .search-results-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
-}
-@media (max-width: 768px) {
-  .search-results-grid {
-    grid-template-columns: 1fr;
-  }
-  .benefit-grid {
-    display: flex;
-    overflow-x: auto;
-    padding: var(--spacing-sm);
-    gap: var(--spacing-md);
-    scroll-snap-type: x mandatory;
-  }
-  .benefit-button {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-    min-width: 6rem;
-  }
-  .carousel-card-list {
-    justify-content: center;
-    overflow-x: hidden;
-  }
-  .carousel-card {
-    width: 220px;
-    height: 320px;
-  }
 }
 .product-card {
   background: var(--bg-content);
@@ -474,5 +462,32 @@ export default {
   color: var(--color-dark);
   margin-bottom: var(--spacing-md);
   text-align: left;
+}
+
+/* 🔷 반응형 (모바일) 스타일 */
+@media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
+  .benefit-grid {
+    display: flex;
+    overflow-x: auto;
+    padding: var(--spacing-sm);
+    gap: var(--spacing-md);
+    scroll-snap-type: x mandatory;
+  }
+  .benefit-button {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    min-width: 6rem;
+  }
+  .carousel-card-list {
+    justify-content: center;
+    overflow-x: hidden;
+  }
+  .carousel-card {
+    width: 220px;
+    height: 320px;
+  }
 }
 </style>

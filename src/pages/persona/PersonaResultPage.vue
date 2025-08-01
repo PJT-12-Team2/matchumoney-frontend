@@ -41,12 +41,26 @@
             </section>
 
             <!-- 버튼 -->
-            <RouterLink
-                class="cta-button text-decoration-none"
-                :to="`/products?persona=${persona.code}`"
-            >
-                내게 맞는 상품 보러 가기
-            </RouterLink>
+            <div class="cta-group">
+                <RouterLink
+                    class="cta-button text-decoration-none"
+                    :to="`/persona/cards?persona=${persona.code}`"
+                >
+                    🃏 카드 추천 받기
+                </RouterLink>
+                <RouterLink
+                    class="cta-button text-decoration-none"
+                    :to="`/persona/deposits?persona=${persona.code}`"
+                >
+                    🏦 예금 추천 받기
+                </RouterLink>
+                <RouterLink
+                    class="cta-button text-decoration-none"
+                    :to="`/persona/savings?persona=${persona.code}`"
+                >
+                    💰 적금 추천 받기
+                </RouterLink>
+            </div>
         </div>
     </div>
 
@@ -60,7 +74,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
-import axios from 'axios';
+import api from '@/api';
 
 const route = useRoute();
 const persona = ref(null);
@@ -72,7 +86,7 @@ onMounted(async () => {
         const code = route.params.code || 'ant';
 
         // 한 번의 API 호출로 모든 데이터 가져오기
-        const { data } = await axios.get(`/api/persona/${code}`);
+        const { data } = await api.get(`/persona/${code}`);
         persona.value = data;
 
         console.log('Received data:', data); // 디버깅용
@@ -171,24 +185,30 @@ onMounted(async () => {
 .cta-button {
     display: block;
     width: 100%;
-    background-color: #4caf50;
-    color: white;
+    background-color: transparent;
+    color: #2e7d32;
     font-size: 1rem;
     padding: 1rem;
-    border: none;
+    border: 2px solid #4caf50;
     border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
     text-align: center;
 }
 
 .cta-button:hover {
-    background-color: #388e3c;
+    background-color: #e8f5e9;
 }
 
 .type-describe {
     font-size: 1.3rem;
     font-weight: bold;
     margin: 0.3rem 0;
+}
+.cta-group {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    margin-top: 2rem;
 }
 </style>

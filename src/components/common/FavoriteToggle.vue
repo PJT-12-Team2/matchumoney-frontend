@@ -8,10 +8,19 @@
 
 <script setup>
 import { computed, defineProps, defineEmits } from 'vue';
+import favorite from '@/api/favorite';
 
 const props = defineProps({
   modelValue: {
     type: Boolean, // "true" / "false" 문자열로 전달됨
+    required: true,
+  },
+  productId: {
+    type: String,
+    required: true,
+  },
+  productType: {
+    type: String,
     required: true,
   },
 });
@@ -23,9 +32,30 @@ const isActive = computed({
   set: (val) => emit('update:modelValue', val), // ✅ 올바른 setter
 });
 
-const toggle = () => {
-  isActive.value = !isActive.value;
-  console.log('즐겨찾기 변경:', isActive.value);
+const toggle = async () => {
+  if (isActive.value) {
+    try {
+      await favorite.deleteFavorite(props.productId, props.productType);
+      isActive.value = !isActive.value;
+      console.log(
+        props.productType + '의 ' + props.productId + ' 상품 즐겨찾기 제거'
+      );
+    } catch (e) {
+      console.log(e);
+    } finally {
+    }
+  } else {
+    try {
+      await favorite.addFavorite(props.productId, props.productType);
+      isActive.value = !isActive.value;
+      console.log(
+        props.productType + '의 ' + props.productId + ' 상품 즐겨찾기 추가'
+      );
+    } catch (e) {
+      console.log(e);
+    } finally {
+    }
+  }
 };
 </script>
 
