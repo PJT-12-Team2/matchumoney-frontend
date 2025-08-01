@@ -1,3 +1,5 @@
+// 로그인 페이지로 리다이렉트 const redirectToLogin = () => {
+router.push('/login'); };
 <template>
   <div class="deposit-recommendations">
     <main class="main-content">
@@ -31,26 +33,16 @@
           @connect-success="handleConnectSuccess"
         />
 
-        <!-- 검색 버튼 - 계좌가 있을 때만 표시 -->
-        <div v-if="accounts.length > 0" class="search-section">
-          <button
-            class="search-btn"
-            @click="searchProducts"
-            :disabled="loading || accountsLoading || !currentAccount"
-          >
-            {{ loading ? '검색 중...' : '가입 가능한 상품 검색' }}
-          </button>
-        </div>
+        <!-- 🆕 검색 버튼 제거하고 상품 리스트만 표시 -->
 
         <!-- 상품 리스트 컴포넌트 -->
         <ProductList
           :products="products"
-          :loading="loading"
+          :loading="loading || userInfoLoading"
           :has-searched="hasSearched"
-          :customer-name="
-            currentAccount?.nickname || currentUser?.nickname || '고객'
-          "
-          :balance="currentAccount?.formattedBalance || ''"
+          :customer-name="getCustomerName()"
+          :balance="getBalance()"
+          :is-kb-only="isKBOnlyMode"
           @product-select="selectProduct"
         />
       </template>
@@ -61,8 +53,9 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+import userApi from '@/api/user'; // 🆕 사용자 API 추가
+import depositApi from '@/api/deposit'; // 🆕 예금 API 추가
 import AccountSlider from './AccountSlider.vue';
 import ProductList from './ProductList.vue';
 
@@ -79,6 +72,8 @@ const currentSlide = ref(0);
 const error = ref(null);
 const hasSearched = ref(false);
 const searchCache = ref({});
+const userInfo = ref(null); // 🆕 사용자 정보 저장
+const userInfoLoading = ref(false); // 🆕 사용자 정보 로딩 상태
 
 // Props (선택사항)
 const props = defineProps({
@@ -112,9 +107,50 @@ const currentAccount = computed(() => {
   return accounts.value[currentSlide.value] || accounts.value[0];
 });
 
-// 로그인 페이지로 리다이렉트
-const redirectToLogin = () => {
-  router.push('/login');
+// 🆕 KB국민은행 전용 모드인지 확인
+const isKBOnlyMode = computed(() => {
+  return accounts.value.length === 0;
+});
+
+// 🆕 고객명 가져오기 (계좌가 없을 때도 처리)
+const getCustomerName = () => {
+  if (accounts.value.length > 0) {
+    return (
+      currentAccount.value?.nickname || currentUser.value?.nickname || '고객'
+    );
+  }
+  return currentUser.value?.nickname || '고객';
+};
+
+// 🆕 잔액 가져오기 (계좌가 없을 때는 빈 문자열)
+const getBalance = () => {
+  if (accounts.value.length > 0) {
+    return currentAccount.value?.formattedBalance || '';
+  }
+  return '';
+};
+
+// 🆕 사용자 정보 조회
+const fetchUserInfo = async () => {
+  if (!effectiveUserId.value) {
+    console.warn('사용자 ID가 없어 사용자 정보를 조회할 수 없습니다.');
+    return;
+  }
+
+  userInfoLoading.value = true;
+
+  try {
+    console.log('사용자 정보 조회 중...');
+    const response = await userApi.getMyInfo();
+    userInfo.value = response.result;
+    console.log('사용자 정보 조회 성공:', userInfo.value);
+  } catch (error) {
+    console.error('사용자 정보 조회 실패:', error);
+    // 실패해도 기본값으로 진행
+    userInfo.value = null;
+  } finally {
+    userInfoLoading.value = false;
+  }
 };
 
 // 계좌 정보 가져오기
@@ -131,25 +167,29 @@ const fetchAccounts = async () => {
   try {
     console.log(`사용자 ${effectiveUserId.value}의 계좌 정보 조회 중...`);
 
-    const response = await axios.get(
-      `/api/deposits/accounts/${effectiveUserId.value}`
-    );
-    accounts.value = response.data;
+    // 🆕 deposit API 사용
+    const data = await depositApi.getUserAccounts(effectiveUserId.value);
+    accounts.value = data;
 
-    console.log(`${response.data.length}개의 계좌를 찾았습니다.`);
+    console.log(`${data.length}개의 계좌를 찾았습니다.`);
 
-    // 계좌 연결 후 첫 번째 계좌로 슬라이드 초기화
-    if (response.data.length > 0) {
+    // 계좌가 있는 경우: 첫 번째 계좌로 슬라이드 초기화하고 상품 검색
+    if (data.length > 0) {
       currentSlide.value = 0;
+      await searchProducts(); // 🆕 자동 검색
+    } else {
+      // 계좌가 없는 경우: KB국민은행 상품 표시
+      await searchKBProducts();
     }
   } catch (err) {
     console.error('계좌 조회 실패:', err);
 
-    // 실제 에러 발생 시 빈 배열로 설정 (연결 카드 표시)
-    if (err.response?.status === 404) {
-      console.log('연결된 계좌가 없습니다. 계좌 연결 카드를 표시합니다.');
+    // 404 오류 (계좌 없음)
+    if (err.message && err.message.includes('404')) {
+      console.log('연결된 계좌가 없습니다. KB국민은행 상품을 표시합니다.');
       accounts.value = [];
-    } else if (err.response?.status === 500) {
+      await searchKBProducts(); // 🆕 KB국민은행 상품 표시
+    } else if (err.message && err.message.includes('500')) {
       console.error('서버 오류가 발생했습니다.');
       accounts.value = [];
       error.value = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
@@ -164,14 +204,57 @@ const fetchAccounts = async () => {
   }
 };
 
+// 🆕 KB국민은행 상품 검색 (기존 API 활용)
+const searchKBProducts = async () => {
+  loading.value = true;
+
+  try {
+    console.log('KB국민은행 상품 조회 중...');
+
+    // 방법 1: 모든 상품을 가져와서 국민은행만 필터링
+    const response = await axios.get(
+      '/api/deposits/recommendations/allProducts'
+    );
+    const allProducts = response.data;
+
+    // 국민은행 상품만 필터링
+    const kbProducts = allProducts.filter(
+      (product) =>
+        product.bankName === '국민은행' ||
+        product.bankName === 'KB국민은행' ||
+        product.bankName.includes('국민')
+    );
+
+    hasSearched.value = true;
+    products.value = kbProducts;
+
+    console.log('KB국민은행 상품 조회 성공:', kbProducts);
+    console.log(
+      `전체 ${allProducts.length}개 중 국민은행 상품 ${kbProducts.length}개 필터링`
+    );
+  } catch (error) {
+    console.error('KB국민은행 상품 검색 오류:', error);
+
+    // API 오류 시 빈 배열로 처리
+    hasSearched.value = true;
+    products.value = [];
+
+    console.warn('상품 조회 API를 사용할 수 없습니다. 빈 결과를 표시합니다.');
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 계좌 새로고침
-const refreshAccounts = () => {
+const refreshAccounts = async () => {
   // 검색 상태도 함께 초기화
   hasSearched.value = false;
   products.value = [];
   searchCache.value = {};
 
-  fetchAccounts();
+  // 🆕 사용자 정보도 함께 새로고침
+  await fetchUserInfo();
+  await fetchAccounts();
 };
 
 // 계좌 연결 성공 핸들러
@@ -180,14 +263,11 @@ const handleConnectSuccess = () => {
   refreshAccounts();
 };
 
-// 슬라이드 변경 핸들러
-const handleSlideChange = (index) => {
+// 🆕 슬라이드 변경 핸들러 (자동 검색 포함)
+const handleSlideChange = async (index) => {
   currentSlide.value = index;
-  loadCachedResults();
-};
 
-// 캐시된 검색 결과 로드
-const loadCachedResults = () => {
+  // 캐시된 결과가 있으면 로드, 없으면 새로 검색
   const currentAccountData = currentAccount.value;
   if (!currentAccountData) return;
 
@@ -199,8 +279,8 @@ const loadCachedResults = () => {
     products.value = cachedData.products;
     console.log(`캐시된 결과 로드: ${cachedData.products.length}개 상품`);
   } else {
-    hasSearched.value = false;
-    products.value = [];
+    // 🆕 캐시가 없으면 자동으로 새 검색 실행
+    await searchProducts();
   }
 };
 
@@ -220,10 +300,16 @@ const saveCachedResults = (accountData, searchResults) => {
   );
 };
 
-// 상품 검색
+// 🆕 상품 검색 (deposit API 사용)
 const searchProducts = async () => {
   if (!effectiveUserId.value) {
     console.error('사용자 ID가 없습니다.');
+    return;
+  }
+
+  // 계좌가 없는 경우 KB국민은행 상품 표시
+  if (accounts.value.length === 0) {
+    await searchKBProducts();
     return;
   }
 
@@ -253,33 +339,48 @@ const searchProducts = async () => {
     const balanceString = currentAccountData.formattedBalance || '0원';
     const balance = parseInt(balanceString.replace(/[^\d]/g, '')) || 0;
 
-    console.log('검색 요청 데이터:', {
+    const requestData = {
       userId: effectiveUserId.value,
       balance: balance,
       accountNumber: currentAccountData.accountNo,
-    });
+    };
 
-    // API 호출
-    const response = await axios.post(
-      '/api/deposits/recommendations/byBalance',
-      {
-        userId: effectiveUserId.value,
-        balance: balance,
-        accountNumber: currentAccountData.accountNo,
-      }
-    );
+    console.log('검색 요청 데이터:', requestData);
+
+    // 🆕 deposit API 사용
+    const data = await depositApi.getProductsByBalance(requestData);
 
     hasSearched.value = true;
-    products.value = response.data;
+    products.value = data;
 
     // 캐시에 저장
-    saveCachedResults(currentAccountData, response.data);
+    saveCachedResults(currentAccountData, data);
 
-    console.log('추천 상품 조회 성공:', response.data);
+    console.log('추천 상품 조회 성공:', data);
   } catch (error) {
     console.error('상품 검색 오류:', error);
-    hasSearched.value = true;
-    products.value = [];
+
+    // 500 오류인 경우 대안으로 모든 상품 조회
+    if (error.message && error.message.includes('500')) {
+      console.warn('잔액 기반 추천 API 오류, 모든 상품으로 대체...');
+      try {
+        const allProducts = await depositApi.getAllProducts();
+        hasSearched.value = true;
+        products.value = allProducts;
+        console.log(
+          '모든 상품 조회로 대체 성공:',
+          allProducts.length,
+          '개 상품'
+        );
+      } catch (fallbackError) {
+        console.error('대체 API도 실패:', fallbackError);
+        hasSearched.value = true;
+        products.value = [];
+      }
+    } else {
+      hasSearched.value = true;
+      products.value = [];
+    }
   } finally {
     loading.value = false;
   }
@@ -292,11 +393,12 @@ const selectProduct = (product) => {
 };
 
 // 로그인 상태 변경 감지 (auth store 구조에 맞게 수정)
-watch(isLoggedIn, (newValue, oldValue) => {
+watch(isLoggedIn, async (newValue, oldValue) => {
   if (newValue && !oldValue) {
     // 로그인됨
-    console.log('로그인 감지됨. 계좌 정보를 조회합니다.');
-    refreshAccounts();
+    console.log('로그인 감지됨. 사용자 정보 및 계좌 정보를 조회합니다.');
+    await fetchUserInfo(); // 🆕 사용자 정보 조회 추가
+    await refreshAccounts();
   } else if (!newValue && oldValue) {
     // 로그아웃됨
     console.log('로그아웃 감지됨. 데이터를 초기화합니다.');
@@ -304,6 +406,7 @@ watch(isLoggedIn, (newValue, oldValue) => {
     products.value = [];
     hasSearched.value = false;
     searchCache.value = {};
+    userInfo.value = null; // 🆕 사용자 정보 초기화
     accountsLoading.value = false;
   }
 });
@@ -311,10 +414,11 @@ watch(isLoggedIn, (newValue, oldValue) => {
 // 사용자 ID 변경 감지
 watch(
   effectiveUserId,
-  (newUserId, oldUserId) => {
+  async (newUserId, oldUserId) => {
     if (newUserId && newUserId !== oldUserId) {
       console.log(`사용자 ID 변경: ${oldUserId} -> ${newUserId}`);
-      refreshAccounts();
+      await fetchUserInfo(); // 🆕 사용자 정보 조회 추가
+      await refreshAccounts();
     }
   },
   { immediate: false }
@@ -322,31 +426,6 @@ watch(
 
 // 라이프사이클
 onMounted(async () => {
-  // 임시 로그인 테스트 - 개발 환경에서만 임시 로그인 자동 설정
-  // if (import.meta.env.DEV) {
-  //   console.log('🔧 개발 환경: 임시 로그인 강제 설정');
-
-  //   // 개발 환경에서는 항상 특정 사용자로 강제 설정
-  //   authStore.logout(); // 기존 상태 클리어
-
-  //   // 새로운 임시 사용자로 설정
-  //   authStore.setAuth({
-  //     accessToken: 'dev-temp-token',
-  //     userId: '5', // 이미 계좌가 있는 사용자로 다시 변경
-  //     nickname: '개발테스트',
-  //     email: 'dev@test.com',
-  //   });
-
-  //   // Vue의 반응성 업데이트 대기
-  //   await nextTick();
-
-  //   console.log('임시 로그인 후 상태:', {
-  //     isLoggedIn: isLoggedIn.value,
-  //     currentUser: currentUser.value,
-  //     effectiveUserId: effectiveUserId.value,
-  //   });
-  // }
-
   // 최종 조건 체크 후 계좌 정보 조회
   console.log('최종 상태 체크:', {
     isLoggedIn: isLoggedIn.value,
@@ -354,7 +433,10 @@ onMounted(async () => {
   });
 
   if (isLoggedIn.value && effectiveUserId.value) {
-    console.log('✅ 조건 만족: 계좌 정보 조회 시작');
+    console.log('✅ 조건 만족: 사용자 정보 및 계좌 정보 조회 시작');
+
+    // 🆕 사용자 정보 조회 먼저 실행
+    await fetchUserInfo();
     await fetchAccounts();
   } else {
     console.log('❌ 조건 불만족:', {
@@ -444,36 +526,6 @@ onMounted(async () => {
   background: var(--color-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(96, 153, 102, 0.4);
-}
-
-/* ===== 검색 섹션 ===== */
-.search-section {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 15px;
-}
-
-.search-btn {
-  background: var(--color-accent);
-  color: white;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  letter-spacing: 2px;
-  transition: all 0.3s ease;
-}
-
-.search-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.search-btn:hover:not(:disabled) {
-  background: var(--color-dark);
-  transform: translateY(-1px);
 }
 
 /* ===== 반응형 디자인 ===== */
