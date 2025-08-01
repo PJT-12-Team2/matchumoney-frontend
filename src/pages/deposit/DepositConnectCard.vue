@@ -193,7 +193,7 @@ const handleConnect = async (loginData) => {
 .connect-subtitle {
   font-size: 16px;
   font-weight: 500;
-  color: #609966;
+  color: var(--color-accent);
   line-height: 1.5;
 }
 

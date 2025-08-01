@@ -1,19 +1,19 @@
 <template>
   <div class="product-section">
-    <!-- 검색 전 안내 메시지 -->
+    <!-- 🆕 KB국민은행 전용 메시지 (계좌가 없을 때) -->
     <div
-      v-if="!hasSearched && !loading"
-      class="pre-search-message slide-up fade-in"
+      v-if="isKbOnly && hasSearched && !loading && products.length > 0"
+      class="kb-only-message slide-up fade-in"
     >
-      <div class="pre-search-text">
-        <span class="search-icon">🔍</span>
-        {{ customerName }}님 맞춤형 상품을 검색을 원하시면 검색버튼을 눌러주세요
+      <div class="kb-only-text">
+        <span class="bank-icon">🏦</span>
+        {{ customerName }}님을 위한 KB국민은행 추천 상품을 보여드립니다!
       </div>
     </div>
 
-    <!-- 추천 메시지 (검색 후에만 표시) -->
+    <!-- 추천 메시지 (계좌가 있을 때) -->
     <div
-      v-if="hasSearched && !loading && products.length > 0"
+      v-else-if="!isKbOnly && hasSearched && !loading && products.length > 0"
       class="recommendation-message slide-up fade-in"
     >
       <div class="recommendation-text">
@@ -30,7 +30,12 @@
     >
       <div class="no-results-text">
         <span class="sad-icon">😔</span>
-        {{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.
+        <span v-if="isKbOnly">
+          현재 KB국민은행 상품을 불러올 수 없습니다.
+        </span>
+        <span v-else>
+          {{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.
+        </span>
       </div>
     </div>
 
@@ -38,7 +43,8 @@
     <section class="products-section" v-if="hasSearched">
       <div v-if="loading" class="loading">
         <div class="spinner"></div>
-        <div>맞춤 상품을 찾고 있습니다...</div>
+        <div v-if="isKbOnly">KB국민은행 상품을 찾고 있습니다...</div>
+        <div v-else>맞춤 상품을 찾고 있습니다...</div>
       </div>
 
       <div v-else-if="products.length > 0" class="product-list fade-in">
@@ -85,7 +91,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+// defineProps와 defineEmits는 Vue 3.3+에서 자동으로 사용 가능한 컴파일러 매크로입니다
 
 // Props
 const props = defineProps({
@@ -108,6 +114,11 @@ const props = defineProps({
   balance: {
     type: String,
     default: '',
+  },
+  // 🆕 KB국민은행 전용 모드인지 여부
+  isKbOnly: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -204,9 +215,9 @@ const getBankLogo = (bankName) => {
 </script>
 
 <style scoped>
-/* ===== 검색 전 안내 메시지 ===== */
-.pre-search-message {
-  background: linear-gradient(135deg, #fff9e6 0%, #fff3d3 100%);
+/* ===== 🆕 KB국민은행 전용 메시지 ===== */
+.kb-only-message {
+  background: linear-gradient(135deg, #fff9e6 0%, #fef3c7 100%);
   padding: 16px 20px;
   border-radius: 12px;
   margin-bottom: 25px;
@@ -214,9 +225,9 @@ const getBankLogo = (bankName) => {
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
 }
 
-.pre-search-text {
-  font-size: 14px;
-  font-weight: 600;
+.kb-only-text {
+  font-size: 15px;
+  font-weight: 700;
   color: #92400e;
   display: flex;
   align-items: center;
@@ -225,7 +236,7 @@ const getBankLogo = (bankName) => {
   justify-content: center;
 }
 
-.search-icon {
+.bank-icon {
   font-size: 18px;
 }
 
@@ -292,7 +303,6 @@ const getBankLogo = (bankName) => {
 }
 
 .product-card {
-  /* background: white;  */
   background: var(--color-light);
   border-radius: 16px;
   padding: 20px;
@@ -451,7 +461,7 @@ const getBankLogo = (bankName) => {
     padding: 0 12px;
   }
 
-  .pre-search-text,
+  .kb-only-text,
   .no-results-text {
     font-size: 14px;
   }
