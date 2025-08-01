@@ -170,7 +170,6 @@ const handleResetPassword = async () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 5vh;
 }
 
 ::v-deep(.base-card .title) {
