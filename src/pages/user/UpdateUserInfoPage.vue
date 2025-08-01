@@ -57,7 +57,7 @@
 
         <!-- 정보 수정 버튼 -->
         <div class="mt-4">
-          <RouterLink to="/mypage" custom v-slot="{ navigate }">
+          <RouterLink to="/myinfo" custom v-slot="{ navigate }">
             <BaseButton
               variant="primary"
               :fullWidth="true"
@@ -134,7 +134,7 @@ const submitForm = async () => {
     const res = await userApi.updateUserInfo(updateDto);
     // console.log("회원정보 수정 성공:", res);
     alert("회원정보가 성공적으로 수정되었습니다.");
-    router.push("/mypage");
+    router.push("/myinfo");
   } catch (err) {
     // console.error("회원정보 수정 실패:", err);
     alert("회원정보 수정에 실패했습니다.");

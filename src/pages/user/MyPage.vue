@@ -1,180 +1,486 @@
 <template>
-  <div class="mypage container fade-in">
-    <!-- 헤더는 App.vue에서 공통으로 렌더링된다고 가정 -->
+  <div class="my-page">
+    <BaseCardGrey class="profile-section section-wide">
+      <template #content>
+        <section class="user-info">
+          <div class="profile-image-placeholder">
+            <img :src="personaImageUrl" alt="유형 이미지" class="profile-image" />
+          </div>
+          <div class="user-text">
+            <div class="user-type">
+              <p>
+                {{ myPageInfo?.persona?.quote }}
+                <strong>{{ myPageInfo?.persona?.nameKo }} 유형</strong>
+              </p>
+            </div>
+            <h2 class="user-name">
+              <span class="nickname">{{ user?.nickname ?? "정보 없음" }}</span>
+              <span class="level-title">님</span>
+              <span class="edit" @click="router.push('/myinfo')">수정하기</span>
+            </h2>
+            <p class="user-level">
+              <span class="level-value">Lv. {{ level }}</span>
+              <span class="level-title">금융 새내기</span>
+            </p>
+            <div class="level-bar">
+              <div class="fill" :style="{ width: fillPercentage }"></div>
+            </div>
+          </div>
+        </section>
+      </template>
+      <template #title></template>
+    </BaseCardGrey>
 
-    <main class="content flex flex-column align-center mt-5">
-      <!-- 프로필 이미지 -->
-      <div class="profile-img">
-        <template v-if="user?.profileImageUrl">
-          <img :src="user.profileImageUrl" alt="프로필 이미지" class="profile-picture" />
+    <BaseCardGrey class="type-section section-wide">
+      <template #title>
+        <section class="change-type type-inner">
+          <p>유형을 변경하고 싶다면?</p>
+          <button class="edit-button" @click="router.push('/persona/start')">✏️</button>
+        </section>
+      </template>
+    </BaseCardGrey>
+
+    <div class="left-grid">
+      <BaseCardGrey>
+        <template #title>뱃지</template>
+        <template #content>
+          <div class="badges">
+            <div class="badge-placeholder">🎖</div>
+            <div class="badge-placeholder">🎖</div>
+            <div class="badge-placeholder">🎖</div>
+          </div>
         </template>
-        <template v-else>
-          <span class="user-icon">👤</span>
+      </BaseCardGrey>
+      <BaseCardGrey>
+        <template #title>보유 카드</template>
+      </BaseCardGrey>
+    </div>
+
+    <div class="right-grid">
+      <BaseCardGrey style="height: 100%">
+        <template #title>내가 좋아하는 상품 (즐겨찾기)</template>
+        <template #content>
+          <div class="tabs">
+            <button :class="{ active: selectedTab === '예금' }" @click="selectedTab = '예금'">예금</button>
+            <button :class="{ active: selectedTab === '적금' }" @click="selectedTab = '적금'">적금</button>
+            <button :class="{ active: selectedTab === '카드' }" @click="selectedTab = '카드'">카드</button>
+          </div>
+          <div class="product-list fade-in">
+            <div
+              v-for="(product, index) in getProductsByTab"
+              :key="index"
+              class="product-card"
+              @click="selectProduct(product)"
+              :style="{ animationDelay: `${index * 0.1}s` }">
+              <div class="product-header">
+                <div class="bank-logo">
+                  <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
+                  <img v-else :src="getBankLogo(product.bankName)" alt="은행 로고" />
+                </div>
+                <div class="product-info">
+                  <h3>{{ product.productName }}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
         </template>
-      </div>
-
-      <!-- 사용자 정보 리스트 -->
-      <div class="info-list card mt-5">
-        <div class="info-item">
-          <span class="label text-dark">이메일</span>
-          <span class="value text-secondary">{{ user?.email }}</span>
-        </div>
-        <router-link to="/mypage/update" class="info-item clickable">
-          <span class="label text-dark">닉네임</span>
-          <span class="value text-secondary">{{ user?.nickname }}</span>
-          <span class="arrow text-accent">></span>
-        </router-link>
-
-        <router-link to="/mypage/update" class="info-item clickable">
-          <span class="label text-dark">성별</span>
-          <span class="value text-secondary">{{ user?.gender }}</span>
-          <span class="arrow text-accent">></span>
-        </router-link>
-
-        <router-link to="/mypage/update" class="info-item clickable">
-          <span class="label text-dark">생년월일</span>
-          <span class="value text-secondary">{{ formattedBirthDate }}</span>
-          <span class="arrow text-accent">></span>
-        </router-link>
-
-        <router-link to="/mypage/update/password" class="info-item clickable">
-          <span class="label">비밀번호 변경</span>
-          <span class="value"></span>
-          <span class="arrow">></span>
-        </router-link>
-        <button class="info-item clickable" @click="handleLogout">
-          <span class="label text-dark">로그아웃</span>
-          <span class="value text-secondary"></span>
-          <span class="arrow text-accent">></span>
-        </button>
-
-        <button class="info-item clickable" @click="handleDeleteAccount">
-          <span class="label text-dark">회원 탈퇴</span>
-          <span class="value text-secondary"></span>
-          <span class="arrow text-accent">></span>
-        </button>
-      </div>
-    </main>
+      </BaseCardGrey>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+const getPersonaImage = (fileName) => {
+  if (!fileName) return "";
+  return new URL(`../assets/character_images/${fileName}`, import.meta.url).href;
+};
+
+import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
+import { ref, computed, onMounted } from "vue";
 import userApi from "@/api/user";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const user = ref({});
+const exp = ref(0); // default exp
+const level = computed(() => Math.floor(exp.value / 100) + 1);
+const fillPercentage = computed(() => `${exp.value % 100}%`);
+const selectedTab = ref("예금");
 
-const user = ref(null);
-
-const formattedBirthDate = computed(() => {
-  if (!user.value?.birthDate) return "";
-  const date = new Date(user.value.birthDate);
-  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-});
+const favoriteSavings = ref([]);
+const favoriteDeposits = ref([]);
+const favoriteCards = ref([]);
+const products = ref([]);
+const myPageInfo = ref({ persona: {} });
+const personaImageUrl = ref("");
 
 onMounted(async () => {
   try {
-    const res = await userApi.getMyInfo();
-    user.value = res.result;
-  } catch (err) {
-    console.error("내 정보 조회 실패", err);
+    const response = await userApi.getMyPage();
+    const data = response.result;
+    if (!data) return;
+
+    user.value.nickname = data.nickname;
+    exp.value = data.exp;
+
+    // Updated logic for extracting filename and generating image URL
+    const rawImagePath = data.persona?.imageUrl;
+    const fileName = rawImagePath?.split("/").pop();
+    const imageUrl = fileName ? new URL(`../../assets/character_images/${fileName}`, import.meta.url).href : "";
+    personaImageUrl.value = imageUrl;
+
+    console.log("📷 백엔드 imageUrl:", rawImagePath);
+    console.log("📷 가공된 이미지 URL:", imageUrl);
+
+    myPageInfo.value.persona = {
+      quote: data.persona?.quote ?? "",
+      nameKo: data.persona?.nameKo ?? "",
+      imageUrl,
+    };
+
+    favoriteSavings.value = data.favoriteSavings;
+    favoriteDeposits.value = data.favoriteDeposits;
+    favoriteCards.value = data.favoriteCards;
+
+    updateProducts();
+  } catch (error) {
+    console.error("❌ 마이페이지 정보 조회 실패", error);
   }
 });
 
-function handleLogout() {
-  // Assuming logout logic is handled elsewhere or needs to be added
-  window.location.href = "/login";
+function updateProducts() {
+  if (selectedTab.value === "적금") {
+    products.value = favoriteSavings.value.map((item) => ({
+      bankName: item.company,
+      productName: item.title,
+      type: "적금",
+    }));
+  } else if (selectedTab.value === "예금") {
+    products.value = favoriteDeposits.value.map((item) => ({
+      bankName: item.bankName,
+      productName: item.productName,
+      type: "예금",
+    }));
+  } else if (selectedTab.value === "카드") {
+    products.value = favoriteCards.value.map((item) => ({
+      productName: item.name,
+      productImage: item.imageUrl,
+      type: "카드",
+    }));
+  }
 }
 
-function handleDeleteAccount() {
-  // console.log("회원 탈퇴 클릭");
-  // 실제 탈퇴 API 연동 필요
+import { watch } from "vue";
+watch(selectedTab, () => {
+  updateProducts();
+});
+
+const getProductsByTab = computed(() => products.value);
+
+const getBankLogo = (bankName) => {
+  // 공통 로고 파일
+  const busanLogo = new URL("@/assets/bank-Logos/BK_BUSAN_Profile.png", import.meta.url).href;
+  const hanaLogo = new URL("@/assets/bank-Logos/BK_HANA_Profile.png", import.meta.url).href;
+
+  const logoMap = {
+    // 주요 시중은행
+    국민은행: new URL("@/assets/bank-Logos/BK_KB_Profile.png", import.meta.url).href,
+    하나은행: hanaLogo,
+    농협은행주식회사: new URL("@/assets/bank-Logos/BK_NH_Profile.png", import.meta.url).href,
+    신한은행: new URL("@/assets/bank-Logos/BK_Shinhan_Profile.png", import.meta.url).href,
+    우리은행: new URL("@/assets/bankLogo_images/BK_Woori_Profile.png", import.meta.url).href,
+
+    // 특수은행
+    중소기업은행: new URL("@/assets/bank-Logos/BK_IBK_Profile.png", import.meta.url).href,
+    한국산업은행: new URL("@/assets/bank-Logos/BK_KDB_Profile.png", import.meta.url).href,
+    수협은행: new URL("@/assets/bank-Logos/BK_SH_Profile.png", import.meta.url).href,
+
+    // 지방은행
+    경남은행: busanLogo,
+    부산은행: busanLogo,
+    광주은행: new URL("@/assets/bank-Logos/BK_KWANGJU_Profile.png", import.meta.url).href,
+    전북은행: new URL("@/assets/bank-Logos/BK_JEONBUK_Profile.png", import.meta.url).href,
+    제주은행: new URL("@/assets/bank-Logos/BK_JEJU_Profile.png", import.meta.url).href,
+    아이엠뱅크: new URL("@/assets/bank-Logos/BK_DAEGU_Profile.png", import.meta.url).href,
+
+    // 외국계은행
+    한국스탠다드차타드은행: new URL("@/assets/bank-Logos/BK_SC_Profile.png", import.meta.url).href,
+
+    // 인터넷은행
+    "주식회사 카카오뱅크": new URL("@/assets/bank-Logos/BK_KAKAO_Profile.png", import.meta.url).href,
+    "주식회사 케이뱅크": new URL("@/assets/bank-Logos/BK_K_Profile.png", import.meta.url).href,
+    "토스뱅크 주식회사": new URL("@/assets/bank-Logos/BK_TOSS_Profile.png", import.meta.url).href,
+
+    // 주식회사 명칭 포함
+    "주식회사 하나은행": hanaLogo,
+  };
+
+  return logoMap[bankName] || null;
+};
+
+function selectProduct(product) {
+  console.log("Selected product:", product);
 }
 </script>
 
 <style scoped>
-/* router-link 기본 밑줄 제거 */
-a.info-item {
-  text-decoration: none; /* 밑줄 제거 */
-  color: inherit; /* 글자 색도 부모 색상 유지 */
+.my-page {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-areas:
+    "profile profile"
+    "type type"
+    "left right";
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-xl);
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
 }
 
-.mypage {
-  background-color: var(--bg-body);
-  color: var(--text-primary);
+.profile-section {
+  grid-area: profile;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.type-section {
+  grid-area: type;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 30px;
+}
+.left-grid {
+  grid-area: left;
+  display: grid;
+  grid-template-rows: 1fr 2fr;
+  gap: var(--spacing-md);
+  height: 500px;
+}
+.right-grid {
+  grid-area: right;
+  height: 500px;
 }
 
-.profile-img {
-  width: 120px;
-  height: 120px;
-  border: 3px solid var(--color-accent);
+.user-info {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  box-sizing: border-box;
+  padding: var(--spacing-sm);
+}
+
+.profile-image-placeholder {
+  width: clamp(100px, 25vw, 180px);
+  height: clamp(100px, 25vw, 180px);
   border-radius: 50%;
+  background-color: var(--color-secondary-10);
+  border: 2px solid var(--color-secondary-50);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 64px;
-  background-color: var(--color-primary-10);
 }
 
-.profile-picture {
+.user-text {
+  flex: 1 1 auto;
+  min-width: 200px;
+  max-width: 600px;
+  box-sizing: border-box;
+  padding: var(--spacing-xs);
+}
+
+.user-name {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin-bottom: var(--spacing-xs);
+}
+
+.user-name .edit {
+  font-size: var(--font-size-base);
+  margin-left: var(--spacing-md);
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.nickname {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+}
+
+.level-title {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  margin-left: var(--spacing-xs);
+}
+
+.user-type {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+}
+
+.user-level {
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  margin: 0;
+}
+
+.level-value {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+}
+
+.level-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--color-secondary-10);
+  border-radius: 5px;
+}
+.fill {
+  height: 100%;
+  background-color: var(--color-accent);
+  width: 60%;
+}
+
+.change-type {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--spacing-2xl);
+  margin-top: var(--spacing-sm);
+}
+
+.change-type p {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.edit-button {
+  background: none;
+  border: none;
+  font-size: var(--font-size-base);
+  cursor: pointer;
+}
+
+.section-wide {
+  grid-column: span 2;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: var(--color-secondary-10);
+  border-radius: 2rem;
+  padding: 0.25rem;
+  margin: 0, var(--spacing-sm);
+}
+.tabs button {
+  flex: 1;
+  border: none;
+  background-color: transparent;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 2rem;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: background-color 0.2s ease;
+}
+.tabs button.active {
+  background-color: var(--color-accent);
+  color: white;
+  font-weight: 600;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: 10rem;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+  height: auto;
+}
+
+.product-card {
+  border: 1px solid var(--color-secondary-30);
+  border-radius: 1rem;
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  height: 100%;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+}
+
+@media (max-width: 768px) {
+  .my-page {
+    grid-template-areas:
+      "profile"
+      "type"
+      "left"
+      "right";
+    grid-template-columns: 1fr;
+  }
+  .user-info {
+    flex-direction: column;
+    align-items: center;
+  }
+  .user-text {
+    text-align: center;
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-name {
+    font-size: var(--font-size-xl);
+  }
+  .level-value {
+    font-size: var(--font-size-lg);
+  }
+  .user-type,
+  .user-level {
+    font-size: var(--font-size-sm);
+  }
+  .edit-button {
+    font-size: var(--font-size-sm);
+  }
+}
+
+.product-card {
+  transform: scale(0.95);
+}
+.product-card:hover {
+  transform: scale(1);
+}
+.product-header {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+.bank-logo img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+.product-info {
+  font-size: 1rem;
+}
+
+.profile-image-placeholder img.profile-image {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-}
-
-.info-list {
-  width: 100%;
-  max-width: 500px;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-light);
-}
-
-/* 왼쪽 메뉴 제목 */
-.info-item .label {
-  flex: 0 0 auto;
-  text-align: left;
-  min-width: 80px;
-}
-
-/* 가운데 값: 오른쪽 정렬 */
-.info-item .value {
-  flex: 1;
-  text-align: right;
-  margin-right: var(--spacing-sm);
-  color: var(--text-secondary);
-}
-
-/* 오른쪽 화살표 */
-.info-item .arrow {
-  flex: 0 0 auto;
-  color: var(--color-accent);
-  font-weight: bold;
-}
-
-.info-item.clickable {
-  background-color: transparent; /* 회색 배경 제거 */
-  border: none;
-  width: 100%;
-  text-align: left;
-  padding: var(--spacing-md);
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.info-item.clickable:hover {
-  background-color: var(--bg-hover);
-}
-
-/* 기본 버튼 스타일 제거 */
-button.info-item {
-  background: none; /* 버튼 배경 제거 */
-  border: none;
-  outline: none;
-  appearance: none;
 }
 </style>

@@ -5,6 +5,7 @@ import KakaoCallbackPage from "@/pages/auth/KakaoCallbackPage.vue";
 /* ── 페이지 컴포넌트 ─────────────────────── */
 import HomePage from "@/pages/HomePage.vue";
 import MyPage from "@/pages/user/MyPage.vue";
+import MyInfoPage from "@/pages/user/MyInfoPage.vue";
 import RecommendDeposit from "@/pages/deposit/RecommendDeposit.vue";
 import SignupPage from "@/pages/auth/SignupPage.vue";
 import LoginPage from "@/pages/auth/LoginPage.vue";
@@ -51,26 +52,37 @@ const routes = [
     path: "/reset-password",
     name: "resetPassword",
     component: ResetPasswordPage,
+    component: KakaoCallbackPage,
   },
-  { path: "/mypage", name: "mypage", component: MyPage },
   {
-    path: "/mypage/update",
+    path: "/reset-password",
+    name: "resetPassword",
+    component: ResetPasswordPage,
+  },
+  {
+    path: "/mypage",
+    name: "mypage",
+    component: MyPage,
+  },
+  { path: "/myinfo", name: "myinfo", component: MyInfoPage },
+  {
+    path: "/myinfo/update",
     name: "updateUserInfo",
     component: UpdateUserInfoPage,
   },
   {
-    path: "/mypage/update/password",
+    path: "/myinfo/update/password",
     name: "updatePassword",
     component: UpdatePasswordPage,
   },
 
   {
-    path: "/mypage/update",
+    path: "/myinfo/update",
     name: "updateUserInfo",
     component: UpdateUserInfoPage,
   },
   {
-    path: "/mypage/update/password",
+    path: "/myinfo/update/password",
     name: "updatePassword",
     component: UpdatePasswordPage,
   },
