@@ -22,9 +22,9 @@
 						/>
 						<div class="carousel-card-name">{{ card.name }}</div>
 						<div class="carousel-card-benefit">
-							<div><strong>카드사:</strong> {{ card.issuer || '카드사 미정' }}</div>
-							<div><strong>전월실적:</strong> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
-							<div><strong>연회비:</strong> {{ card.annualFee || '정보 없음' }}</div>
+							<div><span class="label">카드사:</span> {{ card.issuer || '카드사 미정' }}</div>
+							<div><span class="label">전월실적금액:</span> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
+							<div><span class="label">연회비 정보:</span> {{ card.annualFee || '정보 없음' }}</div>
 						</div>
 					</div>
 				</div>
@@ -100,30 +100,20 @@
 						class="product-card"
 						@click="selectProduct(product)"
 					>
-						<div
-							class="product-content"
-							style="display: flex; align-items: center; gap: 20px"
-						>
+						<div class="product-content">
 							<img
 								:src="product.imageUrl"
 								:alt="product.name"
-								style="height: 100px; width: auto; border-radius: 10px"
 							/>
 							<div class="product-info">
 								<h4>{{ product.name }}</h4>
-								<div>{{ product.issuer || '카드사 미정' }}</div>
-								<div style="margin-top: 10px">
-									<strong>전월실적금액:</strong>
-									{{
-										product.preMonthMoney
-											? product.preMonthMoney.toLocaleString() + '원'
-											: '정보 없음'
-									}}
-								</div>
-								<div style="margin-top: 5px">
-									<strong>연회비 정보:</strong>
-									{{ product.annualFee || '정보 없음' }}
-								</div>
+								<div><span class="label">카드사:</span> {{ product.issuer || '카드사 미정' }}</div>
+								<div><span class="label">전월실적금액:</span> {{
+									product.preMonthMoney
+										? product.preMonthMoney.toLocaleString() + '원'
+										: '정보 없음'
+								}}</div>
+								<div><span class="label">연회비 정보:</span> {{ product.annualFee || '정보 없음' }}</div>
 							</div>
 						</div>
 					</div>
@@ -274,6 +264,7 @@ onMounted(() => {
 </script>
 <style scoped>
 /* 🔷 Layout 및 전체 구조 */
+/* 🔷 Layout 및 전체 구조 */
 .card-product-search {
   font-family: 'Noto Sans', sans-serif;
   background: var(--color-white);
@@ -299,54 +290,64 @@ onMounted(() => {
 }
 .carousel-card-list {
   display: flex;
-  gap: var(--spacing-md);
+  flex-wrap: wrap;
   justify-content: center;
-  flex-wrap: nowrap;
-  margin-bottom: var(--spacing-2xl);
-  overflow-x: hidden;
+  gap: 2rem;
+  margin: 0 auto var(--spacing-2xl);
+  max-width: 75rem;
+  padding: 0 1rem;
 }
-/* Uniform card sizes and container style for carousel cards */
 .carousel-card {
-  width: 18.75rem; /* 300px */
-  height: 25rem;    /* 400px */
+  width: 330px;
+  height: 400px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  background: var(--color-white);
-  border-radius: var(--spacing-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--spacing-md);
-  cursor: pointer;
-  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+.carousel-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 .carousel-card-image {
   width: 100%;
-  height: 65%;
+  height: 60%;
   object-fit: contain;
-  border-radius: var(--spacing-sm);
+  border-radius: 12px;
 }
 .carousel-card-name {
-  margin-top: var(--spacing-sm);
-  font-size: var(--font-size-lg);
-  font-weight: bold;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   text-align: center;
 }
 .carousel-card-benefit {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  text-align: center;
-  margin-top: var(--spacing-xs);
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.5;
+  text-align: left;
+  margin-top: 0.5rem;
+}
+
+.label {
+  font-weight: 600;
+  margin-right: 4px;
+  color: #333;
 }
 
 /* 🔷 필터 영역 스타일 */
 .filter-selection-section {
-  text-align: left;
-  margin-bottom: var(--spacing-2xl);
-  padding: var(--spacing-xl);
-  border: 2px solid var(--border-light);
-  border-radius: var(--spacing-xl);
-  background: var(--bg-content);
+  background: #f9fafc;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 2rem;
+  margin: 0 auto var(--spacing-2xl);
+  max-width: 75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 .card-type-toggle {
   margin-bottom: var(--spacing-lg);
@@ -371,8 +372,8 @@ onMounted(() => {
 }
 .benefit-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 1rem;
   margin: var(--spacing-lg) 0;
   padding: 0 var(--spacing-md);
 }
@@ -384,37 +385,28 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: var(--spacing-md);
-  border: 2px solid var(--border-light);
-  border-radius: var(--spacing-md);
-  background: var(--color-white);
+  border: 1.5px solid #dcdcdc;
+  border-radius: 16px;
+  background: #ffffff;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 500;
   text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease-in-out;
+}
+.benefit-button:hover {
+  background-color: #f1fdf6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 .benefit-button.selected {
-  background: var(--color-accent);
-  color: var(--color-white);
-  border-color: var(--color-accent);
+  background: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
 }
 .benefit-button .emoji {
-  font-size: 1.5rem;
-  display: block;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-.search-button-wrap {
-  margin-top: var(--spacing-lg);
-  display: flex;
-  justify-content: flex-end;
-}
-.search-button {
-  padding: var(--spacing-md) var(--spacing-xl);
-  font-size: var(--font-size-base);
-  background: var(--color-accent);
-  color: var(--color-white);
-  border: none;
-  border-radius: var(--spacing-md);
-  cursor: pointer;
+  font-size: 1.7rem;
+  margin-bottom: 0.4rem;
 }
 
 /* 🔷 검색 결과 카드 스타일 */
@@ -423,29 +415,10 @@ onMounted(() => {
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
 }
-.product-card {
-  background: var(--bg-content);
-  border-radius: var(--spacing-xl);
-  padding: var(--spacing-xl);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.product-card:hover {
-  transform: translateY(-0.3125rem);
-}
-.product-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
 .product-info h4 {
   margin: 0;
   font-size: var(--font-size-lg);
   font-weight: bold;
-}
-.bank-name {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
 }
 .product-details {
   margin-top: var(--spacing-xs);
@@ -489,5 +462,72 @@ onMounted(() => {
     width: 220px;
     height: 320px;
   }
+}
+</style>
+<style scoped>
+.product-card {
+  background: var(--bg-content);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  text-align: center;
+}
+.product-card:hover {
+  transform: translateY(-0.3125rem);
+}
+
+/* --- Product Content 2-column layout --- */
+.product-content {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  height: 100%;
+}
+
+.product-content img {
+  height: 150px;
+  width: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+}
+.product-info > div,
+.product-info > h4 {
+  line-height: 1.6;
+}
+/* 🔷 Empty state 스타일 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  border: 2px #ccc;
+  border-radius: 1rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 </style>

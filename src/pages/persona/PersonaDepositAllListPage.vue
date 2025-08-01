@@ -42,20 +42,7 @@
             {{ term.label }}
           </div>
         </div>
-        <div class="amount-filter-container">
-          <h3 class="filter-label">예치 금액 설정</h3>
-          <div class="slider-box">
-            <input
-              type="range"
-              v-model="selectedAmount"
-              :min="10000"
-              :max="1000000"
-              :step="1000"
-              class="amount-slider"
-            />
-            <div class="slider-value">{{ formatCurrency(selectedAmount) }}</div>
-          </div>
-        </div>
+        
         <br><br>
         <h3 class="filter-label">은행을 선택해주세요</h3>
         <div class="bank-grid">
@@ -111,7 +98,16 @@
                 <div class="rate-line">
                   기준 기간 :
                   {{
-                    filters.term !== '전체' ? filters.term + '개월' : '여러 기간'
+                    filters.term !== '전체'
+                      ? filters.term + '개월'
+                      : (() => {
+                          const best = product.depositOptions?.reduce((prev, curr) => {
+                            const prevRate = prev?.intrRate2 ?? 0;
+                            const currRate = curr?.intrRate2 ?? 0;
+                            return currRate > prevRate ? curr : prev;
+                          }, null);
+                          return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+                        })()
                   }}
                 </div>
               </div>
@@ -158,6 +154,8 @@ watch(selectedAmount, (val) => {
 
 const terms = [
   { label: '전체', value: '전체' },
+  { label: '1개월', value: '1' },
+  { label: '3개월', value: '3' },
   { label: '6개월', value: '6' },
   { label: '12개월', value: '12' },
   { label: '24개월', value: '24' },
@@ -437,6 +435,7 @@ const selectProduct = (product) => {
 .carousel-deposit-image {
   width: 50%;
   border-radius: var(--spacing-sm);
+  padding-bottom: 2rem;
 }
 .carousel-deposit-name {
   font-size: 1.3rem;
@@ -698,6 +697,26 @@ const selectProduct = (product) => {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   margin-top: var(--spacing-sm);
+}
+
+/* 🔷 Empty state 스타일 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  border: 2px #ccc;
+  border-radius: 1rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 </style>
 

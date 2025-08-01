@@ -16,11 +16,16 @@
           >
             <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
             <div class="carousel-saving-name">{{ saving.name }}</div>
-            <div>{{ saving.bankName }}</div>
+            <div class="bank-name-bold">{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
-              <span>최고 금리: <strong style="color:#2e7d32">{{ saving.maxRate }}</strong></span>
-              <br />
-              <span>기본 금리: {{ saving.baseRate }}</span>
+              <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
+              <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
+              <span><strong>매월 최대 금액:</strong> {{
+                saving.maxLimit === "999999999"
+                  ? '한도 없음'
+                  : formatCurrency(Number(saving.maxLimit))
+              }}</span>
+              <span><strong>기준 기간:</strong> 12개월</span>
             </div>
           </div>
         </div>
@@ -34,45 +39,59 @@
 
       <!-- ✅ 필터 영역 -->
 <section class="filter-selection-section">
-<div class="term-selector">
-          <div
-            v-for="(term, idx) in terms"
-            :key="term.value"
-            :class="['term-button', { active: filters?.term === term.value }]"
-            @click="filters.term = term.value"
-          >
-            {{ term.label }}
-          </div>
+  <div class="term-selector">
+    <div
+      v-for="(term, idx) in terms"
+      :key="term.value"
+      :class="['term-button', { active: filters?.term === term.value }]"
+      @click="filters.term = term.value"
+    >
+      {{ term.label }}
+    </div>
+  </div>
+  <div class="amount-filter-container">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <h3 class="filter-label" style="margin: 0;">매월 저축 금액 설정</h3>
+      <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" v-model="useMaxLimitFilter" />
+        <span>최대금액 필터 사용</span>
+      </label>
+    </div>
+    <br>
+    <transition name="slide-fade">
+      <div v-if="useMaxLimitFilter" class="slider-box">
+        <input
+          type="range"
+          v-model="selectedAmount"
+          :min="10000"
+          :max="maxAmount + sliderStep"
+          :step="sliderStep"
+          class="amount-slider"
+        />
+        <div class="slider-value">
+          {{
+            selectedAmount > maxAmount
+              ? '한도 없음'
+              : formatCurrency(selectedAmount)
+          }}
         </div>
-        <div class="amount-filter-container">
-  
-  <h3 class="filter-label">매월 저축 금액 설정</h3>
-  <div class="slider-box">
-    <input
-      type="range"
-      v-model="selectedAmount"
-      :min="10000"
-      :max="1000000"
-      :step="1000"
-      class="amount-slider"
-    />
-    <div class="slider-value">{{ formatCurrency(selectedAmount) }}</div>
+      </div>
+    </transition>
   </div>
-</div>
-<br><br>
-<h3 class="filter-label">은행을 선택해주세요</h3>
-<div class="bank-grid">
-  <div
-    v-for="bank in bankOptions"
-    :key="bank.name"
-    :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
-    @click="filters.bank = (filters?.bank === bank.name ? null : bank.name)"
-  >
-    <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
-    <div class="bank-label">{{ bank.name }}</div>
+  <br><br>
+  <h3 class="filter-label">은행을 선택해주세요</h3>
+  <div class="bank-grid">
+    <div
+      v-for="bank in bankOptions"
+      :key="bank.name"
+      :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
+      @click="filters.bank = (filters?.bank === bank.name ? null : bank.name)"
+    >
+      <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
+      <div class="bank-label">{{ bank.name }}</div>
+    </div>
   </div>
-</div>
-<br>
+  <br>
 </section>
 
       <!-- 🔍 검색 결과 -->
@@ -105,16 +124,26 @@ class="product-card"
   <div class="product-info-block">
     <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
     <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
-    <div class="rate-line">
-      최소 가입 금액 :
-      {{
-        getMinAmountWithTerm(product) || '100만원'
+    <div class="rate-line no-wrap">
+      매월 최대 금액 : {{
+        product.maxLimit === "999999999"
+          ? '한도 없음'
+          : formatCurrency(product.maxLimit)
       }}
     </div>
     <div class="rate-line">
       기준 기간 :
       {{
-        filters.term !== '전체' ? filters.term + '개월' : '여러 기간'
+        filters.term !== '전체'
+          ? filters.term + '개월'
+          : (() => {
+              const best = product.savingOptions?.reduce((prev, curr) => {
+                const prevRate = prev?.intrRate2 ?? 0;
+                const currRate = curr?.intrRate2 ?? 0;
+                return currRate > prevRate ? curr : prev;
+              }, null);
+              return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+            })()
       }}
     </div>
   </div>
@@ -131,6 +160,8 @@ class="product-card"
 import { ref, computed } from 'vue'
 import { onMounted } from 'vue'
 import api from "@/api"
+// 매월 최대금액 필터링 사용 여부
+const useMaxLimitFilter = ref(false)
 
 const bankOptions = [
 { name: '국민은행', logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href },
@@ -148,6 +179,8 @@ const bankOptions = [
 const loading = ref(false)
 const showSearchResults = ref(false)
 const selectedAmount = ref(10000)
+const maxAmount = 3000000
+const sliderStep = 10000
 
 const getRate = (product, type) => {
   const selectedTerm = filters.value?.term
@@ -199,11 +232,13 @@ filters.value.bank = null
 // selectedAmount를 filters에 동기화
 import { watch } from 'vue'
 watch(selectedAmount, (val) => {
-  filters.value.amount = val
+  filters.value.amount = val > maxAmount ? null : val
 })
 
 const terms = [
 { label: '전체', value: '전체' },
+{ label: '1개월', value: '1' },
+{ label: '3개월', value: '3' },
 { label: '6개월', value: '6' },
 { label: '12개월', value: '12' },
 { label: '24개월', value: '24' },
@@ -226,9 +261,10 @@ return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
 const carouselSavings = computed(() => {
   return personaRecommendedSavings.value.map(d => ({
     id: d.savingId,
-    name: d.savingName, // ← 변경: API 응답에 따라 이름 우선순위 설정
+    name: d.savingName,
     bankName: d.bankName,
     image: d.companyImage,
+    maxLimit: d.maxLimit,
     maxRate: `${d.maxRate.toFixed(2)}%`,
     baseRate: `${d.basicRate.toFixed(2)}%`
   }))
@@ -259,6 +295,7 @@ onMounted(async () => {
       savingId: item.savingId,
       savingName: item.savingName,
       bankName : item.bankName,
+      maxLimit : item.maxLimit,
       companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
       maxRate: item.maxRate ?? 0,
       basicRate: item.basicRate ?? 0
@@ -279,6 +316,7 @@ onMounted(async () => {
       id: item.savingProductId,
       name: item.finPrdtNm,
       bank: item.korCoNm,
+      maxLimit : item.maxLimit,
       bankInitial: getBankInitial(item.korCoNm),
       savingOptions: item.savingOptions,
       baseRate: item.intrRate?.toFixed(2) ?? '-',
@@ -351,13 +389,18 @@ const filteredProducts = computed(() => {
   }
 
   // 예치금액 필터 추가
-  if (selectedAmount.value) {
+  if (selectedAmount.value <= maxAmount) {
     result = result.filter(p =>
       p.savingOptions?.some(opt => {
         const amountNum = parseInt(opt.minAmount?.replace(/[^\d]/g, '')) || 0
         return selectedAmount.value >= amountNum
       })
     )
+    if (useMaxLimitFilter.value) {
+    result = result.filter(p =>
+    !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value
+  )
+}
   }
 
   // 은행 필터
@@ -382,11 +425,9 @@ const filteredProducts = computed(() => {
   return result
 })
 const formatCurrency = (val) => {
-return new Intl.NumberFormat('ko-KR', {
-  style: 'currency',
-  currency: 'KRW',
-  maximumFractionDigits: 0
-}).format(val)
+  return new Intl.NumberFormat('ko-KR', {
+    maximumFractionDigits: 0
+  }).format(val) + '원'
 }
 
 const getMinAmountWithTerm = (product) => {
@@ -446,11 +487,9 @@ text-align: center;
 }
 
 .carousel-saving-image {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
+  width: 50%;
   border-radius: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
+  padding-bottom: 2rem;
 }
 .persona-carousel-section {
   display: flex;
@@ -738,6 +777,11 @@ font-weight: bold;
 }
 </style>
 <style scoped>
+.no-wrap {
+  white-space: nowrap;
+}
+</style>
+<style scoped>
 /* .carousel-saving-rates {
 font-size: var(--font-size-base);
 color: var(--text-secondary);
@@ -750,6 +794,43 @@ text-align: center;
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   margin-top: var(--spacing-sm);
+}
+/* 🔷 Empty state 스타일 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  border: 2px #ccc;
+  border-radius: 1rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+/* Slide-fade transition for slider-box */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  max-height: 100px;
+  opacity: 1;
 }
 </style>
 

@@ -260,17 +260,18 @@ watch(currentQuestionIndex, animateCounter)
   margin: 3rem auto;
   background-color: var(--bg-content);
   padding: 3rem;
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-light);
+  transition: all 0.3s ease-in-out;
 }
 .progress-container {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 .progress-text {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: bold;
   color: var(--text-secondary);
 }
 .progress-bar {
@@ -294,55 +295,64 @@ watch(currentQuestionIndex, animateCounter)
   margin-bottom: 2rem;
 }
 .question h2 {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
   color: var(--color-dark);
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.4rem;
 }
 .choice-list {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.2rem;
+  margin-top: 1rem;
 }
 .choice-btn {
   width: 100%;
   max-width: 500px;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 1rem 1.5rem;
   background-color: var(--color-white);
   color: var(--text-primary);
   font-size: var(--font-size-base);
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, background-color 0.2s ease;
   text-align: center;
   cursor: pointer;
 }
 .choice-btn:hover {
-  background-color: var(--bg-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background-color: #f0fdf4;
+  transform: scale(1.02);
+  border-color: #4caf50;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
 }
 /* ── “이전 질문” 버튼 스타일 ─────────────────────────────────────── */
 .nav-buttons {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   display: flex;
   justify-content: center;
 }
 .back-btn {
-  padding: 0.6rem 1.2rem;
-  font-size: var(--font-size-sm);
-  border-radius: 6px;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
   border: 1px solid var(--border-light);
   background: var(--color-white);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 .back-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 .back-btn:not(:disabled):hover {
-  background: var(--bg-hover);
+  background-color: #f9f9f9;
+  border-color: var(--color-dark);
 }
 </style>

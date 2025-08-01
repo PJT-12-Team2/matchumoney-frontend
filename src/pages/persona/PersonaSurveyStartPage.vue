@@ -1,8 +1,6 @@
 <template>
     <div class="card-recommendation-wrapper">
-      <section class="main-section">
-        <!-- 🎠 캐릭터 슬라이더 -->
-        <div class="slider-container">
+      <div class="slider-container">
           <div class="slider-track">
             <img
               v-for="(card, index) in [...cards, ...cards]"
@@ -12,6 +10,9 @@
             />
           </div>
         </div>
+      <section class="main-section">
+        <!-- 🎠 캐릭터 슬라이더 -->
+      
   <br>
         <!-- 텍스트 & 버튼 -->
         <div class="text-box">
@@ -26,10 +27,16 @@
   <div class="testimonial-box">
     <transition name="fade" mode="out-in">
       <div class="testimonial-content" :key="currentIndex">
-        <img :src="testimonials[currentIndex].img" alt="사용자 사진" class="user-img" />
-        <div class="text-content">
-          <div class="user-name">{{ testimonials[currentIndex].name }}</div>
-          <div class="user-review">{{ testimonials[currentIndex].text }}</div>
+        <div
+          class="single-testimonial"
+          v-for="(testimonial, index) in 3"
+          :key="index"
+        >
+          <img :src="testimonials[(currentIndex + index) % testimonials.length].img" alt="사용자 사진" class="user-img" />
+          <div class="text-content">
+            <div class="user-name">{{ testimonials[(currentIndex + index) % testimonials.length].name }}</div>
+            <div class="user-review">{{ testimonials[(currentIndex + index) % testimonials.length].text }}</div>
+          </div>
         </div>
       </div>
     </transition>
@@ -76,7 +83,41 @@ const testimonials = [
     text: '페르소나 동물이 너무 귀엽고, 결과도 정확해서 신뢰가 갔어요!',
     img: new URL('@/assets/user.png', import.meta.url).href,
   },
-  // ...최대 10개까지 추가 가능
+  {
+    name: '정O린',
+    text: '카드 비교도 해주고 정리도 깔끔해서 보기 편했어요.',
+    img: new URL('@/assets/user.png', import.meta.url).href,
+  },
+  {
+    name: '최O빈',
+    text: '설문이 재밌고, 결과가 생각보다 정확해서 놀랐어요.',
+    img: new URL('@/assets/user.png', import.meta.url).href,
+  },
+  {
+    name: '홍O기',
+    text: '금융상품에 대한 설명이 쉬워서 이해하기 좋았어요.',
+    img: new URL('@/assets/user.png', import.meta.url).href,
+  },
+  {
+    name: '윤O정',
+    text: '페르소나 유형별 추천이 구체적이어서 바로 적용해봤어요.',
+    img: new URL('@/assets/user.png', import.meta.url).href,
+  },
+  {
+    name: '서O윤',
+    text: '결과가 보기 쉽게 시각화돼 있어서 좋았어요.',
+    img: new URL('@/assets/user.png', import.meta.url).href,
+  },
+  {
+    name: '장O수',
+    text: '단순히 카드만 보여주는 게 아니라 설명이 잘 되어 있어서 만족!',
+    img: new URL('@/assets/user.png', import.meta.url).href,
+  },
+  {
+    name: '배O아',
+    text: '예금 추천도 페르소나에 맞춰 나와서 믿고 참고했어요.',
+    img: new URL('@/assets/user.png', import.meta.url).href,
+  },
 ]
 
 const currentIndex = ref(0)
@@ -137,12 +178,11 @@ onBeforeUnmount(() => {
   }
   
   .card-img {
-  width: 200px;
+  width: 160px;
   height: auto;
   border-radius: 12px;
   margin: 0 1rem;
   flex-shrink: 0;
-  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.1); /* 💡 그림자 효과 */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .card-img:hover {
@@ -171,10 +211,11 @@ onBeforeUnmount(() => {
   }
   
   .start-button {
-    background: black;
+    background: #9dc08b;
     color: white;
-    padding: 1.5rem 2.8rem;
+    padding: 1rem 2.8rem;
     font-size: 1.3rem;
+    font-weight: bold;
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -196,38 +237,49 @@ onBeforeUnmount(() => {
   margin-top: 1.2rem;
 }
 .testimonial-wrapper {
-  margin-top: 2rem;
   display: flex;
   justify-content: center;
+  padding: 2rem 1rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 2rem;
 }
 
 .testimonial-box {
   background: #fff;
-  padding: 1.5rem;
-  width: 90%;
-  max-width: 720px;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  position: relative;
-  transition: all 0.3s ease;
+  padding: 1rem;
+  width: 100%;
+  max-width: 1080px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .testimonial-content {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  transition: transform 0.5s ease;
+}
+
+.single-testimonial {
+  flex: 0 0 calc(33.333% - 2rem);
+  display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+  min-width: 280px;
 }
 
 .user-img {
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .text-content {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -235,13 +287,13 @@ onBeforeUnmount(() => {
 
 .user-name {
   font-weight: bold;
-  font-size: 1.1rem;
-  margin-bottom: 0.4rem;
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
   color: #333;
 }
 
 .user-review {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #555;
   line-height: 1.4;
 }
