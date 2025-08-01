@@ -3,21 +3,28 @@
     <BaseCardGrey class="profile-section section-wide">
       <template #content>
         <section class="user-info">
-          <div class="user-icon"></div>
+          <div class="profile-image-placeholder">
+            <img :src="personaImageUrl" alt="유형 이미지" class="profile-image" />
+          </div>
           <div class="user-text">
-            <p class="user-type">
-              한푼 두푼 모아나가는
-              <strong>돈 벌레 유형</strong>
-            </p>
+            <div class="user-type">
+              <p>
+                {{ myPageInfo?.persona?.quote }}
+                <strong>{{ myPageInfo?.persona?.nameKo }} 유형</strong>
+              </p>
+            </div>
             <h2 class="user-name">
-              홍길동님
-              <span class="edit">수정하기</span>
+              <span class="nickname">{{ user?.nickname ?? "정보 없음" }}</span>
+              <span class="level-title">님</span>
+              <span class="edit" @click="router.push('/myinfo')">수정하기</span>
             </h2>
             <p class="user-level">
-              LV. 3
-              <span class="level-bar"><span class="fill"></span></span>
-              꿈을 새내기
+              <span class="level-value">Lv. {{ level }}</span>
+              <span class="level-title">금융 새내기</span>
             </p>
+            <div class="level-bar">
+              <div class="fill" :style="{ width: fillPercentage }"></div>
+            </div>
           </div>
         </section>
       </template>
@@ -25,13 +32,12 @@
     </BaseCardGrey>
 
     <BaseCardGrey class="type-section section-wide">
-      <template #content>
-        <section class="change-type">
+      <template #title>
+        <section class="change-type type-inner">
           <p>유형을 변경하고 싶다면?</p>
-          <button class="edit-button">✏️</button>
+          <button class="edit-button" @click="router.push('/persona/start')">✏️</button>
         </section>
       </template>
-      <template #title></template>
     </BaseCardGrey>
 
     <div class="left-grid">
@@ -47,16 +53,6 @@
       </BaseCardGrey>
       <BaseCardGrey>
         <template #title>보유 카드</template>
-        <template #content>
-          <div class="card-info">
-            <div class="card">
-              <h4>KB국민 LIV ON 카드</h4>
-              <p>₩850,000</p>
-              <p>**** **** **** 1324</p>
-              <p>이번달 사용 금액</p>
-            </div>
-          </div>
-        </template>
       </BaseCardGrey>
     </div>
 
@@ -65,13 +61,27 @@
         <template #title>내가 좋아하는 상품 (즐겨찾기)</template>
         <template #content>
           <div class="tabs">
-            <button>예금</button>
-            <button>적금</button>
-            <button>카드</button>
+            <button :class="{ active: selectedTab === '예금' }" @click="selectedTab = '예금'">예금</button>
+            <button :class="{ active: selectedTab === '적금' }" @click="selectedTab = '적금'">적금</button>
+            <button :class="{ active: selectedTab === '카드' }" @click="selectedTab = '카드'">카드</button>
           </div>
-          <div class="product-list">
-            <div class="product-card">예적금 예시 1</div>
-            <div class="product-card">예적금 예시 2</div>
+          <div class="product-list fade-in">
+            <div
+              v-for="(product, index) in getProductsByTab"
+              :key="index"
+              class="product-card"
+              @click="selectProduct(product)"
+              :style="{ animationDelay: `${index * 0.1}s` }">
+              <div class="product-header">
+                <div class="bank-logo">
+                  <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
+                  <img v-else :src="getBankLogo(product.bankName)" alt="은행 로고" />
+                </div>
+                <div class="product-info">
+                  <h3>{{ product.productName }}</h3>
+                </div>
+              </div>
+            </div>
           </div>
         </template>
       </BaseCardGrey>
@@ -80,188 +90,397 @@
 </template>
 
 <script setup>
+const getPersonaImage = (fileName) => {
+  if (!fileName) return "";
+  return new URL(`../assets/character_images/${fileName}`, import.meta.url).href;
+};
+
 import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
+import { ref, computed, onMounted } from "vue";
+import userApi from "@/api/user";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const user = ref({});
+const exp = ref(0); // default exp
+const level = computed(() => Math.floor(exp.value / 100) + 1);
+const fillPercentage = computed(() => `${exp.value % 100}%`);
+const selectedTab = ref("예금");
+
+const favoriteSavings = ref([]);
+const favoriteDeposits = ref([]);
+const favoriteCards = ref([]);
+const products = ref([]);
+const myPageInfo = ref({ persona: {} });
+const personaImageUrl = ref("");
+
+onMounted(async () => {
+  try {
+    const response = await userApi.getMyPage();
+    const data = response.result;
+    if (!data) return;
+
+    user.value.nickname = data.nickname;
+    exp.value = data.exp;
+
+    // Updated logic for extracting filename and generating image URL
+    const rawImagePath = data.persona?.imageUrl;
+    const fileName = rawImagePath?.split("/").pop();
+    const imageUrl = fileName ? new URL(`../../assets/character_images/${fileName}`, import.meta.url).href : "";
+    personaImageUrl.value = imageUrl;
+
+    console.log("📷 백엔드 imageUrl:", rawImagePath);
+    console.log("📷 가공된 이미지 URL:", imageUrl);
+
+    myPageInfo.value.persona = {
+      quote: data.persona?.quote ?? "",
+      nameKo: data.persona?.nameKo ?? "",
+      imageUrl,
+    };
+
+    favoriteSavings.value = data.favoriteSavings;
+    favoriteDeposits.value = data.favoriteDeposits;
+    favoriteCards.value = data.favoriteCards;
+
+    updateProducts();
+  } catch (error) {
+    console.error("❌ 마이페이지 정보 조회 실패", error);
+  }
+});
+
+function updateProducts() {
+  if (selectedTab.value === "적금") {
+    products.value = favoriteSavings.value.map((item) => ({
+      bankName: item.company,
+      productName: item.title,
+      type: "적금",
+    }));
+  } else if (selectedTab.value === "예금") {
+    products.value = favoriteDeposits.value.map((item) => ({
+      bankName: item.bankName,
+      productName: item.productName,
+      type: "예금",
+    }));
+  } else if (selectedTab.value === "카드") {
+    products.value = favoriteCards.value.map((item) => ({
+      productName: item.name,
+      productImage: item.imageUrl,
+      type: "카드",
+    }));
+  }
+}
+
+import { watch } from "vue";
+watch(selectedTab, () => {
+  updateProducts();
+});
+
+const getProductsByTab = computed(() => products.value);
+
+const getBankLogo = (bankName) => {
+  // 공통 로고 파일
+  const busanLogo = new URL("@/assets/bank-Logos/BK_BUSAN_Profile.png", import.meta.url).href;
+  const hanaLogo = new URL("@/assets/bank-Logos/BK_HANA_Profile.png", import.meta.url).href;
+
+  const logoMap = {
+    // 주요 시중은행
+    국민은행: new URL("@/assets/bank-Logos/BK_KB_Profile.png", import.meta.url).href,
+    하나은행: hanaLogo,
+    농협은행주식회사: new URL("@/assets/bank-Logos/BK_NH_Profile.png", import.meta.url).href,
+    신한은행: new URL("@/assets/bank-Logos/BK_Shinhan_Profile.png", import.meta.url).href,
+    우리은행: new URL("@/assets/bankLogo_images/BK_Woori_Profile.png", import.meta.url).href,
+
+    // 특수은행
+    중소기업은행: new URL("@/assets/bank-Logos/BK_IBK_Profile.png", import.meta.url).href,
+    한국산업은행: new URL("@/assets/bank-Logos/BK_KDB_Profile.png", import.meta.url).href,
+    수협은행: new URL("@/assets/bank-Logos/BK_SH_Profile.png", import.meta.url).href,
+
+    // 지방은행
+    경남은행: busanLogo,
+    부산은행: busanLogo,
+    광주은행: new URL("@/assets/bank-Logos/BK_KWANGJU_Profile.png", import.meta.url).href,
+    전북은행: new URL("@/assets/bank-Logos/BK_JEONBUK_Profile.png", import.meta.url).href,
+    제주은행: new URL("@/assets/bank-Logos/BK_JEJU_Profile.png", import.meta.url).href,
+    아이엠뱅크: new URL("@/assets/bank-Logos/BK_DAEGU_Profile.png", import.meta.url).href,
+
+    // 외국계은행
+    한국스탠다드차타드은행: new URL("@/assets/bank-Logos/BK_SC_Profile.png", import.meta.url).href,
+
+    // 인터넷은행
+    "주식회사 카카오뱅크": new URL("@/assets/bank-Logos/BK_KAKAO_Profile.png", import.meta.url).href,
+    "주식회사 케이뱅크": new URL("@/assets/bank-Logos/BK_K_Profile.png", import.meta.url).href,
+    "토스뱅크 주식회사": new URL("@/assets/bank-Logos/BK_TOSS_Profile.png", import.meta.url).href,
+
+    // 주식회사 명칭 포함
+    "주식회사 하나은행": hanaLogo,
+  };
+
+  return logoMap[bankName] || null;
+};
+
+function selectProduct(product) {
+  console.log("Selected product:", product);
+}
 </script>
 
 <style scoped>
-/* Responsive grid layout for my-page */
 .my-page {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 25vh 5vh 50vh;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   grid-template-areas:
     "profile profile"
-    "type    type"
-    "left    right";
-  gap: 0.5rem;
-  padding: 0.5rem;
-  height: 100%;
+    "type type"
+    "left right";
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-xl);
   box-sizing: border-box;
-  overflow-y: auto;
-  max-width: 1300px;
+  max-width: 1200px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .profile-section {
   grid-area: profile;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .type-section {
   grid-area: type;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 30px;
 }
 .left-grid {
   grid-area: left;
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 0.5rem;
-  height: 100%;
+  grid-template-rows: 1fr 2fr;
+  gap: var(--spacing-md);
+  height: 500px;
 }
 .right-grid {
   grid-area: right;
-}
-.right-grid > * {
-  height: 100%;
+  height: 500px;
 }
 
 .user-info {
+  width: 100%;
+  max-width: 100%;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  box-sizing: border-box;
+  padding: var(--spacing-sm);
 }
 
-.user-icon {
-  width: 50px;
-  height: 50px;
-  background-color: #eee;
+.profile-image-placeholder {
+  width: clamp(100px, 25vw, 180px);
+  height: clamp(100px, 25vw, 180px);
   border-radius: 50%;
+  background-color: var(--color-secondary-10);
+  border: 2px solid var(--color-secondary-50);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .user-text {
-  flex: 1;
-}
-
-.user-type {
-  font-size: 0.9rem;
-  color: #666;
+  flex: 1 1 auto;
+  min-width: 200px;
+  max-width: 600px;
+  box-sizing: border-box;
+  padding: var(--spacing-xs);
 }
 
 .user-name {
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin-bottom: var(--spacing-xs);
 }
 
 .user-name .edit {
-  font-size: 0.9rem;
-  font-weight: normal;
-  color: var(--color-primary, #1abc9c);
-  margin-left: 0.5rem;
+  font-size: var(--font-size-base);
+  margin-left: var(--spacing-md);
+  color: var(--color-accent);
   cursor: pointer;
 }
 
+.nickname {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+}
+
+.level-title {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  margin-left: var(--spacing-xs);
+}
+
+.user-type {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+}
+
 .user-level {
-  font-size: 0.8rem;
-  color: #666;
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  margin: 0;
+}
+
+.level-value {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
 }
 
 .level-bar {
-  display: inline-block;
-  width: 100px;
+  width: 100%;
   height: 6px;
-  background-color: #ddd;
-  border-radius: 3px;
-  margin: 0 0.5rem;
-  vertical-align: middle;
-  position: relative;
+  background-color: var(--color-secondary-10);
+  border-radius: 5px;
 }
-
-.level-bar .fill {
-  display: inline-block;
+.fill {
   height: 100%;
-  width: 50%;
-  background-color: var(--color-primary, #1abc9c);
-  border-radius: 3px;
-  position: absolute;
-  top: 0;
-  left: 0;
+  background-color: var(--color-accent);
+  width: 60%;
 }
 
 .change-type {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 1rem;
+  padding: 0 var(--spacing-2xl);
+  margin-top: var(--spacing-sm);
+}
+
+.change-type p {
+  margin: 0;
+  font-size: var(--font-size-base);
 }
 
 .edit-button {
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   cursor: pointer;
-}
-
-.badges {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 0.25rem;
-}
-
-.badge-placeholder {
-  font-size: 1.5rem;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-}
-
-.tabs button {
-  padding: 0.2rem 0.5rem;
-  background-color: #e6f2ed;
-  border: none;
-  border-radius: 20px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.product-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.product-card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 0.5rem;
-  text-align: center;
-  font-size: 0.8rem;
-}
-
-.card-info .card {
-  background-color: #004a91;
-  color: white;
-  border-radius: 12px;
-  padding: 0.5rem;
-  text-align: left;
-  font-size: 0.8rem;
-}
-
-.card-info .card h4 {
-  margin-bottom: 0.5rem;
 }
 
 .section-wide {
   grid-column: span 2;
 }
 
-@media (min-width: 768px) {
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: var(--color-secondary-10);
+  border-radius: 2rem;
+  padding: 0.25rem;
+  margin: 0, var(--spacing-sm);
+}
+.tabs button {
+  flex: 1;
+  border: none;
+  background-color: transparent;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 2rem;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: background-color 0.2s ease;
+}
+.tabs button.active {
+  background-color: var(--color-accent);
+  color: white;
+  font-weight: 600;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: 10rem;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+  height: auto;
+}
+
+.product-card {
+  border: 1px solid var(--color-secondary-30);
+  border-radius: 1rem;
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  height: 100%;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+}
+
+@media (max-width: 768px) {
   .my-page {
-    /* The grid layout is already applied above for all screens */
-    /* Optionally adjust gap for larger screens if desired: */
-    gap: 1.5rem;
+    grid-template-areas:
+      "profile"
+      "type"
+      "left"
+      "right";
+    grid-template-columns: 1fr;
   }
+  .user-info {
+    flex-direction: column;
+    align-items: center;
+  }
+  .user-text {
+    text-align: center;
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-name {
+    font-size: var(--font-size-xl);
+  }
+  .level-value {
+    font-size: var(--font-size-lg);
+  }
+  .user-type,
+  .user-level {
+    font-size: var(--font-size-sm);
+  }
+  .edit-button {
+    font-size: var(--font-size-sm);
+  }
+}
+
+.product-card {
+  transform: scale(0.95);
+}
+.product-card:hover {
+  transform: scale(1);
+}
+.product-header {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+.bank-logo img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+.product-info {
+  font-size: 1rem;
+}
+
+.profile-image-placeholder img.profile-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 </style>
