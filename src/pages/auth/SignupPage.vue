@@ -1,69 +1,74 @@
 <template>
-  <div class="signup-container">
+  <div class="login-container">
     <div class="login-logo">
       <img src="@/assets/Logo.png" alt="맞추머니 로고" />
     </div>
 
-    <BaseCardGrey class="signup-card">
-      <template #title>회원가입</template>
-
+    <BaseCardGrey class="login-card">
       <template #content>
-        <div class="form-wrapper">
-          <!-- 이메일 -->
-          <div class="form-row">
-            <label class="form-label">이메일</label>
-            <div class="right-area">
-              <BaseInput v-model="email" placeholder="이메일" />
-              <BaseButton class="action-btn" variant="primary" @click="handleSendCode">인증번호 전송</BaseButton>
-            </div>
-          </div>
+        <h1 class="login-title">회원가입</h1>
 
-          <!-- 인증번호 -->
-          <div class="form-row">
-            <label class="form-label">인증번호 입력</label>
-            <div class="right-area">
-              <BaseInput v-model="authCode" placeholder="인증번호 입력" />
-              <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode">인증번호 확인</BaseButton>
-            </div>
+        <!-- 이메일 -->
+        <div class="login-row">
+          <div class="login-label">이메일</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="email" placeholder="이메일 입력" />
+            <BaseButton class="action-btn" variant="primary" @click="handleSendCode">인증번호 전송</BaseButton>
           </div>
+        </div>
 
-          <!-- 닉네임 -->
-          <div class="form-row">
-            <label class="form-label">닉네임</label>
-            <div class="right-area">
-              <BaseInput v-model="nickname" placeholder="닉네임 입력" />
-            </div>
+        <!-- 인증번호 -->
+        <div class="login-row">
+          <div class="login-label">인증번호 입력</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="authCode" placeholder="인증번호 입력" />
+            <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode">인증번호 확인</BaseButton>
           </div>
+        </div>
 
-          <!-- 비밀번호 -->
-          <div class="form-row">
-            <label class="form-label">비밀번호</label>
-            <div class="right-area">
-              <BaseInput v-model="password" type="password" placeholder="비밀번호 입력 (특수문자 포함 8~20자)" />
-            </div>
+        <!-- 닉네임 -->
+        <div class="login-row">
+          <div class="login-label">닉네임</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="nickname" placeholder="닉네임 입력" />
           </div>
+        </div>
 
-          <!-- 비밀번호 확인 -->
-          <div class="form-row">
-            <label class="form-label">비밀번호 확인</label>
-            <div class="right-area">
-              <BaseInput v-model="confirmPassword" type="password" placeholder="비밀번호 재입력" />
-            </div>
+        <!-- 비밀번호 -->
+        <div class="login-row">
+          <div class="login-label">비밀번호</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="password" type="password" placeholder="비밀번호 입력 (특수문자 포함 8~20자)" />
           </div>
-          <div class="form-row error-row">
-            <div class="form-label"></div>
-            <div class="right-area">
-              <p class="error-msg" :class="{ visible: errorMessage }">
-                {{ errorMessage || "‎" }}
-              </p>
-            </div>
-          </div>
+        </div>
 
-          <!-- 회원가입 버튼 -->
-          <div class="form-row">
-            <div class="join-btn-area">
-              <BaseButton variant="primary" @click="handleJoin" :disabled="!isEmailVerified">회원가입</BaseButton>
+        <!-- 비밀번호 확인 -->
+        <div class="login-block">
+          <div class="login-row">
+            <div class="login-label">비밀번호 확인</div>
+          </div>
+          <div class="login-row">
+            <div class="input-action-row">
+              <BaseInput v-model="confirmPassword" type="password" placeholder="비밀번호 확인" />
             </div>
+          </div>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div class="login-row error-row">
+          <span class="error-msg" :class="{ visible: !!errorMessage }">{{ errorMessage }}</span>
+        </div>
+        <div class="login-row">
+          <div class="join-btn-area">
+            <BaseButton variant="primary" @click="handleJoin" :disabled="!isEmailVerified">회원가입</BaseButton>
           </div>
         </div>
       </template>
@@ -148,7 +153,15 @@ const handleVerifyCode = async () => {
 </script>
 
 <style scoped>
-/* 로고 영역 */
+.login-container {
+  min-height: 100vh;
+  background: var(--bg-body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .login-logo {
   display: flex;
   justify-content: center;
@@ -159,77 +172,66 @@ const handleVerifyCode = async () => {
   height: 150px;
 }
 
-.signup-card {
-  width: 700px;
-  max-width: 100%;
-  padding: 3rem !important;
+.login-card {
+  width: 435px;
+  height: 630px;
+  padding: 1rem;
 }
 
-.form-wrapper {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-::v-deep(.base-card .title) {
-  margin-bottom: var(--spacing-xl) !important;
-  display: block;
+.login-title {
   text-align: center;
-  color: var(--color-title);
-}
-
-.signup-container {
-  min-height: 100vh;
-  background: var(--bg-body);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  margin-bottom: var(--spacing-lg);
-}
-
-.form-label {
-  width: 120px;
-  font-weight: 500;
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
   color: var(--color-dark);
 }
 
-.right-area {
+.login-row {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   width: 100%;
   gap: var(--spacing-sm);
 }
 
-.right-area-with-error {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 0.3rem; /* 인풋과 에러 메시지 간격 */
-}
-
-.error-msg {
+.login-label {
   font-size: 0.9rem;
-  color: var(--color-error-dark);
-  visibility: hidden;
-  min-height: 1.2rem;
+  color: var(--color-dark);
+  margin-bottom: 0.3rem;
 }
 
-.error-msg.visible {
-  visibility: visible;
+.input-action-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .action-btn {
   height: 40px;
   white-space: nowrap;
   flex-shrink: 0;
-  width: 160px;
+  width: 120px;
+}
+
+.login-block .login-row .input-action-row {
+  margin-bottom: 0;
+}
+
+.error-row {
+  height: 1.2rem; /* 고정 높이로 줄 간격 유지 */
+}
+
+.error-msg {
+  font-size: 0.9rem;
+  color: var(--color-error-dark);
+  visibility: hidden;
+  display: block;
+}
+
+.error-msg.visible {
+  visibility: visible;
 }
 
 .join-btn-area {
@@ -237,15 +239,15 @@ const handleVerifyCode = async () => {
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-md);
 }
 
 .join-btn-area .base-button {
   width: 300px;
 }
 
-.error-row {
-  margin-top: -1rem;
-  margin-bottom: var(--spacing-lg);
+.login-btn:disabled {
+  background-color: var(--color-disabled);
+  cursor: not-allowed;
 }
 </style>

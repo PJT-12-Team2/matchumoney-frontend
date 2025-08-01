@@ -122,7 +122,7 @@ const handleKakaoLogin = () => {
 /* BaseCardGrey 커스터마이징 */
 .login-card {
   width: 435px;
-  height: 600px;
+  height: 630px;
   padding: 3rem;
 }
 
