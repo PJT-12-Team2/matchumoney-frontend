@@ -106,7 +106,6 @@ const handleKakaoLogin = () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 5vh; /* 화면 높이의 5% */
 }
 
 /* 로고 영역 */
@@ -123,7 +122,7 @@ const handleKakaoLogin = () => {
 /* BaseCardGrey 커스터마이징 */
 .login-card {
   width: 435px;
-  height: 600px;
+  height: 630px;
   padding: 3rem;
 }
 

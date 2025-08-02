@@ -155,8 +155,8 @@ watchEffect(() => {
   border-radius: var(--spacing-md);
   box-shadow: var(--shadow-modal);
   padding: var(--spacing-xl) var(--spacing-lg);
-  width: 90%;
-  max-width: 360px;
+  width: 50%;
+  max-width: 600px;
   text-align: center;
 }
 
@@ -239,5 +239,16 @@ watchEffect(() => {
 .btn.confirm:disabled {
   background-color: var(--color-gray-400);
   cursor: not-allowed;
+}
+@media (max-width: 640px) {
+  .modal-content {
+    background: var(--color-white);
+    border-radius: var(--spacing-md);
+    box-shadow: var(--shadow-modal);
+    padding: var(--spacing-xl) var(--spacing-lg);
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+  }
 }
 </style>
