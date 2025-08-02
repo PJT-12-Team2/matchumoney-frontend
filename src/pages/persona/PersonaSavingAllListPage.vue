@@ -7,7 +7,9 @@
         <h2 class="persona-carousel-title">
           <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천되는 적금
         </h2>
-        <div class="carousel-saving-list">
+
+        <!-- 데스크탑 화면: flex 목록 -->
+        <div class="carousel-saving-list" v-if="!isMobile">
           <div
             v-for="saving in carouselSavings"
             :key="saving.id"
@@ -16,14 +18,50 @@
           >
             <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
             <div class="carousel-saving-name">{{ saving.name }}</div>
-            <div>{{ saving.bankName }}</div>
+            <div class="bank-name-bold">{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
-              <span>최고 금리: <strong style="color:#2e7d32">{{ saving.maxRate }}</strong></span>
-              <br />
-              <span>기본 금리: {{ saving.baseRate }}</span>
+              <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
+              <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
+              <span><strong>매월 최대 금액:</strong> {{
+                saving.maxLimit === "999999999"
+                  ? '한도 없음'
+                  : formatCurrency(Number(saving.maxLimit))
+              }}</span>
+              <span><strong>기준 기간:</strong> 12개월</span>
             </div>
           </div>
         </div>
+
+        <!-- 모바일 화면: swiper 캐러셀 -->
+        <Swiper
+          v-else
+          :modules="modules"
+          :slides-per-view="1.2"
+          :space-between="16"
+          :pagination="{ clickable: true }"
+          class="carousel-swiper"
+        >
+          <SwiperSlide
+            v-for="saving in carouselSavings"
+            :key="saving.id"
+            class="carousel-saving"
+            @click="selectProduct(saving)"
+          >
+            <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
+            <div class="carousel-saving-name">{{ saving.name }}</div>
+            <div class="bank-name-bold">{{ saving.bankName }}</div>
+            <div class="carousel-saving-rates-inline">
+              <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
+              <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
+              <span><strong>매월 최대 금액:</strong> {{
+                saving.maxLimit === "999999999"
+                  ? '한도 없음'
+                  : formatCurrency(Number(saving.maxLimit))
+              }}</span>
+              <span><strong>기준 기간:</strong> 12개월</span>
+            </div>
+          </SwiperSlide>
+        </Swiper>
       </section>
 
       <br /><hr /><br />
@@ -34,45 +72,74 @@
 
       <!-- ✅ 필터 영역 -->
 <section class="filter-selection-section">
-<div class="term-selector">
-          <div
-            v-for="(term, idx) in terms"
-            :key="term.value"
-            :class="['term-button', { active: filters?.term === term.value }]"
-            @click="filters.term = term.value"
-          >
-            {{ term.label }}
-          </div>
+  <div class="term-selector">
+    <div
+      v-for="(term, idx) in terms"
+      :key="term.value"
+      :class="['term-button', { active: filters?.term === term.value }]"
+      @click="filters.term = term.value"
+    >
+      {{ term.label }}
+    </div>
+  </div>
+  <div class="term-dropdown-wrapper">
+    <button class="term-toggle-button" @click="showTermDropdown = !showTermDropdown">
+      {{ filters.term }}개월 선택 ▼
+    </button>
+    <div class="term-dropdown" v-if="showTermDropdown">
+      <div
+        v-for="term in terms"
+        :key="term.value"
+        class="term-dropdown-option"
+        @click="selectTerm(term.value)"
+      >
+        {{ term.label }}
+      </div>
+    </div>
+  </div>
+  <div class="amount-filter-container">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <h3 class="filter-label" style="margin: 0;">매월 저축 금액 설정</h3>
+      <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" v-model="useMaxLimitFilter" />
+        <span>최대금액 필터 사용</span>
+      </label>
+    </div>
+    <br>
+    <transition name="slide-fade">
+      <div v-if="useMaxLimitFilter" class="slider-box">
+        <input
+          type="range"
+          v-model="selectedAmount"
+          :min="10000"
+          :max="maxAmount + sliderStep"
+          :step="sliderStep"
+          class="amount-slider"
+        />
+        <div class="slider-value">
+          {{
+            selectedAmount > maxAmount
+              ? '한도 없음'
+              : formatCurrency(selectedAmount)
+          }}
         </div>
-        <div class="amount-filter-container">
-  
-  <h3 class="filter-label">매월 저축 금액 설정</h3>
-  <div class="slider-box">
-    <input
-      type="range"
-      v-model="selectedAmount"
-      :min="10000"
-      :max="1000000"
-      :step="1000"
-      class="amount-slider"
-    />
-    <div class="slider-value">{{ formatCurrency(selectedAmount) }}</div>
+      </div>
+    </transition>
   </div>
-</div>
-<br><br>
-<h3 class="filter-label">은행을 선택해주세요</h3>
-<div class="bank-grid">
-  <div
-    v-for="bank in bankOptions"
-    :key="bank.name"
-    :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
-    @click="filters.bank = (filters?.bank === bank.name ? null : bank.name)"
-  >
-    <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
-    <div class="bank-label">{{ bank.name }}</div>
+  <br><br>
+  <h3 class="filter-label">은행을 선택해주세요</h3>
+  <div class="bank-grid">
+    <div
+      v-for="bank in bankOptions"
+      :key="bank.name"
+      :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
+      @click="filters.bank = (filters?.bank === bank.name ? null : bank.name)"
+    >
+      <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
+      <div class="bank-label">{{ bank.name }}</div>
+    </div>
   </div>
-</div>
-<br>
+  <br>
 </section>
 
       <!-- 🔍 검색 결과 -->
@@ -87,40 +154,56 @@
           <div>검색 조건에 맞는 상품이 없습니다.</div>
           <div>다른 조건으로 검색해보세요.</div>
         </div>
-        <div v-else-if="filteredProducts.length > 0" class="search-results-grid">
+        <div v-else-if="visibleProducts.length > 0" class="search-results-grid">
           <div
-v-for="product in filteredProducts"
-:key="product.id"
-class="product-card"
-@click="selectProduct(product)"
->
-<div class="product-card-horizontal">
-  <div class="bank-logo-container">
-    <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
-  </div>
-  <div class="product-name-block">
-    <div class="bank-name-bold">{{ product.bank }}</div>
-    <div class="product-name-bold">{{ product.name }}</div>
-  </div>
-  <div class="product-info-block">
-    <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
-    <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
-    <div class="rate-line">
-      최소 가입 금액 :
-      {{
-        getMinAmountWithTerm(product) || '100만원'
-      }}
-    </div>
-    <div class="rate-line">
-      기준 기간 :
-      {{
-        filters.term !== '전체' ? filters.term + '개월' : '여러 기간'
-      }}
-    </div>
-  </div>
-</div>
-</div>
-
+            v-for="product in visibleProducts"
+            :key="product.id"
+            class="product-card"
+            @click="selectProduct(product)"
+          >
+            <div class="product-card-horizontal">
+              <div class="bank-logo-container">
+                <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+              </div>
+              <div class="product-name-block">
+                <div class="bank-name-bold">{{ product.bank }}</div>
+                <div class="product-name-bold">{{ product.name }}</div>
+              </div>
+              <div class="product-info-block">
+                <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
+                <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
+                <div class="rate-line no-wrap">
+                  매월 최대 금액 : {{
+                    product.maxLimit === "999999999"
+                      ? '한도 없음'
+                      : formatCurrency(product.maxLimit)
+                  }}
+                </div>
+                <div class="rate-line">
+                  기준 기간 :
+                  {{
+                    filters.term !== '전체'
+                      ? filters.term + '개월'
+                      : (() => {
+                          const best = product.savingOptions?.reduce((prev, curr) => {
+                            const prevRate = prev?.intrRate2 ?? 0;
+                            const currRate = curr?.intrRate2 ?? 0;
+                            return currRate > prevRate ? curr : prev;
+                          }, null);
+                          return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+                        })()
+                  }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="!allVisibleLoaded && infiniteLoading"
+            class="infinite-scroll-loading"
+          >
+            <div class="spinner"></div>
+            <div>상품을 불러오는 중입니다...</div>
+          </div>
         </div>
       </section>
     </main>
@@ -128,9 +211,30 @@ class="product-card"
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { onMounted } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import { Pagination } from 'swiper/modules'
+const modules = [Pagination]
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+// 반응형 상태: 모바일 화면 여부
+const isMobile = ref(window.innerWidth <= 768)
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+  handleResize()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 import api from "@/api"
+// 매월 최대금액 필터링 사용 여부
+const useMaxLimitFilter = ref(false)
 
 const bankOptions = [
 { name: '국민은행', logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href },
@@ -148,6 +252,8 @@ const bankOptions = [
 const loading = ref(false)
 const showSearchResults = ref(false)
 const selectedAmount = ref(10000)
+const maxAmount = 3000000
+const sliderStep = 10000
 
 const getRate = (product, type) => {
   const selectedTerm = filters.value?.term
@@ -196,14 +302,22 @@ const filters = ref({
 })
 filters.value.bank = null
 
+const showTermDropdown = ref(false)
+
+const selectTerm = (val) => {
+  filters.value.term = val
+  showTermDropdown.value = false
+}
+
 // selectedAmount를 filters에 동기화
-import { watch } from 'vue'
 watch(selectedAmount, (val) => {
-  filters.value.amount = val
+  filters.value.amount = val > maxAmount ? null : val
 })
 
 const terms = [
 { label: '전체', value: '전체' },
+{ label: '1개월', value: '1' },
+{ label: '3개월', value: '3' },
 { label: '6개월', value: '6' },
 { label: '12개월', value: '12' },
 { label: '24개월', value: '24' },
@@ -226,9 +340,10 @@ return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
 const carouselSavings = computed(() => {
   return personaRecommendedSavings.value.map(d => ({
     id: d.savingId,
-    name: d.savingName, // ← 변경: API 응답에 따라 이름 우선순위 설정
+    name: d.savingName,
     bankName: d.bankName,
     image: d.companyImage,
+    maxLimit: d.maxLimit,
     maxRate: `${d.maxRate.toFixed(2)}%`,
     baseRate: `${d.basicRate.toFixed(2)}%`
   }))
@@ -259,6 +374,7 @@ onMounted(async () => {
       savingId: item.savingId,
       savingName: item.savingName,
       bankName : item.bankName,
+      maxLimit : item.maxLimit,
       companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
       maxRate: item.maxRate ?? 0,
       basicRate: item.basicRate ?? 0
@@ -279,6 +395,7 @@ onMounted(async () => {
       id: item.savingProductId,
       name: item.finPrdtNm,
       bank: item.korCoNm,
+      maxLimit : item.maxLimit,
       bankInitial: getBankInitial(item.korCoNm),
       savingOptions: item.savingOptions,
       baseRate: item.intrRate?.toFixed(2) ?? '-',
@@ -351,13 +468,18 @@ const filteredProducts = computed(() => {
   }
 
   // 예치금액 필터 추가
-  if (selectedAmount.value) {
+  if (selectedAmount.value <= maxAmount) {
     result = result.filter(p =>
       p.savingOptions?.some(opt => {
         const amountNum = parseInt(opt.minAmount?.replace(/[^\d]/g, '')) || 0
         return selectedAmount.value >= amountNum
       })
     )
+    if (useMaxLimitFilter.value) {
+      result = result.filter(p =>
+        !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value
+      )
+    }
   }
 
   // 은행 필터
@@ -381,12 +503,67 @@ const filteredProducts = computed(() => {
 
   return result
 })
+
+// 무한 스크롤 관련 로직
+const VISIBLE_STEP = 6
+const visibleCount = ref(VISIBLE_STEP)
+const infiniteLoading = ref(false)
+const visibleProducts = ref([])
+
+const updateVisibleProducts = () => {
+  visibleProducts.value = filteredProducts.value.slice(0, visibleCount.value)
+}
+
+// filteredProducts가 변경될 때 visibleProducts 초기화
+watch(filteredProducts, () => {
+  visibleCount.value = VISIBLE_STEP
+  updateVisibleProducts()
+})
+
+// visibleCount가 변경될 때 visibleProducts 업데이트
+watch(visibleCount, updateVisibleProducts)
+
+// 최초 filteredProducts 준비 시 visibleProducts 초기화
+onMounted(() => {
+  updateVisibleProducts()
+})
+
+const allVisibleLoaded = computed(() => visibleProducts.value.length >= filteredProducts.value.length)
+
+let scrollTimer = null
+const onScroll = () => {
+  if (infiniteLoading.value || allVisibleLoaded.value || loading.value) return
+  // 스크롤이 하단에 도달했는지 체크
+  const scrollContainer = document.documentElement
+  const scrollTop = scrollContainer.scrollTop
+  const clientHeight = scrollContainer.clientHeight
+  const scrollHeight = scrollContainer.scrollHeight
+  if (scrollTop + clientHeight >= scrollHeight - 10) {
+    infiniteLoading.value = true
+    // 자연스러운 로딩을 위해 살짝 딜레이
+    clearTimeout(scrollTimer)
+    scrollTimer = setTimeout(() => {
+      visibleCount.value = Math.min(
+        visibleCount.value + VISIBLE_STEP,
+        filteredProducts.value.length
+      )
+      infiniteLoading.value = false
+    }, 700)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  clearTimeout(scrollTimer)
+})
 const formatCurrency = (val) => {
-return new Intl.NumberFormat('ko-KR', {
-  style: 'currency',
-  currency: 'KRW',
-  maximumFractionDigits: 0
-}).format(val)
+  return new Intl.NumberFormat('ko-KR', {
+    maximumFractionDigits: 0
+  }).format(val) + '원'
 }
 
 const getMinAmountWithTerm = (product) => {
@@ -426,12 +603,14 @@ margin-bottom: var(--spacing-lg);
 text-align: center;
 }
 
-.carousel-saving-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
+/* Swiper 스타일 */
+.carousel-swiper {
+  width: 100%;
+  padding-bottom: 1rem;
+}
+
+.swiper-pagination-bullets {
+  bottom: -0.5rem;
 }
 
 .carousel-saving {
@@ -446,11 +625,9 @@ text-align: center;
 }
 
 .carousel-saving-image {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
+  width: 50%;
   border-radius: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
+  padding-bottom: 2rem;
 }
 .persona-carousel-section {
   display: flex;
@@ -702,39 +879,122 @@ font-weight: bold;
 }
 
 @media (max-width: 768px) {
-.carousel-saving-list {
-  grid-template-columns: 1fr;
-}
 
-.search-results-grid {
-  grid-template-columns: 1fr;
-}
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
 
-.bank-grid {
-  grid-template-columns: repeat(2, 1fr);
-}
+  .bank-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-.carousel-saving-name,
-.carousel-saving-benefit {
-  font-size: var(--font-size-sm);
+  .carousel-saving-name,
+  .carousel-saving-benefit {
+    font-size: var(--font-size-sm);
+  }
+
+  /* --- ProductCard 모바일: 3단 가로 배치 --- */
+  .product-card-horizontal {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+  }
+
+  .product-name-block {
+    text-align: center;
+    flex: 1;
+    padding: 0 var(--spacing-sm);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-info-block {
+    align-items: flex-end;
+    text-align: right;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .bank-logo-container {
+    width: 4rem;
+    height: 4rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .bank-logo-round {
+    width: 4rem;
+    height: 4rem;
+  }
 }
-.product-card-horizontal {
+</style>
+<style scoped>
+.term-dropdown-wrapper {
+  display: none;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-md);
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
 }
-.bank-logo-container {
-  width: 4rem;
-  height: 4rem;
+
+.term-toggle-button {
+  background: var(--color-success-light);
+  color: var(--color-dark);
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border: 2px solid var(--color-success);
+  border-radius: 0.75rem;
+  cursor: pointer;
 }
-.bank-logo-round {
-  width: 4rem;
-  height: 4rem;
-}
-.product-info-block {
-  align-items: flex-start;
+
+.term-dropdown {
+  margin-top: 0.5rem;
+  background: var(--color-white);
+  border: 1px solid var(--border-light);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-md);
   width: 100%;
+  max-width: 300px;
 }
+
+.term-dropdown-option {
+  padding: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.term-dropdown-option:hover {
+  background: var(--color-success-light);
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .term-selector {
+    display: none;
+  }
+
+  .term-dropdown-wrapper {
+    display: flex;
+  }
+}
+</style>
+<style scoped>
+.carousel-saving-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+</style>
+<style scoped>
+.no-wrap {
+  white-space: nowrap;
 }
 </style>
 <style scoped>
@@ -751,5 +1011,66 @@ text-align: center;
   color: var(--text-secondary);
   margin-top: var(--spacing-sm);
 }
-</style>
+/* 🔷 Empty state 스타일 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  border: 2px #ccc;
+  border-radius: 1rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-top: 2rem;
+  text-align: center;
+}
 
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+/* Slide-fade transition for slider-box */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  max-height: 100px;
+  opacity: 1;
+}
+/* 무한 스크롤 로딩 스피너 */
+.infinite-scroll-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  width: 100%;
+  grid-column: 1 / -1;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-success);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
