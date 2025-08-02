@@ -70,15 +70,30 @@
               v-for="(product, index) in getProductsByTab"
               :key="index"
               class="product-card"
-              @click="selectProduct(product)"
+              @click="!product.isFallback && selectProduct(product)"
               :style="{ animationDelay: `${index * 0.1}s` }">
               <div class="product-header">
                 <div class="bank-logo">
-                  <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
-                  <img v-else :src="getBankLogo(product.bankName)" alt="은행 로고" />
+                  <template v-if="product.isFallback">
+                    <img
+                      v-if="selectedTab === '예금'"
+                      src="@/assets/logo_dis.png"
+                      alt="예금 이모지"
+                      style="width: 100px; height: 100px" />
+                    <img
+                      v-else-if="selectedTab === '적금'"
+                      src="@/assets/logo_dis.png"
+                      alt="적금 이모지"
+                      style="width: 100px; height: 100px" />
+                    <img v-else src="@/assets/logo_dis.png" alt="카드 이모지" style="width: 100px; height: 100px" />
+                  </template>
+                  <template v-else>
+                    <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
+                    <img v-else :src="getBankLogo(product.bankName)" alt="은행 로고" />
+                  </template>
                 </div>
                 <div class="product-info">
-                  <h3>{{ product.productName }}</h3>
+                  <h3>{{ product.isFallback ? "상품 없음" : product.productName }}</h3>
                 </div>
               </div>
             </div>
@@ -148,25 +163,36 @@ onMounted(async () => {
 });
 
 function updateProducts() {
+  let items = [];
   if (selectedTab.value === "적금") {
-    products.value = favoriteSavings.value.map((item) => ({
+    items = favoriteSavings.value.map((item) => ({
       bankName: item.company,
       productName: item.title,
       type: "적금",
     }));
   } else if (selectedTab.value === "예금") {
-    products.value = favoriteDeposits.value.map((item) => ({
+    items = favoriteDeposits.value.map((item) => ({
       bankName: item.bankName,
       productName: item.productName,
       type: "예금",
     }));
   } else if (selectedTab.value === "카드") {
-    products.value = favoriteCards.value.map((item) => ({
+    items = favoriteCards.value.map((item) => ({
       productName: item.name,
       productImage: item.imageUrl,
       type: "카드",
     }));
   }
+
+  if (items.length < 2) {
+    const missing = 2 - items.length;
+    const fallback = { isFallback: true, type: selectedTab.value };
+    items = [...items, ...Array(missing).fill(fallback)];
+  } else {
+    items = items.slice(0, 2);
+  }
+
+  products.value = items;
 }
 
 import { watch } from "vue";
@@ -270,7 +296,7 @@ function selectProduct(product) {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-3xl);
   box-sizing: border-box;
   padding: var(--spacing-sm);
 }
@@ -291,40 +317,40 @@ function selectProduct(product) {
   min-width: 200px;
   max-width: 600px;
   box-sizing: border-box;
-  padding: var(--spacing-xs);
+  padding: var(--spacing-md);
 }
 
 .user-name {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   font-weight: 800;
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
 }
 
 .user-name .edit {
   font-size: var(--font-size-base);
-  margin-left: var(--spacing-md);
+  margin-left: var(--spacing-lg);
   color: var(--color-accent);
   cursor: pointer;
 }
 
 .nickname {
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-4xl);
   font-weight: 800;
 }
 
 .level-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 500;
   margin-left: var(--spacing-xs);
 }
 
 .user-type {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   font-weight: 500;
 }
 
 .user-level {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   display: flex;
   align-items: flex-end;
   gap: var(--spacing-sm);
@@ -332,20 +358,21 @@ function selectProduct(product) {
 }
 
 .level-value {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   font-weight: 800;
 }
 
 .level-bar {
   width: 100%;
-  height: 6px;
-  background-color: var(--color-secondary-10);
+  height: 10px;
+  background-color: var(--color-secondary);
   border-radius: 5px;
 }
 .fill {
   height: 100%;
-  background-color: var(--color-accent);
+  background-color: var(--color-dark);
   width: 60%;
+  border-radius: 5px;
 }
 
 .change-type {
