@@ -68,6 +68,8 @@ onMounted(async () => {
     savingList.value = data;
     if (data.length > 0) {
       emit('select', data[0].id);
+    } else {
+      emit('select', '-1');
     }
   } catch (e) {
     console.log(e);
