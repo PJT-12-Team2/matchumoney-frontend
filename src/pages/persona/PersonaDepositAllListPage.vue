@@ -8,8 +8,13 @@
         <h2 class="persona-carousel-title">
           <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천되는 예금
         </h2>
-        <div class="carousel-deposit-list">
-          <div
+        <swiper
+          v-if="!isMobile"
+          class="carousel-swiper"
+          :slides-per-view="3"
+          :space-between="20"
+        >
+          <swiper-slide
             v-for="deposit in carouselDeposits"
             :key="deposit.id"
             class="carousel-deposit"
@@ -20,11 +25,33 @@
             <div>{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>최고 금리: <strong style="color:#2e7d32">{{ deposit.maxRate }}</strong></span>
-              <br />
               <span>기본 금리: {{ deposit.baseRate }}</span>
             </div>
-          </div>
-        </div>
+          </swiper-slide>
+        </swiper>
+        <swiper
+          v-else
+          class="carousel-swiper"
+          :modules="[Pagination]"
+          :slides-per-view="1"
+          :pagination="{ clickable: true }"
+          style="width: 100%; height: auto;"
+        >
+          <swiper-slide
+            v-for="deposit in carouselDeposits"
+            :key="deposit.id"
+            class="carousel-deposit"
+            @click="selectProduct(deposit)"
+          >
+            <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
+            <div class="carousel-deposit-name">{{ deposit.name }}</div>
+            <div>{{ deposit.bankName }}</div>
+            <div class="carousel-deposit-rates-inline">
+              <span>최고 금리: <strong style="color:#2e7d32">{{ deposit.maxRate }}</strong></span>
+              <span>기본 금리: {{ deposit.baseRate }}</span>
+            </div>
+          </swiper-slide>
+        </swiper>
       </section>
 
       <br /><hr /><br />
@@ -40,6 +67,21 @@
             @click="filters.term = term.value"
           >
             {{ term.label }}
+          </div>
+        </div>
+        <div class="term-dropdown-wrapper">
+          <button class="term-toggle-button" @click="showTermDropdown = !showTermDropdown">
+            {{ filters.term }}개월 선택 ▼
+          </button>
+          <div class="term-dropdown" v-if="showTermDropdown">
+            <div
+              v-for="term in terms"
+              :key="term.value"
+              class="term-dropdown-option"
+              @click="selectTerm(term.value)"
+            >
+              {{ term.label }}
+            </div>
           </div>
         </div>
         
@@ -73,7 +115,7 @@
         </div>
         <div v-else-if="filteredProducts.length > 0" class="search-results-grid">
           <div
-            v-for="product in filteredProducts"
+            v-for="product in visibleProducts"
             :key="product.id"
             class="product-card"
             @click="selectProduct(product)"
@@ -89,12 +131,6 @@
               <div class="product-info-block">
                 <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
                 <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
-                <div class="rate-line">
-                  최소 가입 금액 :
-                  {{
-                    getMinAmountWithTerm(product) || '100만원'
-                  }}
-                </div>
                 <div class="rate-line">
                   기준 기간 :
                   {{
@@ -113,6 +149,12 @@
               </div>
             </div>
           </div>
+          <div v-if="isLoadingMore" class="infinite-spinner-wrapper">
+            <div class="infinite-spinner-block">
+              <div class="infinite-spinner"></div>
+              <div class="infinite-spinner-text">상품을 불러오는 중입니다...</div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -120,10 +162,32 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Pagination } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+
+const showTermDropdown = ref(false)
+const isMobile = ref(false)
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+const selectTerm = (val) => {
+  filters.value.term = val
+  showTermDropdown.value = false
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+})
 import api from '@/api'
-import { onMounted } from 'vue'
-import { watch } from 'vue'
 
 // 📦 은행 로고 설정
 const bankOptions = [
@@ -383,6 +447,40 @@ const filteredProducts = computed(() => {
   return result
 })
 
+// 무한 스크롤 관련 상태 및 로직
+const visibleCount = ref(6)
+const isLoadingMore = ref(false)
+const visibleProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value))
+
+function onScroll() {
+  // 스크롤이 바닥에 도달하면 더 불러오기
+  if (isLoadingMore.value) return
+  if (filteredProducts.value.length <= visibleProducts.value.length) return
+  const scrollY = window.scrollY || window.pageYOffset
+  const viewportHeight = window.innerHeight
+  const fullHeight = document.documentElement.scrollHeight
+  if (scrollY + viewportHeight >= fullHeight - 200) {
+    // 바닥에 가까우면
+    isLoadingMore.value = true
+    setTimeout(() => {
+      visibleCount.value += 6
+      isLoadingMore.value = false
+    }, 700) // 로딩 애니메이션 표시
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll)
+})
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+})
+
+// 필터가 바뀌면 visibleCount 리셋
+watch(filteredProducts, () => {
+  visibleCount.value = 6
+})
+
 const selectProduct = (product) => {
   alert(`${product.name}을 선택했습니다.`)
 }
@@ -415,21 +513,26 @@ const selectProduct = (product) => {
   margin-bottom: var(--spacing-lg);
   text-align: center;
 }
-.carousel-deposit-list {
+/* .carousel-deposit-list {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-2xl);
+} */
+.carousel-swiper {
+  width: 100%;
+  max-width: 100%;
 }
 .carousel-deposit {
-  width: 300px; /* 고정 크기 */
+  width: 350px; /* 고정 크기 */
   padding: 2rem;
   border-radius: 1.5rem;
   box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between; /* 아래 요소 정렬 */
   background-color: white;
 }
 .carousel-deposit-image {
@@ -442,6 +545,11 @@ const selectProduct = (product) => {
   font-weight: 700;
   text-align: center;
   margin-bottom: 0.5rem;
+  line-height: 1.4;
+  height: 3.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
 }
 .persona-carousel-section {
   display: flex;
@@ -451,6 +559,20 @@ const selectProduct = (product) => {
 .highlight {
   font-size: var(--font-size-3xl);
   text-decoration: underline;
+}
+
+:deep(.swiper-pagination-bullets) {
+  bottom: -10px;
+  text-align: center;
+}
+
+:deep(.swiper-pagination-bullet) {
+  background: #ccc;
+  opacity: 1;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  background: #609966;
 }
 
 /* 🔷 필터 영역 스타일 */
@@ -477,6 +599,44 @@ const selectProduct = (product) => {
 .term-button.active {
   color: var(--color-success);
   border-color: var(--color-success);
+  font-weight: bold;
+}
+
+.term-dropdown-wrapper {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.term-toggle-button {
+  background: var(--color-success-light);
+  color: var(--color-dark);
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border: 2px solid var(--color-success);
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+.term-dropdown {
+  margin-top: 0.5rem;
+  background: var(--color-white);
+  border: 1px solid var(--border-light);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  max-width: 300px;
+}
+
+.term-dropdown-option {
+  padding: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.term-dropdown-option:hover {
+  background: var(--color-success-light);
   font-weight: bold;
 }
 .amount-filter-container {
@@ -657,6 +817,10 @@ const selectProduct = (product) => {
 
 /* 🔷 반응형 (모바일) 스타일 */
 @media (max-width: 768px) {
+  .carousel-swiper {
+    width: 100%;
+    overflow: visible;
+  }
   .carousel-deposit-list {
     grid-template-columns: 1fr;
   }
@@ -666,26 +830,51 @@ const selectProduct = (product) => {
   .bank-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .carousel-deposit-name,
+
   .carousel-deposit-benefit {
     font-size: var(--font-size-sm);
   }
   .product-card-horizontal {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-md);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-lg);
   }
   .bank-logo-container {
-    width: 4rem;
-    height: 4rem;
+    width: 2rem;
+    height: 2rem;
   }
   .bank-logo-round {
-    width: 4rem;
-    height: 4rem;
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .bank-logo-img {
+    width: 80px;
+    height: 80px;
+  }
+  .bank-logo-option {
+    width: 100px;
+    height: 100px;
   }
   .product-info-block {
-    align-items: flex-start;
-    width: 100%;
+    align-items: flex-end;
+    width: auto;
+  }
+  .product-name-bold,
+  .bank-name-bold,
+  .rate-line {
+    font-size: var(--font-size-sm);
+  }
+  .highlight-rate {
+    font-size: 1rem;
+  }
+  .term-selector {
+    display: none;
+  }
+  .term-dropdown-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
   }
 }
 
@@ -718,5 +907,41 @@ const selectProduct = (product) => {
   font-size: 3rem;
   margin-bottom: 1rem;
 }
-</style>
 
+
+/* 🔷 무한 스크롤 로딩 스피너 스타일 */
+.infinite-spinner-wrapper {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0 1rem 0;
+}
+.infinite-spinner {
+  border: 6px solid #eee;
+  border-top: 6px solid #609966;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+.infinite-spinner-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.infinite-spinner-text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+</style>

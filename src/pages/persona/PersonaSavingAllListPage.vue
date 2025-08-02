@@ -7,7 +7,9 @@
         <h2 class="persona-carousel-title">
           <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천되는 적금
         </h2>
-        <div class="carousel-saving-list">
+
+        <!-- 데스크탑 화면: flex 목록 -->
+        <div class="carousel-saving-list" v-if="!isMobile">
           <div
             v-for="saving in carouselSavings"
             :key="saving.id"
@@ -29,6 +31,37 @@
             </div>
           </div>
         </div>
+
+        <!-- 모바일 화면: swiper 캐러셀 -->
+        <Swiper
+          v-else
+          :modules="modules"
+          :slides-per-view="1.2"
+          :space-between="16"
+          :pagination="{ clickable: true }"
+          class="carousel-swiper"
+        >
+          <SwiperSlide
+            v-for="saving in carouselSavings"
+            :key="saving.id"
+            class="carousel-saving"
+            @click="selectProduct(saving)"
+          >
+            <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
+            <div class="carousel-saving-name">{{ saving.name }}</div>
+            <div class="bank-name-bold">{{ saving.bankName }}</div>
+            <div class="carousel-saving-rates-inline">
+              <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
+              <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
+              <span><strong>매월 최대 금액:</strong> {{
+                saving.maxLimit === "999999999"
+                  ? '한도 없음'
+                  : formatCurrency(Number(saving.maxLimit))
+              }}</span>
+              <span><strong>기준 기간:</strong> 12개월</span>
+            </div>
+          </SwiperSlide>
+        </Swiper>
       </section>
 
       <br /><hr /><br />
@@ -47,6 +80,21 @@
       @click="filters.term = term.value"
     >
       {{ term.label }}
+    </div>
+  </div>
+  <div class="term-dropdown-wrapper">
+    <button class="term-toggle-button" @click="showTermDropdown = !showTermDropdown">
+      {{ filters.term }}개월 선택 ▼
+    </button>
+    <div class="term-dropdown" v-if="showTermDropdown">
+      <div
+        v-for="term in terms"
+        :key="term.value"
+        class="term-dropdown-option"
+        @click="selectTerm(term.value)"
+      >
+        {{ term.label }}
+      </div>
     </div>
   </div>
   <div class="amount-filter-container">
@@ -106,50 +154,56 @@
           <div>검색 조건에 맞는 상품이 없습니다.</div>
           <div>다른 조건으로 검색해보세요.</div>
         </div>
-        <div v-else-if="filteredProducts.length > 0" class="search-results-grid">
+        <div v-else-if="visibleProducts.length > 0" class="search-results-grid">
           <div
-v-for="product in filteredProducts"
-:key="product.id"
-class="product-card"
-@click="selectProduct(product)"
->
-<div class="product-card-horizontal">
-  <div class="bank-logo-container">
-    <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
-  </div>
-  <div class="product-name-block">
-    <div class="bank-name-bold">{{ product.bank }}</div>
-    <div class="product-name-bold">{{ product.name }}</div>
-  </div>
-  <div class="product-info-block">
-    <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
-    <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
-    <div class="rate-line no-wrap">
-      매월 최대 금액 : {{
-        product.maxLimit === "999999999"
-          ? '한도 없음'
-          : formatCurrency(product.maxLimit)
-      }}
-    </div>
-    <div class="rate-line">
-      기준 기간 :
-      {{
-        filters.term !== '전체'
-          ? filters.term + '개월'
-          : (() => {
-              const best = product.savingOptions?.reduce((prev, curr) => {
-                const prevRate = prev?.intrRate2 ?? 0;
-                const currRate = curr?.intrRate2 ?? 0;
-                return currRate > prevRate ? curr : prev;
-              }, null);
-              return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
-            })()
-      }}
-    </div>
-  </div>
-</div>
-</div>
-
+            v-for="product in visibleProducts"
+            :key="product.id"
+            class="product-card"
+            @click="selectProduct(product)"
+          >
+            <div class="product-card-horizontal">
+              <div class="bank-logo-container">
+                <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+              </div>
+              <div class="product-name-block">
+                <div class="bank-name-bold">{{ product.bank }}</div>
+                <div class="product-name-bold">{{ product.name }}</div>
+              </div>
+              <div class="product-info-block">
+                <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
+                <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
+                <div class="rate-line no-wrap">
+                  매월 최대 금액 : {{
+                    product.maxLimit === "999999999"
+                      ? '한도 없음'
+                      : formatCurrency(product.maxLimit)
+                  }}
+                </div>
+                <div class="rate-line">
+                  기준 기간 :
+                  {{
+                    filters.term !== '전체'
+                      ? filters.term + '개월'
+                      : (() => {
+                          const best = product.savingOptions?.reduce((prev, curr) => {
+                            const prevRate = prev?.intrRate2 ?? 0;
+                            const currRate = curr?.intrRate2 ?? 0;
+                            return currRate > prevRate ? curr : prev;
+                          }, null);
+                          return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+                        })()
+                  }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="!allVisibleLoaded && infiniteLoading"
+            class="infinite-scroll-loading"
+          >
+            <div class="spinner"></div>
+            <div>상품을 불러오는 중입니다...</div>
+          </div>
         </div>
       </section>
     </main>
@@ -157,8 +211,27 @@ class="product-card"
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { onMounted } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import { Pagination } from 'swiper/modules'
+const modules = [Pagination]
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+// 반응형 상태: 모바일 화면 여부
+const isMobile = ref(window.innerWidth <= 768)
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+  handleResize()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 import api from "@/api"
 // 매월 최대금액 필터링 사용 여부
 const useMaxLimitFilter = ref(false)
@@ -229,8 +302,14 @@ const filters = ref({
 })
 filters.value.bank = null
 
+const showTermDropdown = ref(false)
+
+const selectTerm = (val) => {
+  filters.value.term = val
+  showTermDropdown.value = false
+}
+
 // selectedAmount를 filters에 동기화
-import { watch } from 'vue'
 watch(selectedAmount, (val) => {
   filters.value.amount = val > maxAmount ? null : val
 })
@@ -397,10 +476,10 @@ const filteredProducts = computed(() => {
       })
     )
     if (useMaxLimitFilter.value) {
-    result = result.filter(p =>
-    !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value
-  )
-}
+      result = result.filter(p =>
+        !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value
+      )
+    }
   }
 
   // 은행 필터
@@ -423,6 +502,63 @@ const filteredProducts = computed(() => {
   })
 
   return result
+})
+
+// 무한 스크롤 관련 로직
+const VISIBLE_STEP = 6
+const visibleCount = ref(VISIBLE_STEP)
+const infiniteLoading = ref(false)
+const visibleProducts = ref([])
+
+const updateVisibleProducts = () => {
+  visibleProducts.value = filteredProducts.value.slice(0, visibleCount.value)
+}
+
+// filteredProducts가 변경될 때 visibleProducts 초기화
+watch(filteredProducts, () => {
+  visibleCount.value = VISIBLE_STEP
+  updateVisibleProducts()
+})
+
+// visibleCount가 변경될 때 visibleProducts 업데이트
+watch(visibleCount, updateVisibleProducts)
+
+// 최초 filteredProducts 준비 시 visibleProducts 초기화
+onMounted(() => {
+  updateVisibleProducts()
+})
+
+const allVisibleLoaded = computed(() => visibleProducts.value.length >= filteredProducts.value.length)
+
+let scrollTimer = null
+const onScroll = () => {
+  if (infiniteLoading.value || allVisibleLoaded.value || loading.value) return
+  // 스크롤이 하단에 도달했는지 체크
+  const scrollContainer = document.documentElement
+  const scrollTop = scrollContainer.scrollTop
+  const clientHeight = scrollContainer.clientHeight
+  const scrollHeight = scrollContainer.scrollHeight
+  if (scrollTop + clientHeight >= scrollHeight - 10) {
+    infiniteLoading.value = true
+    // 자연스러운 로딩을 위해 살짝 딜레이
+    clearTimeout(scrollTimer)
+    scrollTimer = setTimeout(() => {
+      visibleCount.value = Math.min(
+        visibleCount.value + VISIBLE_STEP,
+        filteredProducts.value.length
+      )
+      infiniteLoading.value = false
+    }, 700)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  clearTimeout(scrollTimer)
 })
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('ko-KR', {
@@ -467,12 +603,14 @@ margin-bottom: var(--spacing-lg);
 text-align: center;
 }
 
-.carousel-saving-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
+/* Swiper 스타일 */
+.carousel-swiper {
+  width: 100%;
+  padding-bottom: 1rem;
+}
+
+.swiper-pagination-bullets {
+  bottom: -0.5rem;
 }
 
 .carousel-saving {
@@ -741,39 +879,117 @@ font-weight: bold;
 }
 
 @media (max-width: 768px) {
-.carousel-saving-list {
-  grid-template-columns: 1fr;
-}
 
-.search-results-grid {
-  grid-template-columns: 1fr;
-}
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
 
-.bank-grid {
-  grid-template-columns: repeat(2, 1fr);
-}
+  .bank-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-.carousel-saving-name,
-.carousel-saving-benefit {
-  font-size: var(--font-size-sm);
+  .carousel-saving-name,
+  .carousel-saving-benefit {
+    font-size: var(--font-size-sm);
+  }
+
+  /* --- ProductCard 모바일: 3단 가로 배치 --- */
+  .product-card-horizontal {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+  }
+
+  .product-name-block {
+    text-align: center;
+    flex: 1;
+    padding: 0 var(--spacing-sm);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-info-block {
+    align-items: flex-end;
+    text-align: right;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .bank-logo-container {
+    width: 4rem;
+    height: 4rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .bank-logo-round {
+    width: 4rem;
+    height: 4rem;
+  }
 }
-.product-card-horizontal {
+</style>
+<style scoped>
+.term-dropdown-wrapper {
+  display: none;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-md);
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
 }
-.bank-logo-container {
-  width: 4rem;
-  height: 4rem;
+
+.term-toggle-button {
+  background: var(--color-success-light);
+  color: var(--color-dark);
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border: 2px solid var(--color-success);
+  border-radius: 0.75rem;
+  cursor: pointer;
 }
-.bank-logo-round {
-  width: 4rem;
-  height: 4rem;
-}
-.product-info-block {
-  align-items: flex-start;
+
+.term-dropdown {
+  margin-top: 0.5rem;
+  background: var(--color-white);
+  border: 1px solid var(--border-light);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-md);
   width: 100%;
+  max-width: 300px;
 }
+
+.term-dropdown-option {
+  padding: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.term-dropdown-option:hover {
+  background: var(--color-success-light);
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .term-selector {
+    display: none;
+  }
+
+  .term-dropdown-wrapper {
+    display: flex;
+  }
+}
+</style>
+<style scoped>
+.carousel-saving-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
 }
 </style>
 <style scoped>
@@ -832,5 +1048,29 @@ text-align: center;
   max-height: 100px;
   opacity: 1;
 }
-</style>
+/* 무한 스크롤 로딩 스피너 */
+.infinite-scroll-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  width: 100%;
+  grid-column: 1 / -1;
+}
 
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-success);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
