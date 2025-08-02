@@ -247,8 +247,8 @@ onMounted(() => window.addEventListener('keydown', onKey));
 
 /* ─────────── 헤더 레이아웃 ─────────── */
 .header {
-  background: #40513b;
-  color: #fff;
+  background: var(--color-dark);
+  color: var(--color-white);
   position: fixed;
   top: 0;
   left: 0;
@@ -272,7 +272,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
 .logo {
   width: 2.8125rem;
   height: 2.8125rem;
-  background: #609966;
+  background: var(--color-accent);
   border-radius: 0.75rem;
   display: flex;
   align-items: center;
@@ -313,10 +313,10 @@ onMounted(() => window.addEventListener('keydown', onKey));
   text-decoration: none;
 }
 .nav-menu a:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-white-10);
 }
 .nav-menu .active {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-white-20);
   font-weight: 700;
 }
 
@@ -326,14 +326,14 @@ onMounted(() => window.addEventListener('keydown', onKey));
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: var(--color-white);
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-xl);
   min-width: 140px;
   padding: 8px 0;
   z-index: 1000;
   animation: fadeInDown 0.3s ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border-light);
   backdrop-filter: blur(10px);
   margin-top: 8px;
 }
@@ -349,7 +349,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 8px solid #ffffff;
+  border-bottom: 8px solid var(--color-white);
   filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
 }
 
@@ -357,7 +357,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   display: flex;
   align-items: center;
   padding: 12px 20px;
-  color: #2c3e50;
+  color: var(--text-primary);
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 0;
@@ -373,7 +373,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-accent), #40513b);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-dark));
   margin-right: 12px;
   transition: all 0.2s ease;
   opacity: 0.6;
@@ -381,13 +381,12 @@ onMounted(() => window.addEventListener('keydown', onKey));
 
 .dropdown-submenu .dropdown-item:hover {
   background: var(--color-primary);
-  color: var(--color-title);
-  /* transform: translateX(4px); */
-  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 20px var(--color-white-10);
 }
 
 .dropdown-submenu .dropdown-item:hover::before {
-  background: #ffffff;
+  background: var(--color-white);
   opacity: 1;
   transform: scale(1.2);
 }
@@ -403,7 +402,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 0, 0, 0.1),
+    var(--border-light),
     transparent
   );
 }
@@ -422,9 +421,9 @@ onMounted(() => window.addEventListener('keydown', onKey));
 
 /* 호버 시 메인 메뉴 아이템 스타일 개선 */
 .nav-item:hover > a {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--color-white-15);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 액션 영역 */
@@ -446,7 +445,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   right: -0.125rem;
   width: 0.5rem;
   height: 0.5rem;
-  background: #ff0000;
+  background: var(--color-error);
   border-radius: 50%;
 }
 .noti-dropdown {
@@ -464,11 +463,11 @@ onMounted(() => window.addEventListener('keydown', onKey));
 
 /* 🆕 로그인/로그아웃 버튼(데스크탑) */
 .auth-btn {
-  background: transparent;
-  border: 0.125rem solid rgba(255, 255, 255, 0.3);
-  color: #fff;
+  background: var(--color-white);
+  border: 0.125rem solid var(--color-white);
+  color: var(--color-dark);
   padding: 0.5rem 1rem;
-  border-radius: 1.5625rem;
+  border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -477,17 +476,20 @@ onMounted(() => window.addEventListener('keydown', onKey));
 }
 
 .auth-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* 로그인 버튼(모바일) */
 .login-btn {
-  background: transparent;
-  border: 0.125rem solid rgba(255, 255, 255, 0.3);
-  color: #fff;
+  background: var(--color-white);
+  border: 0.125rem solid var(--color-white);
+  color: var(--color-dark);
   padding: 0.5rem 1rem;
-  border-radius: 1.5625rem;
+  border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -495,8 +497,11 @@ onMounted(() => window.addEventListener('keydown', onKey));
 }
 
 .login-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* 햄버거 버튼(모바일) */
@@ -511,14 +516,16 @@ onMounted(() => window.addEventListener('keydown', onKey));
     display: none;
   }
 }
-/* MainHeader.vue <styl scoped> 맨 아래에 추가 */
+
+/* 알림 드롭다운 스타일 개선 */
 .notification .noti-dropdown {
-  background-color: #fff; /* 투명 → 흰 배경 */
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12); /* 그림자 부드럽게 단일화 */
-  backdrop-filter: none; /* 혹시 상속됐다면 해제 */
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
   right: 0;
-  left: auto; /* 아이콘 오른쪽 정렬 */
+  left: auto;
 }
+
 .logo-img {
   width: 2.8125rem;
   height: 2.8125rem;
@@ -526,5 +533,12 @@ onMounted(() => window.addEventListener('keydown', onKey));
   border-radius: 0.75rem;
 }
 
-/* Add margin below header to visually separate from content, if content is not offset by padding */
+/* CSS 변수로 추가된 투명도 색상들 */
+:root {
+  --color-white-10: rgba(255, 255, 255, 0.1);
+  --color-white-15: rgba(255, 255, 255, 0.15);
+  --color-white-20: rgba(255, 255, 255, 0.2);
+  --color-white-30: rgba(255, 255, 255, 0.3);
+  --color-white-50: rgba(255, 255, 255, 0.5);
+}
 </style>
