@@ -12,12 +12,23 @@
 
         <!-- 이메일 -->
         <div class="login-row">
-          <BaseInput v-model="email" label="이메일" id="login-email" placeholder="이메일" />
+          <BaseInput
+            v-model="email"
+            label="이메일"
+            id="login-email"
+            placeholder="이메일"
+          />
         </div>
 
         <!-- 비밀번호 -->
         <div class="login-row">
-          <BaseInput v-model="password" label="비밀번호" id="login-password" type="password" placeholder="비밀번호" />
+          <BaseInput
+            v-model="password"
+            label="비밀번호"
+            id="login-password"
+            type="password"
+            placeholder="비밀번호"
+          />
         </div>
 
         <!-- 로그인 옵션 -->
@@ -39,7 +50,10 @@
 
         <!-- 카카오 로그인 버튼 -->
         <button class="kakao-btn" @click="handleKakaoLogin">
-          <img src="@/assets/kakao_login_medium_wide.png" alt="카카오계정으로 로그인" />
+          <img
+            src="@/assets/kakao_login_medium_wide.png"
+            alt="카카오계정으로 로그인"
+          />
         </button>
 
         <!-- 회원가입 링크 -->
@@ -67,25 +81,49 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const handleLogin = async () => {
+  // 입력값 검증
+  if (!email.value || !password.value) {
+    alert("이메일과 비밀번호를 입력해주세요.");
+    return;
+  }
+
   try {
-    // console.log("로그인 시도:", { email: email.value, password: password.value });
+    console.log("🔐 로그인 시도:", { email: email.value });
     const response = await authApi.login({
       email: email.value,
       password: password.value,
     });
 
+    console.log("✅ 로그인 응답:", response);
     const tokenDto = response.result;
 
+    if (!tokenDto || !tokenDto.accessToken) {
+      throw new Error("토큰이 응답에 포함되지 않았습니다.");
+    }
+
     authStore.setAuth(tokenDto);
-    // console.log("AccessToken:", tokenDto.accessToken);
-    // console.log("UserId:", tokenDto.userId);
-    // console.log("Nickname:", tokenDto.nickname);
+    console.log("💾 토큰 저장 완료:", {
+      accessToken: tokenDto.accessToken.substring(0, 20) + "...",
+      userId: tokenDto.userId,
+      nickname: tokenDto.nickname,
+    });
 
     alert(`${tokenDto.nickname}님 환영합니다!`);
     router.push("/");
   } catch (err) {
-    // console.error("❌ 로그인 실패", err);
-    alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+    console.error("❌ 로그인 실패:", err);
+    
+    if (err.response?.status === 401) {
+      alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+    } else if (err.response?.status === 403) {
+      alert("접근이 거부되었습니다. 계정 상태를 확인해주세요.");
+    } else if (err.response?.status >= 500) {
+      alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } else {
+      alert(
+        `로그인에 실패했습니다: ${err.response?.data?.message || err.message}`
+      );
+    }
   }
 };
 
