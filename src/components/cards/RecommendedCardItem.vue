@@ -85,24 +85,26 @@ export default {
 
 <style scoped>
 .recommended-card-item {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
-  padding: 20px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-light);
 }
 
 .recommended-card-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-accent);
 }
 
 .card-header {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .card-image {
@@ -111,7 +113,7 @@ export default {
   height: 50px;
   border-radius: 8px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--color-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,35 +131,35 @@ export default {
 }
 
 .card-name {
-  font-size: 18px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
-  color: #333;
-  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
   line-height: 1.3;
 }
 
 .card-issuer {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 8px 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .card-type {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 6px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
 }
 
 .type-credit {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--color-info-light);
+  color: var(--color-info-dark);
 }
 
 .type-debit {
-  background: #f3e5f5;
-  color: #7b1fa2;
+  background: var(--color-secondary-20);
+  color: var(--color-dark);
 }
 
 .benefit-amount {
@@ -167,29 +169,29 @@ export default {
 
 .benefit-label {
   display: block;
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
 }
 
 .benefit-value {
   display: block;
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .card-details {
-  border-top: 1px solid #eee;
-  padding-top: 16px;
-  margin-bottom: 16px;
+  border-top: 1px solid var(--border-light);
+  padding-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
 }
 
 .detail-row:last-child {
@@ -197,58 +199,139 @@ export default {
 }
 
 .detail-label {
-  font-size: 14px;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 
 .detail-value {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .card-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .btn-apply {
   flex: 1;
-  padding: 12px 16px;
-  background: #2196f3;
-  color: white;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-accent);
+  color: var(--color-white);
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-apply:hover {
-  background: #1976d2;
+  background: var(--color-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-apply.mobile {
-  background: #4caf50;
+  background: var(--color-success);
 }
 
 .btn-apply.mobile:hover {
-  background: #388e3c;
+  background: var(--color-success-dark);
 }
 
+/* 태블릿 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .recommended-card-item {
+    padding: var(--spacing-lg);
+  }
+  
+  .card-header {
+    gap: var(--spacing-md);
+  }
+  
+  .card-image {
+    width: 70px;
+    height: 44px;
+  }
+  
+  .card-name {
+    font-size: var(--font-size-lg);
+  }
+  
+  .benefit-value {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* 모바일 */
 @media (max-width: 768px) {
+  .recommended-card-item {
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+  }
+  
   .card-header {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-lg);
+    align-items: stretch;
+  }
+  
+  .card-image {
+    width: 100%;
+    max-width: 200px;
+    height: 80px;
+    align-self: center;
+  }
+  
+  .card-info {
+    text-align: center;
   }
   
   .benefit-amount {
-    text-align: left;
+    text-align: center;
+    margin-top: var(--spacing-md);
+  }
+  
+  .benefit-value {
+    font-size: var(--font-size-2xl);
   }
   
   .card-actions {
     flex-direction: column;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+  
+  .btn-apply {
+    padding: var(--spacing-md) var(--spacing-xl);
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 480px) {
+  .recommended-card-item {
+    padding: var(--spacing-md);
+  }
+  
+  .card-image {
+    max-width: 180px;
+    height: 70px;
+  }
+  
+  .card-name {
+    font-size: var(--font-size-base);
+  }
+  
+  .benefit-value {
+    font-size: var(--font-size-xl);
+  }
+  
+  .btn-apply {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
   }
 }
 </style>
