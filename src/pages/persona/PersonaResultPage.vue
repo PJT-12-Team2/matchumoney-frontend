@@ -33,7 +33,7 @@
                 <h3>💡 이런 성향이라면 이런 상품이 잘 맞아요</h3>
                 <ul class="checklist">
                     <li v-for="rec in persona.recommendations" :key="rec.title">
-                        ✅ <strong>{{ rec.title }}</strong
+                        <strong>{{ rec.title }}</strong
                         ><br />
                         {{ rec.detail }}
                     </li>
@@ -46,19 +46,19 @@
                     class="cta-button text-decoration-none"
                     :to="`/persona/cards?persona=${persona.code}`"
                 >
-                    🃏 카드 추천 받기
+                    카드 추천 받기
                 </RouterLink>
                 <RouterLink
                     class="cta-button text-decoration-none"
                     :to="`/persona/deposits?persona=${persona.code}`"
                 >
-                    🏦 예금 추천 받기
+                    예금 추천 받기
                 </RouterLink>
                 <RouterLink
                     class="cta-button text-decoration-none"
                     :to="`/persona/savings?persona=${persona.code}`"
                 >
-                    💰 적금 추천 받기
+                    적금 추천 받기
                 </RouterLink>
             </div>
         </div>
@@ -103,20 +103,22 @@ onMounted(async () => {
 <style scoped>
 /***** 기존 스타일 그대로 *****/
 .result-wrapper {
-    background-color: #f4f6f8;
     padding: 2rem;
+    min-height: 100vh;
+    max-width: 1080px;
+    margin: 0 auto;
     display: flex;
     justify-content: center;
-    min-height: 100vh;
+    align-items: center;
 }
 
 .result-container {
     max-width: 720px;
     width: 100%;
     background: white;
+    border: 1px solid #4caf50;
     border-radius: 20px;
     padding: 3rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .profile-section {
