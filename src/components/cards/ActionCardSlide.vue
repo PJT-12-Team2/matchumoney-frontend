@@ -1,235 +1,361 @@
 <template>
-  <div class="action-card-slide">
-    <!-- 배경 그라데이션 -->
-    <div class="action-background"></div>
-
-    <!-- 카드가 있는 경우: 업데이트 카드 -->
-    <div v-if="hasCards" class="action-content update-card">
-      <div class="action-icon">
-        <i class="bi bi-arrow-clockwise"></i>
+  <div class="action-card-container">
+    <!-- 카드 -->
+    <div class="action-card">
+      <!-- 카드 모양 아이콘 -->
+      <div class="card-icon">
+        <div class="card-shape">
+          <div class="card-chip"></div>
+          <div class="card-lines">
+            <div class="card-line"></div>
+            <div class="card-line"></div>
+          </div>
+          <div class="card-number">**** ****</div>
+        </div>
       </div>
 
-      <h3 class="action-title">카드 정보 업데이트</h3>
-      <p class="action-description">
-        최신 카드 정보로<br />
-        업데이트하시겠습니까?
-      </p>
-
-      <BaseButton variant="primary" @click="$emit('update')">
-        <i class="bi bi-arrow-clockwise"></i>
-        업데이트하기
-      </BaseButton>
-    </div>
-
-    <!-- 카드가 없는 경우: 등록 카드 -->
-    <div v-else class="action-content register-card">
-      <div class="action-icon">
-        <i class="bi bi-plus-circle"></i>
+      <div class="card-content">
+        <div class="card-title">
+          <template v-if="hasCards">카드 다시 불러오기</template>
+          <template v-else>내 카드 등록하기</template>
+        </div>
+        <div class="card-info">
+          <template v-if="hasCards">
+            카드 정보를 다시 불러와<br />
+            최신 상태로 확인해보세요!
+          </template>
+          <template v-else>
+            KB카드 마이데이터를 연동하여<br />
+            카드 정보를 가져와보세요!
+          </template>
+        </div>
       </div>
 
-      <h3 class="action-title">카드 등록 필요</h3>
-      <p class="action-description">
-        KB카드를 연동하여<br />
-        마이데이터 서비스를 시작하세요
-      </p>
-
-      <BaseButton variant="primary" @click="$emit('register')">
-        <i class="bi bi-plus-circle"></i>
-        카드 등록하기
-      </BaseButton>
-    </div>
-
-    <!-- 장식 요소 -->
-    <div class="decoration-circles">
-      <div class="circle circle-1"></div>
-      <div class="circle circle-2"></div>
-      <div class="circle circle-3"></div>
+      <!-- 액션 버튼 -->
+      <div class="action-button" @click.stop="handleAction">
+        <i v-if="hasCards" class="bi bi-arrow-clockwise"></i>
+        <i v-else class="bi bi-plus-circle"></i>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import BaseButton from "@/components/base/BaseButton.vue";
-
-defineProps({
+const props = defineProps({
   hasCards: {
     type: Boolean,
     default: false,
   },
 });
 
-defineEmits(["register", "update"]);
+const emit = defineEmits(["register", "update"]);
+
+// 버튼만 클릭 시 동작
+const handleAction = () => {
+  if (props.hasCards) {
+    emit("update");
+  } else {
+    emit("register");
+  }
+};
 </script>
 
 <style scoped>
-.action-card-slide {
-  position: relative;
+.action-card-container {
   width: 100%;
   height: 100%;
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-light);
 }
 
-.action-card-slide::after {
+.action-card {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-xl);
+  border-radius: var(--spacing-lg);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.action-card::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--color-overlay-light);
-  z-index: 5;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
   pointer-events: none;
 }
 
-.action-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-accent);
-  z-index: 1;
+/* 카드 아이콘 */
+.card-icon {
+  flex-shrink: 0;
+  margin-right: var(--spacing-lg);
 }
 
-.action-content {
+.card-shape {
+  width: 80px;
+  height: 50px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
   position: relative;
-  z-index: 10;
-  text-align: center;
-  color: var(--color-white);
-  padding: var(--spacing-2xl) var(--spacing-xl);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  gap: var(--spacing-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.action-icon {
-  margin-bottom: var(--spacing-md);
-  opacity: 0.95;
+.card-chip {
+  width: 12px;
+  height: 10px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 2px;
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.action-icon i {
-  font-size: 52px;
-  background: linear-gradient(45deg, var(--color-white), var(--color-primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 3px 6px var(--color-dark-50));
+.card-lines {
+  position: absolute;
+  top: 22px;
+  left: 10px;
+  right: 10px;
 }
 
-.action-title {
-  font-size: var(--font-size-xl);
+.card-line {
+  height: 1px;
+  background: var(--color-black);
+  margin-bottom: 2px;
+}
+
+.card-line:first-child {
+  width: 70%;
+}
+
+.card-line:last-child {
+  width: 50%;
+}
+
+.card-number {
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  font-size: 8px;
+  color: var(--color-black); /* 검정 계열 */
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* 카드 내용 */
+.card-content {
+  flex: 1;
+  text-align: left;
+}
+
+.card-title {
   font-weight: 700;
+  font-size: var(--font-size-xl);
+  color: #222; /* 검정 계열 */
   margin-bottom: var(--spacing-sm);
-  text-shadow: var(--shadow-sm);
-  line-height: 1.2;
+  text-shadow: none; /* 그림자 제거 */
+  line-height: 1.3;
 }
 
-.action-description {
+.card-info {
   font-size: var(--font-size-sm);
-  line-height: 1.6;
-  opacity: 0.95;
-  margin-bottom: var(--spacing-lg);
-  text-shadow: var(--shadow-sm);
-  max-width: 200px;
+  color: var(--color-black); /* 검정 계열 */
+  line-height: 1.5;
+  opacity: 0.97;
+  text-shadow: none; /* 그림자 제거 */
 }
 
-
-/* 등록 카드 배경 */
-.register-card .action-background {
-  background: linear-gradient(
-    135deg,
-    var(--color-success) 0%,
-    var(--color-info) 100%
-  );
-}
-
-/* 업데이트 카드 배경 */
-.update-card ~ .action-background {
-  background: linear-gradient(
-    135deg,
-    var(--color-info) 0%,
-    var(--color-accent) 100%
-  );
-}
-
-.decoration-circles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  animation: float 8s ease-in-out infinite;
-}
-
-.circle-1 {
-  width: 90px;
-  height: 90px;
-  top: 15%;
-  left: 8%;
-  animation-delay: 0s;
-}
-
-.circle-2 {
-  width: 70px;
-  height: 70px;
-  top: 65%;
-  right: 12%;
-  animation-delay: 2.5s;
-}
-
-.circle-3 {
+/* 액션 버튼 */
+.action-button {
+  flex-shrink: 0;
   width: 50px;
   height: 50px;
-  top: 8%;
-  right: 18%;
-  animation-delay: 5s;
+  background: var(--color-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-    opacity: 0.3;
-  }
+.action-button:hover {
+  background: var(--color-white);
+  transform: scale(1.05);
 }
 
-/* 반응형 */
-@media (max-width: 768px) {
-  .action-content {
-    padding: var(--spacing-xl) var(--spacing-lg);
+.action-button i {
+  font-size: var(--font-size-xl);
+  color: var(--color-black); /* 검정 계열 */
+  text-shadow: none; /* 그림자 제거 */
+}
+
+/* 태블릿 */
+@media (max-width: var(--breakpoint-lg)) {
+  .action-card {
+    min-height: 180px;
+    padding: var(--spacing-lg);
   }
 
-  .action-icon i {
-    font-size: 40px;
+  .card-icon {
+    margin-right: var(--spacing-md);
   }
 
-  .action-title {
+  .card-shape {
+    width: 70px;
+    height: 44px;
+  }
+
+  .card-title {
     font-size: var(--font-size-lg);
   }
 
-  .action-description {
-    font-size: var(--font-size-xs);
+  .action-button {
+    width: 45px;
+    height: 45px;
   }
 
+  .action-button i {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* 모바일 */
+@media (max-width: var(--breakpoint-md)) {
+  .action-card {
+    min-height: 160px;
+    padding: var(--spacing-md);
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+  }
+
+  .card-icon {
+    margin-right: 0;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .card-shape {
+    width: 60px;
+    height: 38px;
+  }
+
+  .card-chip {
+    width: 10px;
+    height: 8px;
+    top: 6px;
+    left: 8px;
+  }
+
+  .card-lines {
+    top: 18px;
+    left: 8px;
+    right: 8px;
+  }
+
+  .card-number {
+    bottom: 4px;
+    left: 8px;
+    font-size: 7px;
+    color: #222; /* 모바일에서도 */
+  }
+
+  .card-title {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-xs);
+    color: #222;
+  }
+
+  .card-info {
+    font-size: var(--font-size-xs);
+    color: #333;
+  }
+
+  .action-button {
+    width: 40px;
+    height: 40px;
+    margin-top: var(--spacing-sm);
+  }
+
+  .action-button i {
+    font-size: var(--font-size-base);
+    color: #222;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: var(--breakpoint-sm)) {
+  .action-card {
+    min-height: 140px;
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
+  .card-shape {
+    width: 50px;
+    height: 32px;
+  }
+
+  .card-chip {
+    width: 8px;
+    height: 6px;
+    top: 5px;
+    left: 6px;
+  }
+
+  .card-lines {
+    top: 14px;
+    left: 6px;
+    right: 6px;
+  }
+
+  .card-number {
+    bottom: 3px;
+    left: 6px;
+    font-size: 6px;
+    color: #222;
+  }
+
+  .card-title {
+    font-size: var(--font-size-sm);
+    color: #222;
+  }
+
+  .card-info {
+    font-size: 0.7rem;
+    color: #333;
+  }
+
+  .action-button {
+    width: 35px;
+    height: 35px;
+  }
+
+  .action-button i {
+    font-size: var(--font-size-sm);
+    color: #222;
+  }
 }
 </style>
