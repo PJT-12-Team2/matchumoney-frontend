@@ -104,103 +104,109 @@ const getStatusText = (status) => {
 
 <style scoped>
 .card-item {
-  background: #fff;
-  border: 1.5px solid #e7eaf3;
-  border-radius: 13px;
-  padding: 23px 20px 19px 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 14px rgba(60, 90, 130, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
   width: 100%;
   max-width: 580px;
-  transition: box-shadow 0.18s;
+  transition: all 0.3s ease;
 }
 .card-item:hover {
-  box-shadow: 0 6px 24px rgba(55, 110, 255, 0.11);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
 }
 
 .card-row-layout {
   display: flex;
   flex-direction: row;
-  gap: 34px;
+  gap: var(--spacing-2xl);
   align-items: stretch;
 }
 
 .card-visual-box {
-  flex: 0 0 165px;
+  flex: 0 0 245px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 120px;
+  min-width: 170px;
   justify-content: flex-start;
 }
 .visual-card {
-  width: 148px;
-  height: 94px;
-  background: linear-gradient(135deg, #b1bff6 0%, #e0c3fc 100%);
-  border-radius: 10px;
-  box-shadow: 0 1px 7px rgba(80, 120, 255, 0.12);
+  width: 210px;
+  height: 135px;
+  background: var(--gradient-accent);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 13px 13px 10px 17px;
-  margin-bottom: 9px;
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
+  margin-bottom: var(--spacing-sm);
   position: relative;
 }
 .visual-chip {
-  width: 23px;
-  height: 13px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, #fbe18a 20%, #e3a857 80%);
-  margin-bottom: 18px;
+  width: 32px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--gradient-primary);
+  margin-bottom: var(--spacing-lg);
 }
 .visual-number {
   font-family: "Roboto Mono", monospace;
-  font-size: 1.07rem;
-  color: #273c75;
-  font-weight: 600;
-  letter-spacing: 2px;
-  margin-bottom: 4px;
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  margin-top: var(--spacing-sm);
+  align-self: flex-end;
+  text-shadow: var(--shadow-sm);
 }
 .visual-validity {
-  font-size: 0.89rem;
-  color: #7367f0;
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
   font-weight: 500;
+  opacity: 0.9;
+  text-shadow: var(--shadow-sm);
 }
 .visual-bottom {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-top: 3px;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
 }
 .card-name {
-  font-size: 1.07rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  color: #323d55;
+  color: var(--text-primary);
   letter-spacing: 0.3px;
 }
 .card-status {
-  padding: 3px 10px;
-  border-radius: 5px;
-  font-size: 0.95rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  margin-left: 2px;
+  margin-left: var(--spacing-xs);
 }
 .status-active {
-  background: #eaf7ed;
-  color: #19ae63;
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
 }
 .status-suspended {
-  background: #fff8e3;
-  color: #eab308;
+  background: var(--color-warning-light);
+  color: var(--color-warning-dark);
 }
 .status-cancelled {
-  background: #fde8e8;
-  color: #e53e3e;
+  background: var(--color-error-light);
+  color: var(--color-error-dark);
 }
 .status-unknown {
-  background: #ececec;
-  color: #6c757d;
+  background: var(--color-gray-200);
+  color: var(--text-muted);
 }
 
 .card-info-box {
@@ -208,141 +214,253 @@ const getStatusText = (status) => {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 13px;
+  gap: var(--spacing-md);
   align-items: flex-start;
 }
 .card-info-group {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.05rem;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
 }
 .info-label {
-  color: #425466;
+  color: var(--text-secondary);
   font-weight: 500;
   min-width: 65px;
 }
 .info-value {
-  color: #192a56;
+  color: var(--text-primary);
   font-weight: 600;
   font-family: "Roboto Mono", monospace;
 }
 
 .card-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 5px;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
 .btn {
-  padding: 8px 16px;
-  border: 1.2px solid #007bff;
-  background-color: #f8fbff;
-  color: #007bff;
-  border-radius: 5px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-accent-10);
+  color: var(--color-accent);
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  transition: all 0.18s;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all 0.3s ease;
   min-width: 90px;
   outline: none;
 }
 .btn-transactions:hover:not(:disabled),
 .btn-sync:hover:not(:disabled) {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 .btn:disabled {
-  opacity: 0.54;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 .btn-sync {
-  border-color: #19ae63;
-  color: #19ae63;
-  background-color: #f8fff9;
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background-color: var(--color-success-light);
 }
 .btn-sync:hover:not(:disabled) {
-  background-color: #19ae63;
-  color: white;
+  background-color: var(--color-success);
+  color: var(--color-white);
 }
 
-/* 태블릿 대응 (700px~999px) */
-@media (max-width: 999px) {
+/* 태블릿 대응 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .card-item {
+    padding: var(--spacing-lg);
+  }
+  
   .card-row-layout {
-    gap: 16px;
+    gap: var(--spacing-lg);
   }
+  
   .card-visual-box {
-    flex-basis: 120px;
-    min-width: 80px;
+    flex-basis: 180px;
+    min-width: 140px;
   }
+  
   .visual-card {
-    width: 92px;
-    height: 60px;
-    padding: 8px 7px 7px 10px;
+    width: 170px;
+    height: 110px;
+    padding: var(--spacing-md) var(--spacing-sm) var(--spacing-md) var(--spacing-lg);
   }
+  
   .visual-chip {
-    width: 13px;
-    height: 7px;
-    margin-bottom: 10px;
+    width: 26px;
+    height: 18px;
+    margin-bottom: var(--spacing-sm);
   }
+  
   .visual-number {
-    font-size: 0.96rem;
+    font-size: var(--font-size-base);
+    margin-top: var(--spacing-xs);
   }
+  
   .visual-validity {
-    font-size: 0.81rem;
+    font-size: var(--font-size-xs);
   }
+  
   .visual-bottom {
-    gap: 5px;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
   }
+  
   .card-name {
-    font-size: 0.97rem;
+    font-size: var(--font-size-base);
   }
+  
   .card-status {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
   }
+  
   .info-label,
   .info-value,
   .btn {
-    font-size: 0.96rem;
+    font-size: var(--font-size-sm);
+  }
+  
+  .btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-width: 100px;
   }
 }
 
-/* 모바일 대응 (699px 이하) */
-@media (max-width: 699px) {
+/* 모바일 대응 */
+@media (max-width: 768px) {
   .card-item {
-    padding: 14px 7px 10px 7px;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
   }
+  
   .card-row-layout {
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-md);
     align-items: stretch;
   }
+  
   .card-visual-box {
     align-items: center;
+    flex: none;
   }
+  
   .visual-card {
-    width: 94vw;
-    min-width: 78px;
-    max-width: 99vw;
-    height: 49vw;
-    min-height: 46px;
+    width: 100%;
+    max-width: 240px;
+    height: 140px;
+    min-height: 100px;
+    padding: var(--spacing-sm);
   }
+  
+  .visual-chip {
+    width: 18px;
+    height: 11px;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .visual-number {
+    font-size: var(--font-size-base);
+    margin-top: var(--spacing-xs);
+  }
+  
+  .visual-validity {
+    font-size: var(--font-size-xs);
+  }
+  
   .visual-bottom {
-    gap: 4px;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+    justify-content: center;
   }
+  
   .card-name {
-    font-size: 0.93rem;
+    font-size: var(--font-size-base);
+    text-align: center;
   }
+  
   .card-status {
-    font-size: 0.89rem;
+    font-size: var(--font-size-xs);
   }
+  
+  .card-info-box {
+    gap: var(--spacing-sm);
+  }
+  
+  .card-info-group {
+    justify-content: space-between;
+    background: var(--color-light);
+    padding: var(--spacing-sm);
+    border-radius: 8px;
+  }
+  
+  .info-label {
+    font-size: var(--font-size-xs);
+    min-width: auto;
+  }
+  
+  .info-value {
+    font-size: var(--font-size-sm);
+  }
+  
+  .card-actions {
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    justify-content: center;
+  }
+  
+  .btn {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-width: 100px;
+    flex: 1;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 480px) {
+  .card-item {
+    padding: var(--spacing-sm);
+  }
+  
+  .visual-card {
+    max-width: 200px;
+    height: 120px;
+  }
+  
+  .visual-chip {
+    width: 16px;
+    height: 9px;
+  }
+  
+  .visual-number {
+    font-size: var(--font-size-sm);
+  }
+  
+  .card-name {
+    font-size: var(--font-size-sm);
+  }
+  
+  .card-status {
+    font-size: var(--font-size-xs);
+  }
+  
   .info-label,
-  .info-value,
-  .btn {
-    font-size: 0.93rem;
-    min-width: 70px;
+  .info-value {
+    font-size: var(--font-size-xs);
   }
+  
   .btn {
-    padding: 7px 8px;
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    min-width: 80px;
   }
 }
 </style>
