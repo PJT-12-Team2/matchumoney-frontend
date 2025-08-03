@@ -17,9 +17,12 @@
       <div class="card-slider" v-if="cards.length">
         <CardSlider
           :cards="cards"
+          :cardTransactions="cardTransactionsMap"
           @cardChange="handleCardChange"
           @register="showSyncModal = true"
           @update="handleCardUpdate"
+          @registerTransactions="handleRegisterTransactions"
+          @updateTransactions="handleUpdateTransactions"
         />
       </div>
 
@@ -82,7 +85,9 @@
                     <div class="stat-icon">💳</div>
                     <div class="stat-content">
                       <span class="stat-value"
-                        >{{ formatCurrency(getTotalSpendAmount()) }}원</span
+                        >{{
+                          formatCurrency(getRecommendationTotalSpendAmount())
+                        }}원</span
                       >
                       <span class="stat-label">총 사용금액</span>
                     </div>
@@ -90,7 +95,9 @@
                   <div class="stat-item">
                     <div class="stat-icon">📊</div>
                     <div class="stat-content">
-                      <span class="stat-value">{{ getTopCategory() }}</span>
+                      <span class="stat-value">{{
+                        getRecommendationTopCategory()
+                      }}</span>
                       <span class="stat-label">주요 소비 카테고리</span>
                     </div>
                   </div>
@@ -151,6 +158,31 @@
           <!-- 소비 통계 탭 -->
           <div v-else-if="activeTab === 'statistics'" class="tab-panel">
             <div class="statistics-content">
+              <!-- 통계 필터 -->
+              <div class="statistics-filters">
+                <div class="filter-row">
+                  <div class="filter-label">
+                    <i class="bi bi-funnel"></i>
+                    기간 선택:
+                  </div>
+                  <div class="filter-buttons">
+                    <select
+                      v-model="statisticsMonthFilter"
+                      class="filter-select"
+                    >
+                      <option value="">전체 기간</option>
+                      <option
+                        v-for="month in getAvailableMonths()"
+                        :key="month.value"
+                        :value="month.value"
+                      >
+                        {{ month.label }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               <!-- 통계 요약 -->
               <div class="statistics-summary">
                 <div class="summary-grid">
@@ -201,12 +233,12 @@
                     {{ selectedSyncedCard?.cardName || "카드" }} 소비 패턴 TOP 5
                   </h3>
                   <div class="chart-period">
-                    최근 {{ ANALYSIS_PERIOD_DAYS }}일
+                    {{ getStatisticsPeriodText() }}
                   </div>
                 </div>
                 <div class="pattern-chart">
                   <SpendingPatternChart
-                    :transactions="getFilteredTransactionsByDate()"
+                    :transactions="getStatisticsFilteredTransactions()"
                   />
                 </div>
               </div>
@@ -278,21 +310,6 @@
                   </div>
                 </div>
               </div>
-
-              <!-- 액션 버튼 -->
-              <div class="chart-actions">
-                <BaseButton
-                  variant="primary"
-                  @click="showTransactionDetails = true"
-                >
-                  <i class="bi bi-bar-chart"></i>
-                  전체 통계 보기
-                </BaseButton>
-                <BaseButton variant="outline" @click="exportStatistics">
-                  <i class="bi bi-download"></i>
-                  통계 내보내기
-                </BaseButton>
-              </div>
             </div>
           </div>
 
@@ -311,6 +328,16 @@
                     />
                   </div>
                   <div class="filter-buttons">
+                    <select v-model="monthFilter" class="filter-select">
+                      <option value="">전체 기간</option>
+                      <option
+                        v-for="month in getAvailableMonths()"
+                        :key="month.value"
+                        :value="month.value"
+                      >
+                        {{ month.label }}
+                      </option>
+                    </select>
                     <select v-model="categoryFilter" class="filter-select">
                       <option value="">전체 카테고리</option>
                       <option
@@ -375,13 +402,6 @@
                     <span class="total-count">
                       {{ getAllTransactionCount() }}개 거래 표시 중
                     </span>
-                    <BaseButton
-                      variant="primary"
-                      @click="showTransactionDetails = true"
-                    >
-                      <i class="bi bi-eye"></i>
-                      전체 보기
-                    </BaseButton>
                   </div>
                 </div>
 
@@ -547,7 +567,7 @@
             <div class="step-number">2</div>
             <div class="step-content">
               <h4>소비 패턴 분석</h4>
-              <p>AI가 고객님의 소비 패턴을 자동으로 분석합니다</p>
+              <p>맞추머니가 고객님의 소비 패턴을 자동으로 분석합니다</p>
             </div>
           </div>
           <div class="step-item">
@@ -602,7 +622,6 @@ import BaseButton from "@/components/base/BaseButton.vue";
 import CardSlider from "@/components/cards/CardSlider.vue";
 import CardSyncModal from "@/components/cards/CardSyncModal.vue";
 import TransactionSyncModal from "@/components/cards/TransactionSyncModal.vue";
-import TransactionDetailModal from "@/components/cards/TransactionDetailModal.vue";
 import SpendingPatternChart from "@/components/charts/SpendingPatternChart.vue";
 import CardRecommendationSection from "@/components/cards/CardRecommendationSection.vue";
 import cardsApi from "@/api/cards";
@@ -620,6 +639,7 @@ const selectedSyncedCard = ref(null);
 const showTransactionDetails = ref(false);
 const activeTab = ref("recommendations"); // 'recommendations', 'statistics', 'transactions'
 const currentCardBenefits = ref(null); // 현재 카드의 혜택 정보
+const cardTransactionsMap = ref({}); // 카드별 거래내역 매핑
 
 // 분석 기간 상수
 const ANALYSIS_PERIOD_DAYS = 30;
@@ -650,6 +670,8 @@ const getFilteredTransactionsByDate = () => {
 
 // 거래내역 필터링 및 검색
 const searchQuery = ref("");
+const monthFilter = ref("");
+const statisticsMonthFilter = ref("");
 const categoryFilter = ref("");
 const amountFilter = ref("");
 const sortBy = ref("date");
@@ -745,6 +767,11 @@ const loadExistingTransactions = async (card) => {
     ) {
       syncedTransactions.value = response.result;
       selectedSyncedCard.value = card;
+
+      // 카드별 거래내역 매핑 업데이트
+      const cardKey = card.holdingId || card.cardId;
+      cardTransactionsMap.value[cardKey] = response.result;
+
       // console.log(
       //   `💡 ${card.cardName} 카드의 ${response.result.length}건 거래내역을 로드했습니다.`
       // );
@@ -752,6 +779,10 @@ const loadExistingTransactions = async (card) => {
       console.log(`💡 ${card.cardName} 카드의 저장된 거래내역이 없습니다.`);
       syncedTransactions.value = [];
       selectedSyncedCard.value = null;
+
+      // 카드별 거래내역 매핑에서 제거
+      const cardKey = card.holdingId || card.cardId;
+      delete cardTransactionsMap.value[cardKey];
     }
   } catch (error) {
     console.error("❌ 기존 거래내역 조회 실패:", error);
@@ -839,6 +870,20 @@ const handleCardUpdate = () => {
   showSyncModal.value = true;
 };
 
+// 거래내역 등록 핸들러
+const handleRegisterTransactions = (card) => {
+  console.log("📝 거래내역 등록:", card.cardName);
+  selectedCard.value = card;
+  showTransactionModal.value = true;
+};
+
+// 거래내역 업데이트 핸들러
+const handleUpdateTransactions = (card) => {
+  console.log("🔄 거래내역 업데이트:", card.cardName);
+  selectedCard.value = card;
+  showTransactionModal.value = true;
+};
+
 // 날짜 포맷팅 함수
 const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -906,6 +951,10 @@ const handleTransactionSync = async (transactionData) => {
       syncedTransactions.value = response.result;
       selectedSyncedCard.value = selectedCard.value;
 
+      // 카드별 거래내역 매핑 업데이트
+      const cardKey = selectedCard.value.holdingId || selectedCard.value.cardId;
+      cardTransactionsMap.value[cardKey] = response.result;
+
       // 성공 메시지 표시
       alert(`${response.message || "거래내역 동기화가 완료되었습니다."}`);
 
@@ -943,9 +992,102 @@ const handleTransactionSync = async (transactionData) => {
   }
 };
 
-// 데이터 분석 헬퍼 메서드들 (최근 30일 데이터만 사용)
-const getTotalSpendAmount = () => {
+// 통계 탭용 - 월별 필터링이 적용된 데이터
+const getStatisticsFilteredTransactions = () => {
+  let filtered = [...syncedTransactions.value];
+
+  // 월별 필터가 적용된 경우
+  if (statisticsMonthFilter.value) {
+    filtered = filtered.filter((transaction) => {
+      if (!transaction.transactionDate) return false;
+
+      let date;
+      const dateStr = transaction.transactionDate.toString();
+      if (dateStr.length === 8) {
+        // YYYYMMDD 형식
+        date = new Date(
+          dateStr.substr(0, 4),
+          parseInt(dateStr.substr(4, 2)) - 1,
+          dateStr.substr(6, 2)
+        );
+      } else {
+        // 기타 형식
+        date = new Date(transaction.transactionDate);
+      }
+
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const transactionMonthKey = `${year}-${month
+          .toString()
+          .padStart(2, "0")}`;
+        return transactionMonthKey === statisticsMonthFilter.value;
+      }
+      return false;
+    });
+  } else {
+    // 월별 필터가 없으면 기본 30일 필터 적용
+    filtered = getFilteredTransactionsByDate();
+  }
+
+  return filtered;
+};
+
+// 통계 기간 텍스트 반환
+const getStatisticsPeriodText = () => {
+  if (statisticsMonthFilter.value) {
+    const monthData = getAvailableMonths().find(
+      (m) => m.value === statisticsMonthFilter.value
+    );
+    return monthData ? monthData.label : "선택된 기간";
+  }
+  return `최근 ${ANALYSIS_PERIOD_DAYS}일`;
+};
+
+// 카드 추천용 - 항상 최근 30일 데이터만 사용 (고정)
+const getRecommendationTotalSpendAmount = () => {
   const filteredTransactions = getFilteredTransactionsByDate();
+  return filteredTransactions.reduce((total, transaction) => {
+    return total + Math.abs(transaction.amount || 0);
+  }, 0);
+};
+
+const getRecommendationTopCategory = () => {
+  const categoryTotals = {};
+  const filteredTransactions = getFilteredTransactionsByDate();
+  filteredTransactions.forEach((transaction) => {
+    const category =
+      transaction.merchantCategory || transaction.paymentType || "기타";
+    const amount = Math.abs(transaction.amount || 0);
+    categoryTotals[category] = (categoryTotals[category] || 0) + amount;
+  });
+  const sortedCategories = Object.entries(categoryTotals).sort(
+    (a, b) => b[1] - a[1]
+  );
+  return sortedCategories.length > 0 ? sortedCategories[0][0] : "없음";
+};
+
+const getRecommendationTip = () => {
+  const topCategory = getRecommendationTopCategory();
+  const tips = {
+    편의점:
+      "편의점 이용이 많으시네요! 편의점 할인 혜택이 있는 카드를 확인해보세요.",
+    마트: "마트 사용이 많으시네요! 생활용품 구매 시 할인 혜택이 있는 카드를 추천합니다.",
+    "음식/카페":
+      "외식이 많으시네요! 음식점 할인이나 적립 혜택이 있는 카드를 추천합니다.",
+    교통: "교통비 지출이 많으시네요! 대중교통 할인 카드를 확인해보세요.",
+    온라인쇼핑:
+      "온라인 쇼핑을 자주 이용하시네요! 온라인 결제 혜택이 있는 카드를 추천합니다.",
+  };
+  return (
+    tips[topCategory] ||
+    "다양한 혜택을 비교해보시고 본인의 소비 패턴에 가장 적합한 카드를 선택하세요."
+  );
+};
+
+// 데이터 분석 헬퍼 메서드들 (월별 필터 또는 최근 30일 데이터 사용)
+const getTotalSpendAmount = () => {
+  const filteredTransactions = getStatisticsFilteredTransactions();
   return filteredTransactions.reduce((total, transaction) => {
     return total + Math.abs(transaction.amount || 0);
   }, 0);
@@ -953,19 +1095,19 @@ const getTotalSpendAmount = () => {
 
 const getAverageAmount = () => {
   const total = getTotalSpendAmount();
-  const filteredTransactions = getFilteredTransactionsByDate();
+  const filteredTransactions = getStatisticsFilteredTransactions();
   const count = filteredTransactions.length;
   return count > 0 ? Math.round(total / count) : 0;
 };
 
 const getTransactionCount = () => {
-  const filteredTransactions = getFilteredTransactionsByDate();
+  const filteredTransactions = getStatisticsFilteredTransactions();
   return filteredTransactions.length;
 };
 
 const getCategoriesCount = () => {
   const categories = new Set();
-  const filteredTransactions = getFilteredTransactionsByDate();
+  const filteredTransactions = getStatisticsFilteredTransactions();
   filteredTransactions.forEach((transaction) => {
     const category =
       transaction.merchantCategory || transaction.paymentType || "기타";
@@ -976,7 +1118,7 @@ const getCategoriesCount = () => {
 
 const getTopCategory = () => {
   const categoryTotals = {};
-  const filteredTransactions = getFilteredTransactionsByDate();
+  const filteredTransactions = getStatisticsFilteredTransactions();
   filteredTransactions.forEach((transaction) => {
     const category =
       transaction.merchantCategory || transaction.paymentType || "기타";
@@ -994,7 +1136,7 @@ const getTopCategory = () => {
 const getTopCategories = () => {
   const categoryTotals = {};
   const total = getTotalSpendAmount();
-  const filteredTransactions = getFilteredTransactionsByDate();
+  const filteredTransactions = getStatisticsFilteredTransactions();
 
   filteredTransactions.forEach((transaction) => {
     const category =
@@ -1016,7 +1158,7 @@ const getTopCategories = () => {
 const getMostActiveDay = () => {
   const dayTotals = {};
   const days = ["일", "월", "화", "수", "목", "금", "토"];
-  const filteredTransactions = getFilteredTransactionsByDate();
+  const filteredTransactions = getStatisticsFilteredTransactions();
 
   filteredTransactions.forEach((transaction) => {
     if (transaction.transactionDate) {
@@ -1042,29 +1184,11 @@ const getDailyAverage = () => {
 };
 
 const getMaxAmount = () => {
-  const filteredTransactions = getFilteredTransactionsByDate();
+  const filteredTransactions = getStatisticsFilteredTransactions();
   return filteredTransactions.reduce((max, transaction) => {
     const amount = Math.abs(transaction.amount || 0);
     return amount > max ? amount : max;
   }, 0);
-};
-
-const getRecommendationTip = () => {
-  const topCategory = getTopCategory();
-  const tips = {
-    편의점:
-      "편의점 이용이 많으시네요! 편의점 할인 혜택이 있는 카드를 확인해보세요.",
-    마트: "마트 사용이 많으시네요! 생활용품 구매 시 할인 혜택이 있는 카드를 추천합니다.",
-    주유소:
-      "주유소 이용이 많으시네요! 주유 할인 혜택이 있는 카드를 확인해보세요.",
-    카페: "카페 이용이 많으시네요! 카페 적립이나 할인 혜택이 있는 카드를 추천합니다.",
-    외식: "외식 이용이 많으시네요! 음식점 할인 혜택이 있는 카드를 확인해보세요.",
-  };
-
-  return (
-    tips[topCategory] ||
-    "다양한 카테고리에서 사용하고 계시네요! 통합 혜택 카드를 확인해보세요."
-  );
 };
 
 // 거래내역 필터링 메서드들 (전체 데이터 기준)
@@ -1078,9 +1202,83 @@ const getUniqueCategories = () => {
   return Array.from(categories).sort();
 };
 
+// 사용 가능한 월 목록 생성 (실제 거래내역 데이터 기반)
+const getAvailableMonths = () => {
+  const months = new Set();
+
+  syncedTransactions.value.forEach((transaction) => {
+    if (transaction.transactionDate) {
+      let date;
+
+      // 다양한 날짜 형식 처리 (YYYYMMDD, ISO string, etc.)
+      const dateStr = transaction.transactionDate.toString();
+      if (dateStr.length === 8) {
+        // YYYYMMDD 형식
+        date = new Date(
+          dateStr.substr(0, 4),
+          parseInt(dateStr.substr(4, 2)) - 1,
+          dateStr.substr(6, 2)
+        );
+      } else {
+        // 기타 형식
+        date = new Date(transaction.transactionDate);
+      }
+
+      // 유효한 날짜인지 확인
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const monthKey = `${year}-${month.toString().padStart(2, "0")}`;
+        months.add(monthKey);
+      }
+    }
+  });
+
+  return Array.from(months)
+    .sort((a, b) => b.localeCompare(a)) // 최신순 정렬
+    .map((monthKey) => {
+      const [year, month] = monthKey.split("-");
+      return {
+        value: monthKey,
+        label: `${year}년 ${parseInt(month)}월`,
+      };
+    });
+};
+
 // 거래내역 탭용 - 전체 60일 데이터에서 사용자 검색/필터 조건만 적용
 const getAllFilteredTransactions = () => {
   let filtered = [...syncedTransactions.value];
+
+  // 월별 필터
+  if (monthFilter.value) {
+    filtered = filtered.filter((transaction) => {
+      if (!transaction.transactionDate) return false;
+
+      let date;
+      const dateStr = transaction.transactionDate.toString();
+      if (dateStr.length === 8) {
+        // YYYYMMDD 형식
+        date = new Date(
+          dateStr.substr(0, 4),
+          parseInt(dateStr.substr(4, 2)) - 1,
+          dateStr.substr(6, 2)
+        );
+      } else {
+        // 기타 형식
+        date = new Date(transaction.transactionDate);
+      }
+
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const transactionMonthKey = `${year}-${month
+          .toString()
+          .padStart(2, "0")}`;
+        return transactionMonthKey === monthFilter.value;
+      }
+      return false;
+    });
+  }
 
   // 검색 필터
   if (searchQuery.value) {
@@ -1251,10 +1449,6 @@ const formatTime = (dateString) => {
 };
 
 // 액션 메서드들
-const exportStatistics = () => {
-  // 통계 내보내기 로직
-  alert("통계 데이터를 내보냅니다.");
-};
 
 const exportTransactions = () => {
   // 거래내역 내보내기 로직
@@ -1287,19 +1481,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* main.css에서 이미 전역적으로 설정됨 */
-
 .card-recommendations {
   color: var(--text-primary);
   line-height: 1.6;
   width: 100%;
   min-height: 100vh;
   padding: var(--spacing-lg);
-  background: var(--bg-content);
 }
 
 .main-content {
-  max-width: 1200px;
+  max-width: 80%;
   margin: 0 auto;
 }
 
@@ -1439,8 +1630,8 @@ onMounted(() => {
 
 /* 추천 안내 섹션 - card 클래스와 gradient 결합 */
 .recommendation-guide {
-  background: var(--gradient-accent);
-  color: var(--color-white);
+  background: var(--color-primary);
+  color: var(--color-black);
   text-align: center;
   margin-bottom: var(--spacing-2xl);
   border: 1px solid var(--color-dark-20);
@@ -1471,12 +1662,12 @@ onMounted(() => {
   font-size: var(--font-size-2xl, 24px);
   font-weight: 700;
   margin-bottom: var(--spacing-md, 16px);
-  color: white;
+  color: var(--color-black);
 }
 
 .guide-description {
   font-size: var(--font-size-lg, 18px);
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-black);
   line-height: 1.6;
   margin-bottom: var(--spacing-xl, 30px);
   max-width: 500px;
@@ -1502,12 +1693,11 @@ onMounted(() => {
 }
 
 .step-item {
-  background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: var(--spacing-lg, 24px);
   text-align: center;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--color-black);
   transition: transform 0.3s ease;
 }
 
@@ -1526,19 +1716,19 @@ onMounted(() => {
   margin: 0 auto var(--spacing-md, 16px);
   font-size: var(--font-size-lg, 18px);
   font-weight: 700;
-  color: white;
+  color: var(--color-black);
 }
 
 .step-content h4 {
   font-size: var(--font-size-lg, 18px);
   font-weight: 600;
-  color: white;
+  color: var(--color-black);
   margin-bottom: var(--spacing-xs, 8px);
 }
 
 .step-content p {
   font-size: var(--font-size-base, 16px);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-black);
   line-height: 1.5;
   margin: 0;
 }
@@ -1577,11 +1767,6 @@ onMounted(() => {
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
-}
-
-.chart-actions {
-  margin-top: var(--spacing-md);
-  text-align: center;
 }
 
 /* 로딩 애니메이션 */
@@ -1799,7 +1984,32 @@ onMounted(() => {
 }
 
 /* 소비 통계 탭 상세 스타일링 */
+.statistics-filters {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.statistics-filters .filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.statistics-filters .filter-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
 .statistics-summary {
+  border: 1px solid var(--border-light);
   background: var(--bg-card);
   border-radius: 12px;
   padding: var(--spacing-xl);
@@ -1933,7 +2143,7 @@ onMounted(() => {
 .category-percentage {
   font-size: var(--font-size-xs);
   font-weight: 500;
-  color: var(--color-primary);
+  color: var(--color-black);
   min-width: 35px;
   text-align: right;
 }
@@ -2039,7 +2249,8 @@ onMounted(() => {
   background: var(--bg-card);
   border-radius: 12px;
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
 }
 
 .stats-grid {
@@ -2104,7 +2315,7 @@ onMounted(() => {
 
 .sort-btn.active {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-black);
   border-color: var(--color-primary);
 }
 
