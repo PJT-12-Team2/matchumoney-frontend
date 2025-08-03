@@ -7,20 +7,9 @@
       </div>
 
       <div class="modal-body">
-        <div class="card-info" v-if="cardInfo">
-          <div
-            class="card-mini"
-            :style="{ background: getCardGradient(cardInfo.cardName) }"
-          >
-            <div class="card-mini-content">
-              <h4>{{ cardInfo.cardName }}</h4>
-              <p>{{ cardInfo.maskedCardNo || "**** **** **** ****" }}</p>
-            </div>
-          </div>
-        </div>
-
         <p class="description">
-          카드 거래내역을 동기화합니다. 조회 기간은 최대 1년까지 가능합니다.
+          카드 거래내역을 동기화합니다. 조회 기간은 최소 한달 ~ 최대 1년까지
+          가능합니다.
         </p>
 
         <form @submit.prevent="handleSync">
@@ -83,12 +72,12 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn-cancel" @click="closeModal">
+            <BaseButton variant="secondary" @click="closeModal" type="button">
               취소
-            </button>
-            <button type="submit" class="btn-sync" :disabled="isLoading">
+            </BaseButton>
+            <BaseButton variant="primary" type="submit" :disabled="isLoading">
               {{ isLoading ? "동기화 중..." : "동기화하기" }}
-            </button>
+            </BaseButton>
           </div>
         </form>
       </div>
@@ -99,6 +88,7 @@
 <script setup>
 import { ref, reactive, watch, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import BaseButton from "../base/BaseButton.vue";
 
 const props = defineProps({
   isVisible: {
@@ -140,8 +130,6 @@ watch(
   () => props.cardInfo,
   (newCardInfo) => {
     if (newCardInfo) {
-      // maskedCardNo에서 원래 번호 추출 (실제로는 사용자가 입력해야 함)
-      // 여기서는 입력 안내만 제공
       formData.cardNo = "";
     }
   },
@@ -158,31 +146,7 @@ watch(
   }
 );
 
-const getLastFourDigits = (cardNo) => {
-  if (!cardNo) return "****";
-  return cardNo.slice(-4);
-};
-
-const getCardGradient = (cardName) => {
-  const name = cardName?.toLowerCase() || "";
-
-  if (name.includes("신한")) {
-    return "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)";
-  } else if (name.includes("kb") || name.includes("국민")) {
-    return "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
-  } else if (name.includes("하나")) {
-    return "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)";
-  } else if (name.includes("우리")) {
-    return "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)";
-  } else if (name.includes("삼성")) {
-    return "linear-gradient(135deg, #fa709a 0%, #fee140 100%)";
-  } else {
-    return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-  }
-};
-
 const closeModal = () => {
-  // 폼 초기화
   Object.keys(formData).forEach((key) => {
     formData[key] = "";
   });
@@ -227,14 +191,13 @@ const handleSync = async () => {
 }
 
 .modal-content {
-  background: var(--color-modal-bg);
+  background: var(--color-white);
   border-radius: 16px;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-modal);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--border-light);
 }
 
@@ -277,61 +240,16 @@ const handleSync = async () => {
   padding: var(--spacing-lg);
 }
 
-.card-info {
-  margin-bottom: var(--spacing-lg);
-}
-
-.card-mini {
-  padding: var(--spacing-lg);
-  border-radius: 12px;
-  color: var(--color-white);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-mini::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--color-glass);
-  backdrop-filter: blur(10px);
-}
-
-.card-mini-content {
-  position: relative;
-  z-index: 2;
-}
-
-.card-mini h4 {
-  margin: 0 0 var(--spacing-sm) 0;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  line-height: 1.2;
-}
-
-.card-mini p {
-  margin: 0;
-  font-family: "Courier New", monospace;
-  font-size: var(--font-size-base);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  letter-spacing: 1px;
-  opacity: 0.95;
-}
-
 .description {
-  color: var(--text-secondary);
+  color: var(--color-black);
   margin-bottom: var(--spacing-xl);
   line-height: 1.6;
   font-size: var(--font-size-base);
   text-align: center;
   padding: var(--spacing-md);
-  background: var(--color-gray-50);
+  background: var(--color-primary-30);
   border-radius: 8px;
-  border-left: 4px solid var(--color-accent);
+  border-left: 4px solid var(--color-primary);
 }
 
 .form-group {
@@ -361,7 +279,7 @@ const handleSync = async () => {
 .form-group input {
   width: 100%;
   padding: var(--spacing-md) var(--spacing-lg);
-  border: 2px solid var(--color-secondary);
+  border: 1px solid var(--color-gray-600);
   border-radius: 12px;
   font-size: var(--font-size-base);
   box-sizing: border-box;
@@ -378,76 +296,63 @@ const handleSync = async () => {
   transform: translateY(-1px);
 }
 
+/* --- 버튼 통일 스타일 --- */
 .form-actions {
   display: flex;
-  gap: var(--spacing-md);
-  justify-content: flex-end;
-  margin-top: var(--spacing-xl);
+  justify-content: space-between;
+  margin-top: var(--spacing-md);
+  gap: var(--spacing-xs);
 }
 
-.btn-cancel,
-.btn-sync {
-  padding: var(--spacing-md) var(--spacing-xl);
-  border: none;
-  border-radius: 12px;
+.btn {
+  flex: 1;
+  padding: var(--spacing-sm) 0;
   font-size: var(--font-size-base);
-  font-weight: 600;
+  border-radius: var(--spacing-xs);
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 120px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
+  border: none;
+  transition: background-color 0.2s, color 0.2s;
+  margin: 0 var(--spacing-xs, 4px);
+  min-width: 100px;
 }
 
-.btn-cancel {
-  background-color: var(--text-secondary);
+.btn.cancel {
+  background-color: var(--color-primary);
+  color: var(--color-dark);
+  margin-right: var(--spacing-sm);
+}
+
+.btn.confirm {
+  background-color: var(--color-dark);
   color: var(--color-white);
 }
 
-.btn-cancel:hover {
-  background-color: var(--text-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.btn-sync {
-  background: var(--gradient-accent);
+.btn.confirm:disabled {
+  background-color: var(--color-gray-400);
   color: var(--color-white);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-sync::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.5s;
-}
-
-.btn-sync:hover:not(:disabled) {
-  background: var(--gradient-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-xl);
-}
-
-.btn-sync:hover:not(:disabled)::before {
-  left: 100%;
-}
-
-.btn-sync:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
+}
+/* --- END 버튼 통일 스타일 --- */
+
+@media (max-width: 640px) {
+  .modal-content {
+    width: 95%;
+    margin: var(--spacing-md);
+  }
+  .modal-header {
+    padding: var(--spacing-md);
+  }
+  .modal-body {
+    padding: var(--spacing-md);
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  .form-actions {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
 }
 </style>
