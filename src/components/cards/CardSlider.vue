@@ -4,6 +4,13 @@
       <div
         class="slider-wrapper"
         :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+        @mousedown="handleMouseDown"
+        @touchstart="handleTouchStart"
+        @touchmove="handleTouchMove"
+        @touchend="handleTouchEnd"
+        @mousemove="handleMouseMove"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseUp"
       >
         <!-- 등록된 카드들 -->
         <div
@@ -11,7 +18,13 @@
           :key="card.holdingId"
           class="slide-item"
         >
-          <CardSlide :card="card" />
+          <CardSlide
+            :card="card"
+            :hasTransactions="hasTransactionsForCard(card)"
+            @cardClick="handleCardClick"
+            @registerTransactions="handleRegisterTransactions"
+            @updateTransactions="handleUpdateTransactions"
+          />
         </div>
 
         <!-- 마지막 슬라이드: 카드 등록/업데이트 -->
@@ -27,14 +40,6 @@
 
     <!-- 슬라이더 컨트롤 -->
     <div class="slider-controls">
-      <button
-        class="control-btn prev"
-        @click="prevSlide"
-        :disabled="currentIndex === 0"
-      >
-        ‹
-      </button>
-
       <div class="slider-indicators">
         <span
           v-for="(_, index) in totalSlides"
@@ -44,14 +49,6 @@
           @click="goToSlide(index)"
         ></span>
       </div>
-
-      <button
-        class="control-btn next"
-        @click="nextSlide"
-        :disabled="currentIndex === totalSlides - 1"
-      >
-        ›
-      </button>
     </div>
   </div>
 </template>
@@ -66,11 +63,29 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  cardTransactions: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
-const emit = defineEmits(["register", "update", "cardChange"]);
+const emit = defineEmits([
+  "register",
+  "update",
+  "cardChange",
+  "cardClick",
+  "registerTransactions",
+  "updateTransactions",
+]);
 
 const currentIndex = ref(0);
+
+// 드래그/스와이프 관련 상태
+const isDragging = ref(false);
+const startX = ref(0);
+const startY = ref(0);
+const currentX = ref(0);
+const initialTransform = ref(0);
 
 // 총 슬라이드 수 (카드 수 + 액션 카드 1개)
 const totalSlides = computed(() => props.cards.length + 1);
@@ -109,6 +124,115 @@ const emitCardChange = () => {
   }
 };
 
+// 드래그/스와이프 핸들러들
+const handleMouseDown = (event) => {
+  if (event.button !== 0) return; // 왼쪽 마우스 버튼만
+  isDragging.value = true;
+  startX.value = event.clientX;
+  startY.value = event.clientY;
+  initialTransform.value = currentIndex.value * 100;
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
+  event.preventDefault();
+};
+
+const handleMouseMove = (event) => {
+  if (!isDragging.value) return;
+
+  currentX.value = event.clientX;
+  const diffX = startX.value - currentX.value;
+  const diffY = Math.abs(startY.value - event.clientY);
+
+  // 세로 스크롤이 아닌 경우에만 처리
+  if (diffY < 50) {
+    event.preventDefault();
+  }
+};
+
+const handleMouseUp = () => {
+  if (!isDragging.value) return;
+
+  const diffX = startX.value - currentX.value;
+  const threshold = 50; // 최소 드래그 거리
+
+  if (Math.abs(diffX) > threshold) {
+    if (diffX > 0 && currentIndex.value < totalSlides.value - 1) {
+      nextSlide();
+    } else if (diffX < 0 && currentIndex.value > 0) {
+      prevSlide();
+    }
+  }
+
+  isDragging.value = false;
+  document.removeEventListener("mousemove", handleMouseMove);
+  document.removeEventListener("mouseup", handleMouseUp);
+};
+
+const handleTouchStart = (event) => {
+  if (event.touches.length === 1) {
+    isDragging.value = true;
+    startX.value = event.touches[0].clientX;
+    startY.value = event.touches[0].clientY;
+    initialTransform.value = currentIndex.value * 100;
+  }
+};
+
+const handleTouchMove = (event) => {
+  if (!isDragging.value || event.touches.length !== 1) return;
+
+  currentX.value = event.touches[0].clientX;
+  const diffY = Math.abs(startY.value - event.touches[0].clientY);
+
+  // 세로 스크롤이 아닌 경우에만 처리
+  if (diffY < 50) {
+    event.preventDefault();
+  }
+};
+
+const handleTouchEnd = () => {
+  if (!isDragging.value) return;
+
+  const diffX = startX.value - currentX.value;
+  const threshold = 50; // 최소 스와이프 거리
+
+  if (Math.abs(diffX) > threshold) {
+    if (diffX > 0 && currentIndex.value < totalSlides.value - 1) {
+      nextSlide();
+    } else if (diffX < 0 && currentIndex.value > 0) {
+      prevSlide();
+    }
+  }
+
+  isDragging.value = false;
+};
+
+// 카드별 거래내역 존재 여부 확인
+const hasTransactionsForCard = (card) => {
+  const cardKey = card.holdingId || card.cardId;
+  return (
+    props.cardTransactions[cardKey] &&
+    props.cardTransactions[cardKey].length > 0
+  );
+};
+
+// 카드 클릭 핸들러 (제거 - 이제 버튼으로만 처리)
+const handleCardClick = (card) => {
+  // 드래그 중이 아닐 때만 클릭 이벤트 처리
+  if (!isDragging.value) {
+    emit("cardClick", card);
+  }
+};
+
+// 거래내역 등록 핸들러
+const handleRegisterTransactions = (card) => {
+  emit("registerTransactions", card);
+};
+
+// 거래내역 업데이트 핸들러
+const handleUpdateTransactions = (card) => {
+  emit("updateTransactions", card);
+};
+
 // 컴포넌트 마운트 시 첫 번째 카드 자동 선택
 onMounted(() => {
   if (props.cards.length > 0) {
@@ -131,7 +255,6 @@ watch(
 <style scoped>
 .card-slider {
   width: 100%;
-  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -149,46 +272,23 @@ watch(
   width: 100%;
   height: 100%;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: grab;
+}
+
+.slider-wrapper:active {
+  cursor: grabbing;
 }
 
 .slide-item {
   flex: 0 0 100%;
-  height: 100%;
 }
 
 .slider-controls {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-top: var(--spacing-lg);
   padding: 0 var(--spacing-sm);
-}
-
-.control-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid var(--border-light);
-  background: var(--color-white);
-  color: var(--text-secondary);
-  font-size: var(--font-size-lg);
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.control-btn:hover:not(:disabled) {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: var(--bg-hover);
-}
-
-.control-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 .slider-indicators {
@@ -217,14 +317,74 @@ watch(
   background: var(--color-dark);
 }
 
-/* 반응형 */
-@media (max-width: 768px) {
+/* 태블릿 */
+@media (max-width: 1024px) and (min-width: 769px) {
   .card-slider {
     max-width: 100%;
+    padding: 0 var(--spacing-md);
   }
 
   .slider-container {
-    height: 17rem;
+    height: 16rem;
+    border-radius: 16px;
+  }
+
+  .slider-indicators {
+    gap: var(--spacing-sm);
+  }
+
+  .indicator {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .card-slider {
+    max-width: 100%;
+    padding: 0 var(--spacing-sm);
+  }
+
+  .slider-container {
+    height: auto;
+    min-height: 20rem;
+    border-radius: 20px;
+  }
+
+  .slider-controls {
+    margin-top: var(--spacing-xl);
+    padding: 0;
+  }
+
+  .slider-indicators {
+    gap: var(--spacing-md);
+  }
+
+  .indicator {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 480px) {
+  .card-slider {
+    padding: 0;
+  }
+
+  .slider-container {
+    min-height: 18rem;
+    border-radius: 16px;
+  }
+
+  .slider-controls {
+    margin-top: var(--spacing-lg);
+  }
+
+  .indicator {
+    width: 10px;
+    height: 10px;
   }
 }
 </style>
