@@ -656,7 +656,7 @@ const sortBy = ref("date");
 const currentPage = ref(1);
 const itemsPerPage = 10;
 
-const userId = computed(() => authStore.getUserId);
+const userId = computed(() => authStore.getUserId());
 
 // 카드 목록 조회
 const fetchCards = async () => {
