@@ -15,6 +15,7 @@
       <div class="product-card__logo-box">
         <img
           :src="saving.company_image"
+          loading="lazy"
           alt="logo"
           class="product-card__logo"
           v-if="saving.company_image"
@@ -25,7 +26,7 @@
           class="product-card__logo"
           v-else
         />
-        <CompareButton @click="onCompareClick" />
+        <CompareButton :productId="saving.id" :productType="productType" />
       </div>
 
       <div class="product-card__info">
@@ -70,10 +71,6 @@ const props = defineProps({
     required: true,
   },
 });
-const onCompareClick = () => {
-  console.log(`${props.saving.id} 비교 추가 클릭됨`);
-  // 향후 비교목록에 저장하는 로직 추가 가능
-};
 
 const onClick = () => {
   console.log(`${props.saving.id} 상세보러 가자!!`);
@@ -101,15 +98,26 @@ const onClick = () => {
 }
 
 .product-card__company {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--color-gray-400);
   font-weight: bold;
 }
+.product-card__header > div,
+.product-card__info > span {
+  flex: 1;
+  min-width: 0;
+}
 
 .product-card__title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   color: var(--color-title);
-  font-weight: bold;
+  font-weight: bold; /* 말줄임 처리 필수 속성 */
+  white-space: nowrap; /* 줄바꿈 방지 */
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  text-overflow: ellipsis; /* 말줄임(...) 처리 */
+  display: block; /* 필수 */
+  max-width: 100%; /* 폭 제한 */
+  min-width: 0; /* flex 컨테이너 내부일 때 필수 */
 }
 
 .product-card__body {
@@ -143,18 +151,39 @@ const onClick = () => {
     1fr
     2fr;
   gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-gray-500);
 }
 
 .product-card__row {
+  /* 말줄임 처리 필수 속성 */
+  white-space: nowrap; /* 줄바꿈 방지 */
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  text-overflow: ellipsis; /* 말줄임(...) 처리 */
+  display: block; /* 필수 */
+  max-width: 100%; /* 폭 제한 */
+  min-width: 0; /* flex 컨테이너 내부일 때 필수 */
   display: contents; /* 자식 span이 직접 grid 셀 차지하도록 */
 }
 
 .product-card__highlight {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--color-accent);
   font-weight: bold;
+}
+@media (max-width: 1024px) {
+  .product-card__title {
+    font-size: var(--font-size-2xl);
+  }
+  .product-card__company {
+    font-size: var(--font-size-base);
+  }
+  .product-card__info {
+    font-size: var(--font-size-base);
+  }
+  .product-card__highlight {
+    font-size: var(--font-size-base);
+  }
 }
 </style>

@@ -5,61 +5,64 @@
     </div>
 
     <BaseCardGrey class="signup-card">
-      <template #title>비밀번호 재설정</template>
-
       <template #content>
-        <div class="form-wrapper">
-          <!-- 이메일 -->
-          <div class="form-row">
-            <label class="form-label">이메일</label>
-            <div class="right-area">
-              <BaseInput v-model="email" placeholder="이메일" />
-              <BaseButton class="action-btn" variant="primary" @click="handleSendCode">인증번호 전송</BaseButton>
+        <h1 class="login-title">비밀번호 재설정</h1>
+
+        <!-- 이메일 -->
+        <div class="login-row">
+          <div class="login-label">이메일</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="email" placeholder="이메일 입력" />
+            <BaseButton class="action-btn" variant="primary" @click="handleSendCode">인증번호 전송</BaseButton>
+          </div>
+        </div>
+
+        <!-- 인증번호 -->
+        <div class="login-row">
+          <div class="login-label">인증번호 입력</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="authCode" placeholder="인증번호 입력" />
+            <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode">인증번호 확인</BaseButton>
+          </div>
+        </div>
+
+        <!-- 비밀번호 -->
+        <div class="login-row">
+          <div class="login-label">비밀번호</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="newPassword" type="password" placeholder="비밀번호 입력 (특수문자 포함 8~20자)" />
+          </div>
+        </div>
+
+        <!-- 비밀번호 확인 -->
+        <div class="login-block">
+          <div class="login-row">
+            <div class="login-label">비밀번호 확인</div>
+          </div>
+          <div class="login-row">
+            <div class="input-action-row">
+              <BaseInput v-model="confirmPassword" type="password" placeholder="비밀번호 확인" />
             </div>
           </div>
+        </div>
 
-          <!-- 인증번호 -->
-          <div class="form-row">
-            <label class="form-label">인증번호 입력</label>
-            <div class="right-area">
-              <BaseInput v-model="authCode" placeholder="인증번호 입력" />
-              <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode">인증번호 확인</BaseButton>
-            </div>
-          </div>
+        <!-- 에러 메시지 -->
+        <div class="login-row error-row">
+          <span class="error-msg" :class="{ visible: !!errorMessage }">{{ errorMessage }}</span>
+        </div>
 
-          <!-- 새 비밀번호 -->
-          <div class="form-row">
-            <label class="form-label">새 비밀번호</label>
-            <div class="right-area">
-              <BaseInput v-model="newPassword" type="password" placeholder="새 비밀번호 입력 (특수문자 포함 8~20자)" />
-            </div>
-          </div>
-
-          <!-- 비밀번호 확인 -->
-          <div class="form-row">
-            <label class="form-label">비밀번호 확인</label>
-            <div class="right-area">
-              <BaseInput v-model="confirmPassword" type="password" placeholder="새 비밀번호 재입력" />
-            </div>
-          </div>
-
-          <!-- 에러 메시지 -->
-          <div class="form-row error-row">
-            <div class="form-label"></div>
-            <div class="right-area">
-              <p class="error-msg" :class="{ visible: errorMessage }">
-                {{ errorMessage || "‎" }}
-              </p>
-            </div>
-          </div>
-
-          <!-- 비밀번호 재설정 버튼 -->
-          <div class="form-row">
-            <div class="join-btn-area">
-              <BaseButton variant="primary" @click="handleResetPassword" :disabled="!isEmailVerified">
-                비밀번호 재설정
-              </BaseButton>
-            </div>
+        <!-- 비밀번호 재설정 버튼 -->
+        <div class="login-row">
+          <div class="join-btn-area">
+            <BaseButton variant="primary" @click="handleResetPassword" :disabled="!isEmailVerified">
+              비밀번호 재설정
+            </BaseButton>
           </div>
         </div>
       </template>
@@ -83,8 +86,8 @@ const errorMessage = ref("");
 const isEmailVerified = ref(false);
 const router = useRouter();
 
-watch([newPassword, confirmPassword], ([pw, confirmPw]) => {
-  if (pw && confirmPw && pw !== confirmPw) {
+watch([newPassword, confirmPassword], ([newVal, confirmVal]) => {
+  if (newVal && confirmVal && newVal !== confirmVal) {
     errorMessage.value = "비밀번호가 일치하지 않습니다";
   } else {
     errorMessage.value = "";
@@ -142,27 +145,6 @@ const handleResetPassword = async () => {
 </script>
 
 <style scoped>
-.login-logo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-.login-logo img {
-  height: 150px;
-}
-
-.signup-card {
-  width: 700px;
-  max-width: 100%;
-  padding: 3rem !important;
-}
-
-.form-wrapper {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
 .signup-container {
   min-height: 100vh;
   background: var(--bg-body);
@@ -170,52 +152,82 @@ const handleResetPassword = async () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 5vh;
 }
 
-::v-deep(.base-card .title) {
-  margin-bottom: var(--spacing-xl) !important;
-  display: block;
+.signup-card {
+  width: 435px;
+  height: 630px;
+  padding: 1rem;
+}
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.login-logo img {
+  height: 150px;
+}
+
+.login-title {
   text-align: center;
-  color: var(--color-title);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--color-dark);
 }
 
-.form-row {
+/* Form Rows and Inputs */
+.login-row {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-sm);
 }
 
-.form-label {
-  width: 120px;
-  font-weight: 500;
+.login-label {
+  font-size: 0.9rem;
   color: var(--color-dark);
+  margin-bottom: 0.3rem;
 }
 
-.right-area {
+.input-action-row {
   display: flex;
   align-items: center;
-  width: 100%;
   gap: var(--spacing-sm);
+  margin-bottom: 2.5rem;
+  width: 100%;
+}
+
+.login-block .login-row .input-action-row {
+  margin-bottom: 0;
+}
+
+/* Error Message */
+.error-row {
+  height: 1.2rem;
 }
 
 .error-msg {
   font-size: 0.9rem;
   color: var(--color-error-dark);
   visibility: hidden;
-  min-height: 1.2rem;
+  display: block;
 }
+
 .error-msg.visible {
   visibility: visible;
 }
 
+/* Action Buttons */
 .action-btn {
   height: 40px;
   white-space: nowrap;
   flex-shrink: 0;
-  width: 160px;
+  width: 120px;
 }
 
 .join-btn-area {
@@ -223,15 +235,10 @@ const handleResetPassword = async () => {
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
 }
 
 .join-btn-area .base-button {
   width: 300px;
-}
-
-.error-row {
-  margin-top: -1rem;
-  margin-bottom: var(--spacing-lg);
 }
 </style>
