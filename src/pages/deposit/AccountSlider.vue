@@ -118,7 +118,7 @@
       :requireBirthdate="requireBirth"
     />
 
-    <!-- 🔧 로딩 디버깅용 - 개발 시에만 표시 -->
+    <!-- 로딩 화면 -->
     <div
       v-if="isConnecting"
       style="
@@ -126,14 +126,17 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
         z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       "
     >
-      연결 중입니다... (디버그)
+      <img
+        src="@/assets/loading/loading_character.gif"
+        alt="로딩 중..."
+        style="height: 30vh; max-height: 250px; min-height: 120px; width: auto"
+      />
     </div>
   </div>
 </template>
@@ -458,7 +461,7 @@ const handleMouseUp = () => {
 }
 
 .add-account-card:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   border-color: var(--color-dark);
 }
 
@@ -569,7 +572,7 @@ const handleMouseUp = () => {
   font-size: 16px;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(96, 153, 102, 0.2);
+  box-shadow: var(--box-shadow);
 }
 
 .retry-button:hover {

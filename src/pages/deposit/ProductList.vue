@@ -74,7 +74,7 @@
                 <span class="highlight-rate">{{ product.maxIntrRate2 }}%</span>
               </div>
               <div class="rate-line">
-                최저 금리 : {{ product.maxIntrRate }}%
+                기준 금리 : {{ product.maxIntrRate }}%
               </div>
               <div class="rate-line">
                 최소 가입 금액 : {{ product.minAmount }}
