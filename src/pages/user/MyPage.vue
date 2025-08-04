@@ -517,6 +517,9 @@ function selectProduct(product) {
   .user-level {
     font-size: var(--font-size-2xl);
   }
+  .change-type p {
+    font-size: var(--font-size-lg);
+  }
   .edit-button {
     font-size: var(--font-size-md);
   }
