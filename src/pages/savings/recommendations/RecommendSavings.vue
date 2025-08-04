@@ -5,7 +5,6 @@ import BankbookProductList from '@/components/bankbook/BankbookProductList.vue';
 import RecommendationLayout from '@/components/layouts/RecommendationLayout.vue';
 import savingApi from '@/api/savings';
 import Loading from '@/components/common/Loading.vue';
-import Test from './Test.vue';
 const selectedId = ref(null);
 const savings = ref([]);
 const loading = ref(false);
