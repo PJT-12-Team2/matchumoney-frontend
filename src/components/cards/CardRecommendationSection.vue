@@ -76,12 +76,12 @@
         </div>
       </div>
 
-      <!-- 추천 카드 리스트 -->
+      <!-- 추천 카드 리스트 (TOP 5) -->
       <div class="recommendations-list">
         <div
           v-for="(card, index) in recommendationData.recommendedCards.slice(
             0,
-            3
+            5
           )"
           :key="card.cardId"
           class="recommendation-item"
@@ -96,7 +96,12 @@
                 :alt="card.cardName"
                 class="card-image"
                 @error="handleImageError"
+                @load="handleImageLoad"
+                loading="lazy"
               />
+              <div class="image-loading" v-if="!imageLoaded">
+                <div class="loading-spinner"></div>
+              </div>
             </div>
 
             <div class="card-details">
@@ -137,18 +142,13 @@
         </div>
       </div>
 
-      <!-- 더보기 버튼 -->
-      <div class="view-more">
-        <BaseButton
-          @click="goToFullRecommendations"
-          variant="primary"
-          full-width
-        >
-          <i class="bi bi-arrow-right"></i>
-          전체 추천 카드 보기 ({{
-            recommendationData.recommendedCards.length
-          }}개)
-        </BaseButton>
+      <!-- 추천 카드 총 개수 표시 -->
+      <div class="recommendation-summary">
+        <p class="summary-text">
+          총 {{ recommendationData.recommendedCards.length }}개의 추천 카드 중
+          상위 {{ Math.min(5, recommendationData.recommendedCards.length) }}개를
+          표시하고 있습니다.
+        </p>
       </div>
     </div>
 
@@ -313,25 +313,23 @@ export default {
       event.target.src = "/logo.png";
     },
 
-    openApplicationLink(url) {
-      if (url) {
-        window.open(url, "_blank", "noopener,noreferrer");
+    handleImageLoad(event) {
+      const img = event.target;
+      const container = img.parentElement;
+
+      // 이미지의 가로세로 비율 확인
+      if (img.naturalHeight > img.naturalWidth) {
+        // 세로 이미지인 경우
+        container.classList.add("vertical-image");
+      } else {
+        // 가로 이미지인 경우
+        container.classList.add("horizontal-image");
       }
     },
 
-    goToFullRecommendations() {
-      // selectedCard에서 올바른 cardId 추출
-      const cardId =
-        this.selectedCard?.cardId || this.selectedCard?.cardProductId;
-
-      if (cardId) {
-        console.log("🎯 전체 추천 페이지 이동:", cardId);
-        this.$router.push({
-          name: "CardRecommendation",
-          params: { cardId: cardId.toString() },
-        });
-      } else {
-        console.error("❌ 카드 ID를 찾을 수 없습니다:", this.selectedCard);
+    openApplicationLink(url) {
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
       }
     },
   },
@@ -339,32 +337,36 @@ export default {
 </script>
 
 <style scoped>
+/* main.css 변수 import */
+@import "@/assets/main.css";
+
 .card-recommendation-section {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
 }
 
 .section-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-xl);
   text-align: center;
 }
 
 .section-header h3 {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
-  color: #333;
-  margin: 0 0 8px 0;
+  color: var(--color-dark);
+  margin: 0 0 var(--spacing-sm) 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .section-subtitle {
-  font-size: 14px;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -376,20 +378,20 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: var(--spacing-2xl) var(--spacing-lg);
   text-align: center;
 }
 
 .error-icon,
 .empty-icon,
 .guide-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .error-message {
-  color: #666;
-  margin-bottom: 16px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
 }
 
 .current-card-benefits {
@@ -443,12 +445,17 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
-  border-radius: 8px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: linear-gradient(
+    135deg,
+    var(--color-light) 0%,
+    var(--color-info-light) 100%
+  );
+  border-radius: 12px;
   flex-wrap: wrap;
+  border: 1px solid var(--border-light);
 }
 
 .current-benefit,
@@ -460,23 +467,23 @@ export default {
 }
 
 .benefit-summary .label {
-  font-size: 12px;
-  color: #666;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
 }
 
 .benefit-summary .amount {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .benefit-summary .amount.highlight {
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .arrow {
-  font-size: 20px;
-  color: #2196f3;
+  font-size: var(--font-size-xl);
+  color: var(--color-accent);
   font-weight: bold;
 }
 
@@ -484,95 +491,120 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  background: #4caf50;
-  border-radius: 6px;
-  color: white;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-success);
+  border-radius: 8px;
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
 }
 
 .improvement-label {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 .improvement-amount {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 700;
 }
 
 .recommendations-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
 }
 
 .recommendation-item {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  border: 1px solid #eee;
-  border-radius: 8px;
+  align-items: stretch;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
   position: relative;
   transition: all 0.2s ease;
+  background: var(--bg-card);
+  min-height: 110px;
 }
 
 .recommendation-item:hover {
-  border-color: #2196f3;
-  transform: translateY(-1px);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .top-recommendation {
-  border-color: #ffd700;
-  background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+  border-color: var(--color-warning);
+  background: linear-gradient(
+    135deg,
+    var(--color-warning-light) 0%,
+    var(--bg-card) 100%
+  );
 }
 
 .rank-badge {
   position: absolute;
-  top: -8px;
-  left: -8px;
-  width: 24px;
-  height: 24px;
-  background: #2196f3;
-  color: white;
+  top: calc(-1 * var(--spacing-sm));
+  left: calc(-1 * var(--spacing-sm));
+  width: 32px;
+  height: 32px;
+  background: var(--color-accent);
+  color: var(--color-white);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 700;
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--bg-card);
 }
 
 .top-recommendation .rank-badge {
-  background: #ffd700;
-  color: #333;
+  background: var(--color-warning);
+  color: var(--color-dark);
 }
 
 .card-info {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
   flex: 1;
   min-width: 0;
+  padding-top: var(--spacing-xs);
 }
 
 .card-image-container {
   flex-shrink: 0;
-  width: 60px;
-  height: 38px;
-  border-radius: 6px;
+  width: 140px;
+  height: 90px;
+  border-radius: 12px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .card-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* 세로 이미지: 높이를 최대한 활용 */
+.card-image-container.vertical-image .card-image {
+  height: 85px;
+  width: auto;
+}
+
+/* 가로 이미지: 너비를 최대한 활용 */
+.card-image-container.horizontal-image .card-image {
+  width: 110px;
+  height: auto;
 }
 
 .card-details {
@@ -581,56 +613,61 @@ export default {
 }
 
 .card-name {
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  color: #333;
-  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .card-issuer {
-  font-size: 12px;
-  color: #666;
-  margin: 0 0 8px 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .card-specs {
-  display: flex;
-  gap: 8px;
+  display: block;
+  gap: var(--spacing-sm);
   align-items: center;
   flex-wrap: wrap;
 }
 
 .card-type {
   display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-right: var(--spacing-sm);
+  border-radius: 6px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
 }
 
 .type-credit {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--color-info-light);
+  color: var(--color-info-dark);
 }
 
 .type-debit {
-  background: #f3e5f5;
-  color: #7b1fa2;
+  background: var(--color-secondary-20);
+  color: var(--color-dark);
 }
 
 .annual-fee {
-  font-size: 11px;
-  color: #999;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
 }
 
 .benefit-info {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  min-width: 120px;
+  height: 100%;
+  padding-top: var(--spacing-xs);
 }
 
 .benefit-amount {
@@ -639,66 +676,295 @@ export default {
 
 .benefit-amount .amount {
   display: block;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .benefit-amount .label {
   display: block;
-  font-size: 11px;
-  color: #666;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
 }
 
 .btn-apply {
-  padding: 6px 12px;
-  background: #4caf50;
-  color: white;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-success);
+  color: var(--color-white);
   border: none;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-apply:hover {
-  background: #388e3c;
+  background: var(--color-success-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-.view-more {
-  border-top: 1px solid #eee;
-  padding-top: 16px;
+.recommendation-summary {
+  border-top: 1px solid var(--border-light);
+  padding-top: var(--spacing-lg);
+  text-align: center;
 }
 
+.summary-text {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+/* 태블릿 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .card-recommendation-section {
+    padding: var(--spacing-xl);
+  }
+
+  .recommendation-item {
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    min-height: 120px;
+  }
+
+  .card-image-container {
+    width: 120px;
+    height: 76px;
+  }
+
+  .card-image-container.vertical-image .card-image {
+    height: 70px;
+  }
+
+  .card-image-container.horizontal-image .card-image {
+    width: 100px;
+  }
+
+  .benefit-summary {
+    padding: var(--spacing-lg);
+    gap: var(--spacing-lg);
+  }
+
+  .rank-badge {
+    width: 30px;
+    height: 30px;
+    font-size: var(--font-size-sm);
+  }
+
+  .card-name {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* 모바일 */
 @media (max-width: 768px) {
   .card-recommendation-section {
-    padding: 16px;
+    padding: var(--spacing-lg);
+    border-radius: 12px;
+  }
+
+  .section-header {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .section-header h3 {
+    font-size: var(--font-size-lg);
   }
 
   .benefit-summary {
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    border-radius: 12px;
+  }
+
+  .current-benefit,
+  .recommended-benefit {
+    text-align: center;
   }
 
   .arrow {
     transform: rotate(90deg);
+    align-self: center;
+  }
+
+  .improvement {
+    align-self: center;
+    padding: var(--spacing-md) var(--spacing-lg);
   }
 
   .recommendation-item {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    min-height: auto;
+    border-radius: 16px;
   }
 
   .card-info {
-    justify-content: center;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding-top: 0;
+    gap: var(--spacing-md);
+  }
+
+  .card-image-container {
+    width: 100px;
+    height: 64px;
+    flex-shrink: 0;
+  }
+
+  .card-image-container.vertical-image .card-image {
+    height: 58px;
+    width: auto;
+  }
+
+  .card-image-container.horizontal-image .card-image {
+    width: 85px;
+    height: auto;
+  }
+
+  .card-details {
+    flex: 1;
+    min-width: 0;
   }
 
   .benefit-info {
     align-items: center;
     flex-direction: row;
     justify-content: space-between;
+    height: auto;
+    padding-top: 0;
+    min-width: auto;
+    width: 100%;
+    margin-top: var(--spacing-xs);
+  }
+
+  .rank-badge {
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-sm);
+  }
+
+  .card-name {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .card-issuer {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .card-specs {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .benefit-amount .amount {
+    font-size: var(--font-size-xl);
+  }
+
+  .btn-apply {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+    border-radius: 12px;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 480px) {
+  .card-recommendation-section {
+    padding: var(--spacing-md);
+    border-radius: 12px;
+  }
+
+  .section-header h3 {
+    font-size: var(--font-size-base);
+    gap: var(--spacing-xs);
+  }
+
+  .section-subtitle {
+    font-size: var(--font-size-xs);
+  }
+
+  .benefit-summary {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .improvement {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .recommendation-item {
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+    border-radius: 12px;
+  }
+
+  .card-info {
+    gap: var(--spacing-sm);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-image-container {
+    width: 100%;
+    max-width: 160px;
+    height: 64px;
+    align-self: center;
+  }
+
+  .card-image-container.horizontal-image .card-image {
+    width: 120px;
+    height: auto;
+  }
+
+  .card-image-container.vertical-image .card-image {
+    height: 58px;
+    width: auto;
+  }
+
+  .card-details {
+    width: 100%;
+    text-align: center;
+  }
+
+  .benefit-info {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xs);
+  }
+
+  .benefit-amount {
+    text-align: center;
+  }
+
+  .benefit-amount .amount {
+    font-size: var(--font-size-lg);
+  }
+
+  .rank-badge {
+    width: 28px;
+    height: 28px;
+    font-size: var(--font-size-xs);
+  }
+
+  .card-name {
+    font-size: var(--font-size-base);
+  }
+
+  .btn-apply {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    width: 100%;
+    max-width: 200px;
   }
 }
 </style>

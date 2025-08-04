@@ -1,6 +1,45 @@
 <template>
   <div class="spending-pattern-chart">
+    <!-- 차트 타입 선택 버튼 (오른쪽 위) -->
+    <div class="chart-controls">
+      <button
+        @click="changeChartType('bar')"
+        :class="['chart-type-btn', { active: chartType === 'bar' }]"
+        title="막대 차트"
+      >
+        <i class="bi bi-bar-chart-fill"></i>
+      </button>
+      <button
+        @click="changeChartType('doughnut')"
+        :class="['chart-type-btn', { active: chartType === 'doughnut' }]"
+        title="도넛 차트"
+      >
+        <i class="bi bi-pie-chart-fill"></i>
+      </button>
+    </div>
+
     <canvas ref="chartRef"></canvas>
+
+    <!-- 도넛 차트용 색상별 범례 (차트 아래) -->
+    <div
+      v-if="chartType === 'doughnut' && topCategories.length > 0"
+      class="doughnut-legend"
+    >
+      <div
+        v-for="(category, index) in topCategories.slice(0, 5)"
+        :key="category.category"
+        class="legend-item"
+      >
+        <div
+          class="legend-color"
+          :style="{ backgroundColor: getColorByIndex(index) }"
+        ></div>
+        <span class="legend-category">{{ category.category }}</span>
+        <span class="legend-percentage"
+          >{{ calculatePercentage(category.amount) }}%</span
+        >
+      </div>
+    </div>
     <div v-if="!topCategories.length" class="no-data">
       소비 내역 데이터가 없습니다.
     </div>
@@ -13,6 +52,8 @@ import {
   Chart,
   BarController,
   BarElement,
+  DoughnutController,
+  ArcElement,
   CategoryScale,
   LinearScale,
   Tooltip,
@@ -30,6 +71,9 @@ const props = defineProps({
 // Chart.js 참조용
 const chartRef = ref(null);
 let chartInstance = null;
+
+// 차트 타입 상태 (기본값: 막대형)
+const chartType = ref("bar");
 
 // 카테고리별 합계 집계
 const categorySums = computed(() => {
@@ -107,6 +151,32 @@ const topCategories = computed(() => {
   return entries.filter((item) => item.amount > 0);
 });
 
+// 차트 타입 변경 함수
+const changeChartType = (type) => {
+  chartType.value = type;
+  renderChart();
+};
+
+// 색상 배열
+const colors = [
+  "#609966", // color-accent
+  "#9dc08b", // color-secondary
+  "#edf1d6", // color-primary
+  "#f5f7f9", // color-info
+  "#636363", // color-success
+];
+
+// 인덱스별 색상 가져오기
+const getColorByIndex = (index) => {
+  return colors[index % colors.length];
+};
+
+// 퍼센티지 계산
+const calculatePercentage = (amount) => {
+  const total = topCategories.value.reduce((sum, item) => sum + item.amount, 0);
+  return total > 0 ? ((amount / total) * 100).toFixed(1) : 0;
+};
+
 // 차트 렌더링 함수
 function renderChart() {
   if (!chartRef.value) return;
@@ -123,101 +193,170 @@ function renderChart() {
   Chart.register(
     BarController,
     BarElement,
+    DoughnutController,
+    ArcElement,
     CategoryScale,
     LinearScale,
     Tooltip,
     Legend
   );
 
-  chartInstance = new Chart(chartRef.value, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "총 사용금액(원)",
-          data,
-          backgroundColor: [
-            "#609966", // color-accent
-            "#9dc08b", // color-secondary
-            "#edf1d6", // color-primary
-            "#f5f7f9", // color-info
-            "#636363", // color-success
+  const getChartConfig = () => {
+    if (chartType.value === "doughnut") {
+      return {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [
+            {
+              data,
+              backgroundColor: colors,
+              borderColor: "#ffffff",
+              borderWidth: 2,
+              hoverBorderWidth: 3,
+              borderRadius: 8,
+              borderJoinStyle: "round",
+              cutout: "40%", // 더 두껍게 조정
+            },
           ],
-          borderRadius: 8,
-          barThickness: 20,
         },
-      ],
-    },
-    options: {
-      indexAxis: "y", // 가로 차트로 변경
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "rgba(64, 81, 59, 0.95)",
-          titleColor: "#ffffff",
-          bodyColor: "#ffffff",
-          borderColor: "#609966",
-          borderWidth: 2,
-          cornerRadius: 8,
-          displayColors: true,
-          callbacks: {
-            title: (tooltipItems) => {
-              return tooltipItems[0].label;
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 1,
+          plugins: {
+            legend: {
+              display: false, // 하단 범례 숨김
             },
-            label: (ctx) => {
-              const value = ctx.parsed.x.toLocaleString();
-              const total = topCategories.value.reduce(
-                (sum, item) => sum + item.amount,
-                0
-              );
-              const percentage = ((ctx.parsed.x / total) * 100).toFixed(1);
-              return `${value}원 (${percentage}%)`;
+            tooltip: {
+              backgroundColor: "rgba(64, 81, 59, 0.95)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              borderColor: "#609966",
+              borderWidth: 2,
+              cornerRadius: 8,
+              displayColors: true,
+              callbacks: {
+                title: (tooltipItems) => {
+                  return tooltipItems[0].label;
+                },
+                label: (ctx) => {
+                  const value = ctx.parsed.toLocaleString();
+                  const total = topCategories.value.reduce(
+                    (sum, item) => sum + item.amount,
+                    0
+                  );
+                  const percentage = ((ctx.parsed / total) * 100).toFixed(1);
+                  return `${value}원 (${percentage}%)`;
+                },
+              },
             },
           },
         },
-      },
-      scales: {
-        x: {
-          beginAtZero: true,
-          grid: {
-            display: true,
-            color: "#e5e7eb", // border-light
-            lineWidth: 0,
-          },
-          ticks: {
-            color: "#6b7280", // text-secondary
-            font: {
-              size: 11,
+      };
+    } else {
+      return {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "총 사용금액(원)",
+              data,
+              backgroundColor: colors,
+              borderRadius: 8,
+              barThickness:
+                window.innerWidth <= 480
+                  ? 12
+                  : window.innerWidth <= 768
+                  ? 16
+                  : 20,
             },
-            callback: (value) => {
-              if (value >= 1000000) {
-                return Math.floor(value / 10000) + "만원";
-              } else if (value >= 10000) {
-                return Math.floor(value / 10000) + "만원";
-              }
-              return value.toLocaleString() + "원";
-            },
-          },
-          title: { display: false },
+          ],
         },
-        y: {
-          grid: { display: false },
-          ticks: {
-            color: "#1f2937", // text-primary
-            font: {
-              size: 12,
-              weight: "600",
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "rgba(64, 81, 59, 0.95)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              borderColor: "#609966",
+              borderWidth: 2,
+              cornerRadius: 8,
+              displayColors: true,
+              callbacks: {
+                title: (tooltipItems) => {
+                  return tooltipItems[0].label;
+                },
+                label: (ctx) => {
+                  const value = ctx.parsed.x.toLocaleString();
+                  const total = topCategories.value.reduce(
+                    (sum, item) => sum + item.amount,
+                    0
+                  );
+                  const percentage = ((ctx.parsed.x / total) * 100).toFixed(1);
+                  return `${value}원 (${percentage}%)`;
+                },
+              },
             },
-            maxTicksLimit: 5,
           },
-          title: { display: false },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: {
+                display: true,
+                color: "#e5e7eb",
+                lineWidth: 0,
+              },
+              ticks: {
+                color: "#6b7280",
+                font: {
+                  size:
+                    window.innerWidth <= 480
+                      ? 10
+                      : window.innerWidth <= 768
+                      ? 11
+                      : 12,
+                },
+                callback: (value) => {
+                  if (value >= 1000000) {
+                    return Math.floor(value / 10000) + "만";
+                  } else if (value >= 10000) {
+                    return Math.floor(value / 10000) + "만";
+                  }
+                  return value.toLocaleString();
+                },
+              },
+              title: { display: false },
+            },
+            y: {
+              grid: { display: false },
+              ticks: {
+                color: "#1f2937",
+                font: {
+                  size:
+                    window.innerWidth <= 480
+                      ? 10
+                      : window.innerWidth <= 768
+                      ? 11
+                      : 13,
+                  weight: "600",
+                },
+                maxTicksLimit: window.innerWidth <= 480 ? 4 : 5,
+              },
+              title: { display: false },
+            },
+          },
         },
-      },
-    },
-  });
+      };
+    }
+  };
+
+  chartInstance = new Chart(chartRef.value, getChartConfig());
 }
 
 // 차트 초기화 및 리렌더
@@ -239,24 +378,289 @@ onBeforeUnmount(() => {
   height: 100%;
   margin: 0 auto;
   position: relative;
-  min-height: 220px;
+  min-height: 250px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
 }
+
+.chart-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.chart-type-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.chart-type-btn:hover {
+  border-color: #609966;
+  color: #609966;
+  background: #f8f9fa;
+}
+
+.chart-type-btn.active {
+  border-color: #609966;
+  background: #609966;
+  color: rgb(255, 255, 255);
+}
+
 .no-data {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
-  color: var(--text-muted);
-  padding: var(--spacing-xl) 0;
-  font-size: var(--font-size-sm);
+  color: #6b7280;
+  font-size: 14px;
 }
 
 canvas {
   width: 100% !important;
   height: 100% !important;
+  max-height: 350px;
+  margin-top: 50px;
+}
+
+/* 도넛 차트 전용 스타일 */
+.spending-pattern-chart:has(canvas) {
+  display: flex;
+  flex-direction: column;
+}
+
+.spending-pattern-chart canvas {
+  flex-shrink: 0;
+}
+
+.doughnut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--color-light);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-category {
+  flex: 1;
+  font-weight: 600;
+  color: #40513b;
+}
+
+.legend-percentage {
+  font-weight: 600;
+  color: #000000;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* 웹 화면 (데스크톱/태블릿)에서 차트 사이즈 더 크게 조정 */
+@media (min-width: 1025px) {
+  .spending-pattern-chart {
+    min-height: 350px;
+    max-height: 650px;
+    padding: 24px;
+  }
+
+  .chart-controls {
+    top: 1px;
+    right: 1px;
+  }
+
+  .chart-type-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  canvas {
+    max-height: 350px;
+    margin-top: 50px;
+  }
+
+  .doughnut-legend {
+    margin-top: 20px;
+    padding: 16px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .spending-pattern-chart {
+    min-height: 280px;
+    max-height: 600px;
+    padding: 20px;
+  }
+
+  .chart-controls {
+    top: 1px;
+    right: 1px;
+  }
+
+  .chart-type-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  canvas {
+    max-height: 280px;
+    margin-top: 45px;
+  }
+
+  .doughnut-legend {
+    margin-top: 16px;
+    padding: 14px;
+  }
 }
 
 @media (max-width: 768px) {
   .spending-pattern-chart {
-    min-height: 240px;
-    height: 100%;
+    min-height: 130px;
+    max-height: 500px;
+    padding: 16px;
+  }
+
+  .chart-controls {
+    top: 1px;
+    right: 1px;
+  }
+
+  .chart-type-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  canvas {
+    max-height: 250px;
+    margin-top: 40px;
+  }
+
+  .doughnut-legend {
+    margin-top: 12px;
+    padding: 12px;
+    gap: 6px;
+  }
+
+  .legend-item {
+    font-size: 12px;
+  }
+}
+
+/* 작은 모바일 화면 */
+@media (max-width: 480px) {
+  .spending-pattern-chart {
+    max-height: 350px;
+    min-height: 200px;
+    padding: 10px;
+  }
+
+  .chart-controls {
+    top: 1px;
+    right: 1px;
+    gap: 6px;
+  }
+
+  .chart-type-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  canvas {
+    max-height: 180px;
+    margin-top: 35px;
+  }
+
+  .doughnut-legend {
+    margin-top: 8px;
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .legend-item {
+    font-size: 10px;
+    gap: 6px;
+  }
+
+  .legend-color {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* 매우 작은 모바일 화면 (iPhone SE 등) */
+@media (max-width: 375px) {
+  .spending-pattern-chart {
+    max-height: 300px;
+    min-height: 180px;
+    padding: 8px;
+  }
+
+  .chart-controls {
+    gap: 4px;
+  }
+
+  .chart-type-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  canvas {
+    max-height: 160px;
+    margin-top: 30px;
+  }
+
+  .doughnut-legend {
+    margin-top: 6px;
+    padding: 6px;
+    gap: 3px;
+  }
+
+  .legend-item {
+    font-size: 9px;
+    gap: 5px;
+  }
+
+  .legend-color {
+    width: 7px;
+    height: 7px;
+  }
+
+  .legend-percentage {
+    min-width: 35px;
   }
 }
 </style>
