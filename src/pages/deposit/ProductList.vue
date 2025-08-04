@@ -217,18 +217,18 @@ const getBankLogo = (bankName) => {
 <style scoped>
 /* ===== 🆕 KB국민은행 전용 메시지 ===== */
 .kb-only-message {
-  background: linear-gradient(135deg, #fff9e6 0%, #fef3c7 100%);
+  background: var(--color-warning-light);
   padding: 16px 20px;
   border-radius: 12px;
   margin-bottom: 25px;
-  border-left: 4px solid #f59e0b;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+  border-left: 4px solid var(--color-warning);
+  box-shadow: 0 2px 8px var(--color-warning-20);
 }
 
 .kb-only-text {
   font-size: 15px;
   font-weight: 700;
-  color: #92400e;
+  color: var(--color-warning-dark);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -242,18 +242,18 @@ const getBankLogo = (bankName) => {
 
 /* ===== 검색 결과 없음 메시지 ===== */
 .no-results-message {
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  background: var(--color-error-light);
   padding: 16px 20px;
   border-radius: 12px;
   margin-bottom: 25px;
-  border-left: 4px solid #ef4444;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+  border-left: 4px solid var(--color-error);
+  box-shadow: 0 2px 8px var(--color-error-20);
 }
 
 .no-results-text {
   font-size: 15px;
   font-weight: 600;
-  color: #dc2626;
+  color: var(--color-error-dark);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -267,17 +267,17 @@ const getBankLogo = (bankName) => {
 
 /* ===== 추천 메시지 ===== */
 .recommendation-message {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: var(--color-info-light);
   padding: 16px 20px;
   border-radius: 12px;
   margin-bottom: 25px;
-  border-left: 4px solid #609966;
+  border-left: 4px solid var(--color-accent);
 }
 
 .recommendation-text {
   font-size: 14px;
   font-weight: 700;
-  color: #609966;
+  color: var(--color-accent);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -292,7 +292,7 @@ const getBankLogo = (bankName) => {
 .products-section h3 {
   font-size: 16px;
   font-weight: 700;
-  color: #636363;
+  color: var(--color-title);
   margin-bottom: 20px;
 }
 
@@ -309,13 +309,13 @@ const getBankLogo = (bankName) => {
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
 }
 
 .product-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border-color: #609966;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-accent);
 }
 
 /* ===== 상품 카드 내부 레이아웃 ===== */
@@ -340,9 +340,9 @@ const getBankLogo = (bankName) => {
   height: 100%;
   object-fit: contain;
   border-radius: 50%;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
 }
 
 .product-name-block {
@@ -365,31 +365,31 @@ const getBankLogo = (bankName) => {
 .bank-name-bold {
   font-size: 14px;
   font-weight: 700;
-  color: #1e2b4e;
+  color: var(--color-dark);
   margin-bottom: 2px;
 }
 
 .product-name-bold {
   font-size: 16px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .rate-line {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 2px;
 }
 
 .label-bold {
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .highlight-rate {
   font-size: 18px;
-  color: #609966;
+  color: var(--color-accent);
   font-weight: bold;
 }
 
@@ -397,14 +397,14 @@ const getBankLogo = (bankName) => {
 .loading {
   text-align: center;
   padding: 40px;
-  color: #636363;
+  color: var(--color-title);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #f3f4f6;
-  border-top: 3px solid #609966;
+  border: 3px solid var(--color-gray-100);
+  border-top: 3px solid var(--color-accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;

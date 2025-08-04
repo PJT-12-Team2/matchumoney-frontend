@@ -53,18 +53,7 @@ const isConnecting = ref(false);
 const effectiveUserId = props.userId || authStore.userId;
 
 const openModal = () => {
-  console.log('🔧 openModal 호출됨:', {
-    effectiveUserId,
-    authStoreUserId: authStore.userId,
-    propsUserId: props.userId,
-  });
-
   if (!effectiveUserId) {
-    console.error('❌ 사용자 ID가 없습니다:', {
-      effectiveUserId,
-      authStoreUserId: authStore.userId,
-      propsUserId: props.userId,
-    });
     alert('로그인이 필요합니다.');
     return;
   }
@@ -80,19 +69,12 @@ const handleConnect = async (loginData) => {
   isConnecting.value = true;
 
   try {
-    console.log('계좌 연결 시도:', {
-      userId: effectiveUserId,
-      loginData: { id: loginData.id, password: '***' }, // 비밀번호는 로그에 남기지 않음
-    });
-
     // 🔧 개발 환경에서 특정 테스트 계정은 성공 시뮬레이션
     if (
       import.meta.env.DEV &&
       loginData.id === 'testuser' &&
       loginData.password === '1234'
     ) {
-      console.log('🔧 개발 환경: 계좌 연동 성공 시뮬레이션');
-
       // 성공 시뮬레이션용 딜레이
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -112,16 +94,12 @@ const handleConnect = async (loginData) => {
       bankPassword: loginData.password,
     });
 
-    console.log('계좌 연결 응답:', response);
-
     alert('계좌 연결 성공!');
     showModal.value = false;
 
     // 부모 컴포넌트에 연결 성공 알림
     emit('connect-success');
   } catch (error) {
-    console.error('계좌 연결 실패:', error);
-
     // 에러 타입별 메시지 처리
     let errorMessage = '계좌 연결에 실패했습니다.';
 
