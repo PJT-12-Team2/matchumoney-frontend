@@ -16,37 +16,45 @@
           <div class="form-group">
             <label for="cardNo">카드번호 (전체)</label>
             <input
-              type="text"
+              type="tel"
               id="cardNo"
               v-model="formData.cardNo"
               placeholder="카드번호 16자리를 입력하세요"
               maxlength="16"
+              pattern="[0-9]*"
+              inputmode="numeric"
               required
             />
           </div>
 
-          <div class="form-group">
-            <label for="cardPw2">카드 비밀번호 (앞 2자리)</label>
-            <input
-              type="password"
-              id="cardPw2"
-              v-model="formData.cardPw2"
-              placeholder="카드 비밀번호 앞 2자리"
-              maxlength="2"
-              required
-            />
-          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cardPw2">카드 비밀번호 (앞 2자리)</label>
+              <input
+                type="password"
+                id="cardPw2"
+                v-model="formData.cardPw2"
+                placeholder="앞 2자리"
+                maxlength="2"
+                pattern="[0-9]*"
+                inputmode="numeric"
+                required
+              />
+            </div>
 
-          <div class="form-group">
-            <label for="birthDate">생년월일 (8자리)</label>
-            <input
-              type="text"
-              id="birthDate"
-              v-model="formData.birthDate"
-              placeholder="YYYYMMDD 형식으로 입력"
-              maxlength="8"
-              required
-            />
+            <div class="form-group">
+              <label for="birthDate">생년월일 (8자리)</label>
+              <input
+                type="tel"
+                id="birthDate"
+                v-model="formData.birthDate"
+                placeholder="YYYYMMDD"
+                maxlength="8"
+                pattern="[0-9]*"
+                inputmode="numeric"
+                required
+              />
+            </div>
           </div>
 
           <div class="form-row">
@@ -199,6 +207,8 @@ const handleSync = async () => {
   overflow-y: auto;
   box-shadow: var(--shadow-modal);
   border: 1px solid var(--border-light);
+  margin: var(--spacing-md);
+  position: relative;
 }
 
 .modal-header {
@@ -257,7 +267,6 @@ const handleSync = async () => {
 }
 
 .form-row {
-  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-lg);
 }
@@ -279,7 +288,7 @@ const handleSync = async () => {
 .form-group input {
   width: 100%;
   padding: var(--spacing-md) var(--spacing-lg);
-  border: 1px solid var(--color-gray-600);
+  border: 2px solid var(--color-gray-300);
   border-radius: 12px;
   font-size: var(--font-size-base);
   box-sizing: border-box;
@@ -287,21 +296,25 @@ const handleSync = async () => {
   background: var(--color-white);
   color: var(--text-primary);
   font-weight: 500;
+  min-height: 48px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 4px var(--color-accent-20);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
   transform: translateY(-1px);
+  background: #fafafa;
 }
 
 /* --- 버튼 통일 스타일 --- */
 .form-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: var(--spacing-md);
-  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xl);
+  gap: var(--spacing-md);
 }
 
 .btn {
@@ -335,24 +348,180 @@ const handleSync = async () => {
 }
 /* --- END 버튼 통일 스타일 --- */
 
-@media (max-width: 640px) {
+/* 태블릿 */
+@media (max-width: var(--breakpoint-lg)) {
   .modal-content {
-    width: 95%;
-    margin: var(--spacing-md);
+    width: 85%;
+    max-width: 500px;
+    margin: var(--spacing-lg);
   }
+
+  .modal-header h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .description {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm);
+  }
+
+  .form-group input {
+    padding: var(--spacing-md) var(--spacing-lg);
+    min-height: 50px;
+    font-size: var(--font-size-base);
+  }
+
+  .form-actions {
+    gap: var(--spacing-lg);
+  }
+}
+
+/* 모바일 */
+@media (max-width: var(--breakpoint-md)) {
+  .modal-overlay {
+    padding: var(--spacing-sm);
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 16px;
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+    position: sticky;
+    top: 0;
+    background: var(--color-white);
+    border-radius: 16px 16px 0 0;
+    z-index: 10;
+  }
+
+  .modal-header h3 {
+    font-size: var(--font-size-lg);
+    text-align: center;
+  }
+
+  .btn-close {
+    position: absolute;
+    right: var(--spacing-md);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    font-size: var(--font-size-xl);
+  }
+
+  .modal-body {
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
+  }
+
+  .description {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-md);
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .form-group label {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+  }
+
+  .form-group input {
+    padding: var(--spacing-lg);
+    min-height: 54px;
+    font-size: var(--font-size-base);
+    border-radius: 12px;
+    border: 2px solid var(--color-gray-300);
+  }
+
+  .form-group input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15);
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-2xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-gray-200);
+  }
+
+  .form-actions .btn,
+  .form-actions button {
+    min-height: 52px;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    border-radius: 12px;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: var(--breakpoint-sm)) {
+  .modal-overlay {
+    padding: var(--spacing-xs);
+  }
+
+  .modal-content {
+    max-height: 98vh;
+  }
+
   .modal-header {
     padding: var(--spacing-md);
   }
+
+  .modal-header h3 {
+    font-size: var(--font-size-base);
+  }
+
+  .btn-close {
+    width: 32px;
+    height: 32px;
+    right: var(--spacing-sm);
+  }
+
   .modal-body {
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+  }
+
+  .description {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .form-group input {
     padding: var(--spacing-md);
+    min-height: 48px;
+    font-size: var(--font-size-sm);
   }
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
+
   .form-actions {
-    flex-direction: column;
-    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xl);
+    gap: var(--spacing-sm);
+  }
+
+  .form-actions .btn,
+  .form-actions button {
+    min-height: 48px;
+    font-size: var(--font-size-sm);
   }
 }
 </style>
