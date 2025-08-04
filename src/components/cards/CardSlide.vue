@@ -24,23 +24,47 @@
 
       <!-- 오른쪽: 카드 정보 -->
       <div class="card-info-section">
-        <div class="info-row">
-          <span class="info-label">카드번호</span>
-          <span class="info-value">{{
-            formatCardNumber(card.maskedCardNo)
-          }}</span>
+        <div class="info-content">
+          <div class="info-row">
+            <span class="info-label">카드번호</span>
+            <span class="info-value">{{
+              formatCardNumber(card.maskedCardNo)
+            }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">상태</span>
+            <span class="info-badge" :class="getStatusClass(card.cardState)">
+              {{ card.cardState || "알 수 없음" }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">매칭상태</span>
+            <span class="info-badge matching" :class="matchingStatusClass">
+              {{ matchingText }}
+            </span>
+          </div>
         </div>
-        <div class="info-row">
-          <span class="info-label">상태</span>
-          <span class="info-badge" :class="getStatusClass(card.cardState)">
-            {{ card.cardState || "알 수 없음" }}
-          </span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">매칭상태</span>
-          <span class="info-badge matching" :class="matchingStatusClass">
-            {{ matchingText }}
-          </span>
+
+        <!-- 거래내역 관리 버튼 -->
+        <div class="transaction-actions">
+          <button
+            v-if="hasTransactions"
+            @click.stop="handleUpdateTransactions"
+            class="action-btn update-btn"
+            title="거래내역 업데이트"
+          >
+            <i class="bi bi-arrow-clockwise"></i>
+            내역 업데이트
+          </button>
+          <button
+            v-else
+            @click.stop="handleRegisterTransactions"
+            class="action-btn register-btn"
+            title="거래내역 등록"
+          >
+            <i class="bi bi-plus-circle"></i>
+            내역 등록
+          </button>
         </div>
       </div>
     </div>
@@ -55,7 +79,17 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  hasTransactions: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const emit = defineEmits([
+  "cardClick",
+  "registerTransactions",
+  "updateTransactions",
+]);
 
 const isMatched = computed(() => props.card.matchStatus === "MATCHED");
 const matchingStatusClass = computed(() =>
@@ -116,6 +150,20 @@ const getStatusClass = (status) => {
   if (lower.includes("해지") || lower.includes("폐지")) return "status-closed";
   return "status-normal";
 };
+
+const handleCardClick = (event) => {
+  // 드래그가 진행 중이면 클릭 이벤트 무시
+  event.stopPropagation();
+  emit("cardClick", props.card);
+};
+
+const handleRegisterTransactions = () => {
+  emit("registerTransactions", props.card);
+};
+
+const handleUpdateTransactions = () => {
+  emit("updateTransactions", props.card);
+};
 </script>
 
 <style scoped>
@@ -125,10 +173,8 @@ const getStatusClass = (status) => {
   box-shadow: var(--shadow-md);
   padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg)
     var(--spacing-xl);
-  margin: 0 auto var(--spacing-lg) auto;
   width: 100%;
   height: 100%;
-  max-width: 1000px;
   min-height: 215px;
   display: flex;
   flex-direction: column;
@@ -136,6 +182,13 @@ const getStatusClass = (status) => {
   position: relative;
   transition: all 0.3s ease;
   border: 1px solid var(--border-light);
+  cursor: pointer;
+}
+
+.card-slide:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-gray-100);
 }
 
 /* 데스크탑 레이아웃 */
@@ -222,8 +275,15 @@ const getStatusClass = (status) => {
   flex-direction: column;
   gap: var(--spacing-lg);
   align-items: flex-start;
-  justify-content: center;
+  justify-content: space-between;
   padding-top: var(--spacing-xs);
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  width: 100%;
 }
 .info-row {
   display: flex;
@@ -271,22 +331,70 @@ const getStatusClass = (status) => {
   color: var(--color-dark);
 }
 
-/* 태블릿 레이아웃
-@media (max-width: 999px) {
+.transaction-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-sm);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.register-btn {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.register-btn:hover {
+  background: var(--color-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.update-btn {
+  background: var(--color-secondary);
+  color: var(--color-dark);
+}
+
+.update-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.action-btn i {
+  font-size: var(--font-size-sm);
+}
+
+/* 태블릿 레이아웃 */
+@media (max-width: 1024px) and (min-width: 769px) {
   .row-layout {
     gap: var(--spacing-lg);
   }
   .card-visual-section {
-    flex-basis: 170px;
-    min-width: 110px;
+    flex-basis: 180px;
+    min-width: 140px;
   }
   .card-visual {
-    width: 145px;
-    height: 86px;
+    width: 170px;
+    height: 110px;
   }
   .chip {
-    width: 22px;
-    height: 14px;
+    width: 26px;
+    height: 18px;
     margin-bottom: var(--spacing-sm);
   }
   .brand {
@@ -301,73 +409,143 @@ const getStatusClass = (status) => {
   .visual-label {
     font-size: var(--font-size-base);
     margin-top: var(--spacing-xs);
-  }
-  .info-label,
-  .info-value,
-  .info-badge,
-  .footer-hint {
-    font-size: var(--font-size-sm);
-  }
-  .card-info-section {
-    gap: var(--spacing-md);
-    padding-top: var(--spacing-xs);
-  }
-} */
-
-/* 모바일 레이아웃 */
-@media (max-width: 768px) {
-  .row-layout {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    align-items: stretch;
-  }
-  .card-visual-section {
-    align-items: center;
-    margin-bottom: 0;
-  }
-  .card-visual {
-    width: 100%;
-    max-width: 280px;
-    height: 160px;
-    min-height: 120px;
-  }
-  .brand {
-    font-size: var(--font-size-xs);
-    right: var(--spacing-sm);
-    top: var(--spacing-sm);
-  }
-  .chip {
-    width: 20px;
-    height: 12px;
-    margin-bottom: var(--spacing-sm);
-  }
-  .card-no {
-    font-size: var(--font-size-sm);
-    margin-top: var(--spacing-xs);
-  }
-  .visual-label {
-    font-size: var(--font-size-base);
-    margin-top: var(--spacing-xs);
-  }
-  .card-info-section {
-    gap: var(--spacing-sm);
-    align-items: flex-start;
-    padding-top: 0;
-    margin-top: var(--spacing-md);
   }
   .info-label,
   .info-value,
   .info-badge {
     font-size: var(--font-size-sm);
   }
-  .footer-hint {
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-xs) var(--spacing-md);
-    margin-top: var(--spacing-xs);
+  .card-info-section {
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-xs);
   }
+  .action-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* 모바일 레이아웃 */
+@media (max-width: 768px) {
   .card-slide {
     padding: var(--spacing-lg) var(--spacing-md);
-    min-height: 200px;
+    min-height: auto;
+  }
+
+  .row-layout {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    align-items: stretch;
+  }
+
+  .card-visual-section {
+    align-items: center;
+    margin-bottom: 0;
+    flex: none;
+  }
+
+  .card-visual {
+    width: 100%;
+    max-width: 300px;
+    height: 180px;
+    min-height: 140px;
+  }
+
+  .brand {
+    font-size: var(--font-size-xs);
+    right: var(--spacing-md);
+    top: var(--spacing-md);
+  }
+
+  .chip {
+    width: 24px;
+    height: 16px;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .card-no {
+    font-size: var(--font-size-base);
+    margin-top: var(--spacing-sm);
+  }
+
+  .visual-label {
+    font-size: var(--font-size-lg);
+    margin-top: var(--spacing-md);
+    text-align: center;
+  }
+
+  .card-info-section {
+    gap: var(--spacing-lg);
+    align-items: flex-start;
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .info-content {
+    gap: var(--spacing-md);
+  }
+
+  .info-row {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .info-label {
+    min-width: 80px;
+    font-size: var(--font-size-sm);
+  }
+
+  .info-value,
+  .info-badge {
+    font-size: var(--font-size-sm);
+  }
+
+  .transaction-actions {
+    justify-content: center;
+    margin-top: var(--spacing-lg);
+  }
+
+  .action-btn {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+    min-width: 140px;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 480px) {
+  .card-slide {
+    padding: var(--spacing-md);
+  }
+
+  .row-layout {
+    gap: var(--spacing-md);
+  }
+
+  .card-visual {
+    max-width: 280px;
+    height: 160px;
+    min-height: 120px;
+  }
+
+  .visual-label {
+    font-size: var(--font-size-base);
+  }
+
+  .info-label {
+    min-width: 70px;
+    font-size: var(--font-size-xs);
+  }
+
+  .info-value,
+  .info-badge {
+    font-size: var(--font-size-xs);
+  }
+
+  .action-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    min-width: 120px;
   }
 }
 </style>
