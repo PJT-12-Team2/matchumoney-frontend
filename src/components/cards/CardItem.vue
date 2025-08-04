@@ -1,5 +1,5 @@
 <template>
-  <div class="card-item">
+  <div class="card card-item">
     <div class="card-row-layout">
       <!-- 카드 실물+상태 (좌측) -->
       <div class="card-visual-box">
@@ -35,20 +35,22 @@
           }}</span>
         </div>
         <div class="card-actions">
-          <button
-            class="btn btn-transactions"
+          <BaseButton
+            variant="outline"
+            class="btn-transactions"
             @click="$emit('viewTransactions', card.holdingId)"
             :disabled="card.cardStatus !== '1'"
           >
             거래내역 보기
-          </button>
-          <button
-            class="btn btn-sync"
+          </BaseButton>
+          <BaseButton
+            variant="secondary"
+            class="btn-sync"
             @click="$emit('syncTransactions', card.holdingId)"
             :disabled="card.cardStatus !== '1'"
           >
             거래내역 동기화
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -56,6 +58,8 @@
 </template>
 
 <script setup>
+import BaseButton from '@/components/base/BaseButton.vue'
+
 defineProps({
   card: {
     type: Object,
@@ -104,20 +108,9 @@ const getStatusText = (status) => {
 
 <style scoped>
 .card-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-lg);
-  box-shadow: var(--shadow-md);
   width: 100%;
   max-width: 580px;
-  transition: all 0.3s ease;
-}
-.card-item:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-  border-color: var(--color-accent);
+  margin-bottom: var(--spacing-lg);
 }
 
 .card-row-layout {
@@ -239,38 +232,11 @@ const getStatusText = (status) => {
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
 }
-.btn {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--color-accent);
-  background-color: var(--color-accent-10);
-  color: var(--color-accent);
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  transition: all 0.3s ease;
-  min-width: 90px;
-  outline: none;
-}
-.btn-transactions:hover:not(:disabled),
-.btn-sync:hover:not(:disabled) {
-  background-color: var(--color-accent);
-  color: var(--color-white);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+
+.btn-transactions,
 .btn-sync {
-  border-color: var(--color-success);
-  color: var(--color-success);
-  background-color: var(--color-success-light);
-}
-.btn-sync:hover:not(:disabled) {
-  background-color: var(--color-success);
-  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  min-width: 100px;
 }
 
 /* 태블릿 대응 */
@@ -323,13 +289,13 @@ const getStatusText = (status) => {
   }
   
   .info-label,
-  .info-value,
-  .btn {
+  .info-value {
     font-size: var(--font-size-sm);
   }
   
-  .btn {
-    padding: var(--spacing-sm) var(--spacing-md);
+  .btn-transactions,
+  .btn-sync {
+    font-size: var(--font-size-sm);
     min-width: 100px;
   }
 }
@@ -416,9 +382,9 @@ const getStatusText = (status) => {
     justify-content: center;
   }
   
-  .btn {
+  .btn-transactions,
+  .btn-sync {
     font-size: var(--font-size-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
     min-width: 100px;
     flex: 1;
   }
@@ -457,9 +423,9 @@ const getStatusText = (status) => {
     font-size: var(--font-size-xs);
   }
   
-  .btn {
+  .btn-transactions,
+  .btn-sync {
     font-size: var(--font-size-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
     min-width: 80px;
   }
 }

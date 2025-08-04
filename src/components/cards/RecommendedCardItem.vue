@@ -1,5 +1,5 @@
 <template>
-  <div class="recommended-card-item">
+  <div class="card recommended-card-item">
     <div class="card-header">
       <div class="card-image">
         <img :src="card.cardImageUrl" :alt="card.cardName" @error="handleImageError" />
@@ -27,27 +27,34 @@
     </div>
 
     <div class="card-actions">
-      <button
+      <BaseButton
+        variant="primary"
         class="btn-apply"
         @click="openApplicationLink('pc')"
         v-if="card.requestPcUrl"
       >
         PC에서 신청
-      </button>
-      <button
+      </BaseButton>
+      <BaseButton
+        variant="secondary"
         class="btn-apply mobile"
         @click="openApplicationLink('mobile')"
         v-if="card.requestMobileUrl"
       >
         모바일에서 신청
-      </button>
+      </BaseButton>
     </div>
   </div>
 </template>
 
 <script>
+import BaseButton from '@/components/base/BaseButton.vue'
+
 export default {
   name: 'RecommendedCardItem',
+  components: {
+    BaseButton
+  },
   props: {
     card: {
       type: Object,
