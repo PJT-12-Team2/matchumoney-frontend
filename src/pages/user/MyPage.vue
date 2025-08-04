@@ -79,13 +79,13 @@
                       v-if="selectedTab === '예금'"
                       src="@/assets/logo_dis.png"
                       alt="예금 이모지"
-                      style="width: 100px; height: 100px" />
+                      class="fallback-img" />
                     <img
                       v-else-if="selectedTab === '적금'"
                       src="@/assets/logo_dis.png"
                       alt="적금 이모지"
-                      style="width: 100px; height: 100px" />
-                    <img v-else src="@/assets/logo_dis.png" alt="카드 이모지" style="width: 100px; height: 100px" />
+                      class="fallback-img" />
+                    <img v-else src="@/assets/logo_dis.png" alt="카드 이모지" class="fallback-img" />
                   </template>
                   <template v-else>
                     <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
@@ -142,9 +142,6 @@ onMounted(async () => {
     const fileName = rawImagePath?.split("/").pop();
     const imageUrl = fileName ? new URL(`../../assets/character_images/${fileName}`, import.meta.url).href : "";
     personaImageUrl.value = imageUrl;
-
-    console.log("📷 백엔드 imageUrl:", rawImagePath);
-    console.log("📷 가공된 이미지 URL:", imageUrl);
 
     myPageInfo.value.persona = {
       quote: data.persona?.quote ?? "",
@@ -449,41 +446,6 @@ function selectProduct(product) {
   transform: translateY(-4px);
 }
 
-@media (max-width: 768px) {
-  .my-page {
-    grid-template-areas:
-      "profile"
-      "type"
-      "left"
-      "right";
-    grid-template-columns: 1fr;
-  }
-  .user-info {
-    flex-direction: column;
-    align-items: center;
-  }
-  .user-text {
-    text-align: center;
-    margin: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .user-name {
-    font-size: var(--font-size-xl);
-  }
-  .level-value {
-    font-size: var(--font-size-lg);
-  }
-  .user-type,
-  .user-level {
-    font-size: var(--font-size-sm);
-  }
-  .edit-button {
-    font-size: var(--font-size-sm);
-  }
-}
-
 .product-card {
   transform: scale(0.95);
 }
@@ -500,6 +462,11 @@ function selectProduct(product) {
   height: 100px;
   object-fit: contain;
 }
+.fallback-img {
+  width: 100px;
+  height: 100px;
+}
+
 .product-info {
   font-size: 1rem;
 }
@@ -509,5 +476,65 @@ function selectProduct(product) {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .my-page {
+    grid-template-areas:
+      "profile"
+      "type"
+      "left"
+      "right";
+    grid-template-columns: 1fr;
+  }
+  .profile-image-placeholder {
+    width: clamp(150px, 25vw, 180px);
+    height: clamp(150px, 25vw, 180px);
+    border-radius: 50%;
+    background-color: var(--color-secondary-10);
+    border: 2px solid var(--color-secondary-50);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .user-info {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+  .user-text {
+    text-align: center;
+    margin: 0;
+  }
+
+  .user-name {
+    font-size: var(--font-size-xl);
+  }
+  .level-value {
+    font-size: var(--font-size-xl);
+  }
+  .user-type,
+  .user-level {
+    font-size: var(--font-size-2xl);
+  }
+  .edit-button {
+    font-size: var(--font-size-md);
+  }
+  .right-grid {
+    height: auto;
+  }
+  .bank-logo img {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+  }
+  .fallback-img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .product-info {
+    font-size: 1rem;
+  }
 }
 </style>
