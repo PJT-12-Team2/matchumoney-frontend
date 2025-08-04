@@ -629,7 +629,7 @@ export default {
 }
 
 .card-specs {
-  display: flex;
+  display: block;
   gap: var(--spacing-sm);
   align-items: center;
   flex-wrap: wrap;
@@ -638,6 +638,7 @@ export default {
 .card-type {
   display: inline-block;
   padding: var(--spacing-xs) var(--spacing-sm);
+  margin-right: var(--spacing-sm);
   border-radius: 6px;
   font-size: var(--font-size-xs);
   font-weight: 500;
@@ -723,7 +724,7 @@ export default {
   .card-recommendation-section {
     padding: var(--spacing-xl);
   }
-  
+
   .recommendation-item {
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
@@ -742,18 +743,18 @@ export default {
   .card-image-container.horizontal-image .card-image {
     width: 100px;
   }
-  
+
   .benefit-summary {
     padding: var(--spacing-lg);
     gap: var(--spacing-lg);
   }
-  
+
   .rank-badge {
     width: 30px;
     height: 30px;
     font-size: var(--font-size-sm);
   }
-  
+
   .card-name {
     font-size: var(--font-size-lg);
   }
@@ -765,11 +766,11 @@ export default {
     padding: var(--spacing-lg);
     border-radius: 12px;
   }
-  
+
   .section-header {
     margin-bottom: var(--spacing-lg);
   }
-  
+
   .section-header h3 {
     font-size: var(--font-size-lg);
   }
@@ -780,7 +781,7 @@ export default {
     padding: var(--spacing-lg);
     border-radius: 12px;
   }
-  
+
   .current-benefit,
   .recommended-benefit {
     text-align: center;
@@ -790,7 +791,7 @@ export default {
     transform: rotate(90deg);
     align-self: center;
   }
-  
+
   .improvement {
     align-self: center;
     padding: var(--spacing-md) var(--spacing-lg);
@@ -828,7 +829,7 @@ export default {
     width: 85px;
     height: auto;
   }
-  
+
   .card-details {
     flex: 1;
     min-width: 0;
@@ -842,7 +843,7 @@ export default {
     padding-top: 0;
     min-width: auto;
     width: 100%;
-    margin-top: var(--spacing-md);
+    margin-top: var(--spacing-xs);
   }
 
   .rank-badge {
@@ -859,15 +860,15 @@ export default {
   .card-issuer {
     margin-bottom: var(--spacing-sm);
   }
-  
+
   .card-specs {
     margin-bottom: var(--spacing-sm);
   }
-  
+
   .benefit-amount .amount {
     font-size: var(--font-size-xl);
   }
-  
+
   .btn-apply {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-size-base);
@@ -881,21 +882,21 @@ export default {
     padding: var(--spacing-md);
     border-radius: 12px;
   }
-  
+
   .section-header h3 {
     font-size: var(--font-size-base);
     gap: var(--spacing-xs);
   }
-  
+
   .section-subtitle {
     font-size: var(--font-size-xs);
   }
-  
+
   .benefit-summary {
     padding: var(--spacing-md);
     gap: var(--spacing-sm);
   }
-  
+
   .improvement {
     padding: var(--spacing-sm) var(--spacing-md);
   }
@@ -923,12 +924,12 @@ export default {
     width: 120px;
     height: auto;
   }
-  
+
   .card-image-container.vertical-image .card-image {
     height: 58px;
     width: auto;
   }
-  
+
   .card-details {
     width: 100%;
     text-align: center;
@@ -938,9 +939,9 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
+    margin-top: var(--spacing-xs);
   }
-  
+
   .benefit-amount {
     text-align: center;
   }
@@ -948,13 +949,13 @@ export default {
   .benefit-amount .amount {
     font-size: var(--font-size-lg);
   }
-  
+
   .rank-badge {
     width: 28px;
     height: 28px;
     font-size: var(--font-size-xs);
   }
-  
+
   .card-name {
     font-size: var(--font-size-base);
   }
