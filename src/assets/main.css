@@ -146,13 +146,13 @@
 
 /* 기본 HTML 요소 스타일 */
 html {
-  font-size: clamp(11px, 1.6vw, 24px);
+  font-size: clamp(11px, 1.6vw, 16px);
   line-height: 1.5;
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--bg-body);
   color: var(--text-primary);
   line-height: 1.6;
@@ -727,7 +727,7 @@ a:hover {
   }
 
   .card {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
   }
 
   h1 {
@@ -741,16 +741,10 @@ a:hover {
   h3 {
     font-size: var(--font-size-lg);
   }
-}
 
-@media (max-width: 480px) {
   .btn {
     padding: var(--spacing-sm);
     font-size: var(--font-size-sm);
-  }
-
-  .card {
-    padding: var(--spacing-sm);
   }
 }
 

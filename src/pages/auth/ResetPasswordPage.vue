@@ -238,7 +238,55 @@ const handleResetPassword = async () => {
   margin-top: var(--spacing-xl);
 }
 
-.join-btn-area .base-button {
-  width: 300px;
+@media (max-width: 768px) {
+  .signup-card {
+    width: 90%;
+    height: auto;
+    padding: 2rem;
+  }
+  .login-logo img {
+    height: 100px;
+  }
+  .login-title {
+    font-size: 2rem;
+  }
+  .login-label {
+    font-size: 1.2rem;
+  }
+  .input-action-row {
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  .action-btn {
+    width: 50%;
+    margin-top: 0.2rem;
+    height: 30px;
+    font-size: 1.2rem;
+  }
+  .join-btn-area .base-button {
+    width: 50%;
+    height: 30px;
+    margin-top: -1.5rem;
+    font-size: 1.2rem;
+  }
+  .signup-container {
+    justify-content: center;
+    padding-bottom: 100px;
+  }
+  .error-row {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+  .error-msg {
+    font-size: 1.2rem;
+  }
+
+  /* Scoped deep styles for BaseInput on mobile */
+  ::v-deep(.input-field) {
+    font-size: 1.2rem;
+    height: 48px;
+    padding: 0.75rem;
+  }
 }
 </style>

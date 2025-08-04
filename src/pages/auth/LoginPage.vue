@@ -277,4 +277,57 @@ const handleKakaoLogin = () => {
 .signup-link a:hover {
   color: var(--text-link-hover);
 }
+
+@media (max-width: 768px) {
+  .login-card {
+    width: 90%;
+    height: auto;
+    padding: 2rem;
+  }
+  .login-logo img {
+    height: 100px;
+  }
+  .login-btn {
+    width: 300px;
+    height: 45px;
+  }
+  .kakao-btn {
+    width: 100%;
+  }
+  .kakao-btn img {
+    height: 45px;
+  }
+  .login-container {
+    justify-content: center;
+    padding-bottom: 100px;
+  }
+  .login-title {
+    font-size: 2rem;
+  }
+  .login-label {
+    font-size: 10rem;
+  }
+  .login-btn {
+    font-size: 1.5rem;
+  }
+  .sns-divider {
+    font-size: 1.2rem;
+  }
+  .signup-link {
+    font-size: 1.2rem;
+  }
+  .login-options {
+    font-size: 1.2rem;
+  }
+
+  /* Scoped deep styles for BaseInput on mobile */
+  ::v-deep(.input-field) {
+    font-size: 1.2rem;
+    height: 48px;
+    padding: 0.75rem;
+  }
+  ::v-deep(.input-label) {
+    font-size: 1.2rem;
+  }
+}
 </style>
