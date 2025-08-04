@@ -34,10 +34,10 @@ export default {
     return data;
   },
 
-  // 은행별 예금 상품 조회
-  async getProductsByBank(bankName) {
-    const { data } = await api.get(`${BASE_URL}/products/bank/${bankName}`);
-    console.log(`🏦 ${bankName} Products:`, data);
+  // KB국민은행 상품 조회
+  async getKBProducts() {
+    const { data } = await api.get(`${BASE_URL}/recommendations/kb-products`);
+    console.log('🏛️ KB Bank Products:', data);
     return data;
   },
 };
