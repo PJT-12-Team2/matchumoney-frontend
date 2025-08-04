@@ -265,7 +265,12 @@ function renderChart() {
               data,
               backgroundColor: colors,
               borderRadius: 8,
-              barThickness: 20,
+              barThickness:
+                window.innerWidth <= 480
+                  ? 12
+                  : window.innerWidth <= 768
+                  ? 16
+                  : 20,
             },
           ],
         },
@@ -310,7 +315,12 @@ function renderChart() {
               ticks: {
                 color: "#6b7280",
                 font: {
-                  size: 12,
+                  size:
+                    window.innerWidth <= 480
+                      ? 10
+                      : window.innerWidth <= 768
+                      ? 11
+                      : 12,
                 },
                 callback: (value) => {
                   if (value >= 1000000) {
@@ -328,10 +338,15 @@ function renderChart() {
               ticks: {
                 color: "#1f2937",
                 font: {
-                  size: 13,
+                  size:
+                    window.innerWidth <= 480
+                      ? 10
+                      : window.innerWidth <= 768
+                      ? 11
+                      : 13,
                   weight: "600",
                 },
-                maxTicksLimit: 5,
+                maxTicksLimit: window.innerWidth <= 480 ? 4 : 5,
               },
               title: { display: false },
             },
@@ -367,7 +382,6 @@ onBeforeUnmount(() => {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .chart-controls {
@@ -403,7 +417,7 @@ onBeforeUnmount(() => {
 .chart-type-btn.active {
   border-color: #609966;
   background: #609966;
-  color: white;
+  color: rgb(255, 255, 255);
 }
 
 .no-data {
@@ -420,6 +434,7 @@ canvas {
   width: 100% !important;
   height: 100% !important;
   max-height: 350px;
+  margin-top: 50px;
 }
 
 /* 도넛 차트 전용 스타일 */
@@ -491,6 +506,7 @@ canvas {
 
   canvas {
     max-height: 350px;
+    margin-top: 50px;
   }
 
   .doughnut-legend {
@@ -502,7 +518,7 @@ canvas {
 @media (min-width: 769px) and (max-width: 1024px) {
   .spending-pattern-chart {
     min-height: 280px;
-    max-height: 500px;
+    max-height: 600px;
     padding: 20px;
   }
 
@@ -519,6 +535,7 @@ canvas {
 
   canvas {
     max-height: 280px;
+    margin-top: 45px;
   }
 
   .doughnut-legend {
@@ -530,7 +547,7 @@ canvas {
 @media (max-width: 768px) {
   .spending-pattern-chart {
     min-height: 130px;
-    max-height: 450px;
+    max-height: 500px;
     padding: 16px;
   }
 
@@ -547,6 +564,7 @@ canvas {
 
   canvas {
     max-height: 250px;
+    margin-top: 40px;
   }
 
   .doughnut-legend {
@@ -563,41 +581,86 @@ canvas {
 /* 작은 모바일 화면 */
 @media (max-width: 480px) {
   .spending-pattern-chart {
-    min-height: 300px;
-    max-height: 400px;
-    padding: 12px;
+    max-height: 350px;
+    min-height: 200px;
+    padding: 10px;
   }
 
   .chart-controls {
     top: 1px;
     right: 1px;
-    gap: 8px;
+    gap: 6px;
   }
 
   .chart-type-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
   }
 
   canvas {
-    max-height: 200px;
+    max-height: 180px;
+    margin-top: 35px;
   }
 
   .doughnut-legend {
-    margin-top: 10px;
-    padding: 10px;
-    gap: 5px;
+    margin-top: 8px;
+    padding: 8px;
+    gap: 4px;
   }
 
   .legend-item {
-    font-size: 11px;
-    gap: 8px;
+    font-size: 10px;
+    gap: 6px;
   }
 
   .legend-color {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* 매우 작은 모바일 화면 (iPhone SE 등) */
+@media (max-width: 375px) {
+  .spending-pattern-chart {
+    max-height: 300px;
+    min-height: 180px;
+    padding: 8px;
+  }
+
+  .chart-controls {
+    gap: 4px;
+  }
+
+  .chart-type-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  canvas {
+    max-height: 160px;
+    margin-top: 30px;
+  }
+
+  .doughnut-legend {
+    margin-top: 6px;
+    padding: 6px;
+    gap: 3px;
+  }
+
+  .legend-item {
+    font-size: 9px;
+    gap: 5px;
+  }
+
+  .legend-color {
+    width: 7px;
+    height: 7px;
+  }
+
+  .legend-percentage {
+    min-width: 35px;
   }
 }
 </style>
