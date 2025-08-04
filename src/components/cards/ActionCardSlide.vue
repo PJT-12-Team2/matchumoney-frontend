@@ -1,46 +1,54 @@
 <template>
-  <div class="action-card-container">
-    <!-- 카드 -->
-    <div class="action-card">
-      <!-- 카드 모양 아이콘 -->
-      <div class="card-icon">
-        <div class="card-shape">
-          <div class="card-chip"></div>
-          <div class="card-lines">
-            <div class="card-line"></div>
-            <div class="card-line"></div>
+  <BaseCardGreen class="action-card-container">
+    <template #content>
+      <div class="action-card">
+        <!-- 카드 모양 아이콘 -->
+        <div class="card-icon">
+          <div class="card-shape">
+            <div class="card-chip"></div>
+            <div class="card-lines">
+              <div class="card-line"></div>
+              <div class="card-line"></div>
+            </div>
+            <div class="card-number">**** ****</div>
           </div>
-          <div class="card-number">**** ****</div>
         </div>
-      </div>
 
-      <div class="card-content">
-        <div class="card-title">
-          <template v-if="hasCards">카드 다시 불러오기</template>
-          <template v-else>내 카드 등록하기</template>
+        <div class="card-content">
+          <h4 class="card-title">
+            <template v-if="hasCards">카드 다시 불러오기</template>
+            <template v-else>내 카드 등록하기</template>
+          </h4>
+          <p class="card-info">
+            <template v-if="hasCards">
+              카드 정보를 다시 불러와<br />
+              최신 상태로 확인해보세요!
+            </template>
+            <template v-else>
+              KB카드 마이데이터를 연동하여<br />
+              카드 정보를 가져와보세요!
+            </template>
+          </p>
         </div>
-        <div class="card-info">
-          <template v-if="hasCards">
-            카드 정보를 다시 불러와<br />
-            최신 상태로 확인해보세요!
-          </template>
-          <template v-else>
-            KB카드 마이데이터를 연동하여<br />
-            카드 정보를 가져와보세요!
-          </template>
-        </div>
-      </div>
 
-      <!-- 액션 버튼 -->
-      <div class="action-button" @click.stop="handleAction">
-        <i v-if="hasCards" class="bi bi-arrow-clockwise"></i>
-        <i v-else class="bi bi-plus-circle"></i>
+        <!-- 액션 버튼 -->
+        <BaseButton
+          :variant="hasCards ? 'outline' : 'primary'"
+          class="action-button"
+          @click="handleAction"
+        >
+          <i v-if="hasCards" class="bi bi-arrow-clockwise"></i>
+          <i v-else class="bi bi-plus-circle"></i>
+        </BaseButton>
       </div>
-    </div>
-  </div>
+    </template>
+  </BaseCardGreen>
 </template>
 
 <script setup>
+import BaseCardGreen from "@/components/base/BaseCardGreen.vue";
+import BaseButton from "@/components/base/BaseButton.vue";
+
 const props = defineProps({
   hasCards: {
     type: Boolean,
@@ -64,50 +72,32 @@ const handleAction = () => {
 .action-card-container {
   width: 100%;
   height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .action-card {
   width: 100%;
-  height: 100%;
+  height: auto;
   min-height: 200px;
-  background: var(--color-primary);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-xl);
-  border-radius: var(--spacing-lg);
-  box-shadow: var(--shadow-card);
-  cursor: pointer;
+  justify-content: center;
+  padding: var(--spacing-lg);
   transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
   position: relative;
   overflow: hidden;
+  gap: var(--spacing-3xl);
 }
 
-.action-card:hover {
+.action-card-container:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.action-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  pointer-events: none;
 }
 
 /* 카드 아이콘 */
 .card-icon {
   flex-shrink: 0;
-  margin-right: var(--spacing-lg);
 }
 
 .card-shape {
@@ -188,27 +178,22 @@ const handleAction = () => {
 /* 액션 버튼 */
 .action-button {
   flex-shrink: 0;
-  width: 50px;
-  height: 50px;
-  background: var(--color-light);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0 !important;
 }
 
 .action-button:hover {
-  background: var(--color-white);
   transform: scale(1.05);
 }
 
 .action-button i {
   font-size: var(--font-size-xl);
-  color: var(--color-black); /* 검정 계열 */
-  text-shadow: none; /* 그림자 제거 */
 }
 
 /* 태블릿 */
@@ -216,10 +201,16 @@ const handleAction = () => {
   .action-card {
     min-height: 180px;
     padding: var(--spacing-lg);
+    flex-direction: column;
+    gap: var(--spacing-lg);
   }
 
   .card-icon {
-    margin-right: var(--spacing-md);
+    margin-right: 0;
+  }
+
+  .card-content {
+    text-align: center;
   }
 
   .card-shape {
