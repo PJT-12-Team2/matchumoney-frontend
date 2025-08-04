@@ -226,12 +226,7 @@ const handleConnectSuccess = () => {
 
 // 모달 열기
 const openConnectModal = () => {
-  console.log('🔧 계좌 연결 모달 열기:', {
-    effectiveUserId: effectiveUserId.value,
-  });
-
   if (!effectiveUserId.value) {
-    console.error('❌ 사용자 ID가 없습니다');
     alert('로그인이 필요합니다.');
     return;
   }
@@ -240,32 +235,21 @@ const openConnectModal = () => {
 
 // 계좌 연결 처리 (적금 API 사용)
 const handleConnect = async (loginData) => {
-  console.log('🔧 handleConnect 함수 시작 (적금 API 사용):', loginData);
-
   if (!effectiveUserId.value) {
     alert('사용자 정보를 찾을 수 없습니다.');
     return;
   }
 
-  console.log('🔧 로딩 시작 - isConnecting을 true로 설정');
   isConnecting.value = true;
 
   try {
-    console.log('계좌 연결 시도:', {
-      userId: effectiveUserId.value,
-      loginData: { id: loginData.id, password: '***' },
-    });
-
     // 🔧 개발 환경에서 특정 테스트 계정은 성공 시뮬레이션
     if (
       import.meta.env.DEV &&
       loginData.id === 'testuser' &&
       loginData.password === '1234'
     ) {
-      console.log('🔧 개발 환경: 계좌 연결 성공 시뮬레이션');
-      console.log('🔧 2초 대기 시작...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log('🔧 2초 대기 완료');
       alert('계좌 연결 성공! (개발 테스트)');
       showConnectModal.value = false;
       emit('connect-success');
@@ -273,28 +257,22 @@ const handleConnect = async (loginData) => {
     }
 
     // 🔄 적금 API 사용 (syncAccounts)
-    console.log('🔧 적금 API 호출 시작 (savingApi.syncAccounts)');
     const response = await savingApi.syncAccounts({
       id: loginData.id,
       password: loginData.password,
       birthDate: loginData.birthDate,
     });
 
-    console.log('계좌 연결 응답:', response);
     alert('계좌 연결 성공!');
     showConnectModal.value = false;
     emit('connect-success');
   } catch (error) {
-    console.error('계좌 연결 실패:', error);
-
     // 적금 스타일 에러 처리
     const errorList = error.response?.data?.errors || [];
     let errorMessage = '';
 
     for (const errorItem of errorList) {
-      console.log(errorItem.code);
       if (errorItem.code === 'CF-12855') {
-        console.log('생일 입력 필요!!');
         requireBirth.value = true;
       }
       errorMessage += (errorItem.message || '') + '\n';
@@ -315,7 +293,6 @@ const handleConnect = async (loginData) => {
 
     alert('계좌 연결 실패\n' + errorMessage);
   } finally {
-    console.log('🔧 로딩 종료 - isConnecting을 false로 설정');
     isConnecting.value = false;
   }
 };

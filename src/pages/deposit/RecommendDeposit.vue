@@ -90,38 +90,31 @@ const parseJwt = (token) => {
     const payload = JSON.parse(atob(token.split('.')[1]));
     return payload;
   } catch (e) {
-    // console.error('JWT 파싱 실패:', e);
     return null;
   }
 };
 
 // 토큰에서 userId 추출 (디버깅 강화)
 const getUserIdFromToken = () => {
-  // console.log('🔍 getUserIdFromToken 함수 실행');
-
   try {
     const token =
       authStore.accessToken ||
       (typeof window !== 'undefined'
         ? localStorage.getItem('accessToken')
         : null);
-    // console.log('🔍 토큰 존재:', !!token);
 
     if (token) {
       const payload = parseJwt(token);
-      // console.log('🔍 토큰 payload:', payload);
 
       // userId 필드 확인
       const userId = payload?.userId;
-      // console.log('🔍 추출된 userId:', userId, typeof userId);
 
       return userId;
     }
   } catch (error) {
-    // console.error('❌ 토큰에서 userId 추출 실패:', error);
+    // 에러 처리는 silent로
   }
 
-  // console.log('🔍 userId 추출 실패 - null 반환');
   return null;
 };
 
@@ -130,12 +123,6 @@ const effectiveUserId = computed(() => {
   const propUserId = props.userId;
   const storeUserId = authStore.userId;
   const tokenUserId = getUserIdFromToken();
-
-  // console.log('🔍 effectiveUserId 계산:', {
-  //   propUserId,
-  //   storeUserId,
-  //   tokenUserId,
-  // });
 
   // null, undefined, 'undefined' 문자열 모두 필터링
   const isValidValue = (value) => {
@@ -156,27 +143,12 @@ const effectiveUserId = computed(() => {
     result = String(tokenUserId); // 문자열로 변환
   }
 
-  // console.log('🔍 effectiveUserId 결과:', result);
-
   return result;
 });
 
 // 사용자 정보 표시용 (디버깅 강화)
 const userDisplayInfo = computed(() => {
-  // console.log('🔍 userDisplayInfo computed 실행');
-
   const tokenUserId = getUserIdFromToken();
-  // console.log('🔍 tokenUserId:', tokenUserId);
-  // console.log(
-  //   '🔍 authStore.userId:',
-  //   authStore.userId,
-  //   typeof authStore.userId
-  // );
-  // console.log(
-  //   '🔍 authStore.nickname:',
-  //   authStore.nickname,
-  //   typeof authStore.nickname
-  // );
 
   // localStorage 안전하게 접근
   const getLocalStorageItem = (key) => {
@@ -212,16 +184,12 @@ const userDisplayInfo = computed(() => {
     ? getLocalStorageItem('nickname')
     : '게스트';
 
-  // console.log('최종 userId:', userId, typeof userId);
-  // console.log('최종 nickname:', nickname, typeof nickname);
-
   const result = {
     userId: String(userId), // 문자열로 변환
     nickname: String(nickname), // 문자열로 변환
     hasToken: !!authStore.accessToken,
   };
 
-  // console.log('🔍 userDisplayInfo 결과:', result);
   return result;
 });
 
@@ -270,7 +238,6 @@ const getBalance = () => {
 // 계좌 정보 가져오기
 const fetchAccounts = async () => {
   if (!effectiveUserId.value) {
-    console.warn('사용자 ID가 없습니다.');
     accountsLoading.value = false;
     return;
   }
@@ -279,12 +246,8 @@ const fetchAccounts = async () => {
   error.value = null;
 
   try {
-    console.log(`사용자 ${effectiveUserId.value}의 계좌 정보 조회 중...`);
-
     const data = await depositApi.getUserAccounts(effectiveUserId.value);
     accounts.value = data;
-
-    console.log(`${data.length}개의 계좌를 찾았습니다.`);
 
     // 계좌가 있는 경우: 첫 번째 계좌로 슬라이드 초기화하고 상품 검색
     if (data.length > 0) {
@@ -295,15 +258,11 @@ const fetchAccounts = async () => {
       await searchKBProducts();
     }
   } catch (err) {
-    console.error('계좌 조회 실패:', err);
-
     // 404 오류 (계좌 없음)
     if (err.message && err.message.includes('404')) {
-      console.log('연결된 계좌가 없습니다. KB국민은행 상품을 표시합니다.');
       accounts.value = [];
       await searchKBProducts();
     } else if (err.message && err.message.includes('500')) {
-      console.error('서버 오류가 발생했습니다.');
       accounts.value = [];
       error.value = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
     } else {
@@ -322,22 +281,13 @@ const searchKBProducts = async () => {
   loading.value = true;
 
   try {
-    console.log('KB국민은행 상품 조회 중...');
-
     const kbProducts = await depositApi.getKBProducts();
 
     hasSearched.value = true;
     products.value = kbProducts;
-
-    console.log('KB국민은행 상품 조회 성공:', kbProducts);
-    console.log(`국민은행 상품 ${kbProducts.length}개 조회`);
   } catch (error) {
-    console.error('KB국민은행 상품 검색 오류:', error);
-
     hasSearched.value = true;
     products.value = [];
-
-    console.warn('상품 조회 API를 사용할 수 없습니다. 빈 결과를 표시합니다.');
   } finally {
     loading.value = false;
   }
@@ -354,7 +304,6 @@ const refreshAccounts = async () => {
 
 // 계좌 연결 성공 핸들러
 const handleConnectSuccess = () => {
-  console.log('계좌 연결 성공! 계좌 목록을 새로고침합니다.');
   refreshAccounts();
 };
 
@@ -372,7 +321,6 @@ const handleSlideChange = async (index) => {
   if (cachedData) {
     hasSearched.value = true;
     products.value = cachedData.products;
-    // console.log(`캐시된 결과 로드: ${cachedData.products.length}개 상품`);
   } else {
     await searchProducts();
   }
@@ -389,15 +337,11 @@ const saveCachedResults = (accountData, searchResults) => {
       balance: accountData.formattedBalance,
     },
   };
-  // console.log(
-  //   `검색 결과 캐시 저장: ${accountKey}, ${searchResults.length}개 상품`
-  // );
 };
 
 // 상품 검색
 const searchProducts = async () => {
   if (!effectiveUserId.value) {
-    // console.error('사용자 ID가 없습니다.');
     return;
   }
 
@@ -413,7 +357,6 @@ const searchProducts = async () => {
     const currentAccountData = currentAccount.value;
 
     if (!currentAccountData) {
-      // console.error('선택된 계좌가 없습니다.');
       return;
     }
 
@@ -422,7 +365,6 @@ const searchProducts = async () => {
     const cachedData = searchCache.value[accountKey];
 
     if (cachedData) {
-      // console.log('캐시된 결과 사용:', cachedData.products.length, '개 상품');
       hasSearched.value = true;
       products.value = cachedData.products;
       loading.value = false;
@@ -439,8 +381,6 @@ const searchProducts = async () => {
       accountNumber: currentAccountData.accountNo,
     };
 
-    // console.log('검색 요청 데이터:', requestData);
-
     const data = await depositApi.getProductsByBalance(requestData);
 
     hasSearched.value = true;
@@ -448,25 +388,14 @@ const searchProducts = async () => {
 
     // 캐시에 저장
     saveCachedResults(currentAccountData, data);
-
-    console.log('추천 상품 조회 성공:', data);
   } catch (error) {
-    console.error('상품 검색 오류:', error);
-
     // 500 오류인 경우 대안으로 모든 상품 조회
     if (error.message && error.message.includes('500')) {
-      console.warn('잔액 기반 추천 API 오류, 모든 상품으로 대체...');
       try {
         const allProducts = await depositApi.getAllProducts();
         hasSearched.value = true;
         products.value = allProducts;
-        console.log(
-          '모든 상품 조회로 대체 성공:',
-          allProducts.length,
-          '개 상품'
-        );
       } catch (fallbackError) {
-        console.error('대체 API도 실패:', fallbackError);
         hasSearched.value = true;
         products.value = [];
       }
@@ -481,16 +410,14 @@ const searchProducts = async () => {
 
 // 상품 선택 핸들러
 const selectProduct = (product) => {
-  console.log('선택된 상품:', product);
+  // 상품 선택 로직
 };
 
 // 로그인 상태 변경 감지
 watch(isLoggedIn, async (newValue, oldValue) => {
   if (newValue && !oldValue) {
-    console.log('로그인 감지됨. 계좌 정보를 조회합니다.');
     await refreshAccounts();
   } else if (!newValue && oldValue) {
-    console.log('로그아웃 감지됨. 데이터를 초기화합니다.');
     accounts.value = [];
     products.value = [];
     hasSearched.value = false;
@@ -505,7 +432,6 @@ watch(
   effectiveUserId,
   async (newUserId, oldUserId) => {
     if (newUserId && newUserId !== oldUserId) {
-      console.log(`사용자 ID 변경: ${oldUserId} -> ${newUserId}`);
       await refreshAccounts();
     }
   },
@@ -517,17 +443,7 @@ onMounted(async () => {
   // 토큰이 제대로 로드될 때까지 잠시 대기
   await new Promise((resolve) => setTimeout(resolve, 200));
 
-  console.log('최종 상태 체크:', {
-    isLoggedIn: isLoggedIn.value,
-    effectiveUserId: effectiveUserId.value,
-    token:
-      typeof window !== 'undefined' && localStorage.getItem('accessToken')
-        ? '존재'
-        : '없음',
-  });
-
   if (isLoggedIn.value && effectiveUserId.value) {
-    console.log('✅ 조건 만족: 계좌 정보 조회 시작');
     await fetchAccounts();
   } else {
     accountsLoading.value = false;
