@@ -16,11 +16,12 @@
       </div>
     </div>
 
-    <!-- 계좌 정보가 없을 때 - 연결 카드만 표시 -->
+    <!-- 계좌 정보가 없을 때 - 기존 연결 카드 + 모달 기능 추가 -->
     <div v-else-if="accounts.length === 0" class="no-accounts">
       <DepositConnectCard
         :user-id="userId"
         @connect-success="handleConnectSuccess"
+        @click="openConnectModal"
       />
     </div>
 
@@ -61,18 +62,16 @@
                   {{ account.accountNo || '계좌번호 없음' }}
                 </div>
               </div>
-              <div class="dropdown-arrow">
-                <h4>▶</h4>
-              </div>
             </div>
           </div>
 
-          <!-- 🆕 마지막 카드: 계좌 추가 연결 카드 -->
+          <!-- 🆕 마지막 카드: 계좌 추가 연결 카드 + 모달 기능 -->
           <div
             class="account-card add-account-card"
             :class="{ swiping: isSwiping }"
+            @click="openConnectModal"
           >
-            <div class="add-account-content" @click="openConnectModal">
+            <div class="add-account-content">
               <div class="add-account-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -111,19 +110,31 @@
       </div>
     </div>
 
-    <!-- 🆕 계좌 연결 모달 -->
+    <!-- 적금 스타일 모달 추가 (기능만) -->
     <SavingConnectModal
       v-model:visible="showConnectModal"
       v-model:loading="isConnecting"
       @submit="handleConnect"
+      :requireBirthdate="requireBirth"
     />
 
-    <!-- 🆕 계좌 재연결 모달 -->
-    <SavingConnectModal
-      v-model:visible="showReconnectModal"
-      v-model:loading="isReconnecting"
-      @submit="handleReconnect"
-    />
+    <!-- 🔧 로딩 디버깅용 - 개발 시에만 표시 -->
+    <div
+      v-if="isConnecting"
+      style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 9999;
+      "
+    >
+      연결 중입니다... (디버그)
+    </div>
   </div>
 </template>
 
@@ -132,7 +143,7 @@ import { ref, computed, defineProps, defineEmits } from 'vue';
 import SavingConnectModal from '@/components/savings/SavingConnectModal.vue';
 import DepositConnectCard from './DepositConnectCard.vue';
 import { useAuthStore } from '@/stores/auth';
-import depositsApi from '@/api/deposit.js';
+import savingApi from '@/api/savings.js'; // 🔄 savings.js API 사용
 
 // Props
 const props = defineProps({
@@ -170,16 +181,13 @@ const startX = ref(0);
 const currentX = ref(0);
 const isDragging = ref(false);
 const threshold = 50;
-
-// 🆕 연결 관련
 const showConnectModal = ref(false);
+
+// 적금 스타일 연결 관련 (기능만)
 const isConnecting = ref(false);
+const requireBirth = ref(false);
 
-// 🆕 재연결 관련
-const showReconnectModal = ref(false);
-const isReconnecting = ref(false);
-
-// 🆕 전체 슬라이드 수 (계좌 + 추가 카드)
+// 전체 슬라이드 수 (계좌 + 추가 카드)
 const totalSlides = computed(() => {
   return props.accounts.length > 0 ? props.accounts.length + 1 : 0;
 });
@@ -213,12 +221,10 @@ const handleConnectSuccess = () => {
   emit('refresh'); // 계좌 목록 새로고침
 };
 
-// 🆕 계좌 추가 연결 모달 열기
+// 모달 열기
 const openConnectModal = () => {
-  console.log('🔧 계좌 추가 연결 모달 열기:', {
+  console.log('🔧 계좌 연결 모달 열기:', {
     effectiveUserId: effectiveUserId.value,
-    authStoreUserId: authStore.userId,
-    propsUserId: props.userId,
   });
 
   if (!effectiveUserId.value) {
@@ -229,17 +235,20 @@ const openConnectModal = () => {
   showConnectModal.value = true;
 };
 
-// 🆕 계좌 연결 처리
+// 계좌 연결 처리 (적금 API 사용)
 const handleConnect = async (loginData) => {
+  console.log('🔧 handleConnect 함수 시작 (적금 API 사용):', loginData);
+
   if (!effectiveUserId.value) {
     alert('사용자 정보를 찾을 수 없습니다.');
     return;
   }
 
+  console.log('🔧 로딩 시작 - isConnecting을 true로 설정');
   isConnecting.value = true;
 
   try {
-    console.log('계좌 추가 연결 시도:', {
+    console.log('계좌 연결 시도:', {
       userId: effectiveUserId.value,
       loginData: { id: loginData.id, password: '***' },
     });
@@ -250,75 +259,61 @@ const handleConnect = async (loginData) => {
       loginData.id === 'testuser' &&
       loginData.password === '1234'
     ) {
-      console.log('🔧 개발 환경: 계좌 추가 연결 성공 시뮬레이션');
-
-      // 성공 시뮬레이션용 딜레이
+      console.log('🔧 개발 환경: 계좌 연결 성공 시뮬레이션');
+      console.log('🔧 2초 대기 시작...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      alert('계좌 추가 연결 성공! (개발 테스트)');
+      console.log('🔧 2초 대기 완료');
+      alert('계좌 연결 성공! (개발 테스트)');
       showConnectModal.value = false;
       emit('connect-success');
       return;
     }
 
-    // 실제 API 호출
-    const response = await depositsApi.connectAccount({
-      userId: effectiveUserId.value,
-      bankLoginId: loginData.id,
-      bankPassword: loginData.password,
+    // 🔄 적금 API 사용 (syncAccounts)
+    console.log('🔧 적금 API 호출 시작 (savingApi.syncAccounts)');
+    const response = await savingApi.syncAccounts({
+      id: loginData.id,
+      password: loginData.password,
+      birthDate: loginData.birthDate,
     });
 
-    console.log('계좌 추가 연결 응답:', response);
-
-    alert('계좌 추가 연결 성공!');
+    console.log('계좌 연결 응답:', response);
+    alert('계좌 연결 성공!');
     showConnectModal.value = false;
     emit('connect-success');
   } catch (error) {
-    console.error('계좌 추가 연결 실패:', error);
+    console.error('계좌 연결 실패:', error);
 
-    // 에러 타입별 메시지 처리
-    let errorMessage = '계좌 추가 연결에 실패했습니다.';
+    // 적금 스타일 에러 처리
+    const errorList = error.response?.data?.errors || [];
+    let errorMessage = '';
 
-    if (error.response?.status === 401) {
-      errorMessage = '은행 로그인 정보가 올바르지 않습니다.';
-    } else if (error.response?.status === 404) {
-      errorMessage = '해당 은행에서 계좌를 찾을 수 없습니다.';
-    } else if (error.response?.status === 500) {
-      errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-    } else if (error.code === 'NETWORK_ERROR') {
-      errorMessage = '네트워크 연결을 확인해주세요.';
-    } else if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
+    for (const errorItem of errorList) {
+      console.log(errorItem.code);
+      if (errorItem.code === 'CF-12855') {
+        console.log('생일 입력 필요!!');
+        requireBirth.value = true;
+      }
+      errorMessage += (errorItem.message || '') + '\n';
     }
 
-    alert(errorMessage);
+    // 기본 에러 메시지 처리
+    if (!errorMessage) {
+      if (error.response?.status === 401) {
+        errorMessage = '은행 로그인 정보가 올바르지 않습니다.';
+      } else if (error.response?.status === 404) {
+        errorMessage = '해당 은행에서 계좌를 찾을 수 없습니다.';
+      } else if (error.response?.status === 500) {
+        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      } else {
+        errorMessage = '계좌 연결에 실패했습니다.';
+      }
+    }
+
+    alert('계좌 연결 실패\n' + errorMessage);
   } finally {
+    console.log('🔧 로딩 종료 - isConnecting을 false로 설정');
     isConnecting.value = false;
-  }
-};
-
-// 🆕 재연결 관련 함수들
-const openReconnectModal = () => {
-  showReconnectModal.value = true;
-};
-
-const handleReconnect = async (loginData) => {
-  isReconnecting.value = true;
-
-  try {
-    console.log('계좌 재연결 시도:', loginData);
-
-    // 임시 딜레이 (실제로는 API 호출)
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    alert('계좌 재연결 성공!');
-    showReconnectModal.value = false;
-    emit('refresh'); // 계좌 목록 새로고침
-  } catch (error) {
-    console.error('계좌 재연결 실패:', error);
-    alert('계좌 재연결에 실패했습니다. 다시 시도해주세요.');
-  } finally {
-    isReconnecting.value = false;
   }
 };
 
@@ -406,7 +401,7 @@ const handleMouseUp = () => {
   min-width: 100%;
   background-color: var(--color-primary);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  padding: 40px 20px 20px 40px;
+  padding: 20px 20px 0px 40px;
   border-radius: 20px;
   position: relative;
   cursor: pointer;
@@ -425,7 +420,9 @@ const handleMouseUp = () => {
 }
 
 .account-details {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   justify-content: space-between;
   align-items: flex-end;
 }
@@ -448,12 +445,6 @@ const handleMouseUp = () => {
 
 .account-number {
   color: var(--color-title);
-}
-
-.dropdown-arrow {
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--color-dark);
 }
 
 /* ===== 🆕 계좌 추가 연결 카드 ===== */
@@ -514,35 +505,6 @@ const handleMouseUp = () => {
   font-weight: 500;
   color: var(--color-accent);
   line-height: 1.4;
-}
-
-/* ===== 🆕 재연결 버튼 ===== */
-.reconnect-section {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
-}
-
-.reconnect-button {
-  background: rgba(96, 153, 102, 0.9);
-  color: white;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.reconnect-button:hover {
-  background: var(--color-dark);
-  transform: scale(1.1);
 }
 
 /* ===== 로딩/에러/빈 상태 ===== */
@@ -703,12 +665,6 @@ const handleMouseUp = () => {
 
   .retry-button {
     padding: 0.6rem 1.2rem;
-    font-size: 14px;
-  }
-
-  .reconnect-button {
-    width: 35px;
-    height: 35px;
     font-size: 14px;
   }
 }
