@@ -1,31 +1,39 @@
 <template>
-  <Swiper
-    :slides-per-view="1"
-    :space-between="16"
-    :loop="false"
-    class="saving-swiper"
-    :pagination="{ clickable: true }"
-    @slideChange="onSlideChange"
-    ref="swiperRef"
-  >
-    <SwiperSlide v-for="(item, index) in savingList" :key="index">
-      <SavingMyProductCard :saving="item" />
-    </SwiperSlide>
-    <SwiperSlide>
-      <SavingReloadCard
-        :listLength="savingList.length"
-        v-model:loading="isLoading"
-      />
-    </SwiperSlide>
-  </Swiper>
+  <div class="saving-swiper-container">
+    <Swiper
+      :modules="[Pagination]"
+      :slides-per-view="1"
+      :space-between="16"
+      :loop="false"
+      class="saving-swiper"
+      :pagination="{ clickable: true, el: '.custom-pagination' }"
+      @slideChange="onSlideChange"
+      ref="swiperRef"
+    >
+      <SwiperSlide v-for="(item, index) in savingList" :key="index">
+        <SavingMyProductCard :saving="item" />
+      </SwiperSlide>
+      <SwiperSlide>
+        <SavingReloadCard
+          :listLength="savingList.length"
+          v-model:loading="isLoading"
+        />
+      </SwiperSlide>
+    </Swiper>
+
+    <!-- ✅ Swiper 바깥쪽에 고정된 pagination DOM -->
+    <div class="custom-pagination"></div>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, defineEmits, defineProps, computed } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Pagination } from 'swiper/modules';
+
 import 'swiper/css';
 import 'swiper/css/pagination';
-import 'swiper/css/navigation';
+
 import SavingMyProductCard from './SavingMyProductCard.vue';
 import savingApi from '@/api/savings';
 import SavingReloadCard from './SavingReloadCard.vue';
@@ -38,28 +46,25 @@ const props = defineProps({
     default: false,
   },
 });
-// 양방향 바인딩을 위한 computed
+
 const isLoading = computed({
   get: () => props.loading,
   set: (value) => emit('update:loading', value),
 });
 
+const savingList = ref([]);
+
 const onSlideChange = (swiper) => {
   const currentIndex = swiper.activeIndex;
-
-  // 불러오기 카드인 경우: 마지막 인덱스는 emit 생략
   if (currentIndex === savingList.value.length) {
     emit('select', '-1');
     return;
   }
-
   const selected = savingList.value[currentIndex];
   if (selected) {
-    // console.log('id 변경: ' + selected.id);
     emit('select', selected.id);
   }
 };
-const savingList = ref([]);
 
 onMounted(async () => {
   isLoading.value = true;
@@ -78,69 +83,59 @@ onMounted(async () => {
   }
 });
 </script>
+
 <style scoped>
-.saving-card {
-  background-color: var(--color-primary);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: var(--spacing-lg) var(--spacing-xl);
-  border-radius: var(--spacing-lg);
-  gap: var(--spacing-md);
-  box-shadow: var(--shadow-card);
-}
-
-.product-logo {
-  width: 24%;
-  max-width: 200px;
-  max-height: 100px;
-}
-
-.card-content {
-}
-
-.card-title {
-  font-weight: bold;
-  font-size: var(--font-size-2xl);
-  color: var(--color-dark);
-  margin-bottom: var(--spacing-md);
-}
-
-.card-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  font-size: var(--font-size-base);
-  color: var(--color-title);
-}
-
-.date-section {
+.saving-swiper-container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  align-items: center;
+  width: 100%;
 }
 
-.rate-section {
+.custom-pagination {
+  margin-top: 1.2rem;
   display: flex;
-  align-items: end;
-  gap: var(--spacing-sm);
+  justify-content: center;
 }
 
-.info-row {
+.custom-pagination .swiper-pagination-bullet {
+  background: #a12c2c;
+  opacity: 0.5;
+  width: 8px;
+  height: 8px;
+  margin: 0 3px;
+  border-radius: 50%;
+  transition: background 0.3s;
+}
+
+.saving-swiper-container {
   display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%; /* 카드 최대 너비 */
+  overflow: hidden;
 }
 
-.value,
-.label {
-  color: var(--color-title);
-  font-weight: bold;
+.saving-swiper {
+  width: 100%;
+  overflow: hidden;
 }
 
-.rate {
-  color: var(--color-accent);
-  font-weight: bold;
-  font-size: var(--font-size-xl);
+::v-deep(.swiper-slide) {
+  display: flex;
+  justify-content: center;
+}
+
+::v-deep(.swiper-slide > *) {
+  width: 100%;
+  max-width: 100%;
+}
+::v-deep(.custom-pagination .swiper-pagination-bullet) {
+  background: #d5d5d5;
+  opacity: 1;
+}
+::v-deep(.swiper-pagination-bullet-active) {
+  background: var(--color-accent) !important;
 }
 </style>

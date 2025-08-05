@@ -1,5 +1,5 @@
 export const ProductType = {
   SAVING: 'SAVING',
-  LOAN: 'LOAN',
+  DEPOSIT: 'DEPOSIT',
   CARD: 'CARD',
 };

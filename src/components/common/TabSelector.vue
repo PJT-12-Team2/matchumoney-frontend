@@ -2,31 +2,45 @@
   <div class="tab-container">
     <div
       v-for="tab in tabs"
-      :key="tab"
-      :class="['tab-item', { active: selectedTab === tab }]"
-      @click="selectTab(tab)"
+      :key="tab.value"
+      :class="['tab-item', { active: selectedTab === tab.value }]"
+      @click="selectTab(tab.value)"
     >
-      {{ tab }}
+      {{ tab.label }}
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'TabSelector',
-  data() {
-    return {
-      tabs: ['예금', '적금', '카드'],
-      selectedTab: tabs[0],
-    };
-  },
-  methods: {
-    selectTab(tab) {
-      this.selectedTab = tab;
-      this.$emit('change-tab', tab); // 부모에 알릴 수 있음
-    },
-  },
-};
+<script setup>
+import { ref, watch } from 'vue';
+
+const props = defineProps({
+  initialTab: { type: String, default: 'DEPOSIT' },
+});
+
+const emit = defineEmits(['change-tab']);
+
+const tabs = [
+  { label: '예금', value: 'DEPOSIT' },
+  { label: '적금', value: 'SAVING' },
+  { label: '카드', value: 'CARD' },
+];
+
+// 부모에서 넘긴 값으로 초기화
+const selectedTab = ref(props.initialTab);
+
+// 부모 값이 바뀌면 반영
+watch(
+  () => props.initialTab,
+  (val) => {
+    selectedTab.value = val;
+  }
+);
+
+function selectTab(tabValue) {
+  selectedTab.value = tabValue;
+  emit('change-tab', tabValue);
+}
 </script>
 
 <style scoped>
@@ -41,7 +55,6 @@ export default {
   transition: 0.3s ease-in-out;
   flex: 1;
   text-align: center;
-  padding: 2% 0;
   padding: clamp(4px, 2%, 12px) 0;
   border-radius: 2rem;
   color: var(--color-white);
@@ -53,7 +66,7 @@ export default {
 
 .tab-item.active {
   background-color: var(--color-white);
-  color: var(--color-accent); /* 전체 배경 */
+  color: var(--color-accent);
 }
 
 .tab-item:hover {

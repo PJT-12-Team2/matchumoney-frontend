@@ -53,6 +53,13 @@
       </BaseCardGrey>
       <BaseCardGrey>
         <template #title>보유 카드</template>
+        <template #content>
+          <CardSlider
+            :cards="cards"
+            @cardChange="handleCardChange"
+            @register="showSyncModal = true"
+            @update="handleCardUpdate" />
+        </template>
       </BaseCardGrey>
     </div>
 
@@ -105,15 +112,28 @@
 </template>
 
 <script setup>
-const getPersonaImage = (fileName) => {
-  if (!fileName) return "";
-  return new URL(`../assets/character_images/${fileName}`, import.meta.url).href;
-};
-
+import CardSlider from "@/components/cards/CardSlider.vue";
 import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
 import { ref, computed, onMounted } from "vue";
 import userApi from "@/api/user";
+import cardsApi from "@/api/cards";
 import { useRouter } from "vue-router";
+const cards = ref([]);
+const showSyncModal = ref(false);
+
+const handleCardChange = (card) => {
+  console.log("카드 선택됨:", card);
+};
+const handleCardUpdate = () => {
+  console.log("카드 업데이트 요청");
+};
+
+const userId = ref(null); // or use an existing user ID value
+
+const fetchCards = async () => {
+  const res = await cardsApi.getUserCards(userId.value);
+  cards.value = res.result || [];
+};
 const router = useRouter();
 const user = ref({});
 const exp = ref(0); // default exp
@@ -154,6 +174,9 @@ onMounted(async () => {
     favoriteCards.value = data.favoriteCards;
 
     updateProducts();
+    // fetch userId for cards API if not already set
+    userId.value = data.userId ?? data.id ?? null;
+    fetchCards();
   } catch (error) {
     console.error("❌ 마이페이지 정보 조회 실패", error);
   }

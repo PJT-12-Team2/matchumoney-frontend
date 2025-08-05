@@ -12,23 +12,12 @@
 
         <!-- 이메일 -->
         <div class="login-row">
-          <BaseInput
-            v-model="email"
-            label="이메일"
-            id="login-email"
-            placeholder="이메일"
-          />
+          <BaseInput v-model="email" label="이메일" id="login-email" placeholder="이메일" />
         </div>
 
         <!-- 비밀번호 -->
         <div class="login-row">
-          <BaseInput
-            v-model="password"
-            label="비밀번호"
-            id="login-password"
-            type="password"
-            placeholder="비밀번호"
-          />
+          <BaseInput v-model="password" label="비밀번호" id="login-password" type="password" placeholder="비밀번호" />
         </div>
 
         <!-- 로그인 옵션 -->
@@ -50,10 +39,7 @@
 
         <!-- 카카오 로그인 버튼 -->
         <button class="kakao-btn" @click="handleKakaoLogin">
-          <img
-            src="@/assets/kakao_login_medium_wide.png"
-            alt="카카오계정으로 로그인"
-          />
+          <img src="@/assets/kakao_login_medium_wide.png" alt="카카오계정으로 로그인" />
         </button>
 
         <!-- 회원가입 링크 -->
@@ -109,10 +95,14 @@ const handleLogin = async () => {
     });
 
     alert(`${tokenDto.nickname}님 환영합니다!`);
-    router.push("/");
+    if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
+      router.push("/persona/start");
+    } else {
+      router.push("/");
+    }
   } catch (err) {
     console.error("❌ 로그인 실패:", err);
-    
+
     if (err.response?.status === 401) {
       alert("이메일 또는 비밀번호가 올바르지 않습니다.");
     } else if (err.response?.status === 403) {
@@ -120,9 +110,7 @@ const handleLogin = async () => {
     } else if (err.response?.status >= 500) {
       alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     } else {
-      alert(
-        `로그인에 실패했습니다: ${err.response?.data?.message || err.message}`
-      );
+      alert(`로그인에 실패했습니다: ${err.response?.data?.message || err.message}`);
     }
   }
 };
@@ -288,5 +276,58 @@ const handleKakaoLogin = () => {
 }
 .signup-link a:hover {
   color: var(--text-link-hover);
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    width: 90%;
+    height: auto;
+    padding: 2rem;
+  }
+  .login-logo img {
+    height: 100px;
+  }
+  .login-btn {
+    width: 300px;
+    height: 45px;
+  }
+  .kakao-btn {
+    width: 100%;
+  }
+  .kakao-btn img {
+    height: 45px;
+  }
+  .login-container {
+    justify-content: center;
+    padding-bottom: 100px;
+  }
+  .login-title {
+    font-size: 2rem;
+  }
+  .login-label {
+    font-size: 10rem;
+  }
+  .login-btn {
+    font-size: 1.5rem;
+  }
+  .sns-divider {
+    font-size: 1.2rem;
+  }
+  .signup-link {
+    font-size: 1.2rem;
+  }
+  .login-options {
+    font-size: 1.2rem;
+  }
+
+  /* Scoped deep styles for BaseInput on mobile */
+  ::v-deep(.input-field) {
+    font-size: 1.2rem;
+    height: 48px;
+    padding: 0.75rem;
+  }
+  ::v-deep(.input-label) {
+    font-size: 1.2rem;
+  }
 }
 </style>
