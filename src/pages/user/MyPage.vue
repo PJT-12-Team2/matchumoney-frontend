@@ -54,18 +54,20 @@
       <BaseCardGrey>
         <template #title>보유 카드</template>
         <template #content>
-          <CardSlider
-            :cards="cards"
-            @cardChange="handleCardChange"
-            @register="showSyncModal = true"
-            @update="handleCardUpdate" />
+          <div class="card-slider-wrapper">
+            <CardSlider
+              :cards="cards"
+              @cardChange="handleCardChange"
+              @register="showSyncModal = true"
+              @update="handleCardUpdate" />
+          </div>
         </template>
       </BaseCardGrey>
     </div>
 
     <div class="right-grid">
       <BaseCardGrey style="height: 100%">
-        <template #title>내가 좋아하는 상품 (즐겨찾기)</template>
+        <template #title>즐겨찾기</template>
         <template #content>
           <div class="tabs">
             <button :class="{ active: selectedTab === '예금' }" @click="selectedTab = '예금'">예금</button>
@@ -86,13 +88,13 @@
                       v-if="selectedTab === '예금'"
                       src="@/assets/logo_dis.png"
                       alt="예금 이모지"
-                      style="width: 100px; height: 100px" />
+                      class="fallback-img" />
                     <img
                       v-else-if="selectedTab === '적금'"
                       src="@/assets/logo_dis.png"
                       alt="적금 이모지"
-                      style="width: 100px; height: 100px" />
-                    <img v-else src="@/assets/logo_dis.png" alt="카드 이모지" style="width: 100px; height: 100px" />
+                      class="fallback-img" />
+                    <img v-else src="@/assets/logo_dis.png" alt="카드 이모지" class="fallback-img" />
                   </template>
                   <template v-else>
                     <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
@@ -162,9 +164,6 @@ onMounted(async () => {
     const fileName = rawImagePath?.split("/").pop();
     const imageUrl = fileName ? new URL(`../../assets/character_images/${fileName}`, import.meta.url).href : "";
     personaImageUrl.value = imageUrl;
-
-    console.log("📷 백엔드 imageUrl:", rawImagePath);
-    console.log("📷 가공된 이미지 URL:", imageUrl);
 
     myPageInfo.value.persona = {
       quote: data.persona?.quote ?? "",
@@ -305,11 +304,11 @@ function selectProduct(product) {
   display: grid;
   grid-template-rows: 1fr 2fr;
   gap: var(--spacing-md);
-  height: 500px;
+  height: 100%;
 }
 .right-grid {
   grid-area: right;
-  height: 500px;
+  height: 100%;
 }
 
 .user-info {
@@ -428,7 +427,7 @@ function selectProduct(product) {
   background-color: var(--color-secondary-10);
   border-radius: 2rem;
   padding: 0.25rem;
-  margin: 0, var(--spacing-sm);
+  margin: 0 var(--spacing-md);
 }
 .tabs button {
   flex: 1;
@@ -449,7 +448,7 @@ function selectProduct(product) {
 .product-list {
   display: grid;
   grid-template-columns: 1fr;
-  grid-auto-rows: 10rem;
+  grid-auto-rows: 12.5rem;
   gap: var(--spacing-lg);
   padding: var(--spacing-md);
   height: auto;
@@ -472,41 +471,6 @@ function selectProduct(product) {
   transform: translateY(-4px);
 }
 
-@media (max-width: 768px) {
-  .my-page {
-    grid-template-areas:
-      "profile"
-      "type"
-      "left"
-      "right";
-    grid-template-columns: 1fr;
-  }
-  .user-info {
-    flex-direction: column;
-    align-items: center;
-  }
-  .user-text {
-    text-align: center;
-    margin: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .user-name {
-    font-size: var(--font-size-xl);
-  }
-  .level-value {
-    font-size: var(--font-size-lg);
-  }
-  .user-type,
-  .user-level {
-    font-size: var(--font-size-sm);
-  }
-  .edit-button {
-    font-size: var(--font-size-sm);
-  }
-}
-
 .product-card {
   transform: scale(0.95);
 }
@@ -523,6 +487,11 @@ function selectProduct(product) {
   height: 100px;
   object-fit: contain;
 }
+.fallback-img {
+  width: 100px;
+  height: 100px;
+}
+
 .product-info {
   font-size: 1rem;
 }
@@ -532,5 +501,76 @@ function selectProduct(product) {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .my-page {
+    grid-template-areas:
+      "profile"
+      "type"
+      "left"
+      "right";
+    grid-template-columns: 1fr;
+  }
+  .profile-image-placeholder {
+    width: clamp(150px, 25vw, 180px);
+    height: clamp(150px, 25vw, 180px);
+    border-radius: 50%;
+    background-color: var(--color-secondary-10);
+    border: 2px solid var(--color-secondary-50);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .user-info {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+  .user-text {
+    text-align: center;
+    margin: 0;
+  }
+
+  .user-name {
+    font-size: var(--font-size-xl);
+  }
+  .level-value {
+    font-size: var(--font-size-xl);
+  }
+  .user-type,
+  .user-level {
+    font-size: var(--font-size-2xl);
+  }
+  .change-type p {
+    font-size: var(--font-size-lg);
+  }
+  .edit-button {
+    font-size: var(--font-size-md);
+  }
+  .right-grid {
+    height: auto;
+  }
+  .bank-logo img {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+  }
+  .fallback-img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .product-info {
+    font-size: 1rem;
+  }
+}
+.card-slider-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 1rem;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 </style>

@@ -37,7 +37,7 @@
           <span class="arrow text-accent">></span>
         </router-link>
 
-        <router-link to="/myinfo/update/password" class="info-item clickable">
+        <router-link to="/myInfoPage/update/password" class="info-item clickable">
           <span class="label">비밀번호 변경</span>
           <span class="value"></span>
           <span class="arrow">></span>

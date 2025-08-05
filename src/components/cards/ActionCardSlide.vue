@@ -21,22 +21,20 @@
           </h4>
           <p class="card-info">
             <template v-if="hasCards">
-              카드 정보를 다시 불러와<br />
+              카드 정보를 다시 불러와
+              <br />
               최신 상태로 확인해보세요!
             </template>
             <template v-else>
-              KB카드 마이데이터를 연동하여<br />
+              KB카드 마이데이터를 연동하여
+              <br />
               카드 정보를 가져와보세요!
             </template>
           </p>
         </div>
 
         <!-- 액션 버튼 -->
-        <BaseButton
-          :variant="hasCards ? 'outline' : 'primary'"
-          class="action-button"
-          @click="handleAction"
-        >
+        <BaseButton :variant="hasCards ? 'outline' : 'primary'" class="action-button" @click="handleAction">
           <i v-if="hasCards" class="bi bi-arrow-clockwise"></i>
           <i v-else class="bi bi-plus-circle"></i>
         </BaseButton>
