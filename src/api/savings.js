@@ -17,9 +17,10 @@ export default {
     return data;
   },
 
-  // 적금 계좌 동기화 (예: 은행 로그인 후)
-  async getRecommendSavings(id) {
-    const { data } = await api.get(`${BASE_URL}/${id}/recommend`);
+  // 내 적금 기반 추천 목록
+  async getRecommendSavings(id, page, size) {
+    const query = new URLSearchParams({ page, size }).toString();
+    const { data } = await api.get(`${BASE_URL}/${id}/recommend?${query}`);
     // console.log('💰 Recommend Saving List:', data);
     return data;
   },
