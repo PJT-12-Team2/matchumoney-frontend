@@ -33,12 +33,12 @@
         <div class="product-card__row">
           <span>최고 금리</span>
           <span class="product-card__highlight"
-            >{{ roundToTwoDecimalPlaces(saving.max_rate) }}%</span
+            >{{ roundToTwoDecimalPlaces(saving.maxRate) }}%</span
           >
         </div>
         <div class="product-card__row">
           <span>기본 금리</span>
-          <span>{{ roundToTwoDecimalPlaces(saving.base_rate) }}%</span>
+          <span>{{ roundToTwoDecimalPlaces(saving.baseRate) }}%</span>
         </div>
         <div class="product-card__row">
           <span>금액</span>
