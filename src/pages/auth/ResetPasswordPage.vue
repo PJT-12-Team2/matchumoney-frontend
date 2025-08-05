@@ -267,7 +267,7 @@ const handleResetPassword = async () => {
   .join-btn-area .base-button {
     width: 50%;
     height: 30px;
-    margin-top: -1.5rem;
+    margin-top: -2rem;
     font-size: 1.2rem;
   }
   .signup-container {

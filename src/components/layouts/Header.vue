@@ -5,7 +5,7 @@
       <!-- 🏠 로고 -->
       <RouterLink to="/" class="logo-section text-decoration-none text-white">
         <img :src="myLogo" alt="맞추머니 로고" class="logo-img" />
-        <span class="app-name text-black">맞추머니</span>
+        <span class="app-name text-white">맞추머니</span>
       </RouterLink>
 
       <!-- 메뉴 + 알림 + 프로필 -->
@@ -250,8 +250,8 @@ onMounted(() => window.addEventListener('keydown', onKey));
   padding: 0 !important;
 }
 .header {
-  background: #ffffff;
-  color: #1e2b4e;
+  background: var(--color-dark);
+  color: var(--color-white);
   position: fixed;
   top: 0;
   left: 0;
@@ -297,7 +297,6 @@ onMounted(() => window.addEventListener('keydown', onKey));
 
 /* 메뉴 */
 .header-nav {
-  font-weight: bold;
   display: flex;
   align-items: center;
   gap: 1.875rem;
@@ -314,8 +313,6 @@ onMounted(() => window.addEventListener('keydown', onKey));
 /* 🆕 네비게이션 아이템 스타일 */
 .nav-item {
   position: relative;
-  background: var(--color-white);
-  color: var(--color-dark);
 }
 
 .nav-menu a {
@@ -476,9 +473,9 @@ onMounted(() => window.addEventListener('keydown', onKey));
 
 /* 🆕 로그인/로그아웃 버튼(데스크탑) */
 .auth-btn {
-  background: var(--color-dark);
+  background: var(--color-white);
   border: 0.125rem solid var(--color-white);
-  color: var(--color-white);
+  color: var(--color-dark);
   padding: 0.5rem 1rem;
   border-radius: 50px;
   font-size: 0.875rem;
@@ -551,7 +548,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   --color-white-10: rgba(255, 255, 255, 0.1);
   --color-white-15: rgba(255, 255, 255, 0.15);
   --color-white-20: rgba(255, 255, 255, 0.2);
-  —color-white-30: rgba(255, 255, 255, 0.3);
-  —color-white-50: rgba(255, 255, 255, 0.5);
+  --color-white-30: rgba(255, 255, 255, 0.3);
+  --color-white-50: rgba(255, 255, 255, 0.5);
 }
 </style>

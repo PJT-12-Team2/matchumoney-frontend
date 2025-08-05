@@ -1,30 +1,34 @@
 <template>
   <div class="container mt-5">
-    <BaseCard class="rounded-xl">
-      <template #title>프로필 수정</template>
-
+    <BaseCardGrey class="login-card">
       <template #content>
+        <h1 class="login-title">프로필 수정</h1>
         <!-- 프로필 이미지 + 버튼 -->
         <div class="profile-row">
           <div class="profile-img">
             <span class="user-icon">👤</span>
           </div>
           <div class="button-center">
-            <BaseButton class="mr-2" variant="primary">사진 업로드</BaseButton>
-            <BaseButton class="mr-2" variant="primary">제거하기</BaseButton>
+            <BaseButton class="mr-2" variant="primary">업로드</BaseButton>
           </div>
         </div>
 
         <!-- 닉네임 -->
-        <div class="form-group form-row">
-          <label for="nickname" class="form-label nickname-label">닉네임</label>
-          <input id="nickname" v-model="nickname" type="text" class="form-input nickname-input" />
+        <div class="login-row">
+          <div class="login-label">닉네임</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row">
+            <BaseInput v-model="nickname" placeholder="닉네임 입력" />
+          </div>
         </div>
 
         <!-- 성별 -->
-        <div class="gender-row">
-          <span class="gender-label">성별</span>
-          <div class="gender-center">
+        <div class="login-row">
+          <div class="login-label">성별</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row" style="justify-content: center">
             <label>
               <input type="radio" value="MALE" v-model="gender" />
               남자
@@ -37,9 +41,11 @@
         </div>
 
         <!-- 생년월일 -->
-        <div class="form-group form-row">
-          <span class="form-label birth-label">생년월일</span>
-          <div class="birth-selects">
+        <div class="login-row">
+          <div class="login-label">생년월일</div>
+        </div>
+        <div class="login-row">
+          <div class="input-action-row birth-selects">
             <select v-model="year" class="form-input select">
               <option value="" disabled>년도</option>
               <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
@@ -67,17 +73,18 @@
                   navigate();
                 }
               ">
-              정보 수정
+              수정
             </BaseButton>
           </RouterLink>
         </div>
       </template>
-    </BaseCard>
+    </BaseCardGrey>
   </div>
 </template>
 
 <script setup>
-import BaseCard from "@/components/base/BaseCardGrey.vue";
+import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
+import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import "@/assets/main.css";
 import { ref, computed, onMounted } from "vue";
@@ -143,17 +150,6 @@ const submitForm = async () => {
 </script>
 
 <style scoped>
-::v-deep(.base-card .title) {
-  margin-bottom: 4rem !important; /* !important로 강제 덮어쓰기 */
-  display: block;
-}
-
-::v-deep(.base-card) {
-  padding: 4rem !important; /* 내부 여백 유지 */
-  height: 677px !important; /* 고정 높이 */
-  box-sizing: border-box; /* padding 포함 높이 계산 */
-}
-
 .container {
   max-width: 100%;
   margin: 0 auto;
@@ -165,76 +161,72 @@ const submitForm = async () => {
   margin: 0 auto;
 }
 
-/* 프로필 행 (이미지 좌측, 버튼 중앙) */
+.login-card {
+  width: 435px;
+  height: 630px;
+  padding: 1rem;
+}
+
+.login-title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--color-dark);
+}
+
+/* 프로필 행 (이미지 위, 버튼 아래) */
 .profile-row {
-  display: grid;
-  grid-template-columns: 100px 1fr;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 3rem; /* 위아래 간격 */
+  margin-bottom: 1.5rem;
+  gap: 1rem;
 }
 
 .profile-img {
-  justify-self: start;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border: 2px solid var(--color-accent);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 36px;
+  font-size: 50px;
 }
 
 /* 버튼은 중앙 정렬 */
 .button-center {
-  justify-self: center;
   display: flex;
   gap: 1rem;
 }
 
-/* 닉네임 행 */
-.form-row {
+/* New login-row and login-label styles */
+.login-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 3rem; /* 위아래 간격 */
+  justify-content: flex-start;
+  width: 100%;
+  gap: var(--spacing-sm);
 }
 
-.nickname-label {
-  width: 80px;
-  flex-shrink: 0;
-}
-.nickname-input {
-  flex: 1;
+.login-label {
+  font-size: 0.9rem;
+  color: var(--color-dark);
+  margin-bottom: 0.3rem;
 }
 
-/* 성별 행 (라벨 좌측, 라디오 중앙) */
-.gender-row {
-  display: grid;
-  grid-template-columns: 100px 1fr;
-  align-items: center;
-  margin-bottom: 3rem; /* 위아래 간격 */
-}
-
-.gender-label {
-  justify-self: start;
-  width: 80px;
-}
-.gender-center {
-  justify-self: center;
+.input-action-row {
   display: flex;
+  align-items: center;
   gap: 2rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
-/* 생년월일 행 */
-.birth-label {
-  width: 80px;
-  flex-shrink: 0;
-}
+/* birth-selects within input-action-row */
 .birth-selects {
-  display: flex;
   gap: 1rem;
-  flex: 1;
 }
 
 /* 셀렉트 최소 너비 */
@@ -244,5 +236,100 @@ const submitForm = async () => {
 
 .mt-4 {
   margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  ::v-deep(.base-card) {
+    padding: 2rem !important;
+    height: auto !important;
+  }
+
+  .profile-row {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    row-gap: 1rem;
+  }
+
+  .button-center {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .login-row {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+
+  .login-label {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .input-action-row {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    gap: 2rem;
+    font-size: 1.2rem;
+  }
+
+  .birth-selects {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .select {
+    min-width: 33%;
+  }
+
+  .login-card {
+    width: 90%;
+    height: auto;
+  }
+
+  .login-title {
+    font-size: 2rem;
+  }
+
+  .login-label {
+    font-size: 1.2rem;
+  }
+
+  .select {
+    font-size: 1.2rem;
+  }
+
+  ::v-deep(.input-field) {
+    font-size: 1.2rem;
+    height: 48px;
+    padding: 0.75rem;
+  }
+
+  ::v-deep(.input-label) {
+    font-size: 1.2rem;
+  }
+
+  .mt-4 button {
+    font-size: 1.2rem;
+    height: 30px;
+    width: 50%;
+  }
+
+  .profile-img {
+    width: 100px;
+    height: 100px;
+    font-size: 50px;
+  }
+
+  .button-center .base-button {
+    font-size: 1.2rem;
+  }
 }
 </style>
