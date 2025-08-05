@@ -29,13 +29,12 @@ onMounted(async () => {
 
     authStore.setAuth(tokenDto);
 
-    console.log("💾 토큰 저장 완료:", {
-      accessToken: tokenDto.accessToken.substring(0, 20) + "...",
-      userId: tokenDto.userId,
-      nickname: tokenDto.nickname,
-    });
-    alert("카카오 로그인 성공!");
-    router.push("/");
+    alert(`${tokenDto.nickname}님 환영합니다!`);
+    if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
+      router.push("/persona/start");
+    } else {
+      router.push("/");
+    }
   } catch (err) {
     // console.error("카카오 로그인 실패:", err);
     alert("카카오 로그인에 실패했습니다.");
