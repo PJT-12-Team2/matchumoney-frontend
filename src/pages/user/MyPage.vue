@@ -54,18 +54,20 @@
       <BaseCardGrey>
         <template #title>보유 카드</template>
         <template #content>
-          <CardSlider
-            :cards="cards"
-            @cardChange="handleCardChange"
-            @register="showSyncModal = true"
-            @update="handleCardUpdate" />
+          <div class="card-slider-wrapper">
+            <CardSlider
+              :cards="cards"
+              @cardChange="handleCardChange"
+              @register="showSyncModal = true"
+              @update="handleCardUpdate" />
+          </div>
         </template>
       </BaseCardGrey>
     </div>
 
     <div class="right-grid">
       <BaseCardGrey style="height: 100%">
-        <template #title>내가 좋아하는 상품 (즐겨찾기)</template>
+        <template #title>즐겨찾기</template>
         <template #content>
           <div class="tabs">
             <button :class="{ active: selectedTab === '예금' }" @click="selectedTab = '예금'">예금</button>
@@ -302,11 +304,11 @@ function selectProduct(product) {
   display: grid;
   grid-template-rows: 1fr 2fr;
   gap: var(--spacing-md);
-  height: 500px;
+  height: 100%;
 }
 .right-grid {
   grid-area: right;
-  height: 500px;
+  height: 100%;
 }
 
 .user-info {
@@ -425,7 +427,7 @@ function selectProduct(product) {
   background-color: var(--color-secondary-10);
   border-radius: 2rem;
   padding: 0.25rem;
-  margin: 0, var(--spacing-sm);
+  margin: 0 var(--spacing-md);
 }
 .tabs button {
   flex: 1;
@@ -446,7 +448,7 @@ function selectProduct(product) {
 .product-list {
   display: grid;
   grid-template-columns: 1fr;
-  grid-auto-rows: 10rem;
+  grid-auto-rows: 12.5rem;
   gap: var(--spacing-lg);
   padding: var(--spacing-md);
   height: auto;
@@ -562,5 +564,13 @@ function selectProduct(product) {
   .product-info {
     font-size: 1rem;
   }
+}
+.card-slider-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 1rem;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 </style>

@@ -24,9 +24,16 @@ onMounted(async () => {
 
   try {
     const response = await authApi.kakaoLogin(code);
+    console.log("✅ 로그인 응답:", response);
     const tokenDto = response.result;
 
     authStore.setAuth(tokenDto);
+
+    console.log("💾 토큰 저장 완료:", {
+      accessToken: tokenDto.accessToken.substring(0, 20) + "...",
+      userId: tokenDto.userId,
+      nickname: tokenDto.nickname,
+    });
     alert("카카오 로그인 성공!");
     router.push("/");
   } catch (err) {
