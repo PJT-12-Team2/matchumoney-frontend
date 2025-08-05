@@ -5,9 +5,8 @@
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
         <h2 class="persona-carousel-title">
-          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천되는 적금
+          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는 적금
         </h2>
-
         <!-- 데스크탑 화면: flex 목록 -->
         <div class="carousel-saving-list" v-if="!isMobile">
           <div
@@ -18,12 +17,12 @@
           >
             <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
             <div class="carousel-saving-name">{{ saving.name }}</div>
-            <div class="bank-name-bold">{{ saving.bankName }}</div>
+            <div>{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
               <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
               <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
               <span><strong>매월 최대 금액:</strong> {{
-                saving.maxLimit === "999999999"
+                saving.maxLimit === 999999999 || "999999999"
                   ? '한도 없음'
                   : formatCurrency(Number(saving.maxLimit))
               }}</span>
@@ -141,7 +140,6 @@
   </div>
   <br>
 </section>
-
       <!-- 🔍 검색 결과 -->
       <section class="search-results">
         <h2 class="results-title">검색한 적금 상품</h2>
@@ -454,8 +452,8 @@ return logos[initial] || logos['shinhan']
 }
 
 const selectProduct = (product) => {
-alert(`${product.name}을 선택했습니다.`)
-}
+  window.location.href = `/detail/saving/${product.id}`;
+};
 
 const filteredProducts = computed(() => {
   let result = [...allProducts.value]
@@ -614,7 +612,7 @@ text-align: center;
 }
 
 .carousel-saving {
-  width: 300px; /* 고정 크기 */
+  width: 320px; /* 고정 크기 */
   padding: 2rem;
   border-radius: 1.5rem;
   box-shadow: var(--shadow-md);
@@ -625,7 +623,7 @@ text-align: center;
 }
 
 .carousel-saving-image {
-  width: 50%;
+  width: 60%;
   border-radius: var(--spacing-sm);
   padding-bottom: 2rem;
 }
@@ -644,8 +642,8 @@ text-align: center;
 
 
 .highlight {
-font-size: var(--font-size-3xl);
-text-decoration: underline;
+  font-size: var(--font-size-2xl);
+  text-decoration: underline;
 }
 
 .filter-selection-section {
@@ -873,9 +871,9 @@ color: var(--color-dark);
 }
 
 .highlight-rate {
-font-size: 18px;
-color: #609966;
-font-weight: bold;
+  font-size: 18px;
+  color: #609966;
+  font-weight: bold;
 }
 
 @media (max-width: 768px) {
@@ -888,7 +886,12 @@ font-weight: bold;
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .carousel-saving-name,
+  .carousel-saving-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
   .carousel-saving-benefit {
     font-size: var(--font-size-sm);
   }
@@ -910,7 +913,9 @@ font-weight: bold;
     display: flex;
     flex-direction: column;
   }
-
+  .highlight-rate {
+    font-size: 1rem;
+  }
   .product-info-block {
     align-items: flex-end;
     text-align: right;
@@ -982,22 +987,19 @@ font-weight: bold;
     display: flex;
   }
 }
-</style>
-<style scoped>
+
 .carousel-saving-list {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--spacing-lg);
+  gap: 2rem;
   margin-bottom: var(--spacing-2xl);
 }
-</style>
-<style scoped>
+
 .no-wrap {
   white-space: nowrap;
 }
-</style>
-<style scoped>
+
 /* .carousel-saving-rates {
 font-size: var(--font-size-base);
 color: var(--text-secondary);

@@ -22,7 +22,15 @@ import PersonaSavingAllList from '@/pages/persona/PersonaSavingAllListPage.vue';
 import RecommendSavings from '@/pages/savings/recommendations/RecommendSavings.vue';
 import MyDataCardPage from '@/pages/mydata/MyDataCardPage.vue';
 
-import CardRecommendationPage from '@/pages/cards/CardRecommendationPage.vue';
+import CardRecommendationPage from "@/pages/cards/CardRecommendationPage.vue";
+
+import CardDetailPage from "@/pages/detail/CardDetailPage.vue";
+import SavingDetailPage from "@/pages/detail/SavingDetailPage.vue";
+import DepositDetailPage from "@/pages/detail/DepositDetailPage.vue";
+
+import EducationBoardPage from "@/components/education/EducationBoardPage.vue";
+import QuizPage from "@/components/education/QuizPage.vue";
+import chart from "chart";
 
 import ComparePage from '@/pages/compare/ComparePage.vue';
 /* 결과 페이지 (동적 import) */
@@ -88,8 +96,26 @@ const routes = [
     component: UpdatePasswordPage,
   },
   {
-    path: '/deposits/recommendations/history',
-    name: 'RecommendDeposit',
+    path: "/detail/deposit/:depositId",
+    name: "DepositDetail",
+    component: DepositDetailPage,
+    props: true,
+  },
+  {
+    path: "/detail/card/:cardId",
+    name: "CardDetail",
+    component: CardDetailPage,
+    props: true,
+  },
+  {
+    path: "/detail/saving/:savingId",
+    name: "SavingDetail",
+    component: SavingDetailPage,
+    props: true,
+  },
+  {
+    path: "/deposits/recommendations/history",
+    name: "RecommendDeposit",
     component: RecommendDeposit,
   },
   {
@@ -120,7 +146,26 @@ const routes = [
     props: true,
   },
   {
-    path: '/persona',
+    path: "/education",
+    children: [
+      { path: "quiz", name: "quiz", component: QuizPage },
+      { path: "video", name: "video", component: EducationBoardPage },
+      {
+        path: "video/shorts/:shortsId",
+        name: "ShortsDetail",
+        component: () => import("@/components/education/ShortsDetailPage.vue"),
+        props: true,
+      },
+      {
+        path: "video/full/:videoId",
+        name: "VideoDetail",
+        component: () => import("@/components/education/VideoDetailPage.vue"),
+        props: true,
+      }
+    ]
+  },
+  {
+    path: "/persona",
     children: [
       { path: 'start', name: 'PersonaTest', component: PersonaSurveyStart },
       { path: 'survey', name: 'PersonaSurvey', component: PersonaSurveyPage },

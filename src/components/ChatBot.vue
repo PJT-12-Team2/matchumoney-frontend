@@ -4,7 +4,6 @@
         <img src="@/assets/chatbot_images/chatbot.png" alt="챗봇 버튼" />
         <div class="chat-label">챗봇</div>
       </button>
-  
       <transition name="chat-fade">
         <div class="chat-window" v-if="isOpen">
           <div class="chat-header">
@@ -188,6 +187,39 @@
     font-size: 12px;
     color: white;
     text-align: center;
+  }
+
+  /* Responsive styles for chatbot toggle button */
+  @media (max-width: 768px) {
+    .chat-toggle {
+      width: 64px;
+      height: 64px;
+    }
+
+    .chat-toggle img {
+      width: 30px;
+      height: 30px;
+    }
+
+    .chat-label {
+      font-size: 11px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .chat-toggle {
+      width: 56px;
+      height: 56px;
+    }
+
+    .chat-toggle img {
+      width: 26px;
+      height: 26px;
+    }
+
+    .chat-label {
+      font-size: 10px;
+    }
   }
   
   .chat-window {

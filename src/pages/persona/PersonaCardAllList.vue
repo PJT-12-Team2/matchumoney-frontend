@@ -8,56 +8,58 @@
 					<span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는
 					카드
 				</h2>
-				<div class="carousel-card-list">
-					<div
-						v-for="card in carouselCards"
-						:key="card.id"
-						class="carousel-card"
-						@click="selectProduct(card)"
-					>
-						<img
-							:src="card.image"
-							:alt="card.name"
-							class="carousel-card-image"
-						/>
-						<div class="carousel-card-content">
-							<div class="carousel-card-name">{{ card.name }}</div>
-							<div class="carousel-card-benefit">
-								<div>
-									<span class="label">카드사:</span>
-									{{ card.issuer || '카드사 미정' }}
-								</div>
-								<div>
-									<span class="label">전월실적금액:</span>
-									{{
-										card.preMonthMoney
-											? card.preMonthMoney.toLocaleString() + '원'
-											: '정보 없음'
-									}}
-								</div>
-								<div>
-									<span class="label">연회비 정보:</span>
-									{{ card.annualFee || '정보 없음' }}
-								</div>
-								<div
-									v-if="card.topBenefits && card.topBenefits.length > 0"
-									class="top-benefits"
-								>
-									<span class="label">주요 혜택 TOP 3</span>
-									<span class="benefit-tags">
-										<span
-											v-for="benefit in card.topBenefits"
-											:key="benefit"
-											class="benefit-tag"
-										>
-											{{ benefit }}
-										</span>
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+        <Swiper
+          v-if="isMobile"
+          :slides-per-view="1.2"
+          :space-between="16"
+          :pagination="{
+            clickable: true
+          }"
+          :modules="modules"
+          class="carousel-swiper"
+        >
+          <SwiperSlide
+            v-for="card in carouselCards"
+            :key="card.id"
+            class="carousel-card"
+            @click="selectProduct(card)"
+          >
+            <img
+              :src="card.image"
+              :alt="card.name"
+              class="carousel-card-image"
+            />
+            <div class="carousel-card-name">{{ card.name }}</div>
+            <div> {{ card.issuer || '카드사 미정' }}</div>
+            <div class="carousel-card-benefit">
+              <div><span class="label">전월실적금액:</span> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
+              <div><span class="label">연회비 정보:</span> {{ card.annualFee || '정보 없음' }}</div>
+            </div>
+          </SwiperSlide>
+        </Swiper>
+        <div
+          v-if="!isMobile"
+          class="carousel-card-list"
+        >
+          <div
+            v-for="card in carouselCards"
+            :key="card.id"
+            class="carousel-card"
+            @click="selectProduct(card)"
+          >
+            <img
+              :src="card.image"
+              :alt="card.name"
+              class="carousel-card-image"
+            />
+            <div class="carousel-card-name">{{ card.name }}</div>
+            <div> {{ card.issuer || '카드사 미정' }}</div>
+            <div class="carousel-card-benefit">
+              <div><span class="label">전월실적금액:</span> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
+              <div><span class="label">연회비 정보:</span> {{ card.annualFee || '정보 없음' }}</div>
+            </div>
+          </div>
+        </div>
 			</section>
 			<br />
 			<hr />
@@ -189,6 +191,19 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '@/api';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { Pagination } from 'swiper/modules';
+const modules = [Pagination];
+
+const isMobile = ref(window.innerWidth <= 768);
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
 
 // 📦 로딩 및 검색 결과 표시 상태
 const loading = ref(false);
@@ -308,7 +323,7 @@ const toggleBenefit = (id) => {
 
 // 📦 카드 선택 동작
 const selectProduct = (product) => {
-	alert(`${product.name}을 선택했습니다.`);
+  window.location.href = `/detail/card/${product.id}`;
 };
 
 // 📦 은행 로고 가져오기 (for compatibility)
@@ -394,11 +409,12 @@ onMounted(() => {
 	text-align: center;
 }
 .carousel-card-benefit {
-	font-size: 0.9rem;
-	color: #333;
-	line-height: 1.5;
-	text-align: left;
-	margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.5;
+  text-align: left;
+  margin-top: 0.5rem;
+  text-align: center;
 }
 
 .carousel-card-content {
@@ -606,24 +622,20 @@ onMounted(() => {
 	font-size: 3rem;
 	margin-bottom: 1rem;
 }
-
-.top-benefits {
-	margin-top: 0.5rem;
+</style>
+<style scoped>
+.carousel-swiper {
+  width: 100%;
+  padding-bottom: 1.5rem;
 }
-
-.benefit-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.3rem;
-	margin-top: 0.3rem;
+.swiper-pagination-bullets {
+  text-align: center;
 }
-
-.benefit-tag {
-	background: #d8edda;
-	color: #2e7d32;
-	padding: 0.2rem 0.5rem;
-	border-radius: 12px;
-	font-size: 0.75rem;
-	font-weight: 500;
+.swiper-pagination-bullet {
+  background: #4caf50;
+  opacity: 0.4;
+}
+.swiper-pagination-bullet-active {
+  opacity: 1;
 }
 </style>
