@@ -1,12 +1,13 @@
 <template>
-  <div class="product-card">
+  <div class="product-card" @click="goToDetail(saving.id)">
     <div class="product-card__header">
       <div>
         <div class="product-card__company">{{ saving.company }}</div>
         <div class="product-card__title">{{ saving.title }}</div>
       </div>
       <FavoriteToggle
-        v-model="saving.is_starred"
+        @click.stop
+        v-model="saving.isStarred"
         :productId="saving.id"
         :productType="productType"
       />
@@ -26,7 +27,11 @@
           class="product-card__logo"
           v-else
         />
-        <CompareButton :productId="saving.id" :productType="productType" />
+        <CompareButton
+          :productId="saving.id"
+          :productType="productType"
+          @click.stop
+        />
       </div>
 
       <div class="product-card__info">
@@ -63,7 +68,12 @@ import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
 import { roundToTwoDecimalPlaces } from '@/util/numberFormatter';
 import { ProductType } from '@/constants/productTypes';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
+function goToDetail(id) {
+  router.push(`/detail/saving/${id}`);
+}
 const productType = ProductType.SAVING;
 const props = defineProps({
   saving: {
