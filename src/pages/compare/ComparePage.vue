@@ -1,5 +1,5 @@
 <template>
-  <div class="content">
+  <div class="content-compare">
     <TabSelector :initial-tab="activeTab" @change-tab="handleTabChange" />
     <div style="height: 1rem"></div>
 
@@ -88,12 +88,12 @@ watch(
 );
 </script>
 <style scoped>
-.content {
+.content-compare {
   width: 80%;
-  margin: auto;
+  margin: 2rem auto;
 }
 @media (max-width: 640px) {
-  .content {
+  .content-compare {
     width: 100%;
     margin: auto;
   }
