@@ -2,14 +2,14 @@
 import KakaoCallbackPage from '@/pages/auth/KakaoCallbackPage.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
-import HomePage from '@/pages/HomePage.vue';
-import MyPage from '@/pages/user/MyPage.vue';
-import MyInfoPage from '@/pages/user/MyInfoPage.vue';
-import RecommendDeposit from '@/pages/deposit/RecommendDeposit.vue';
-import SignupPage from '@/pages/auth/SignupPage.vue';
+/* ── 페이지 컴포넌트 ─────────────────────── */
 import LoginPage from '@/pages/auth/LoginPage.vue';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage.vue';
-
+import SignupPage from '@/pages/auth/SignupPage.vue';
+import RecommendDeposit from '@/pages/deposit/RecommendDeposit.vue';
+import HomePage from '@/pages/HomePage.vue';
+import MyInfoPage from '@/pages/user/MyInfoPage.vue';
+import MyPage from '@/pages/user/MyPage.vue';
 import UpdatePasswordPage from '@/pages/user/UpdatePasswordPage.vue';
 import UpdateUserInfoPage from '@/pages/user/UpdateUserInfoPage.vue';
 
@@ -25,12 +25,11 @@ import RecommendSavings from '@/pages/savings/recommendations/RecommendSavings.v
 import CardRecommendationPage from '@/pages/cards/CardRecommendationPage.vue';
 
 import CardDetailPage from '@/pages/detail/CardDetailPage.vue';
-import SavingDetailPage from '@/pages/detail/SavingDetailPage.vue';
 import DepositDetailPage from '@/pages/detail/DepositDetailPage.vue';
+import SavingDetailPage from '@/pages/detail/SavingDetailPage.vue';
 
 import EducationBoardPage from '@/components/education/EducationBoardPage.vue';
 import QuizPage from '@/components/education/QuizPage.vue';
-import chart from 'chart';
 
 import ComparePage from '@/pages/compare/ComparePage.vue';
 /* 결과 페이지 (동적 import) */
