@@ -33,9 +33,9 @@
             <div class="product-sub">{{ p.korCoName }}</div>
           </div>
         </div>
-        <button @click="$emit('viewDetail', p)" class="detail-btn">
-          자세히 보기
-        </button>
+        <RouterLink :to="`/detail/deposit/${p.id}`" class="detail-btn">
+          <div>자세히 보기</div>
+        </RouterLink>
       </div>
 
       <!-- 추가 버튼 -->
@@ -262,17 +262,24 @@ function isRateBest(period, index) {
 }
 
 .product-img {
-  width: 5.2rem;
-  height: 5.2rem;
+  width: 8rem;
+  height: 8rem;
   object-fit: contain;
 }
 
 .product-name {
   width: 30vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: auto;
   white-space: nowrap;
   font-weight: 600;
+
+  /* 스크롤바 스타일 제거 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.product-name::-webkit-scrollbar {
+  display: none; /* WebKit (Chrome, Safari) */
 }
 
 .product-sub {
@@ -292,6 +299,7 @@ function isRateBest(period, index) {
   font-weight: bold;
   border: none;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .section-block {
@@ -309,7 +317,10 @@ function isRateBest(period, index) {
   padding: var(--spacing-sm);
   border-radius: var(--spacing-xs);
 }
-
+.title {
+  font-size: 1rem;
+  font-weight: bold;
+}
 .section-values {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -322,7 +333,9 @@ function isRateBest(period, index) {
 .section-values > div {
   padding: 1rem;
 }
-
+.section-values > .benefit {
+  height: 100%;
+}
 .rate-base {
   color: var(--color-title);
 }
@@ -339,8 +352,14 @@ function isRateBest(period, index) {
   justify-content: space-between;
   align-items: center;
 }
+.mobile-line {
+  white-space: pre-line;
+}
+
 @media (max-width: 640px) {
   .product-img {
+    width: 6rem;
+    height: 6rem;
     margin-bottom: var(--spacing-xs);
   }
   .product-box {
@@ -382,5 +401,25 @@ function isRateBest(period, index) {
 .image {
   width: 100%;
   max-width: 240px;
+}
+.box {
+  background-color: rgb(233, 233, 233);
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+}
+.tag {
+  display: inline-block;
+  background-color: #e6f4ec;
+  color: #2e7d32;
+  align-items: center;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 1rem;
+}
+.benefit-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 </style>

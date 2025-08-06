@@ -238,13 +238,16 @@ function pickWinner (scoreObj) {
 
 /* … 진행 숫자 애니메이션 (기존 방식 그대로) … */
 function animateCounter () {
-  let count = 0
+  const start = animatedIndex.value
   const target = currentQuestionIndex.value + 1
+  const step = start < target ? 1 : -1
+
   const interval = setInterval(() => {
-    if (count < target) {
-      count++
-      animatedIndex.value = count
-    } else clearInterval(interval)
+    if (animatedIndex.value !== target) {
+      animatedIndex.value += step
+    } else {
+      clearInterval(interval)
+    }
   }, 25)
 }
 onMounted(animateCounter)

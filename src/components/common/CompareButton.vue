@@ -48,7 +48,7 @@ const onCompareClick = () => {
 
 <style scoped>
 .compare-button {
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   color: var(--color-accent);
   font-weight: 600;
   cursor: pointer;
@@ -56,6 +56,7 @@ const onCompareClick = () => {
   transition: transform 0.2s ease;
   background: none;
   border: none;
+  padding: 0.4rem;
 }
 .compare-button:hover {
   transform: scale(1.05);

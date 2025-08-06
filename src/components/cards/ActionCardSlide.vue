@@ -1,82 +1,108 @@
 <template>
-  <BaseCardGreen class="action-card-container">
-    <template #content>
-      <div class="action-card">
-        <!-- 카드 모양 아이콘 -->
-        <div class="card-icon">
-          <div class="card-shape">
-            <div class="card-chip"></div>
-            <div class="card-lines">
-              <div class="card-line"></div>
-              <div class="card-line"></div>
+  <div class="action-slide-container">
+    <!-- 기존 액션 카드 -->
+    <BaseCardGreen class="action-card-container">
+      <template #content>
+        <div class="action-card">
+          <!-- 카드 모양 아이콘 -->
+          <div class="card-icon">
+            <div class="card-shape">
+              <div class="card-chip"></div>
+              <div class="card-lines">
+                <div class="card-line"></div>
+                <div class="card-line"></div>
+              </div>
+              <div class="card-number">**** ****</div>
             </div>
-            <div class="card-number">**** ****</div>
           </div>
-        </div>
 
-        <div class="card-content">
-          <h4 class="card-title">
-            <template v-if="hasCards">카드 다시 불러오기</template>
-            <template v-else>내 카드 등록하기</template>
-          </h4>
-          <p class="card-info">
-            <template v-if="hasCards">
-              카드 정보를 다시 불러와
-              <br />
-              최신 상태로 확인해보세요!
-            </template>
-            <template v-else>
-              KB카드 마이데이터를 연동하여
-              <br />
-              카드 정보를 가져와보세요!
-            </template>
-          </p>
-        </div>
+          <div class="card-content">
+            <h4 class="card-title">
+              <template v-if="hasCards">카드 다시 불러오기</template>
+              <template v-else>내 카드 등록하기</template>
+            </h4>
+            <p class="card-info">
+              <template v-if="hasCards">
+                카드 정보를 다시 불러와
+                <br />
+                최신 상태로 확인해보세요!
+              </template>
+              <template v-else>
+                KB카드 마이데이터를 연동하여
+                <br />
+                카드 정보를 가져와보세요!
+              </template>
+            </p>
+          </div>
 
-        <!-- 액션 버튼 -->
-        <BaseButton
-          :variant="hasCards ? 'outline' : 'primary'"
-          class="action-button"
-          @click="handleAction"
-        >
-          <i v-if="hasCards" class="bi bi-arrow-clockwise"></i>
-          <i v-else class="bi bi-plus-circle"></i>
-        </BaseButton>
-      </div>
-    </template>
-  </BaseCardGreen>
+          <!-- 액션 버튼 -->
+          <BaseButton
+            :variant="hasCards ? 'outline' : 'primary'"
+            class="action-button"
+            @click="handleAction"
+          >
+            <i v-if="hasCards" class="bi bi-arrow-clockwise"></i>
+            <i v-else class="bi bi-plus-circle"></i>
+          </BaseButton>
+        </div>
+      </template>
+    </BaseCardGreen>
+
+    <!-- KB카드 추천 섹션 (카드가 없을 때만 표시) -->
+    <div
+      v-if="!hasCards && showKbRecommendation"
+      class="kb-recommendation-wrapper"
+    ></div>
+  </div>
 </template>
 
 <script setup>
-import BaseCardGreen from "@/components/base/BaseCardGreen.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
+import BaseCardGreen from '@/components/base/BaseCardGreen.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
 
 const props = defineProps({
   hasCards: {
     type: Boolean,
     default: false,
   },
+  showKbRecommendation: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-const emit = defineEmits(["register", "update"]);
+const emit = defineEmits(['register', 'update']);
 
 // 버튼만 클릭 시 동작
 const handleAction = () => {
   if (props.hasCards) {
-    emit("update");
+    emit('update');
   } else {
-    emit("register");
+    emit('register');
   }
 };
 </script>
 
 <style scoped>
-.action-card-container {
+.action-slide-container {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl, 24px);
+}
+
+.action-card-container {
+  width: 100%;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.kb-recommendation-wrapper {
+  width: 100%;
+  margin-top: var(--spacing-lg, 20px);
 }
 
 .action-card {
@@ -308,6 +334,15 @@ const handleAction = () => {
     font-size: var(--font-size-base);
     color: #222;
   }
+
+  .recommendation-icon {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .recommendation-icon i {
+    font-size: var(--font-size-base);
+  }
 }
 
 /* 작은 모바일 */
@@ -374,6 +409,15 @@ const handleAction = () => {
   .action-button i {
     font-size: var(--font-size-sm);
     color: #222;
+  }
+
+  .recommendation-icon {
+    width: 35px !important;
+    height: 35px !important;
+  }
+
+  .recommendation-icon i {
+    font-size: var(--font-size-sm);
   }
 }
 </style>

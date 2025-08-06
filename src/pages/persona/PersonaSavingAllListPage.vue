@@ -19,8 +19,8 @@
             <div class="carousel-saving-name">{{ saving.name }}</div>
             <div>{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
-              <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
-              <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
+              <span><strong>최고 금리: </strong> {{ saving.maxRate }}</span>
+              <span><strong>최저 금리: </strong> {{ saving.baseRate }}</span>
               <span><strong>매월 최대 금액:</strong> {{
                 saving.maxLimit === 999999999 || "999999999"
                   ? '한도 없음'

@@ -5,7 +5,7 @@
       <!-- 🏠 로고 -->
       <RouterLink to="/" class="logo-section text-decoration-none text-white">
         <img :src="myLogo" alt="맞추머니 로고" class="logo-img" />
-        <span class="app-name text-white">맞추머니</span>
+        <span class="app-name text-black">맞추머니</span>
       </RouterLink>
 
       <!-- 메뉴 + 알림 + 프로필 -->
@@ -40,7 +40,9 @@
             @mouseenter="showDropdown = 'mydata'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/asset" active-class="active"
+            <RouterLink
+              to="/deposits/recommendations/history"
+              active-class="active"
               >마이데이터</RouterLink
             >
             <div v-if="showDropdown === 'mydata'" class="dropdown-submenu">
@@ -66,15 +68,17 @@
             @mouseenter="showDropdown = 'compare'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/card" active-class="active">상품비교</RouterLink>
+            <RouterLink to="/compare" active-class="active"
+              >상품비교</RouterLink
+            >
             <div v-if="showDropdown === 'compare'" class="dropdown-submenu">
-              <RouterLink to="/compare/deposits" class="dropdown-item"
+              <RouterLink to="/compare?type=DEPOSIT" class="dropdown-item"
                 >예금</RouterLink
               >
-              <RouterLink to="/compare/savings" class="dropdown-item"
+              <RouterLink to="/compare?type=SAVING" class="dropdown-item"
                 >적금</RouterLink
               >
-              <RouterLink to="/compare/cards" class="dropdown-item"
+              <RouterLink to="/compare?type=CARD" class="dropdown-item"
                 >카드</RouterLink
               >
             </div>
@@ -86,7 +90,9 @@
             @mouseenter="showDropdown = 'education'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/loan" active-class="active">교육</RouterLink>
+            <RouterLink to="/education/quiz" active-class="active"
+              >교육</RouterLink
+            >
             <div v-if="showDropdown === 'education'" class="dropdown-submenu">
               <RouterLink to="/education/quiz" class="dropdown-item"
                 >퀴즈</RouterLink
@@ -154,7 +160,7 @@
 
           <!-- ☰ 햄버거(모바일) -->
           <button
-            class="btn text-white fs-4 ms-3 d-lg-none"
+            class="btn text-black fs-4 ms-3 d-lg-none"
             @click="showMenu = true"
           >
             ☰
@@ -190,7 +196,7 @@ const showDropdown = ref(null);
 const profile_image_url = ref(''); // 로그인 후 URL 주입
 const profileImageSrc = computed(() => profile_image_url.value || defaultUser);
 
-/* ─────────── 🆕 로그인 상태 및 버튼 로직 ─────────── */
+/* ─────────── 로그인 상태 및 버튼 로직 ─────────── */
 const isLoggedIn = computed(
   () => !!(authStore.accessToken && authStore.userId)
 );
@@ -246,32 +252,26 @@ onMounted(() => window.addEventListener('keydown', onKey));
 @import '@/assets/main.css'; /* 필요하면 경로 수정 */
 
 /* ─────────── 헤더 레이아웃 ─────────── */
-.html {
-  padding: 0 !important;
-}
+
 .header {
-  background: var(--color-dark);
-  color: var(--color-white);
+  background: #ffffff;
+  color: #1e2b4e;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  border-bottom: 1px solid #ddd;
+  height: var(--header-height);
+  border-bottom: 1px solid var(--border-dark);
 }
 
-.header::after {
-  content: '';
-  display: block;
-  height: 0.01px;
-  background-color: #394a2d; /* dark green bar */
-}
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 1.25rem 2.5rem;
+  height: 100%;
+  padding: 0 2.5rem;
 }
 /* 로고 */
 .logo-section {
@@ -310,9 +310,11 @@ onMounted(() => window.addEventListener('keydown', onKey));
   padding: 0;
 }
 
-/* 🆕 네비게이션 아이템 스타일 */
+/* 네비게이션 아이템 스타일 */
 .nav-item {
   position: relative;
+  background: var(--color-white);
+  color: var(--color-dark);
 }
 
 .nav-menu a {
@@ -323,14 +325,14 @@ onMounted(() => window.addEventListener('keydown', onKey));
   text-decoration: none;
 }
 .nav-menu a:hover {
-  background: var(--color-white-10);
+  background: var(--color-light);
 }
 .nav-menu .active {
   background: var(--color-white-20);
   font-weight: 700;
 }
 
-/* 🆕 드롭다운 서브메뉴 스타일 */
+/* 드롭다운 서브메뉴 스타일 */
 .dropdown-submenu {
   position: absolute;
   top: 100%;
@@ -431,9 +433,10 @@ onMounted(() => window.addEventListener('keydown', onKey));
 
 /* 호버 시 메인 메뉴 아이템 스타일 개선 */
 .nav-item:hover > a {
-  background: var(--color-white-15);
+  background: var(--color-light);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+  font-weight: bold;
 }
 
 /* 액션 영역 */
@@ -471,11 +474,11 @@ onMounted(() => window.addEventListener('keydown', onKey));
   align-items: center;
 }
 
-/* 🆕 로그인/로그아웃 버튼(데스크탑) */
+/* 로그인/로그아웃 버튼(데스크탑) */
 .auth-btn {
-  background: var(--color-white);
+  background: var(--color-dark);
   border: 0.125rem solid var(--color-white);
-  color: var(--color-dark);
+  color: var(--color-white);
   padding: 0.5rem 1rem;
   border-radius: 50px;
   font-size: 0.875rem;
@@ -548,7 +551,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   --color-white-10: rgba(255, 255, 255, 0.1);
   --color-white-15: rgba(255, 255, 255, 0.15);
   --color-white-20: rgba(255, 255, 255, 0.2);
-  --color-white-30: rgba(255, 255, 255, 0.3);
-  --color-white-50: rgba(255, 255, 255, 0.5);
+  —color-white-30: rgba(255, 255, 255, 0.3);
+  —color-white-50: rgba(255, 255, 255, 0.5);
 }
 </style>
