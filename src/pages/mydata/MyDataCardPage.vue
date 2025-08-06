@@ -13,6 +13,11 @@
         </div>
       </div>
 
+      <!-- KB카드 추천 (카드가 등록되지 않았을 때만 표시) -->
+      <div v-if="!cards.length && !isLoading" class="kb-recommendation-section">
+        <KbCardRecommendation />
+      </div>
+
       <!-- 카드 슬라이더 -->
       <div class="card-slider" v-if="cards.length">
         <CardSlider
@@ -72,7 +77,7 @@
                 <div class="summary-header">
                   <h3>
                     <i class="bi bi-stars"></i>
-                    {{ selectedSyncedCard?.cardName || "현재 카드" }} 추천 분석
+                    {{ selectedSyncedCard?.cardName || '현재 카드' }} 추천 분석
                   </h3>
                   <div class="analysis-period">
                     <i class="bi bi-calendar3"></i>
@@ -230,7 +235,7 @@
                 <div class="section-header">
                   <h3>
                     <i class="bi bi-pie-chart"></i>
-                    {{ selectedSyncedCard?.cardName || "카드" }} 소비 패턴 TOP 5
+                    {{ selectedSyncedCard?.cardName || '카드' }} 소비 패턴 TOP 5
                   </h3>
                   <div class="chart-period">
                     {{ getStatisticsPeriodText() }}
@@ -454,7 +459,7 @@
                             {{
                               transaction.merchantCategory ||
                               transaction.paymentType ||
-                              "기타"
+                              '기타'
                             }}
                           </div>
                         </div>
@@ -479,7 +484,7 @@
                       <div class="amount-details">
                         <span class="payment-method">
                           <i class="bi bi-credit-card"></i>
-                          {{ selectedSyncedCard?.cardName || "카드" }}
+                          {{ selectedSyncedCard?.cardName || '카드' }}
                         </span>
                       </div>
                     </div>
@@ -613,18 +618,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
-import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
-import BaseSpinner from "@/components/base/BaseSpinner.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import CardSlider from "@/components/cards/CardSlider.vue";
-import CardSyncModal from "@/components/cards/CardSyncModal.vue";
-import TransactionSyncModal from "@/components/cards/TransactionSyncModal.vue";
-import SpendingPatternChart from "@/components/charts/SpendingPatternChart.vue";
-import CardRecommendationSection from "@/components/cards/CardRecommendationSection.vue";
-import cardsApi from "@/api/cards";
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import DefaultLayout from '@/components/layouts/DefaultLayout.vue';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import CardSlider from '@/components/cards/CardSlider.vue';
+import CardSyncModal from '@/components/cards/CardSyncModal.vue';
+import TransactionSyncModal from '@/components/cards/TransactionSyncModal.vue';
+import SpendingPatternChart from '@/components/charts/SpendingPatternChart.vue';
+import CardRecommendationSection from '@/components/cards/CardRecommendationSection.vue';
+import cardsApi from '@/api/cards';
+import KbCardRecommendation from '@/components/cards/KbCardRecommendation.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -637,7 +643,7 @@ const selectedCard = ref(null);
 const syncedTransactions = ref([]);
 const selectedSyncedCard = ref(null);
 const showTransactionDetails = ref(false);
-const activeTab = ref("recommendations"); // 'recommendations', 'statistics', 'transactions'
+const activeTab = ref('recommendations'); // 'recommendations', 'statistics', 'transactions'
 const currentCardBenefits = ref(null); // 현재 카드의 혜택 정보
 const cardTransactionsMap = ref({}); // 카드별 거래내역 매핑
 
@@ -669,12 +675,12 @@ const getFilteredTransactionsByDate = () => {
 };
 
 // 거래내역 필터링 및 검색
-const searchQuery = ref("");
-const monthFilter = ref("");
-const statisticsMonthFilter = ref("");
-const categoryFilter = ref("");
-const amountFilter = ref("");
-const sortBy = ref("date");
+const searchQuery = ref('');
+const monthFilter = ref('');
+const statisticsMonthFilter = ref('');
+const categoryFilter = ref('');
+const amountFilter = ref('');
+const sortBy = ref('date');
 const currentPage = ref(1);
 const itemsPerPage = 10;
 
@@ -683,9 +689,9 @@ const userId = computed(() => authStore.getUserId());
 // 카드 목록 조회
 const fetchCards = async () => {
   if (!userId.value) {
-    console.error("사용자 ID가 없습니다. 로그인이 필요합니다.");
-    alert("로그인이 필요합니다.");
-    router.push("/login");
+    console.error('사용자 ID가 없습니다. 로그인이 필요합니다.');
+    alert('로그인이 필요합니다.');
+    router.push('/login');
     return;
   }
 
@@ -703,12 +709,12 @@ const fetchCards = async () => {
     //   console.log(`💡 ${cards.value.length}개의 카드를 불러왔습니다.`);
     // }
   } catch (error) {
-    console.error("❌ 카드 목록 조회 실패:", error);
+    console.error('❌ 카드 목록 조회 실패:', error);
 
     if (error.response?.status === 401) {
-      alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
       authStore.logout();
-      router.push("/login");
+      router.push('/login');
     } else if (error.response?.status === 404) {
       // console.log("💡 사용자 카드 정보가 없습니다.");
       cards.value = [];
@@ -729,12 +735,12 @@ const loadCurrentCardBenefits = async (card) => {
   if (!card || !card.cardId) return;
 
   try {
-    console.log("💰 현재 카드 혜택 조회 시작:", card.cardId);
+    console.log('💰 현재 카드 혜택 조회 시작:', card.cardId);
     const response = await cardsApi.getCardBenefits(card.cardId);
     currentCardBenefits.value = response.data || response;
-    console.log("✅ 현재 카드 혜택 조회 완료:", currentCardBenefits.value);
+    console.log('✅ 현재 카드 혜택 조회 완료:', currentCardBenefits.value);
   } catch (error) {
-    console.error("❌ 현재 카드 혜택 조회 실패:", error);
+    console.error('❌ 현재 카드 혜택 조회 실패:', error);
     currentCardBenefits.value = null;
   }
 };
@@ -746,7 +752,7 @@ const loadExistingTransactions = async (card) => {
   isLoadingTransactions.value = true;
 
   try {
-    console.log("📋 기존 거래내역 조회 시작:", {
+    console.log('📋 기존 거래내역 조회 시작:', {
       cardName: card.cardName,
       holdingId: card.holdingId,
       userId: userId.value,
@@ -785,7 +791,7 @@ const loadExistingTransactions = async (card) => {
       delete cardTransactionsMap.value[cardKey];
     }
   } catch (error) {
-    console.error("❌ 기존 거래내역 조회 실패:", error);
+    console.error('❌ 기존 거래내역 조회 실패:', error);
 
     if (error.response?.status === 404) {
       // console.log(
@@ -809,8 +815,8 @@ const loadExistingTransactions = async (card) => {
 // 카드 동기화
 const handleCardSync = async (syncData) => {
   if (!userId.value) {
-    alert("로그인이 필요합니다.");
-    router.push("/login");
+    alert('로그인이 필요합니다.');
+    router.push('/login');
     return;
   }
 
@@ -825,7 +831,7 @@ const handleCardSync = async (syncData) => {
     const response = await cardsApi.syncKbCards(requestData);
     // console.log("✅ 카드 동기화 완료:", response);
 
-    alert(`${response.message || "카드 동기화가 완료되었습니다."}`);
+    alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
 
     // 카드 동기화 모달 닫기
     showSyncModal.value = false;
@@ -833,18 +839,18 @@ const handleCardSync = async (syncData) => {
     // 목록 새로고침
     await fetchCards();
   } catch (error) {
-    console.error("❌ 카드 동기화 실패:", error);
+    console.error('❌ 카드 동기화 실패:', error);
 
     if (error.response?.status === 401) {
-      alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
       authStore.logout();
-      router.push("/login");
+      router.push('/login');
     } else if (error.response?.status === 400) {
       alert(
-        "입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요."
+        '입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.'
       );
     } else if (error.response?.status === 500) {
-      alert("마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } else {
       alert(
         `카드 동기화에 실패했습니다: ${
@@ -872,21 +878,21 @@ const handleCardUpdate = () => {
 
 // 거래내역 등록 핸들러
 const handleRegisterTransactions = (card) => {
-  console.log("📝 거래내역 등록:", card.cardName);
+  console.log('📝 거래내역 등록:', card.cardName);
   selectedCard.value = card;
   showTransactionModal.value = true;
 };
 
 // 거래내역 업데이트 핸들러
 const handleUpdateTransactions = (card) => {
-  console.log("🔄 거래내역 업데이트:", card.cardName);
+  console.log('🔄 거래내역 업데이트:', card.cardName);
   selectedCard.value = card;
   showTransactionModal.value = true;
 };
 
 // 날짜 포맷팅 함수
 const formatDate = (dateString) => {
-  if (!dateString) return "-";
+  if (!dateString) return '-';
 
   // YYYYMMDD 형식을 MM/DD로 변환
   if (dateString.length === 8) {
@@ -902,14 +908,14 @@ const formatDate = (dateString) => {
 
 // 금액 포맷팅 함수
 const formatAmount = (amount) => {
-  if (!amount) return "0";
+  if (!amount) return '0';
   return Math.abs(amount).toLocaleString();
 };
 
 // 금액에 따른 CSS 클래스 반환
 const getAmountClass = (amount) => {
-  if (!amount) return "";
-  return amount < 0 ? "negative" : "positive";
+  if (!amount) return '';
+  return amount < 0 ? 'negative' : 'positive';
 };
 
 // 탭 변경 처리
@@ -928,13 +934,13 @@ const handleRequestTransactionSync = () => {
 // 거래내역 동기화 처리
 const handleTransactionSync = async (transactionData) => {
   if (!selectedCard.value || !userId.value) {
-    alert("로그인이 필요합니다.");
-    router.push("/login");
+    alert('로그인이 필요합니다.');
+    router.push('/login');
     return;
   }
 
   try {
-    console.log("🔄 거래내역 동기화 시작:", {
+    console.log('🔄 거래내역 동기화 시작:', {
       holdingId: selectedCard.value.holdingId,
       transactionData,
     });
@@ -956,7 +962,7 @@ const handleTransactionSync = async (transactionData) => {
       cardTransactionsMap.value[cardKey] = response.result;
 
       // 성공 메시지 표시
-      alert(`${response.message || "거래내역 동기화가 완료되었습니다."}`);
+      alert(`${response.message || '거래내역 동기화가 완료되었습니다.'}`);
 
       // 거래내역 동기화 모달 닫기
       showTransactionModal.value = false;
@@ -965,23 +971,23 @@ const handleTransactionSync = async (transactionData) => {
       //   `💡 ${response.result.length}건의 거래내역이 동기화되어 즉시 표시됩니다.`
       // );
     } else {
-      alert("거래내역이 없거나 동기화에 실패했습니다.");
+      alert('거래내역이 없거나 동기화에 실패했습니다.');
     }
   } catch (error) {
-    console.error("❌ 거래내역 동기화 실패:", error);
+    console.error('❌ 거래내역 동기화 실패:', error);
 
     if (error.response?.status === 401) {
-      alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
       authStore.logout();
-      router.push("/login");
+      router.push('/login');
     } else if (error.response?.status === 400) {
       alert(
-        "입력 정보가 올바르지 않습니다. 카드 정보와 날짜 범위를 확인해주세요."
+        '입력 정보가 올바르지 않습니다. 카드 정보와 날짜 범위를 확인해주세요.'
       );
     } else if (error.response?.status === 404) {
-      alert("카드 정보를 찾을 수 없습니다.");
+      alert('카드 정보를 찾을 수 없습니다.');
     } else if (error.response?.status === 500) {
-      alert("마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } else {
       alert(
         `거래내역 동기화에 실패했습니다: ${
@@ -1020,7 +1026,7 @@ const getStatisticsFilteredTransactions = () => {
         const month = date.getMonth() + 1;
         const transactionMonthKey = `${year}-${month
           .toString()
-          .padStart(2, "0")}`;
+          .padStart(2, '0')}`;
         return transactionMonthKey === statisticsMonthFilter.value;
       }
       return false;
@@ -1039,7 +1045,7 @@ const getStatisticsPeriodText = () => {
     const monthData = getAvailableMonths().find(
       (m) => m.value === statisticsMonthFilter.value
     );
-    return monthData ? monthData.label : "선택된 기간";
+    return monthData ? monthData.label : '선택된 기간';
   }
   return `최근 ${ANALYSIS_PERIOD_DAYS}일`;
 };
@@ -1057,31 +1063,31 @@ const getRecommendationTopCategory = () => {
   const filteredTransactions = getFilteredTransactionsByDate();
   filteredTransactions.forEach((transaction) => {
     const category =
-      transaction.merchantCategory || transaction.paymentType || "기타";
+      transaction.merchantCategory || transaction.paymentType || '기타';
     const amount = Math.abs(transaction.amount || 0);
     categoryTotals[category] = (categoryTotals[category] || 0) + amount;
   });
   const sortedCategories = Object.entries(categoryTotals).sort(
     (a, b) => b[1] - a[1]
   );
-  return sortedCategories.length > 0 ? sortedCategories[0][0] : "없음";
+  return sortedCategories.length > 0 ? sortedCategories[0][0] : '없음';
 };
 
 const getRecommendationTip = () => {
   const topCategory = getRecommendationTopCategory();
   const tips = {
     편의점:
-      "편의점 이용이 많으시네요! 편의점 할인 혜택이 있는 카드를 확인해보세요.",
-    마트: "마트 사용이 많으시네요! 생활용품 구매 시 할인 혜택이 있는 카드를 추천합니다.",
-    "음식/카페":
-      "외식이 많으시네요! 음식점 할인이나 적립 혜택이 있는 카드를 추천합니다.",
-    교통: "교통비 지출이 많으시네요! 대중교통 할인 카드를 확인해보세요.",
+      '편의점 이용이 많으시네요! 편의점 할인 혜택이 있는 카드를 확인해보세요.',
+    마트: '마트 사용이 많으시네요! 생활용품 구매 시 할인 혜택이 있는 카드를 추천합니다.',
+    '음식/카페':
+      '외식이 많으시네요! 음식점 할인이나 적립 혜택이 있는 카드를 추천합니다.',
+    교통: '교통비 지출이 많으시네요! 대중교통 할인 카드를 확인해보세요.',
     온라인쇼핑:
-      "온라인 쇼핑을 자주 이용하시네요! 온라인 결제 혜택이 있는 카드를 추천합니다.",
+      '온라인 쇼핑을 자주 이용하시네요! 온라인 결제 혜택이 있는 카드를 추천합니다.',
   };
   return (
     tips[topCategory] ||
-    "다양한 혜택을 비교해보시고 본인의 소비 패턴에 가장 적합한 카드를 선택하세요."
+    '다양한 혜택을 비교해보시고 본인의 소비 패턴에 가장 적합한 카드를 선택하세요.'
   );
 };
 
@@ -1110,7 +1116,7 @@ const getCategoriesCount = () => {
   const filteredTransactions = getStatisticsFilteredTransactions();
   filteredTransactions.forEach((transaction) => {
     const category =
-      transaction.merchantCategory || transaction.paymentType || "기타";
+      transaction.merchantCategory || transaction.paymentType || '기타';
     categories.add(category);
   });
   return categories.size;
@@ -1121,7 +1127,7 @@ const getTopCategory = () => {
   const filteredTransactions = getStatisticsFilteredTransactions();
   filteredTransactions.forEach((transaction) => {
     const category =
-      transaction.merchantCategory || transaction.paymentType || "기타";
+      transaction.merchantCategory || transaction.paymentType || '기타';
     const amount = Math.abs(transaction.amount || 0);
     categoryTotals[category] = (categoryTotals[category] || 0) + amount;
   });
@@ -1130,7 +1136,7 @@ const getTopCategory = () => {
     (a, b) => b[1] - a[1]
   );
 
-  return sortedCategories.length > 0 ? sortedCategories[0][0] : "없음";
+  return sortedCategories.length > 0 ? sortedCategories[0][0] : '없음';
 };
 
 const getTopCategories = () => {
@@ -1140,7 +1146,7 @@ const getTopCategories = () => {
 
   filteredTransactions.forEach((transaction) => {
     const category =
-      transaction.merchantCategory || transaction.paymentType || "기타";
+      transaction.merchantCategory || transaction.paymentType || '기타';
     const amount = Math.abs(transaction.amount || 0);
     categoryTotals[category] = (categoryTotals[category] || 0) + amount;
   });
@@ -1157,7 +1163,7 @@ const getTopCategories = () => {
 
 const getMostActiveDay = () => {
   const dayTotals = {};
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
   const filteredTransactions = getStatisticsFilteredTransactions();
 
   filteredTransactions.forEach((transaction) => {
@@ -1175,7 +1181,7 @@ const getMostActiveDay = () => {
 
   const sortedDays = Object.entries(dayTotals).sort((a, b) => b[1] - a[1]);
 
-  return sortedDays.length > 0 ? `${sortedDays[0][0]}요일` : "없음";
+  return sortedDays.length > 0 ? `${sortedDays[0][0]}요일` : '없음';
 };
 
 const getDailyAverage = () => {
@@ -1196,7 +1202,7 @@ const getUniqueCategories = () => {
   const categories = new Set();
   syncedTransactions.value.forEach((transaction) => {
     const category =
-      transaction.merchantCategory || transaction.paymentType || "기타";
+      transaction.merchantCategory || transaction.paymentType || '기타';
     categories.add(category);
   });
   return Array.from(categories).sort();
@@ -1228,7 +1234,7 @@ const getAvailableMonths = () => {
       if (!isNaN(date.getTime())) {
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
-        const monthKey = `${year}-${month.toString().padStart(2, "0")}`;
+        const monthKey = `${year}-${month.toString().padStart(2, '0')}`;
         months.add(monthKey);
       }
     }
@@ -1237,7 +1243,7 @@ const getAvailableMonths = () => {
   return Array.from(months)
     .sort((a, b) => b.localeCompare(a)) // 최신순 정렬
     .map((monthKey) => {
-      const [year, month] = monthKey.split("-");
+      const [year, month] = monthKey.split('-');
       return {
         value: monthKey,
         label: `${year}년 ${parseInt(month)}월`,
@@ -1273,7 +1279,7 @@ const getAllFilteredTransactions = () => {
         const month = date.getMonth() + 1;
         const transactionMonthKey = `${year}-${month
           .toString()
-          .padStart(2, "0")}`;
+          .padStart(2, '0')}`;
         return transactionMonthKey === monthFilter.value;
       }
       return false;
@@ -1285,9 +1291,9 @@ const getAllFilteredTransactions = () => {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(
       (transaction) =>
-        (transaction.merchantName || "").toLowerCase().includes(query) ||
-        (transaction.merchantCategory || "").toLowerCase().includes(query) ||
-        (transaction.paymentType || "").toLowerCase().includes(query)
+        (transaction.merchantName || '').toLowerCase().includes(query) ||
+        (transaction.merchantCategory || '').toLowerCase().includes(query) ||
+        (transaction.paymentType || '').toLowerCase().includes(query)
     );
   }
 
@@ -1295,7 +1301,7 @@ const getAllFilteredTransactions = () => {
   if (categoryFilter.value) {
     filtered = filtered.filter((transaction) => {
       const category =
-        transaction.merchantCategory || transaction.paymentType || "기타";
+        transaction.merchantCategory || transaction.paymentType || '기타';
       return category === categoryFilter.value;
     });
   }
@@ -1305,11 +1311,11 @@ const getAllFilteredTransactions = () => {
     filtered = filtered.filter((transaction) => {
       const amount = Math.abs(transaction.amount || 0);
       switch (amountFilter.value) {
-        case "small":
+        case 'small':
           return amount < 100000;
-        case "medium":
+        case 'medium':
           return amount >= 100000 && amount <= 500000;
-        case "large":
+        case 'large':
           return amount > 500000;
         default:
           return true;
@@ -1320,13 +1326,13 @@ const getAllFilteredTransactions = () => {
   // 정렬
   filtered.sort((a, b) => {
     switch (sortBy.value) {
-      case "amount":
+      case 'amount':
         return Math.abs(b.amount || 0) - Math.abs(a.amount || 0);
-      case "merchant":
-        return (a.merchantName || "").localeCompare(b.merchantName || "");
-      case "date":
+      case 'merchant':
+        return (a.merchantName || '').localeCompare(b.merchantName || '');
+      case 'date':
       default:
-        return (b.transactionDate || "").localeCompare(a.transactionDate || "");
+        return (b.transactionDate || '').localeCompare(a.transactionDate || '');
     }
   });
 
@@ -1343,9 +1349,9 @@ const getFilteredTransactions = () => {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(
       (transaction) =>
-        (transaction.merchantName || "").toLowerCase().includes(query) ||
-        (transaction.merchantCategory || "").toLowerCase().includes(query) ||
-        (transaction.paymentType || "").toLowerCase().includes(query)
+        (transaction.merchantName || '').toLowerCase().includes(query) ||
+        (transaction.merchantCategory || '').toLowerCase().includes(query) ||
+        (transaction.paymentType || '').toLowerCase().includes(query)
     );
   }
 
@@ -1353,7 +1359,7 @@ const getFilteredTransactions = () => {
   if (categoryFilter.value) {
     filtered = filtered.filter((transaction) => {
       const category =
-        transaction.merchantCategory || transaction.paymentType || "기타";
+        transaction.merchantCategory || transaction.paymentType || '기타';
       return category === categoryFilter.value;
     });
   }
@@ -1363,11 +1369,11 @@ const getFilteredTransactions = () => {
     filtered = filtered.filter((transaction) => {
       const amount = Math.abs(transaction.amount || 0);
       switch (amountFilter.value) {
-        case "small":
+        case 'small':
           return amount < 100000;
-        case "medium":
+        case 'medium':
           return amount >= 100000 && amount <= 500000;
-        case "large":
+        case 'large':
           return amount > 500000;
         default:
           return true;
@@ -1378,13 +1384,13 @@ const getFilteredTransactions = () => {
   // 정렬
   filtered.sort((a, b) => {
     switch (sortBy.value) {
-      case "amount":
+      case 'amount':
         return Math.abs(b.amount || 0) - Math.abs(a.amount || 0);
-      case "merchant":
-        return (a.merchantName || "").localeCompare(b.merchantName || "");
-      case "date":
+      case 'merchant':
+        return (a.merchantName || '').localeCompare(b.merchantName || '');
+      case 'date':
       default:
-        return (b.transactionDate || "").localeCompare(a.transactionDate || "");
+        return (b.transactionDate || '').localeCompare(a.transactionDate || '');
     }
   });
 
@@ -1443,16 +1449,16 @@ const changePage = (newPage) => {
 };
 
 const formatTime = (dateString) => {
-  if (!dateString) return "";
+  if (!dateString) return '';
   // YYYYMMDD 형식에서 시간은 없으므로 기본값 반환
-  return "오전";
+  return '오전';
 };
 
 // 액션 메서드들
 
 const exportTransactions = () => {
   // 거래내역 내보내기 로직
-  alert("거래내역을 내보냅니다.");
+  alert('거래내역을 내보냅니다.');
 };
 
 const syncTransactions = () => {
@@ -1463,7 +1469,7 @@ const syncTransactions = () => {
 };
 
 const formatCurrency = (amount) => {
-  if (!amount) return "0";
+  if (!amount) return '0';
   return Number(amount).toLocaleString();
 };
 
@@ -1655,7 +1661,7 @@ onMounted(() => {
 }
 
 .guide-icon .icon-chart::before {
-  content: "📊";
+  content: '📊';
 }
 
 .guide-title {
@@ -1680,7 +1686,7 @@ onMounted(() => {
 }
 
 .sync-transaction-btn .icon-sync::before {
-  content: "🔄";
+  content: '🔄';
   margin-right: var(--spacing-xs, 8px);
 }
 
@@ -2443,6 +2449,11 @@ onMounted(() => {
   width: 100%;
 }
 
+/* KB카드 추천 섹션 스타일링 */
+.kb-recommendation-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .card-recommendations {
@@ -2464,6 +2475,10 @@ onMounted(() => {
   }
 
   .card-slider {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .kb-recommendation-section {
     margin-bottom: var(--spacing-xl);
   }
 
