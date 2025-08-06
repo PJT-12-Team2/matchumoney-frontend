@@ -14,7 +14,7 @@
               </p>
             </div>
             <h2 class="user-name">
-              <span class="nickname">{{ user?.nickname ?? "정보 없음" }}</span>
+              <span class="nickname">{{ user?.nickname ?? '정보 없음' }}</span>
               <span class="level-title">님</span>
               <span class="edit" @click="router.push('/myinfo')">수정하기</span>
             </h2>
@@ -57,6 +57,7 @@
           <div class="card-slider-wrapper">
             <CardSlider
               :cards="cards"
+              :hideCardInfo="true"
               @cardChange="handleCardChange"
               @register="showSyncModal = true"
               @update="handleCardUpdate" />
@@ -102,7 +103,7 @@
                   </template>
                 </div>
                 <div class="product-info">
-                  <h3>{{ product.isFallback ? "상품 없음" : product.productName }}</h3>
+                  <h3>{{ product.isFallback ? '상품 없음' : product.productName }}</h3>
                 </div>
               </div>
             </div>
@@ -111,44 +112,143 @@
       </BaseCardGrey>
     </div>
   </div>
+
+  <!-- 카드 동기화 모달 -->
+  <CardSyncModal :isVisible="showSyncModal" @close="showSyncModal = false" @sync="handleCardSync" />
 </template>
 
 <script setup>
-import CardSlider from "@/components/cards/CardSlider.vue";
-import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
-import { ref, computed, onMounted } from "vue";
-import userApi from "@/api/user";
-import cardsApi from "@/api/cards";
-import { useRouter } from "vue-router";
+import CardSlider from '@/components/cards/CardSlider.vue';
+import CardSyncModal from '@/components/cards/CardSyncModal.vue';
+import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
+import { ref, computed, onMounted } from 'vue';
+import userApi from '@/api/user';
+import cardsApi from '@/api/cards';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
 const cards = ref([]);
 const showSyncModal = ref(false);
+const isLoading = ref(false);
 
-const handleCardChange = (card) => {
-  console.log("카드 선택됨:", card);
+const userId = computed(() => authStore.getUserId());
+
+// 카드 동기화
+const handleCardSync = async (syncData) => {
+  console.log('📍 handleCardSync 호출됨');
+  console.log('테스트 로그1');
+
+  console.log('📌 현재 userId:', userId.value);
+  console.log('✅ userId 유효성 체크 완료:', !!userId.value);
+  if (!userId.value) {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+    return;
+  }
+  console.log('테스트 로그2');
+  try {
+    const requestData = {
+      userId: parseInt(userId.value),
+      cardId: syncData.cardId,
+      cardPw: syncData.cardPw,
+    };
+
+    console.log('📤 syncKbCards 요청 보냄, 데이터:', requestData);
+    console.log('🔄 카드 동기화 시작:', requestData);
+    const response = await cardsApi.syncKbCards(requestData);
+    console.log('📥 syncKbCards 응답 수신:', response);
+    console.log('✅ 카드 동기화 완료:', response);
+
+    alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
+
+    // 카드 동기화 모달 닫기
+    showSyncModal.value = false;
+
+    // 목록 새로고침
+    await fetchCards();
+  } catch (error) {
+    console.error('🧨 동기화 에러 발생:', error);
+    console.error('🧨 error.response:', error.response);
+    console.error('❌ 카드 동기화 실패:', error);
+
+    if (error.response?.status === 401) {
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      authStore.logout();
+      router.push('/login');
+    } else if (error.response?.status === 400) {
+      alert('입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.');
+    } else if (error.response?.status === 500) {
+      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } else {
+      alert(`카드 동기화에 실패했습니다: ${error.response?.data?.message || error.message}`);
+    }
+  }
 };
+
+// 카드 슬라이더에서 카드 변경 시 거래내역 및 카드 혜택 조회
+const handleCardChange = async (card) => {
+  // console.log("🔄 카드 변경:", card.cardName);
+  await Promise.all([loadExistingTransactions(card), loadCurrentCardBenefits(card)]);
+};
+
+// 카드 업데이트 (CardSyncModal 표시)
 const handleCardUpdate = () => {
-  console.log("카드 업데이트 요청");
+  // console.log("카드 업데이트 버튼 클릭 - CardSyncModal 표시");
+  showSyncModal.value = true;
 };
-
-const userId = ref(null); // or use an existing user ID value
 
 const fetchCards = async () => {
-  const res = await cardsApi.getUserCards(userId.value);
-  cards.value = res.result || [];
+  if (!userId.value) {
+    console.error('사용자 ID가 없습니다. 로그인이 필요합니다.');
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    console.log('📋 카드 목록 조회 시작, userId:', userId.value);
+    const response = await cardsApi.getUserCards(userId.value);
+    console.log('✅ 카드 목록 조회 성공:', response);
+
+    cards.value = response.result || [];
+
+    // if (cards.value.length === 0) {
+    //   console.log("💡 등록된 카드가 없습니다.");
+    // } else {
+    //   console.log(`💡 ${cards.value.length}개의 카드를 불러왔습니다.`);
+    // }
+  } catch (error) {
+    console.error('❌ 카드 목록 조회 실패:', error);
+
+    if (error.response?.status === 401) {
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      authStore.logout();
+      router.push('/login');
+    } else if (error.response?.status === 404) {
+      console.log('💡 사용자 카드 정보가 없습니다.');
+      cards.value = [];
+    } else {
+      alert(`카드 목록을 불러오는데 실패했습니다: ${error.response?.data?.message || error.message}`);
+    }
+  } finally {
+    isLoading.value = false;
+  }
 };
 const router = useRouter();
 const user = ref({});
 const exp = ref(0); // default exp
 const level = computed(() => Math.floor(exp.value / 100) + 1);
 const fillPercentage = computed(() => `${exp.value % 100}%`);
-const selectedTab = ref("예금");
+const selectedTab = ref('예금');
 
 const favoriteSavings = ref([]);
 const favoriteDeposits = ref([]);
 const favoriteCards = ref([]);
 const products = ref([]);
 const myPageInfo = ref({ persona: {} });
-const personaImageUrl = ref("");
+const personaImageUrl = ref('');
 
 onMounted(async () => {
   try {
@@ -161,13 +261,13 @@ onMounted(async () => {
 
     // Updated logic for extracting filename and generating image URL
     const rawImagePath = data.persona?.imageUrl;
-    const fileName = rawImagePath?.split("/").pop();
-    const imageUrl = fileName ? new URL(`../../assets/character_images/${fileName}`, import.meta.url).href : "";
+    const fileName = rawImagePath?.split('/').pop();
+    const imageUrl = fileName ? new URL(`../../assets/character_images/${fileName}`, import.meta.url).href : '';
     personaImageUrl.value = imageUrl;
 
     myPageInfo.value.persona = {
-      quote: data.persona?.quote ?? "",
-      nameKo: data.persona?.nameKo ?? "",
+      quote: data.persona?.quote ?? '',
+      nameKo: data.persona?.nameKo ?? '',
       imageUrl,
     };
 
@@ -176,33 +276,30 @@ onMounted(async () => {
     favoriteCards.value = data.favoriteCards;
 
     updateProducts();
-    // fetch userId for cards API if not already set
-    userId.value = data.userId ?? data.id ?? null;
-    fetchCards();
   } catch (error) {
-    console.error("❌ 마이페이지 정보 조회 실패", error);
+    console.error('❌ 마이페이지 정보 조회 실패', error);
   }
 });
 
 function updateProducts() {
   let items = [];
-  if (selectedTab.value === "적금") {
+  if (selectedTab.value === '적금') {
     items = favoriteSavings.value.map((item) => ({
       bankName: item.company,
       productName: item.title,
-      type: "적금",
+      type: '적금',
     }));
-  } else if (selectedTab.value === "예금") {
+  } else if (selectedTab.value === '예금') {
     items = favoriteDeposits.value.map((item) => ({
       bankName: item.bankName,
       productName: item.productName,
-      type: "예금",
+      type: '예금',
     }));
-  } else if (selectedTab.value === "카드") {
+  } else if (selectedTab.value === '카드') {
     items = favoriteCards.value.map((item) => ({
       productName: item.name,
       productImage: item.imageUrl,
-      type: "카드",
+      type: '카드',
     }));
   }
 
@@ -217,7 +314,7 @@ function updateProducts() {
   products.value = items;
 }
 
-import { watch } from "vue";
+import { watch } from 'vue';
 watch(selectedTab, () => {
   updateProducts();
 });
@@ -226,48 +323,52 @@ const getProductsByTab = computed(() => products.value);
 
 const getBankLogo = (bankName) => {
   // 공통 로고 파일
-  const busanLogo = new URL("@/assets/bank-Logos/BK_BUSAN_Profile.png", import.meta.url).href;
-  const hanaLogo = new URL("@/assets/bank-Logos/BK_HANA_Profile.png", import.meta.url).href;
+  const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
+  const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
 
   const logoMap = {
     // 주요 시중은행
-    국민은행: new URL("@/assets/bank-Logos/BK_KB_Profile.png", import.meta.url).href,
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
     하나은행: hanaLogo,
-    농협은행주식회사: new URL("@/assets/bank-Logos/BK_NH_Profile.png", import.meta.url).href,
-    신한은행: new URL("@/assets/bank-Logos/BK_Shinhan_Profile.png", import.meta.url).href,
-    우리은행: new URL("@/assets/bankLogo_images/BK_Woori_Profile.png", import.meta.url).href,
+    농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
+    신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
+    우리은행: new URL('@/assets/bankLogo_images/BK_Woori_Profile.png', import.meta.url).href,
 
     // 특수은행
-    중소기업은행: new URL("@/assets/bank-Logos/BK_IBK_Profile.png", import.meta.url).href,
-    한국산업은행: new URL("@/assets/bank-Logos/BK_KDB_Profile.png", import.meta.url).href,
-    수협은행: new URL("@/assets/bank-Logos/BK_SH_Profile.png", import.meta.url).href,
+    중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
+    한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
 
     // 지방은행
     경남은행: busanLogo,
     부산은행: busanLogo,
-    광주은행: new URL("@/assets/bank-Logos/BK_KWANGJU_Profile.png", import.meta.url).href,
-    전북은행: new URL("@/assets/bank-Logos/BK_JEONBUK_Profile.png", import.meta.url).href,
-    제주은행: new URL("@/assets/bank-Logos/BK_JEJU_Profile.png", import.meta.url).href,
-    아이엠뱅크: new URL("@/assets/bank-Logos/BK_DAEGU_Profile.png", import.meta.url).href,
+    광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
+    전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
+    제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
+    아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
 
     // 외국계은행
-    한국스탠다드차타드은행: new URL("@/assets/bank-Logos/BK_SC_Profile.png", import.meta.url).href,
+    한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
 
     // 인터넷은행
-    "주식회사 카카오뱅크": new URL("@/assets/bank-Logos/BK_KAKAO_Profile.png", import.meta.url).href,
-    "주식회사 케이뱅크": new URL("@/assets/bank-Logos/BK_K_Profile.png", import.meta.url).href,
-    "토스뱅크 주식회사": new URL("@/assets/bank-Logos/BK_TOSS_Profile.png", import.meta.url).href,
+    '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
+    '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
+    '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
 
     // 주식회사 명칭 포함
-    "주식회사 하나은행": hanaLogo,
+    '주식회사 하나은행': hanaLogo,
   };
 
   return logoMap[bankName] || null;
 };
 
 function selectProduct(product) {
-  console.log("Selected product:", product);
+  console.log('Selected product:', product);
 }
+
+onMounted(() => {
+  fetchCards();
+});
 </script>
 
 <style scoped>
@@ -275,9 +376,9 @@ function selectProduct(product) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   grid-template-areas:
-    "profile profile"
-    "type type"
-    "left right";
+    'profile profile'
+    'type type'
+    'left right';
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-xl);
   box-sizing: border-box;
@@ -506,10 +607,10 @@ function selectProduct(product) {
 @media (max-width: 768px) {
   .my-page {
     grid-template-areas:
-      "profile"
-      "type"
-      "left"
-      "right";
+      'profile'
+      'type'
+      'left'
+      'right';
     grid-template-columns: 1fr;
   }
   .profile-image-placeholder {
@@ -572,5 +673,52 @@ function selectProduct(product) {
   padding: 0 1rem;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+.card-visual-list {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 1rem 0;
+}
+.card-visual-section {
+  width: 150px;
+  height: 100px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.card-visual-section img.card-image {
+  max-width: 80%;
+  height: auto;
+}
+.card-visual-section .card-name {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.hide-card-info :deep(.card-info-section) {
+  display: none !important;
+}
+
+::v-deep .card-info-section {
+  display: none !important;
+}
+.slider-container {
+  height: 10rem;
+  overflow: hidden;
+}
+.slide-item {
+  flex: 0 0 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
