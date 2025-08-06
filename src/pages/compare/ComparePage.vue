@@ -94,8 +94,8 @@ watch(
 }
 @media (max-width: 640px) {
   .content-compare {
-    width: 100%;
-    margin: auto;
+    width: 90%;
+    margin: 2rem auto;
   }
 }
 </style>
