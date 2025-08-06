@@ -31,6 +31,7 @@
         <div class="slide-item">
           <ActionCardSlide
             :has-cards="cards.length > 0"
+            :show-kb-recommendation="true"
             @register="$emit('register')"
             @update="$emit('update')"
           />

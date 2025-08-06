@@ -119,4 +119,12 @@ export default {
     // console.log("✅ 저장된 추천 삭제 응답:", data);
     return data;
   },
+
+  // KB국민카드 추천 조회
+  async getKbCardRecommendations() {
+    console.log("🏦 KB국민카드 추천 조회 요청");
+    const { data } = await api.get(`/card-recommendation/kb-cards`);
+    console.log("✅ KB국민카드 추천 응답:", data);
+    return data;
+  },
 };
