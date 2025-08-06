@@ -68,11 +68,14 @@ async function fetchProducts() {
 
 //  탭 또는 비교 리스트 변경 시 fetch
 watch(
-  [activeTab, () => store.compareList[activeTab.value]],
-  async () => {
-    await fetchProducts();
+  () => route.query.type,
+  (newType) => {
+    const upper = (newType || '').toString().toUpperCase();
+    if (['DEPOSIT', 'SAVING', 'CARD'].includes(upper)) {
+      activeTab.value = upper;
+    }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 </script>
 <style scoped>
