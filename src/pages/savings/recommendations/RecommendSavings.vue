@@ -89,7 +89,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="content">
+  <div class="content-my">
     <RecommendationLayout title="적금 추천">
       <template #slider>
         <SavingMyProductSlider
@@ -127,9 +127,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.content {
+.content-my {
   width: 80%;
   margin: auto;
+  padding: 2rem 0;
 }
 
 .end-message {
@@ -139,8 +140,8 @@ onUnmounted(() => {
 }
 
 @media (max-width: 640px) {
-  .content {
-    width: 100%;
+  .content-my {
+    width: 90%;
   }
 }
 .center {

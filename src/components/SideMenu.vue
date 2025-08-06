@@ -30,10 +30,6 @@
         <!-- 마이데이터 섹션 -->
         <div class="menu-section">
           <h6 class="section-title">마이데이터</h6>
-          <!-- <RouterLink to="/asset" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>자산관리</span>
-          </RouterLink> -->
           <RouterLink
             to="/deposits/recommendations/history"
             class="menu-item sub-item"
@@ -57,22 +53,38 @@
         <!-- 상품비교 섹션 -->
         <div class="menu-section">
           <h6 class="section-title">상품비교</h6>
-          <!-- <RouterLink to="/card" class="menu-item">
+          <!-- <RouterLink to="/compare" class="menu-item">
             <span class="menu-icon">⚖️</span>
             <span>상품비교</span>
           </RouterLink> -->
-          <RouterLink to="/compare/deposits" class="menu-item sub-item">
+          <RouterLink to="/compare" class="menu-item sub-item">
             <span class="menu-icon">💰</span>
-            <span>예금</span>
+            <span>상품비교</span>
           </RouterLink>
-          <RouterLink to="/compare/savings" class="menu-item sub-item">
+
+          <!-- <RouterLink
+            to="/compare?type=SAVING"
+            class="menu-item sub-item"
+            :class="{
+              'router-link-active':
+                route.path === '/compare' && route.query.type === 'SAVING',
+            }"
+          >
             <span class="menu-icon">🏦</span>
             <span>적금</span>
           </RouterLink>
-          <RouterLink to="/compare/cards" class="menu-item sub-item">
+
+          <RouterLink
+            to="/compare?type=CARD"
+            class="menu-item sub-item"
+            :class="{
+              'router-link-active':
+                route.path === '/compare' && route.query.type === 'CARD',
+            }"
+          >
             <span class="menu-icon">💳</span>
             <span>카드</span>
-          </RouterLink>
+          </RouterLink> -->
         </div>
 
         <!-- 교육 섹션 -->
@@ -109,6 +121,19 @@
 </template>
 
 <script setup>
+import { useRoute, useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+
+const route = useRoute();
+const router = useRouter();
+
+onMounted(() => {
+  // compare 페이지인데 type이 없을 경우 기본값 설정
+  if (route.path === '/compare' && !route.query.type) {
+    router.replace({ path: '/compare', query: { type: 'DEPOSIT' } });
+  }
+});
+
 defineProps({ visible: Boolean });
 </script>
 
@@ -345,5 +370,11 @@ defineProps({ visible: Boolean });
     font-size: 13px;
     padding: 6px 10px;
   }
+}
+
+.sub-item.router-link-active {
+  background: var(--color-accent);
+  color: white;
+  border-left-color: var(--color-dark);
 }
 </style>

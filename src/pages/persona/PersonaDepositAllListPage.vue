@@ -20,11 +20,11 @@
             <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>
-                <strong>최고 금리:</strong>
+                <strong>최고 금리: </strong>
                 {{ deposit.maxRate }}
               </span>
               <span>
-                <strong>최저 금리:</strong>
+                <strong>최저 금리: </strong>
                 {{ deposit.baseRate }}
               </span>
             </div>

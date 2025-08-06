@@ -33,9 +33,9 @@
             <div class="product-sub">{{ p.korCoName }}</div>
           </div>
         </div>
-        <button @click="$emit('viewDetail', p)" class="detail-btn">
-          자세히 보기
-        </button>
+        <RouterLink :to="`/detail/deposit/${p.id}`" class="detail-btn">
+          <div>자세히 보기</div>
+        </RouterLink>
       </div>
 
       <!-- 추가 버튼 -->
@@ -299,6 +299,7 @@ function isRateBest(period, index) {
   font-weight: bold;
   border: none;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .section-block {
