@@ -49,12 +49,19 @@
         </div>
         <div v-else>
           <!-- 예금 탭 -->
-          <div v-if="currentTab === 'deposit'" class="search-results-grid">
+          <div v-if="currentTab === 'deposit'" class="card-search-results-grid">
             <div
               v-for="product in filteredFavorites"
               :key="product.id"
               class="product-card"
               @click="selectProduct(product)">
+              <div class="favorite-top-right">
+                <FavoriteToggle
+                  @click.stop
+                  v-model="product.isStarred"
+                  :productId="product.id"
+                  :productType="productType" />
+              </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
                   <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
@@ -87,24 +94,39 @@
                   </div>
                 </div>
               </div>
+              <div class="product-action-row">
+                <CompareButton :productId="product.id" :productType="productType" @click.stop />
+                <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
+                  {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
+                </span>
+              </div>
             </div>
           </div>
 
           <!-- 적금 탭 -->
-          <div v-else-if="currentTab === 'saving'" class="search-results-grid">
+          <div v-else-if="currentTab === 'saving'" class="card-search-results-grid">
             <div
               v-for="product in filteredFavorites"
               :key="product.id"
               class="product-card"
               @click="selectProduct(product)">
+              <div class="favorite-top-right">
+                <FavoriteToggle
+                  @click.stop
+                  v-model="product.isStarred"
+                  :productId="product.id"
+                  :productType="productType" />
+              </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
                   <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
                 </div>
+
                 <div class="product-name-block">
                   <div class="bank-name-bold">{{ product.bank }}</div>
                   <div class="product-name-bold">{{ product.name }}</div>
                 </div>
+
                 <div class="product-info-block">
                   <div class="rate-line no-wrap">
                     <span class="label-bold">최고 금리 :&nbsp;</span>
@@ -125,6 +147,13 @@
                   </div>
                 </div>
               </div>
+
+              <div class="product-action-row">
+                <CompareButton :productId="product.id" :productType="productType" @click.stop />
+                <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
+                  {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -135,6 +164,13 @@
               :key="product.id"
               class="product-card"
               @click="selectProduct(product)">
+              <div class="favorite-top-right">
+                <FavoriteToggle
+                  @click.stop
+                  v-model="product.isStarred"
+                  :productId="product.id"
+                  :productType="productType" />
+              </div>
               <div class="product-content">
                 <img :src="product.imageUrl" :alt="product.name" />
                 <div class="product-info">
@@ -153,6 +189,12 @@
                   </div>
                 </div>
               </div>
+              <div class="product-action-row">
+                <CompareButton :productId="product.id" :productType="productType" @click.stop />
+                <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
+                  {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -164,6 +206,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import BaseButton from '@/components/base/BaseButton.vue';
+
+import CompareButton from '@/components/common/CompareButton.vue';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 
 const selectedTab = ref('deposit');
 const tabs = [
@@ -340,6 +385,27 @@ const getRateWithTerm = (product, rateType) => {
 const selectProduct = (product) => {
   alert(`${product.name}을 선택했습니다.`);
 };
+
+// --- Like/Reaction logic ---
+import { useRouter } from 'vue-router';
+// Dummy userId for demo; replace with actual user logic as needed
+const userId = ref(null); // or e.g. ref('user123')
+const router = useRouter();
+const isLiked = ref(false);
+const likeCount = ref(0);
+const toggleLike = () => {
+  isLiked.value = !isLiked.value;
+  likeCount.value += isLiked.value ? 1 : -1;
+};
+const handleLikeClick = () => {
+  if (!userId.value) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      router.push('/login');
+    }
+    return;
+  }
+  toggleLike();
+};
 </script>
 
 <style scoped>
@@ -386,6 +452,10 @@ const selectProduct = (product) => {
 }
 
 .product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
   background: var(--color-light);
   border-radius: 16px;
   padding: 20px;
@@ -412,7 +482,6 @@ const selectProduct = (product) => {
   height: 5rem;
   border-radius: 8px;
   object-fit: cover;
-  background: var(--color-white);
   box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
   border: 0.1rem solid var(--color-gray-200);
 }
@@ -446,6 +515,8 @@ const selectProduct = (product) => {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-lg);
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .bank-logo-container {
@@ -667,5 +738,23 @@ const selectProduct = (product) => {
   .card-search-results-grid .product-content {
     gap: 1rem;
   }
+}
+
+.product-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.favorite-top-right {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+.product-card {
+  position: relative; /* Ensure absolute positioning works inside */
 }
 </style>
