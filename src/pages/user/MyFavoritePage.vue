@@ -1,14 +1,37 @@
 <template>
   <div class="my-favorite-page">
     <main class="main-content">
+      <h1 class="page-title">즐겨찾기한 상품</h1>
+
+      <hr />
       <div class="tab-selector">
-        <div
-          v-for="(tab, idx) in tabs"
-          :key="idx"
-          :class="['tab-button', { active: currentTab === tab.value }]"
-          @click="currentTab = tab.value">
-          {{ tab.label }}
-        </div>
+        <BaseButton
+          :style="{
+            margin: '0 0.5rem',
+            backgroundColor: selectedTab === 'deposit' ? 'var(--color-accent)' : 'var(--bg-content)',
+            color: selectedTab === 'deposit' ? 'var(--color-white)' : 'var(--text-primary)',
+          }"
+          @click="selectedTab = 'deposit'">
+          예금
+        </BaseButton>
+        <BaseButton
+          :style="{
+            margin: '0 0.5rem',
+            backgroundColor: selectedTab === 'saving' ? 'var(--color-accent)' : 'var(--bg-content)',
+            color: selectedTab === 'saving' ? 'var(--color-white)' : 'var(--text-primary)',
+          }"
+          @click="selectedTab = 'saving'">
+          적금
+        </BaseButton>
+        <BaseButton
+          :style="{
+            margin: '0 0.5rem',
+            backgroundColor: selectedTab === 'card' ? 'var(--color-accent)' : 'var(--bg-content)',
+            color: selectedTab === 'card' ? 'var(--color-white)' : 'var(--text-primary)',
+          }"
+          @click="selectedTab = 'card'">
+          카드
+        </BaseButton>
       </div>
 
       <section class="search-results">
@@ -42,11 +65,11 @@
                     <span class="highlight-rate">{{ getRateWithTerm(product, "max") }}</span>
                   </div>
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">최저 금리 :</span>
+                    최저 금리 :
                     {{ getRateWithTerm(product, "base") }}
                   </div>
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">기준 기간 :</span>
+                    기준 기간 :
                     {{
                       (() => {
                         const best = product.depositOptions?.reduce((prev, curr) => {
@@ -84,15 +107,15 @@
                     <span class="highlight-rate">{{ product.maxRate }}</span>
                   </div>
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">최저 금리 :</span>
+                    최저 금리 :
                     {{ product.baseRate }}
                   </div>
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">매월 최대 금액 :</span>
+                    매월 최대 금액 :
                     {{ product.maxLimit }}
                   </div>
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">기준 기간 :</span>
+                    기준 기간 :
                     {{ filters.term !== "전체" ? filters.term + "개월" : "정보 없음" }}
                   </div>
                 </div>
@@ -135,14 +158,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import BaseButton from "@/components/base/BaseButton.vue";
 
+const selectedTab = ref("deposit");
 const tabs = [
   { label: "예금", value: "deposit" },
   { label: "적금", value: "saving" },
   { label: "카드", value: "card" },
 ];
-const currentTab = ref("saving");
-const currentTabLabel = computed(() => tabs.find((t) => t.value === currentTab.value)?.label || "");
+const currentTab = selectedTab;
+const currentTabLabel = computed(() => tabs.find((t) => t.value === selectedTab.value)?.label || "");
 
 const loading = ref(false);
 
@@ -177,8 +202,8 @@ const allFavorites = ref([
   },
   {
     id: 3,
-    name: "혜택카드",
-    bank: "우리은행",
+    name: "신한카드 B.Big(삑)",
+    bank: "신한카드",
     bankInitial: "woori",
     baseRate: "-",
     maxRate: "-",
@@ -319,27 +344,34 @@ const selectProduct = (product) => {
   padding: 2rem;
 }
 
+.page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+}
+
 .tab-selector {
   display: flex;
   justify-content: center;
   margin-bottom: 2rem;
 }
 
-.tab-button {
-  padding: 0.75rem 1.5rem;
-  margin: 0 0.5rem;
-  border: 2px solid var(--color-gray-300);
-  border-radius: 1rem;
-  cursor: pointer;
-  font-weight: bold;
-  background-color: var(--color-white);
+/* Tab button and BaseButton border and hover effect, matching product cards */
+.base-button {
+  border: 2px solid transparent;
+  border-radius: var(--spacing-xl);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-card);
+  background-color: var(--bg-content); /* match card background */
   color: var(--text-primary);
 }
 
-.tab-button.active {
-  background-color: var(--color-success-light);
-  border-color: var(--color-success);
-  color: var(--color-dark);
+.base-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-accent);
+  background-color: var(--color-gray-200);
 }
 
 .search-results-grid {
@@ -380,6 +412,12 @@ const selectProduct = (product) => {
   border: 0.1rem solid var(--color-gray-200);
 }
 
+.product-info h4 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+}
+
 .product-info {
   display: flex;
   flex-direction: column;
@@ -387,18 +425,15 @@ const selectProduct = (product) => {
   align-items: flex-start;
   text-align: left;
 }
-
-/* Only apply the new h4 style to card tab card layout */
-.card-search-results-grid .product-info h4 {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: bold;
+.product-info > div,
+.product-info > h4 {
+  line-height: 1.6;
 }
 
 .label {
   font-weight: 600;
-  color: var(--color-dark);
-  margin-right: 0.25rem;
+  margin-right: 4px;
+  color: #333;
 }
 
 .product-card-horizontal {
@@ -534,33 +569,20 @@ const selectProduct = (product) => {
   }
 }
 
-@media (max-width: 768px) {
-  .search-results-grid {
-    grid-template-columns: 1fr;
-  }
+/* Card tab specific styles */
 
-  .product-card-horizontal {
-    flex-direction: row;
-    gap: 1rem;
-  }
-
-  .bank-logo-container,
-  .bank-logo-round {
-    width: 4rem;
-    height: 4rem;
-  }
-
-  .product-name-block {
-    padding: 0 0.5rem;
-    align-items: center;
-  }
-
-  .product-info-block {
-    align-items: flex-end;
-  }
+.product-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+}
+.product-info > div,
+.product-info > h4 {
+  line-height: 1.6;
 }
 
-/* Card tab specific styles */
 .card-search-results-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -602,20 +624,43 @@ const selectProduct = (product) => {
   flex-shrink: 0;
 }
 
-.card-search-results-grid .product-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  text-align: left;
-}
+@media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
 
-.card-search-results-grid .product-info > div {
-  line-height: 1.6;
-  font-size: var(--font-size-base);
-}
+  .product-card-horizontal {
+    flex-direction: row;
+    gap: 1rem;
+  }
 
-.product-info > div {
-  font-size: var(--font-size-sm);
+  .bank-logo-container,
+  .bank-logo-round {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .product-name-block {
+    padding: 0 0.5rem;
+    align-items: center;
+  }
+
+  .product-info-block {
+    align-items: flex-end;
+  }
+
+  .card-search-results-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .card-search-results-grid .product-card {
+    height: auto;
+  }
+
+  .card-search-results-grid .product-content {
+    gap: 1rem;
+  }
 }
 </style>
