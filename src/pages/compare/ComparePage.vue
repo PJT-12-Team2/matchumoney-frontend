@@ -65,8 +65,8 @@ async function fetchProducts() {
     console.error('비교 리스트 불러오기 실패:', e);
   }
 }
-
 //  탭 또는 비교 리스트 변경 시 fetch
+// route 쿼리 → activeTab 연결
 watch(
   () => route.query.type,
   (newType) => {
@@ -76,6 +76,15 @@ watch(
     }
   },
   { immediate: true }
+);
+
+// activeTab or compareList → 데이터 fetch
+watch(
+  [activeTab, () => store.compareList[activeTab.value]],
+  async () => {
+    await fetchProducts();
+  },
+  { immediate: true, deep: true }
 );
 </script>
 <style scoped>
