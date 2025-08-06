@@ -20,15 +20,15 @@
           <SwiperSlide v-for="card in carouselCards" :key="card.id" class="carousel-card" @click="selectProduct(card)">
             <img :src="card.image" :alt="card.name" class="carousel-card-image" />
             <div class="carousel-card-name">{{ card.name }}</div>
-            <div>{{ card.issuer || "카드사 미정" }}</div>
+            <div>{{ card.issuer || '카드사 미정' }}</div>
             <div class="carousel-card-benefit">
               <div>
                 <span class="label">전월실적금액:</span>
-                {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + "원" : "정보 없음" }}
+                {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
               </div>
               <div>
                 <span class="label">연회비 정보:</span>
-                {{ card.annualFee || "정보 없음" }}
+                {{ card.annualFee || '정보 없음' }}
               </div>
             </div>
           </SwiperSlide>
@@ -37,15 +37,15 @@
           <div v-for="card in carouselCards" :key="card.id" class="carousel-card" @click="selectProduct(card)">
             <img :src="card.image" :alt="card.name" class="carousel-card-image" />
             <div class="carousel-card-name">{{ card.name }}</div>
-            <div>{{ card.issuer || "카드사 미정" }}</div>
+            <div>{{ card.issuer || '카드사 미정' }}</div>
             <div class="carousel-card-benefit">
               <div>
                 <span class="label">전월실적금액:</span>
-                {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + "원" : "정보 없음" }}
+                {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
               </div>
               <div>
                 <span class="label">연회비 정보:</span>
-                {{ card.annualFee || "정보 없음" }}
+                {{ card.annualFee || '정보 없음' }}
               </div>
             </div>
           </div>
@@ -127,15 +127,15 @@
                 <h4>{{ product.name || product.cardName }}</h4>
                 <div>
                   <span class="label">카드사:</span>
-                  {{ product.issuer || "카드사 미정" }}
+                  {{ product.issuer || '카드사 미정' }}
                 </div>
                 <div>
                   <span class="label">전월실적금액:</span>
-                  {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + "원" : "정보 없음" }}
+                  {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
                 </div>
                 <div>
                   <span class="label">연회비 정보:</span>
-                  {{ product.annualFee || "정보 없음" }}
+                  {{ product.annualFee || '정보 없음' }}
                 </div>
                 <!-- 수정된 부분: topBenefits 표시 -->
                 <div v-if="product.topBenefits && product.topBenefits.length > 0" class="top-benefits">
@@ -159,12 +159,12 @@
   name: 'CardSearchPage'
 -->
 <script setup>
-import { ref, onMounted } from "vue";
-import api from "@/api";
-import { Swiper, SwiperSlide } from "swiper/vue";
-import "swiper/css";
-import "swiper/css/pagination";
-import { Pagination } from "swiper/modules";
+import { ref, onMounted } from 'vue';
+import api from '@/api';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { Pagination } from 'swiper/modules';
 const modules = [Pagination];
 
 const isMobile = ref(window.innerWidth <= 768);
@@ -172,7 +172,7 @@ const handleResize = () => {
   isMobile.value = window.innerWidth <= 768;
 };
 onMounted(() => {
-  window.addEventListener("resize", handleResize);
+  window.addEventListener('resize', handleResize);
 });
 
 // 📦 로딩 및 검색 결과 표시 상태
@@ -188,40 +188,40 @@ const filters = ref({
 
 // 📦 혜택 카테고리 정의
 const benefitCategories = ref([
-  { id: "모든가맹점", name: "모든가맹점", emoji: "🏢" },
-  { id: "교통", name: "교통", emoji: "🚗" },
-  { id: "주유", name: "주유", emoji: "🛢️" },
-  { id: "통신", name: "통신", emoji: "📱" },
-  { id: "마트/편의점", name: "마트/편의점", emoji: "🛒" },
-  { id: "쇼핑", name: "쇼핑", emoji: "🎁" },
-  { id: "푸드", name: "푸드", emoji: "🍽️" },
-  { id: "카페/디저트", name: "카페/디저트", emoji: "☕" },
-  { id: "뷰티/피트니스", name: "뷰티/피트니스", emoji: "🚨" },
-  { id: "무실적", name: "무실적", emoji: "💰" },
-  { id: "공과금/렌탈", name: "공과금/렌탈", emoji: "🧾" },
-  { id: "병원/약국", name: "병원/약국", emoji: "🏥" },
-  { id: "애완동물", name: "애완동물", emoji: "🐱" },
-  { id: "교육/육아", name: "교육/육아", emoji: "✏️" },
-  { id: "자동차/하이패스", name: "자동차/하이패스", emoji: "🚗" },
-  { id: "레저/스포츠", name: "레저/스포츠", emoji: "⚾" },
-  { id: "OTT/영화/문화", name: "OTT/영화/문화", emoji: "🎬" },
-  { id: "간편결제", name: "간편결제", emoji: "💳" },
-  { id: "항공마일리지", name: "항공마일리지", emoji: "✈️" },
-  { id: "공항라운지/PP", name: "공항라운지/PP", emoji: "💺" },
-  { id: "프리미엄", name: "프리미엄", emoji: "💎" },
-  { id: "여행/숙박", name: "여행/숙박", emoji: "🧳" },
-  { id: "해외", name: "해외", emoji: "🌍" },
-  { id: "비즈니스", name: "비즈니스", emoji: "💼" },
+  { id: '모든가맹점', name: '모든가맹점', emoji: '🏢' },
+  { id: '교통', name: '교통', emoji: '🚗' },
+  { id: '주유', name: '주유', emoji: '🛢️' },
+  { id: '통신', name: '통신', emoji: '📱' },
+  { id: '마트/편의점', name: '마트/편의점', emoji: '🛒' },
+  { id: '쇼핑', name: '쇼핑', emoji: '🎁' },
+  { id: '푸드', name: '푸드', emoji: '🍽️' },
+  { id: '카페/디저트', name: '카페/디저트', emoji: '☕' },
+  { id: '뷰티/피트니스', name: '뷰티/피트니스', emoji: '🚨' },
+  { id: '무실적', name: '무실적', emoji: '💰' },
+  { id: '공과금/렌탈', name: '공과금/렌탈', emoji: '🧾' },
+  { id: '병원/약국', name: '병원/약국', emoji: '🏥' },
+  { id: '애완동물', name: '애완동물', emoji: '🐱' },
+  { id: '교육/육아', name: '교육/육아', emoji: '✏️' },
+  { id: '자동차/하이패스', name: '자동차/하이패스', emoji: '🚗' },
+  { id: '레저/스포츠', name: '레저/스포츠', emoji: '⚾' },
+  { id: 'OTT/영화/문화', name: 'OTT/영화/문화', emoji: '🎬' },
+  { id: '간편결제', name: '간편결제', emoji: '💳' },
+  { id: '항공마일리지', name: '항공마일리지', emoji: '✈️' },
+  { id: '공항라운지/PP', name: '공항라운지/PP', emoji: '💺' },
+  { id: '프리미엄', name: '프리미엄', emoji: '💎' },
+  { id: '여행/숙박', name: '여행/숙박', emoji: '🧳' },
+  { id: '해외', name: '해외', emoji: '🌍' },
+  { id: '비즈니스', name: '비즈니스', emoji: '💼' },
 ]);
 
 // 📦 추천 캐러셀 카드 및 페르소나명
 const carouselCards = ref([]);
-const userPersonaType = ref("");
+const userPersonaType = ref('');
 
 // 📦 추천 카드 불러오기
 const fetchRecommendedCards = async () => {
   try {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem('accessToken');
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -229,26 +229,26 @@ const fetchRecommendedCards = async () => {
     };
 
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await api.get("/cards/recommendations/user/persona-id", config);
+    const personaIdRes = await api.get('/cards/recommendations/user/persona-id', config);
     const personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 카드 추천 가져오기
-    const recommendationRes = await api.get("/cards/recommendations/user/recommendation", config);
+    const recommendationRes = await api.get('/cards/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
-    userPersonaType.value = result.personaName || "토끼형";
+    userPersonaType.value = result.personaName || '토끼형';
     carouselCards.value = (result.cards || []).map((item) => ({
       id: item.cardId,
       name: item.cardName,
-      image: item.cardImageUrl || "",
-      issuer: item.issuer || "",
+      image: item.cardImageUrl || '',
+      issuer: item.issuer || '',
       preMonthMoney: item.preMonthMoney,
       annualFee: item.annualFee,
       topBenefits: item.topBenefits || [],
     }));
   } catch (err) {
-    console.error("❌ 사용자 기반 페르소나 카드 불러오기 실패:", err);
-    userPersonaType.value = "토끼형";
+    console.error('❌ 사용자 기반 페르소나 카드 불러오기 실패:', err);
+    userPersonaType.value = '토끼형';
     carouselCards.value = [];
   }
 };
@@ -261,7 +261,7 @@ const searchProducts = async () => {
   loading.value = true;
   showSearchResults.value = true;
   try {
-    const response = await api.post("/persona/cardsearch", {
+    const response = await api.post('/persona/cardsearch', {
       creditCard: filters.value.creditCard,
       debitCard: filters.value.debitCard,
       selectedBenefits: filters.value.selectedBenefits
@@ -270,7 +270,7 @@ const searchProducts = async () => {
     });
     searchResults.value = response.data;
   } catch (error) {
-    console.error("카드 검색 오류:", error);
+    console.error('카드 검색 오류:', error);
     searchResults.value = [];
   } finally {
     loading.value = false;
@@ -293,10 +293,10 @@ const selectProduct = (product) => {
 // 📦 은행 로고 가져오기 (for compatibility)
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan: "https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png",
-    hana: "https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png",
+    shinhan: 'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png',
+    hana: 'https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png',
   };
-  return logos[initial] || "https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png";
+  return logos[initial] || 'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png';
 };
 
 onMounted(() => {
@@ -308,7 +308,7 @@ onMounted(() => {
 <style scoped>
 /* 🔷 Layout 및 전체 구조 */
 .card-product-search {
-  font-family: "Noto Sans", sans-serif;
+  font-family: 'Noto Sans', sans-serif;
   background: var(--color-white);
   min-height: 100vh;
 }

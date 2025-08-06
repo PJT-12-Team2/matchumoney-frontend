@@ -65,12 +65,12 @@
                 </div>
                 <div class="product-info-block">
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">최고 금리 :</span>
-                    <span class="highlight-rate">{{ getRateWithTerm(product, "max") }}</span>
+                    <span class="label-bold">최고 금리 :&nbsp;</span>
+                    <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span>
                   </div>
                   <div class="rate-line no-wrap">
                     최저 금리 :
-                    {{ getRateWithTerm(product, "base") }}
+                    {{ getRateWithTerm(product, 'base') }}
                   </div>
                   <div class="rate-line no-wrap">
                     기준 기간 :
@@ -81,7 +81,7 @@
                           const currRate = curr?.intrRate2 ?? 0;
                           return currRate > prevRate ? curr : prev;
                         }, null);
-                        return best?.saveTrm ? best.saveTrm + "개월" : "정보 없음";
+                        return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
                       })()
                     }}
                   </div>
@@ -107,7 +107,8 @@
                 </div>
                 <div class="product-info-block">
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">최고 금리 :</span>
+                    <span class="label-bold">최고 금리 :&nbsp;</span>
+
                     <span class="highlight-rate">{{ product.maxRate }}</span>
                   </div>
                   <div class="rate-line no-wrap">
@@ -120,7 +121,7 @@
                   </div>
                   <div class="rate-line no-wrap">
                     기준 기간 :
-                    {{ filters.term !== "전체" ? filters.term + "개월" : "정보 없음" }}
+                    {{ filters.term !== '전체' ? filters.term + '개월' : '정보 없음' }}
                   </div>
                 </div>
               </div>
@@ -140,15 +141,15 @@
                   <h4>{{ product.name }}</h4>
                   <div>
                     <span class="label">카드사:</span>
-                    {{ product.issuer || "카드사 미정" }}
+                    {{ product.issuer || '카드사 미정' }}
                   </div>
                   <div>
                     <span class="label">전월실적금액:</span>
-                    {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + "원" : "정보 없음" }}
+                    {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
                   </div>
                   <div>
                     <span class="label">연회비 정보:</span>
-                    {{ product.annualFee || "정보 없음" }}
+                    {{ product.annualFee || '정보 없음' }}
                   </div>
                 </div>
               </div>
@@ -161,44 +162,44 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import BaseButton from "@/components/base/BaseButton.vue";
+import { ref, computed, onMounted } from 'vue';
+import BaseButton from '@/components/base/BaseButton.vue';
 
-const selectedTab = ref("deposit");
+const selectedTab = ref('deposit');
 const tabs = [
-  { label: "예금", value: "deposit" },
-  { label: "적금", value: "saving" },
-  { label: "카드", value: "card" },
+  { label: '예금', value: 'deposit' },
+  { label: '적금', value: 'saving' },
+  { label: '카드', value: 'card' },
 ];
 const currentTab = selectedTab;
-const currentTabLabel = computed(() => tabs.find((t) => t.value === selectedTab.value)?.label || "");
+const currentTabLabel = computed(() => tabs.find((t) => t.value === selectedTab.value)?.label || '');
 
 const loading = ref(false);
 
 const filters = ref({
-  term: "전체",
+  term: '전체',
 });
 
 const allFavorites = ref([
   {
     id: 1,
-    name: "스마트적금",
-    bank: "신한은행",
-    bankInitial: "shinhan",
-    baseRate: "3.00%",
-    maxRate: "4.00%",
-    maxLimit: "300,000원",
-    type: "saving",
+    name: '스마트적금',
+    bank: '신한은행',
+    bankInitial: 'shinhan',
+    baseRate: '3.00%',
+    maxRate: '4.00%',
+    maxLimit: '300,000원',
+    type: 'saving',
   },
   {
     id: 2,
-    name: "정기예금",
-    bank: "국민은행",
-    bankInitial: "kb",
-    baseRate: "2.50%",
-    maxRate: "3.10%",
-    maxLimit: "한도 없음",
-    type: "deposit",
+    name: '정기예금',
+    bank: '국민은행',
+    bankInitial: 'kb',
+    baseRate: '2.50%',
+    maxRate: '3.10%',
+    maxLimit: '한도 없음',
+    type: 'deposit',
     depositOptions: [
       { intrRate2: 2.5, saveTrm: 12 },
       { intrRate2: 3.1, saveTrm: 24 },
@@ -206,33 +207,33 @@ const allFavorites = ref([
   },
   {
     id: 3,
-    name: "신한카드 B.Big(삑)",
-    bank: "신한카드",
-    bankInitial: "woori",
-    baseRate: "-",
-    maxRate: "-",
-    maxLimit: "-",
-    type: "card",
+    name: '신한카드 B.Big(삑)',
+    bank: '신한카드',
+    bankInitial: 'woori',
+    baseRate: '-',
+    maxRate: '-',
+    maxLimit: '-',
+    type: 'card',
   },
   {
     id: 4,
-    name: "하나적금플러스",
-    bank: "하나은행",
-    bankInitial: "hana",
-    baseRate: "3.10%",
-    maxRate: "4.20%",
-    maxLimit: "200,000원",
-    type: "saving",
+    name: '하나적금플러스',
+    bank: '하나은행',
+    bankInitial: 'hana',
+    baseRate: '3.10%',
+    maxRate: '4.20%',
+    maxLimit: '200,000원',
+    type: 'saving',
   },
   {
     id: 5,
-    name: "NH주거래우대예금",
-    bank: "농협은행",
-    bankInitial: "nh",
-    baseRate: "2.80%",
-    maxRate: "3.50%",
-    maxLimit: "무제한",
-    type: "deposit",
+    name: 'NH주거래우대예금',
+    bank: '농협은행',
+    bankInitial: 'nh',
+    baseRate: '2.80%',
+    maxRate: '3.50%',
+    maxLimit: '무제한',
+    type: 'deposit',
     depositOptions: [
       { intrRate2: 2.8, saveTrm: 6 },
       { intrRate2: 3.5, saveTrm: 12 },
@@ -240,33 +241,33 @@ const allFavorites = ref([
   },
   {
     id: 6,
-    name: "카카오프렌즈카드",
-    bank: "카카오뱅크",
-    bankInitial: "kakao",
-    baseRate: "-",
-    maxRate: "-",
-    maxLimit: "-",
-    type: "card",
+    name: '카카오프렌즈카드',
+    bank: '카카오뱅크',
+    bankInitial: 'kakao',
+    baseRate: '-',
+    maxRate: '-',
+    maxLimit: '-',
+    type: 'card',
   },
   {
     id: 7,
-    name: "우대적금",
-    bank: "우리은행",
-    bankInitial: "woori",
-    baseRate: "3.20%",
-    maxRate: "4.00%",
-    maxLimit: "100,000원",
-    type: "saving",
+    name: '우대적금',
+    bank: '우리은행',
+    bankInitial: 'woori',
+    baseRate: '3.20%',
+    maxRate: '4.00%',
+    maxLimit: '100,000원',
+    type: 'saving',
   },
   {
     id: 8,
-    name: "신한쏠편한예금",
-    bank: "신한은행",
-    bankInitial: "shinhan",
-    baseRate: "2.60%",
-    maxRate: "3.20%",
-    maxLimit: "무제한",
-    type: "deposit",
+    name: '신한쏠편한예금',
+    bank: '신한은행',
+    bankInitial: 'shinhan',
+    baseRate: '2.60%',
+    maxRate: '3.20%',
+    maxLimit: '무제한',
+    type: 'deposit',
     depositOptions: [
       { intrRate2: 2.6, saveTrm: 12 },
       { intrRate2: 3.2, saveTrm: 18 },
@@ -274,23 +275,23 @@ const allFavorites = ref([
   },
   {
     id: 9,
-    name: "토스하이브카드",
-    bank: "토스뱅크",
-    bankInitial: "toss",
-    baseRate: "-",
-    maxRate: "-",
-    maxLimit: "-",
-    type: "card",
+    name: '토스하이브카드',
+    bank: '토스뱅크',
+    bankInitial: 'toss',
+    baseRate: '-',
+    maxRate: '-',
+    maxLimit: '-',
+    type: 'card',
   },
   {
     id: 10,
-    name: "청년우대적금",
-    bank: "신한",
-    bankInitial: "kb",
-    baseRate: "3.40%",
-    maxRate: "4.50%",
-    maxLimit: "300,000원",
-    type: "saving",
+    name: '청년우대적금',
+    bank: '신한',
+    bankInitial: 'kb',
+    baseRate: '3.40%',
+    maxRate: '4.50%',
+    maxLimit: '300,000원',
+    type: 'saving',
   },
 ]);
 
@@ -300,39 +301,39 @@ const filteredFavorites = computed(() => {
 
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan: new URL("@/assets/bankLogo_images/shinhan.png", import.meta.url).href,
-    hana: new URL("@/assets/bankLogo_images/hana.png", import.meta.url).href,
-    woori: new URL("@/assets/bankLogo_images/woori.png", import.meta.url).href,
-    kb: new URL("@/assets/bankLogo_images/kb.png", import.meta.url).href,
-    nh: new URL("@/assets/bankLogo_images/nh.png", import.meta.url).href,
-    kakao: new URL("@/assets/bankLogo_images/kakao.png", import.meta.url).href,
-    toss: new URL("@/assets/bankLogo_images/toss.png", import.meta.url).href,
+    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
+    hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
+    woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
+    kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
+    nh: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href,
+    kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
+    toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
   };
-  return logos[initial] || logos["shinhan"];
+  return logos[initial] || logos['shinhan'];
 };
 
 const getRateWithTerm = (product, rateType) => {
-  if (currentTab.value === "deposit") {
+  if (currentTab.value === 'deposit') {
     // For deposit products, return max or base rate from depositOptions if available
     if (product.depositOptions && product.depositOptions.length > 0) {
-      if (rateType === "max") {
+      if (rateType === 'max') {
         const maxOption = product.depositOptions.reduce((prev, curr) => {
           return (curr.intrRate2 ?? 0) > (prev.intrRate2 ?? 0) ? curr : prev;
         }, product.depositOptions[0]);
-        return maxOption ? maxOption.intrRate2 + "%" : "-";
-      } else if (rateType === "base") {
+        return maxOption ? maxOption.intrRate2 + '%' : '-';
+      } else if (rateType === 'base') {
         const minOption = product.depositOptions.reduce((prev, curr) => {
           return (curr.intrRate2 ?? Infinity) < (prev.intrRate2 ?? Infinity) ? curr : prev;
         }, product.depositOptions[0]);
-        return minOption ? minOption.intrRate2 + "%" : "-";
+        return minOption ? minOption.intrRate2 + '%' : '-';
       }
     }
-    return "-";
+    return '-';
   } else {
     // For other products, return maxRate or baseRate directly
-    if (rateType === "max") return product.maxRate;
-    if (rateType === "base") return product.baseRate;
-    return "-";
+    if (rateType === 'max') return product.maxRate;
+    if (rateType === 'base') return product.baseRate;
+    return '-';
   }
 };
 
