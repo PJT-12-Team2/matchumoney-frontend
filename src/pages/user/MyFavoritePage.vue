@@ -39,7 +39,11 @@
           <div class="spinner"></div>
           <div>상품을 불러오는 중입니다...</div>
         </div>
-        <div v-else-if="filteredFavorites.length === 0" class="empty-state">
+        <div v-else-if="!allFavorites || allFavorites.length === 0" class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div>즐겨찾기한 상품이 없습니다.</div>
+        </div>
+        <div v-else-if="!filteredFavorites || filteredFavorites.length === 0" class="empty-state">
           <div class="empty-icon">⭐</div>
           <div>즐겨찾기한 {{ currentTabLabel }} 상품이 없습니다.</div>
         </div>
@@ -281,7 +285,7 @@ const allFavorites = ref([
   {
     id: 10,
     name: "청년우대적금",
-    bank: "KB국민은행",
+    bank: "신한",
     bankInitial: "kb",
     baseRate: "3.40%",
     maxRate: "4.50%",
