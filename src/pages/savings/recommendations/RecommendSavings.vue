@@ -141,7 +141,7 @@ onUnmounted(() => {
 
 @media (max-width: 640px) {
   .content-my {
-    width: 100%;
+    width: 90%;
   }
 }
 .center {
