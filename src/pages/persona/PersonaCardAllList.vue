@@ -8,62 +8,120 @@
 					<span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는
 					카드
 				</h2>
-        <Swiper
-          v-if="isMobile"
-          :slides-per-view="1.2"
-          :space-between="16"
-          :pagination="{
-            clickable: true
-          }"
-          :modules="modules"
-          class="carousel-swiper"
-        >
-          <SwiperSlide
-            v-for="card in carouselCards"
-            :key="card.id"
-            class="carousel-card"
-            @click="selectProduct(card)"
-          >
-            <img
-              :src="card.image"
-              :alt="card.name"
-              class="carousel-card-image"
-            />
-            <div class="carousel-card-name">{{ card.name }}</div>
-            <div> {{ card.issuer || '카드사 미정' }}</div>
-            <div class="carousel-card-benefit">
-              <div><span class="label">전월실적금액:</span> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
-              <div><span class="label">연회비 정보:</span> {{ card.annualFee || '정보 없음' }}</div>
-            </div>
-          </SwiperSlide>
-        </Swiper>
-        <div
-          v-if="!isMobile"
-          class="carousel-card-list"
-        >
-          <div
-            v-for="card in carouselCards"
-            :key="card.id"
-            class="carousel-card"
-            @click="selectProduct(card)"
-          >
-            <img
-              :src="card.image"
-              :alt="card.name"
-              class="carousel-card-image"
-            />
-            <div class="carousel-card-name">{{ card.name }}</div>
-            <div> {{ card.issuer || '카드사 미정' }}</div>
-            <div class="carousel-card-benefit">
-              <div><span class="label">전월실적금액:</span> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
-              <div><span class="label">연회비 정보:</span> {{ card.annualFee || '정보 없음' }}</div>
-            </div>
-          </div>
-        </div>
+				<Swiper
+					v-if="isMobile"
+					:slides-per-view="1"
+					:space-between="16"
+					:pagination="{
+						clickable: true,
+					}"
+					:modules="modules"
+					class="carousel-swiper"
+				>
+					<SwiperSlide
+						v-for="card in carouselCards"
+						:key="card.id"
+						class="carousel-card"
+						@click="selectProduct(card)"
+					>
+						<div style="width: 14rem; height: 14rem">
+							<img
+								:src="card.image"
+								:alt="card.name"
+								class="carousel-card-image"
+							/>
+						</div>
+						<div class="carousel-card-name">{{ card.name }}</div>
+						<div>{{ card.issuer || '카드사 미정' }}</div>
+						<div class="carousel-card-benefit">
+							<div>
+								<span class="label">전월실적금액:</span>
+								{{
+									card.preMonthMoney
+										? card.preMonthMoney.toLocaleString() + '원'
+										: '정보 없음'
+								}}
+							</div>
+							<div>
+								<span class="label">연회비 정보:</span>
+								{{ card.annualFee || '정보 없음' }}
+							</div>
+							<!-- 안전하게 조건 체크 -->
+							<div
+								v-if="card.options && card.options.length > 0"
+								class="benefit-hashtags"
+							>
+								<span
+									v-for="(option, index) in card.options.slice(0, 3)"
+									:key="index"
+									class="hashtag"
+								>
+									#{{ option.title }}
+								</span>
+							</div>
+						</div>
+					</SwiperSlide>
+				</Swiper>
+
+				<Swiper
+					v-else
+					class="carousel-card-list"
+					:slides-per-view="3"
+					:space-between="16"
+					:pagination="{
+						clickable: true,
+					}"
+					:modules="modules"
+				>
+					<SwiperSlide
+						v-for="card in carouselCards"
+						:key="card.id"
+						class="carousel-card"
+						@click="selectProduct(card)"
+					>
+						<div style="width: 14rem; height: 14rem">
+							<img
+								:src="card.image"
+								:alt="card.name"
+								class="carousel-card-image"
+							/>
+						</div>
+						<div class="carousel-card-name">{{ card.name }}</div>
+						<div>{{ card.issuer || '카드사 미정' }}</div>
+						<div class="carousel-card-benefit">
+							<div>
+								<span class="label">전월실적금액:</span>
+								{{
+									card.preMonthMoney
+										? card.preMonthMoney.toLocaleString() + '원'
+										: '정보 없음'
+								}}
+							</div>
+							<div>
+								<span class="label">연회비 정보:</span>
+								{{ card.annualFee || '정보 없음' }}
+							</div>
+							<!-- 안전하게 조건 체크 -->
+							<div
+								v-if="card.options && card.options.length > 0"
+								class="benefit-hashtags"
+							>
+								<span
+									v-for="(option, index) in card.options.slice(0, 3)"
+									:key="index"
+									class="hashtag"
+								>
+									#{{ option.title }}
+								</span>
+							</div>
+						</div>
+					</SwiperSlide>
+				</Swiper>
 			</section>
 			<br />
 			<hr />
 			<br />
+
 			<!-- 🔷 직접 검색 필터 영역 -->
 			<h1 class="page-title">직접 찾아보는 카드</h1>
 			<section class="filter-selection-section">
@@ -160,21 +218,19 @@
 									<span class="label">연회비 정보:</span>
 									{{ product.annualFee || '정보 없음' }}
 								</div>
-								<!-- 수정된 부분: topBenefits 표시 -->
+
+								<!-- ⭐ 혜택 태그 추가 -->
 								<div
-									v-if="product.topBenefits && product.topBenefits.length > 0"
-									class="top-benefits"
+									v-if="product.options && product.options.length > 0"
+									class="benefit-hashtags"
 								>
-									<span class="label">주요 혜택 TOP 3</span>
-									<div class="benefit-tags">
-										<span
-											v-for="benefit in product.topBenefits"
-											:key="benefit"
-											class="benefit-tag"
-										>
-											{{ benefit }}
-										</span>
-									</div>
+									<span
+										v-for="(option, index) in product.options.slice(0, 3)"
+										:key="index"
+										class="hashtag"
+									>
+										#{{ option.title }}
+									</span>
 								</div>
 							</div>
 						</div>
@@ -199,10 +255,10 @@ const modules = [Pagination];
 
 const isMobile = ref(window.innerWidth <= 768);
 const handleResize = () => {
-  isMobile.value = window.innerWidth <= 768;
+	isMobile.value = window.innerWidth <= 768;
 };
 onMounted(() => {
-  window.addEventListener('resize', handleResize);
+	window.addEventListener('resize', handleResize);
 });
 
 // 📦 로딩 및 검색 결과 표시 상태
@@ -280,7 +336,7 @@ const fetchRecommendedCards = async () => {
 			issuer: item.issuer || '',
 			preMonthMoney: item.preMonthMoney,
 			annualFee: item.annualFee,
-			topBenefits: item.topBenefits || [],
+			options: item.options,
 		}));
 	} catch (err) {
 		console.error('❌ 사용자 기반 페르소나 카드 불러오기 실패:', err);
@@ -323,7 +379,7 @@ const toggleBenefit = (id) => {
 
 // 📦 카드 선택 동작
 const selectProduct = (product) => {
-  window.location.href = `/detail/card/${product.id}`;
+	window.location.href = `/detail/card/${product.id}`;
 };
 
 // 📦 은행 로고 가져오기 (for compatibility)
@@ -381,8 +437,7 @@ onMounted(() => {
 }
 .carousel-card {
 	width: 400px;
-	min-height: 400px;
-	height: auto;
+	height: 28rem;
 	background: #fff;
 	border-radius: 20px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
@@ -397,9 +452,10 @@ onMounted(() => {
 	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 .carousel-card-image {
-	width: 100%;
-	height: 60%;
+	width: 14rem;
+	height: 14rem;
 	object-fit: contain;
+
 	border-radius: 12px;
 }
 .carousel-card-name {
@@ -409,12 +465,12 @@ onMounted(() => {
 	text-align: center;
 }
 .carousel-card-benefit {
-  font-size: 0.9rem;
-  color: #333;
-  line-height: 1.5;
-  text-align: left;
-  margin-top: 0.5rem;
-  text-align: center;
+	font-size: 0.9rem;
+	color: #333;
+	line-height: 1.5;
+	text-align: left;
+	margin-top: 0.5rem;
+	text-align: center;
 }
 
 .carousel-card-content {
@@ -563,7 +619,7 @@ onMounted(() => {
 	padding: var(--spacing-xl);
 	cursor: pointer;
 	transition: all 0.3s ease;
-	height: 300px;
+	height: 20rem;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -622,20 +678,32 @@ onMounted(() => {
 	font-size: 3rem;
 	margin-bottom: 1rem;
 }
+
+.benefit-hashtags .hashtag {
+	display: inline-block;
+	background-color: #e6f4ec;
+	color: #2e7d32;
+	padding: 0.3rem 0.7rem;
+	border-radius: 1.2rem;
+	margin-right: 0.6rem;
+	margin-top: 0.3rem;
+	font-size: 0.7rem;
+	font-weight: 500;
+}
 </style>
 <style scoped>
 .carousel-swiper {
-  width: 100%;
-  padding-bottom: 1.5rem;
+	width: 100%;
+	padding-bottom: 1.5rem;
 }
 .swiper-pagination-bullets {
-  text-align: center;
+	text-align: center;
 }
 .swiper-pagination-bullet {
-  background: #4caf50;
-  opacity: 0.4;
+	background: #4caf50;
+	opacity: 0.4;
 }
 .swiper-pagination-bullet-active {
-  opacity: 1;
+	opacity: 1;
 }
 </style>
