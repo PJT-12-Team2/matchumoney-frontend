@@ -1,46 +1,60 @@
 <template>
   <div class="container" v-if="depositData">
     <div class="deposit-detail-page">
-          <section class="card-header">
-      <div class="card-image-wrapper">
-        <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
-        
-        <div class="reaction-group">
-          <span class="reaction-button" @click="toggleLike">
-            <span v-if="isLiked">❤️</span>
-            <span v-else>🤍</span> {{ likeCount }}
-          </span>
-          <button class="compare-button">➕ 비교함 담기</button>
-        </div>
-      </div>
-
-      <div class="card-info">
-      <div class="favorite-icon" @click="toggleFavorite">
-        <span v-if="isFavorite">⭐</span>
-        <span v-else>☆</span>
-      </div>
-        <h2 class="card-title">{{ depositData.finPrdtNm }}</h2>
-        <p class="subtitle">{{ depositData.korCoNm }}</p>
-
-        <ul class="card-benefits">
-          <li>{{ topRateTerm }}개월 기준 최대 금리 <strong>{{ (topRate * 100).toFixed(2) }}%</strong></li>
-          <li>{{ baseRateTerm }}개월 기준 기본 금리 <strong>{{ (baseRate * 100).toFixed(2) }}%</strong></li>
-        </ul>
-
-        <div class="button-group">
-          <button class="go-to-card full-width">카드사 바로가기</button>
-          <button class="compare-link full-width">비교함 바로가기</button>
+      <section class="card-header">
+        <div class="card-image-wrapper">
+          <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
+          <div class="reaction-group">
+            <span
+              class="reaction-button"
+              @click.stop="handleLikeClick"
+              :class="{ active: isLiked }"
+            >
+              {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
+            </span>
+            <button class="compare-button">➕ 비교함 담기</button>
+          </div>
         </div>
 
-        <div class="card-meta">
-          <span>가입 방법 : <strong>{{ depositData.joinWay }}</strong></span>
+        <div class="card-info">
+          <i
+            :class="[isFavorite ? 'fas fa-star' : 'far fa-star', 'favorite-icon']"
+            @click="toggleFavorite"
+            title="즐겨찾기"
+          ></i>
+          <h2 class="card-title">{{ depositData.finPrdtNm }}</h2>
+          <p class="subtitle">{{ depositData.korCoNm }}</p>
+
+          <ul class="card-benefits">
+            <li>
+              {{ topRateTerm }}개월 기준 최대 금리
+              <strong>{{ (topRate * 100).toFixed(2) }}%</strong>
+            </li>
+            <li>
+              {{ baseRateTerm }}개월 기준 기본 금리
+              <strong>{{ (baseRate * 100).toFixed(2) }}%</strong>
+            </li>
+          </ul>
+
+          <div class="button-group">
+            <button class="go-to-card full-width">카드사 바로가기</button>
+            <button class="compare-link full-width">비교함 바로가기</button>
+          </div>
+
+          <div class="card-meta">
+            <span
+              >가입 방법 : <strong>{{ depositData.joinWay }}</strong></span
+            >
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
       <section class="persona-banner-section">
         <div class="info-banner">
-          <p class="badge"><span class="highlight">{{ personaName }}</span> 유형이 많이 찾는 상품</p>
+          <p class="badge">
+            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
+            상품
+          </p>
         </div>
       </section>
 
@@ -50,10 +64,18 @@
           <div class="deposit-amount">
             <div class="label">예치금액</div>
             <div class="formatted-input-wrapper">
-              <input v-model.number="depositAmount" class="amount-input" type="number" min="0" step="10000" />
+              <input
+                v-model.number="depositAmount"
+                class="amount-input"
+                type="number"
+                min="0"
+                step="10000"
+              />
               <span class="won-label">원</span>
             </div>
-            <div class="input-guide">{{ formattedAmount }}원 ({{ formattedAmountMan }}만원)</div>
+            <div class="input-guide">
+              {{ formattedAmount }}원 ({{ formattedAmountMan }}만원)
+            </div>
           </div>
           <div class="rate-tab">
             <div
@@ -72,10 +94,18 @@
             </div>
           </div>
           <div class="payout-summary">
-            <div>원금합계 <strong>{{ formattedAmount }}원</strong></div>
-            <div>세전이자 <strong>+{{ formattedPreTaxInterest }}원</strong></div>
-            <div>이자과세(15.4%) <strong>-{{ formattedTax }}원</strong></div>
-            <div class="total">세후수령액 <strong>{{ formattedAfterTax }}원</strong></div>
+            <div>
+              원금합계 <strong>{{ formattedAmount }}원</strong>
+            </div>
+            <div>
+              세전이자 <strong>+{{ formattedPreTaxInterest }}원</strong>
+            </div>
+            <div>
+              이자과세(15.4%) <strong>-{{ formattedTax }}원</strong>
+            </div>
+            <div class="total">
+              세후수령액 <strong>{{ formattedAfterTax }}원</strong>
+            </div>
           </div>
         </div>
 
@@ -84,10 +114,16 @@
             <h4>기간별 금리</h4>
             <table>
               <thead>
-                <tr><th>기간</th><th>금리</th></tr>
+                <tr>
+                  <th>기간</th>
+                  <th>금리</th>
+                </tr>
               </thead>
               <tbody>
-                <tr v-for="option in depositData.options" :key="option.depositOptionId">
+                <tr
+                  v-for="option in depositData.options"
+                  :key="option.depositOptionId"
+                >
                   <td>{{ option.saveTrm }}개월</td>
                   <td>{{ option.intrRate }}%</td>
                 </tr>
@@ -122,8 +158,12 @@
         </div>
       </section>
       <section class="recommend-buttons">
-        <router-link to="/persona/deposits" class="recommend-button green">나의 페르소나로 예금 추천 받기</router-link>
-        <router-link to="/mydata/deposits" class="recommend-button">마이데이터 기반 예금 추천 받기</router-link>
+        <router-link to="/persona/deposits" class="recommend-button green"
+          >나의 페르소나로 예금 추천 받기</router-link
+        >
+        <router-link to="/mydata/deposits" class="recommend-button"
+          >마이데이터 기반 예금 추천 받기</router-link
+        >
       </section>
     </div>
   </div>
@@ -131,6 +171,7 @@
 
 <script>
 import api from '@/api';
+import favorite from '@/api/favorite';
 
 const personaNameMap = {
   1: '거북이',
@@ -141,33 +182,34 @@ const personaNameMap = {
   6: '고양이',
   7: '호랑이',
   8: '펭귄',
-  9: '기타'
+  9: '기타',
 };
 
 const getBankInitial = (name) => {
-  if (name.includes('신한')) return 'shinhan'
-  if (name.includes('하나')) return 'hana'
-  if (name.includes('우리')) return 'woori'
-  if (name.includes('국민')) return 'kb'
-  if (name.includes('농협')) return 'nh'
-  if (name.includes('카카오')) return 'kakao'
-  if (name.includes('토스')) return 'toss'
-  if (name.includes('부산')) return 'bnk'
-  if (name.includes('광주')) return 'gwangju'
-  if (name.includes('중소기업')) return 'ibk'
-  if (name.includes('아이엠')) return 'im'
-  if (name.includes('제주')) return 'jeju'
-  if (name.includes('전북')) return 'jeonbook'
-  if (name.includes('산업')) return 'sanup'
-  if (name.includes('수협')) return 'su'
-  if (name.includes('SC제일') || name.includes('스탠다드차타드')) return 'sc'
-  if (name.includes('케이뱅크') || name.includes('K뱅크')) return 'k'
-  return 'shinhan'
-}
+  if (name.includes('신한')) return 'shinhan';
+  if (name.includes('하나')) return 'hana';
+  if (name.includes('우리')) return 'woori';
+  if (name.includes('국민')) return 'kb';
+  if (name.includes('농협')) return 'nh';
+  if (name.includes('카카오')) return 'kakao';
+  if (name.includes('토스')) return 'toss';
+  if (name.includes('부산')) return 'bnk';
+  if (name.includes('광주')) return 'gwangju';
+  if (name.includes('중소기업')) return 'ibk';
+  if (name.includes('아이엠')) return 'im';
+  if (name.includes('제주')) return 'jeju';
+  if (name.includes('전북')) return 'jeonbook';
+  if (name.includes('산업')) return 'sanup';
+  if (name.includes('수협')) return 'su';
+  if (name.includes('SC제일') || name.includes('스탠다드차타드')) return 'sc';
+  if (name.includes('케이뱅크') || name.includes('K뱅크')) return 'k';
+  return 'shinhan';
+};
 
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
+    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url)
+      .href,
     hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
     woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
     kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
@@ -175,39 +217,48 @@ const getBankLogo = (initial) => {
     kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
     toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
     bnk: new URL('@/assets/bankLogo_images/bnk.png', import.meta.url).href,
-    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url).href,
+    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url)
+      .href,
     ibk: new URL('@/assets/bankLogo_images/ibk.png', import.meta.url).href,
     im: new URL('@/assets/bankLogo_images/im.png', import.meta.url).href,
     jeju: new URL('@/assets/bankLogo_images/jeju.png', import.meta.url).href,
-    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url).href,
+    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url)
+      .href,
     sanup: new URL('@/assets/bankLogo_images/sanup.png', import.meta.url).href,
     su: new URL('@/assets/bankLogo_images/su.png', import.meta.url).href,
     sc: new URL('@/assets/bankLogo_images/sc.png', import.meta.url).href,
-    k: new URL('@/assets/bankLogo_images/k.png', import.meta.url).href
-  }
-  return logos[initial] || logos['shinhan']
-}
+    k: new URL('@/assets/bankLogo_images/k.png', import.meta.url).href,
+  };
+  return logos[initial] || logos['shinhan'];
+};
 
 export default {
   data() {
     return {
       depositData: null,
       depositAmount: 10000000,
-      likeCount: 10,
+      likeCount: 0,
       isLiked: false,
       isFavorite: false,
       bankLogoUrl: '',
       selectedRateType: 'top',
-    }
+      userId: null,
+    };
   },
   computed: {
     topRate() {
       if (!this.depositData || !this.depositData.options) return 0;
-      return Math.max(...this.depositData.options.map(o => parseFloat(o.intrRate2 || 0))) / 100;
+      return (
+        Math.max(
+          ...this.depositData.options.map((o) => parseFloat(o.intrRate2 || 0))
+        ) / 100
+      );
     },
     baseRate() {
       if (!this.depositData || !this.depositData.options) return 0;
-      const twelveMonth = this.depositData.options.find(o => o.saveTrm === '12');
+      const twelveMonth = this.depositData.options.find(
+        (o) => o.saveTrm === '12'
+      );
       return (twelveMonth ? parseFloat(twelveMonth.intrRate) : 0) / 100;
     },
     topRateTerm() {
@@ -221,14 +272,17 @@ export default {
     },
     baseRateTerm() {
       if (!this.depositData || !this.depositData.options) return '-';
-      const twelveMonth = this.depositData.options.find(o => o.saveTrm === '12');
+      const twelveMonth = this.depositData.options.find(
+        (o) => o.saveTrm === '12'
+      );
       return twelveMonth?.saveTrm || '-';
     },
     formattedAmount() {
       return this.depositAmount.toLocaleString();
     },
     preTaxInterest() {
-      const rate = this.selectedRateType === 'top' ? this.topRate : this.baseRate;
+      const rate =
+        this.selectedRateType === 'top' ? this.topRate : this.baseRate;
       return this.depositAmount * rate;
     },
     tax() {
@@ -251,17 +305,32 @@ export default {
     },
     personaName() {
       return personaNameMap[this.depositData?.personaId] || '기타';
-    }
+    },
   },
   mounted() {
     const id = this.$route.params.depositId;
-    api.get(`/deposit-products/${id}`)
-      .then(res => {
+    let userId = null;
+    try {
+      userId = sessionStorage.getItem('userId');
+      if (userId) userId = Number(userId);
+    } catch (e) {
+      userId = null;
+    }
+    this.userId = userId;
+
+    api
+      .get(`/deposit-products/${id}`)
+      .then((res) => {
+        console.log(res);
         this.depositData = res.data;
         const initial = getBankInitial(this.depositData.korCoNm || '');
         this.bankLogoUrl = getBankLogo(initial);
+
+        this.isLiked = res.data.liked;
+        this.likeCount = res.data.likeCount;
       })
-      .catch(err => {
+      //   .then((res) => {      })
+      .catch((err) => {
         console.error(err);
       });
   },
@@ -269,14 +338,60 @@ export default {
     toggle(index) {
       this.activeIndex = this.activeIndex === index ? null : index;
     },
-    toggleFavorite() {
-      this.isFavorite = !this.isFavorite;
+    async toggleFavorite() {
+      if (!this.userId) {
+        if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+          this.$router.push('/login');
+        }
+        return;
+      }
+
+      const productId = this.depositData?.depositProductId;
+      const productType = 'DEPOSIT';
+
+      try {
+        if (this.isFavorite) {
+          await favorite.deleteFavorite(productId, productType);
+        } else {
+          await favorite.addFavorite(productId, productType);
+        }
+        this.isFavorite = !this.isFavorite;
+      } catch (error) {
+        console.error('즐겨찾기 처리 중 오류 발생:', error);
+      }
+    },
+    handleLikeClick() {
+      if (!this.userId) {
+        if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+          this.$router.push('/login');
+        }
+        return;
+      }
+      this.toggleLike();
     },
     toggleLike() {
-      this.isLiked = !this.isLiked;
-    }
-  }
-}
+      if (!this.depositData) return;
+
+      const id = this.depositData.depositProductId;
+
+      const likePromise = this.isLiked
+        ? api.delete(`/deposit-products/${id}/likes`)
+        : api.post(`/deposit-products/${id}/likes`);
+
+      likePromise
+        .then((res) => {
+          this.isLiked = res.data.liked;
+          this.likeCount = res.data.likeCount;
+          //console.log(res);
+          //return response;
+          //return api.get(`/deposit-products/${id}/likes`);
+        })
+        //.then((res) => {})
+        .catch((err) => console.error(err));
+    },
+  },
+// removed created() lifecycle hook that initializes userId
+};
 </script>
 
 <style scoped>
@@ -304,7 +419,7 @@ export default {
 }
 
 .badge {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
   margin-bottom: 5px;
   font-size: 14px;
@@ -333,12 +448,12 @@ export default {
   margin-bottom: 6px;
 }
 
-  .button-group {
-    display: flex;
-    width: 100%;
-    margin-top: 10px;
-    gap: 12px;
-  }
+.button-group {
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+  gap: 12px;
+}
 
 .full-width {
   width: 100%;
@@ -356,7 +471,7 @@ export default {
 }
 
 .go-to-card {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   transition: background-color 0.3s ease;
@@ -403,7 +518,6 @@ export default {
   margin-bottom: 12px;
 }
 
-
 .highlight {
   color: #2e7d32;
   font-weight: 900;
@@ -435,7 +549,6 @@ export default {
 .compare-button:hover {
   background-color: #e0e0e0;
 }
-
 
 /* 금리 안내 스타일 */
 .interest-section {
@@ -688,7 +801,6 @@ export default {
   gap: 10px;
 }
 
-
 .recommend-buttons {
   display: flex;
   flex-direction: row;
@@ -723,5 +835,9 @@ export default {
 
 .recommend-button:hover {
   background-color: #e0f3e7;
+}
+.reaction-button.active {
+  background-color: #ffe6e6;
+  color: red;
 }
 </style>
