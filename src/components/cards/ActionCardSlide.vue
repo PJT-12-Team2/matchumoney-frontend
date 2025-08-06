@@ -34,7 +34,11 @@
         </div>
 
         <!-- 액션 버튼 -->
-        <BaseButton :variant="hasCards ? 'outline' : 'primary'" class="action-button" @click="handleAction">
+        <BaseButton
+          :variant="hasCards ? 'outline' : 'primary'"
+          class="action-button"
+          @click="handleAction"
+        >
           <i v-if="hasCards" class="bi bi-arrow-clockwise"></i>
           <i v-else class="bi bi-plus-circle"></i>
         </BaseButton>
@@ -81,12 +85,12 @@ const handleAction = () => {
   min-height: 200px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: var(--spacing-lg);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  gap: var(--spacing-3xl);
+  gap: var(--spacing-xl);
 }
 
 .action-card-container:hover {
@@ -194,21 +198,24 @@ const handleAction = () => {
   font-size: var(--font-size-xl);
 }
 
-/* 태블릿 */
-@media (max-width: var(--breakpoint-lg)) {
+/* 태블릿 레이아웃 */
+@media (max-width: 1024px) and (min-width: 769px) {
   .action-card {
     min-height: 180px;
     padding: var(--spacing-lg);
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-lg);
+    text-align: left;
   }
 
   .card-icon {
     margin-right: 0;
+    flex-shrink: 0;
   }
 
   .card-content {
-    text-align: center;
+    text-align: left;
+    flex: 1;
   }
 
   .card-shape {
@@ -221,8 +228,9 @@ const handleAction = () => {
   }
 
   .action-button {
-    width: 45px;
-    height: 45px;
+    width: 45px !important;
+    height: 45px !important;
+    flex-shrink: 0;
   }
 
   .action-button i {
@@ -231,7 +239,7 @@ const handleAction = () => {
 }
 
 /* 모바일 */
-@media (max-width: var(--breakpoint-md)) {
+@media (max-width: 768px) {
   .action-card {
     min-height: 160px;
     padding: var(--spacing-md);
@@ -243,7 +251,13 @@ const handleAction = () => {
 
   .card-icon {
     margin-right: 0;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 0;
+    align-self: center;
+  }
+
+  .card-content {
+    text-align: center;
+    width: 100%;
   }
 
   .card-shape {
@@ -268,7 +282,7 @@ const handleAction = () => {
     bottom: 4px;
     left: 8px;
     font-size: 7px;
-    color: #222; /* 모바일에서도 */
+    color: #222;
   }
 
   .card-title {
@@ -280,12 +294,14 @@ const handleAction = () => {
   .card-info {
     font-size: var(--font-size-xs);
     color: #333;
+    margin-bottom: var(--spacing-xs);
   }
 
   .action-button {
-    width: 40px;
-    height: 40px;
+    width: 40px !important;
+    height: 40px !important;
     margin-top: var(--spacing-sm);
+    align-self: center;
   }
 
   .action-button i {
@@ -295,11 +311,23 @@ const handleAction = () => {
 }
 
 /* 작은 모바일 */
-@media (max-width: var(--breakpoint-sm)) {
+@media (max-width: 480px) {
   .action-card {
     min-height: 140px;
     padding: var(--spacing-sm);
     gap: var(--spacing-sm);
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .card-icon {
+    align-self: center;
+  }
+
+  .card-content {
+    text-align: center;
+    width: 100%;
   }
 
   .card-shape {
@@ -338,8 +366,9 @@ const handleAction = () => {
   }
 
   .action-button {
-    width: 35px;
-    height: 35px;
+    width: 35px !important;
+    height: 35px !important;
+    align-self: center;
   }
 
   .action-button i {

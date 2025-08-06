@@ -5,29 +5,21 @@
 
     <DynamicDepositComparison
       :products="products.DEPOSIT"
-      v-if="activeTab == 'DEPOSIT'"
+      v-if="activeTab === 'DEPOSIT'"
     />
     <DynamicSavingComparison
       :products="products.SAVING"
-      v-if="activeTab == 'SAVING'"
+      v-if="activeTab === 'SAVING'"
     />
     <DynamicCardComparison
-      :products="[
-        {
-          id: '21',
-          korCoName: '신한카드',
-          finPrdtName: '신한카드 The F',
-          productImage:
-            'https://d1c5n4ri2guedi.cloudfront.net/card/43/card_img/20124/43card.png',
-        },
-      ]"
-      v-if="activeTab == 'CARD'"
+      :products="products.CARD"
+      v-if="activeTab === 'CARD'"
     />
   </div>
 </template>
-
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { ref, reactive, watch, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import TabSelector from '@/components/common/TabSelector.vue';
 import DynamicSavingComparison from '@/components/compare/DynamicSavingComparison.vue';
 import DynamicDepositComparison from '@/components/compare/DynamicDepositComparison.vue';
@@ -35,44 +27,52 @@ import DynamicCardComparison from '@/components/compare/DynamicCardComparison.vu
 import { useCompareStore } from '@/stores/compareStore';
 import compareApi from '@/api/compare';
 
+const route = useRoute();
+const router = useRouter();
+
 const store = useCompareStore();
 const activeTab = ref('DEPOSIT');
 const products = reactive({ DEPOSIT: [], SAVING: [], CARD: [] });
 
+//  URL 쿼리로부터 초기 탭 설정
+const compareType = computed(() => {
+  const type = (route.query.type || '').toString().toUpperCase();
+  return ['DEPOSIT', 'SAVING', 'CARD'].includes(type) ? type : 'DEPOSIT';
+});
+activeTab.value = compareType.value;
+
+// 탭 변경 핸들러 (URL에도 반영)
 function handleTabChange(tab) {
   activeTab.value = tab;
+
+  // URL 쿼리 변경 (history push)
+  router.push({
+    query: { type: tab },
+  });
+
   console.log('선택된 탭:', tab);
 }
 
+//  비교 데이터 불러오기
 async function fetchProducts() {
   try {
     const tab = activeTab.value;
     const compareList = store.compareList[tab];
-    console.log('compareList:', compareList);
 
     const result = await compareApi.getList(tab, compareList);
-    console.log('API 결과:', result);
-
     products[tab] = result;
-    console.log(products[tab]);
   } catch (e) {
-    console.error('비교 리스트:', store.compareList[activeTab.value]);
     console.error('비교 리스트 불러오기 실패:', e);
   }
 }
 
-// 1. 최초 마운트 시 실행
-onMounted(async () => {
-  await fetchProducts();
-});
-
-// 2. activeTab이 변경될 때마다 실행
+//  탭 또는 비교 리스트 변경 시 fetch
 watch(
   [activeTab, () => store.compareList[activeTab.value]],
   async () => {
     await fetchProducts();
   },
-  { deep: true }
+  { immediate: true, deep: true }
 );
 </script>
 <style scoped>

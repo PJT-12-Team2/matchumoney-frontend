@@ -19,7 +19,12 @@
         <div>정렬</div>
       </div>
       <div class="popup-body">
-        <ul>
+        <template v-if="loading">
+          <div class="popup-body loading">
+            <BaseSpinner />
+          </div>
+        </template>
+        <ul v-show="!loading">
           <li
             v-for="item in filteredData"
             :key="item.id"
@@ -45,40 +50,57 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, defineProps } from 'vue';
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  defineProps,
+  reactive,
+} from 'vue';
 import { useCompareStore } from '@/stores/compareStore';
 import compareApi from '@/api/compare';
+import BaseSpinner from '../base/BaseSpinner.vue';
 
-const compareStore = useCompareStore();
-defineEmits(['close']);
+const loading = ref(false);
 const data = ref([]);
 const keyword = ref('');
+const compareStore = useCompareStore();
 const props = defineProps({
   type: String,
   typeKo: String,
 });
-onMounted(() => {
-  document.body.style.overflow = 'hidden';
-});
-async function fetchProducts() {
-  try {
-    const result = await compareApi.getSearchList(props.type);
-    console.log('API 결과:', result);
 
-    data.value = result;
-    console.log(data.value);
-  } catch (e) {
-    console.error('search List 불러오기 실패:', e);
+defineEmits(['close']);
+
+const imageSizeMap = reactive({});
+const loadedImageCount = ref(0); // ✅ 로딩된 이미지 수
+const totalImageCount = ref(0); // ✅ 전체 이미지 수
+
+// 이미지 로딩 완료 감지
+function onImageLoad(event, id) {
+  const img = event.target;
+  const isTall = img.naturalHeight > img.naturalWidth;
+  imageSizeMap[id] = isTall ? 'tall' : 'wide';
+
+  loadedImageCount.value++;
+  if (loadedImageCount.value >= totalImageCount.value) {
+    loading.value = false; // ✅ 모든 이미지 로드 완료
   }
 }
 
-// 1. 최초 마운트 시 실행
-onMounted(async () => {
-  await fetchProducts();
-});
-onUnmounted(() => {
-  document.body.style.overflow = '';
-});
+async function fetchProducts() {
+  loading.value = true;
+  try {
+    const result = await compareApi.getSearchList(props.type);
+    data.value = result;
+    totalImageCount.value = result.length; // ✅ 총 이미지 개수 설정
+    loadedImageCount.value = 0; // ✅ 초기화
+  } catch (e) {
+    console.error('search List 불러오기 실패:', e);
+    loading.value = false;
+  }
+}
 
 const filteredData = computed(() => {
   return data.value.filter((item) => item.finPrdtName.includes(keyword.value));
@@ -90,20 +112,19 @@ const click = (id) => {
     type: props.type,
   });
 };
-import { reactive } from 'vue';
 
-const imageSizeMap = reactive({}); // { [id]: 'wide' | 'tall' }
-
-function onImageLoad(event, id) {
-  const img = event.target;
-  const isTall = img.naturalHeight > img.naturalWidth;
-  imageSizeMap[id] = isTall ? 'tall' : 'wide';
-}
+onMounted(async () => {
+  document.body.style.overflow = 'hidden';
+  await fetchProducts();
+});
+onUnmounted(() => {
+  document.body.style.overflow = '';
+});
 </script>
 
 <style scoped>
 .z-prime {
-  z-index: 99999;
+  z-index: 10000;
 }
 .popup-container {
   position: fixed;
@@ -116,7 +137,6 @@ function onImageLoad(event, id) {
   background-color: white;
   box-shadow: var(--shadow-sm);
   border-radius: var(--spacing-sm);
-  z-index: 10000;
 }
 
 .popup-header {
@@ -134,7 +154,12 @@ function onImageLoad(event, id) {
   font-size: var(--font-size-base);
   margin-bottom: var(--spacing-md);
 }
-
+.loading {
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .popup-body ul {
   list-style: none;
   padding: 0;

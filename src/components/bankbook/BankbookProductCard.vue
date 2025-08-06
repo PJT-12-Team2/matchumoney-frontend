@@ -89,6 +89,7 @@ const onClick = () => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  border: solid 0.2rem var(--color-light);
 }
 
 .product-card__header {
@@ -185,5 +186,10 @@ const onClick = () => {
   .product-card__highlight {
     font-size: var(--font-size-base);
   }
+}
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border: solid 0.2rem var(--color-accent);
 }
 </style>
