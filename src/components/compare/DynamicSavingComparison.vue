@@ -261,8 +261,8 @@ function isRateBest(period, index) {
 }
 
 .product-img {
-  width: 4.8rem;
-  height: 4.8rem;
+  width: 5.2rem;
+  height: 5.2rem;
   object-fit: contain;
 }
 

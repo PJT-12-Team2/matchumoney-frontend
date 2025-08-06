@@ -21,10 +21,12 @@
         </div>
         <div class="product-box">
           <div>
-            <img
-              :src="p.companyImage || '/src/assets/Logo_dis.png'"
-              class="product-img"
-            />
+            <div class="box">
+              <img
+                :src="p.productImage || '/src/assets/Logo_dis.png'"
+                class="product-img"
+              />
+            </div>
             <br />
             <CompareButton :productId="p.id" :productType="productType" />
           </div>
@@ -261,8 +263,8 @@ function isRateBest(period, index) {
 }
 
 .product-img {
-  width: 4.8rem;
-  height: 4.8rem;
+  width: 5.2rem;
+  height: 5.2rem;
   object-fit: contain;
 }
 
@@ -381,5 +383,10 @@ function isRateBest(period, index) {
 .image {
   width: 100%;
   max-width: 240px;
+}
+.box {
+  background-color: rgb(233, 233, 233);
+  border-radius: 50%;
+  aspect-ratio: 1/1;
 }
 </style>
