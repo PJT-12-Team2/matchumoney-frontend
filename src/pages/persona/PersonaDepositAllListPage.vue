@@ -1,30 +1,27 @@
 <template>
   <div class="deposit-search-page">
     <main class="main-content">
-
       <!-- 🔷 페르소나 추천 캐러셀 -->
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
         <h2 class="persona-carousel-title">
-          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천되는 예금
+          <span class="highlight">{{ userPersonaType }}</span>
+          유형에게 추천되는 예금
         </h2>
-        <swiper
-          v-if="!isMobile"
-          class="carousel-swiper"
-          :slides-per-view="3"
-          :space-between="20"
-        >
+        <swiper v-if="!isMobile" class="carousel-swiper" :slides-per-view="3" :space-between="20">
           <swiper-slide
             v-for="deposit in carouselDeposits"
             :key="deposit.id"
             class="carousel-deposit"
-            @click="selectProduct(deposit)"
-          >
+            @click="selectProduct(deposit)">
             <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
             <div class="carousel-deposit-name">{{ deposit.name }}</div>
             <div>{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
-              <span>최고 금리: <strong style="color:#2e7d32">{{ deposit.maxRate }}</strong></span>
+              <span>
+                최고 금리:
+                <strong style="color: #2e7d32">{{ deposit.maxRate }}</strong>
+              </span>
               <span>기본 금리: {{ deposit.baseRate }}</span>
             </div>
           </swiper-slide>
@@ -35,26 +32,29 @@
           :modules="[Pagination]"
           :slides-per-view="1"
           :pagination="{ clickable: true }"
-          style="width: 100%; height: auto;"
-        >
+          style="width: 100%; height: auto">
           <swiper-slide
             v-for="deposit in carouselDeposits"
             :key="deposit.id"
             class="carousel-deposit"
-            @click="selectProduct(deposit)"
-          >
+            @click="selectProduct(deposit)">
             <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
             <div class="carousel-deposit-name">{{ deposit.name }}</div>
             <div>{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
-              <span>최고 금리: <strong style="color:#2e7d32">{{ deposit.maxRate }}</strong></span>
+              <span>
+                최고 금리:
+                <strong style="color: #2e7d32">{{ deposit.maxRate }}</strong>
+              </span>
               <span>기본 금리: {{ deposit.baseRate }}</span>
             </div>
           </swiper-slide>
         </swiper>
       </section>
 
-      <br /><hr /><br />
+      <br />
+      <hr />
+      <br />
 
       <!-- 🔷 직접 검색 필터 영역 -->
       <h1 class="page-title">직접 찾아보는 예금</h1>
@@ -64,8 +64,7 @@
             v-for="(term, idx) in terms"
             :key="term.value"
             :class="['term-button', { active: filters?.term === term.value }]"
-            @click="filters.term = term.value"
-          >
+            @click="filters.term = term.value">
             {{ term.label }}
           </div>
         </div>
@@ -74,31 +73,26 @@
             {{ filters.term }}개월 선택 ▼
           </button>
           <div class="term-dropdown" v-if="showTermDropdown">
-            <div
-              v-for="term in terms"
-              :key="term.value"
-              class="term-dropdown-option"
-              @click="selectTerm(term.value)"
-            >
+            <div v-for="term in terms" :key="term.value" class="term-dropdown-option" @click="selectTerm(term.value)">
               {{ term.label }}
             </div>
           </div>
         </div>
-        
-        <br><br>
+
+        <br />
+        <br />
         <h3 class="filter-label">은행을 선택해주세요</h3>
         <div class="bank-grid">
           <div
             v-for="bank in bankOptions"
             :key="bank.name"
             :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
-            @click="filters.bank = (filters?.bank === bank.name ? null : bank.name)"
-          >
+            @click="filters.bank = filters?.bank === bank.name ? null : bank.name">
             <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
             <div class="bank-label">{{ bank.name }}</div>
           </div>
         </div>
-        <br>
+        <br />
       </section>
 
       <!-- 🔷 직접 검색 결과 리스트 -->
@@ -118,8 +112,7 @@
             v-for="product in visibleProducts"
             :key="product.id"
             class="product-card"
-            @click="selectProduct(product)"
-          >
+            @click="selectProduct(product)">
             <div class="product-card-horizontal">
               <div class="bank-logo-container">
                 <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
@@ -129,20 +122,23 @@
                 <div class="product-name-bold">{{ product.name }}</div>
               </div>
               <div class="product-info-block">
-                <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
-                <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
+                <div class="rate-line">
+                  <span class="label-bold">최고 금리 :</span>
+                  <span class="highlight-rate">{{ getRateWithTerm(product, "max") }}</span>
+                </div>
+                <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, "base") }}</div>
                 <div class="rate-line">
                   기준 기간 :
                   {{
-                    filters.term !== '전체'
-                      ? filters.term + '개월'
+                    filters.term !== "전체"
+                      ? filters.term + "개월"
                       : (() => {
                           const best = product.depositOptions?.reduce((prev, curr) => {
                             const prevRate = prev?.intrRate2 ?? 0;
                             const currRate = curr?.intrRate2 ?? 0;
                             return currRate > prevRate ? curr : prev;
                           }, null);
-                          return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+                          return best?.saveTrm ? best.saveTrm + "개월" : "정보 없음";
                         })()
                   }}
                 </div>
@@ -162,336 +158,330 @@
 </template>
 
 <script setup>
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Pagination } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/pagination'
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 
-const showTermDropdown = ref(false)
-const isMobile = ref(false)
+const showTermDropdown = ref(false);
+const isMobile = ref(false);
 
 const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768
-}
+  isMobile.value = window.innerWidth <= 768;
+};
 
 const selectTerm = (val) => {
-  filters.value.term = val
-  showTermDropdown.value = false
-}
+  filters.value.term = val;
+  showTermDropdown.value = false;
+};
 
 onMounted(() => {
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
-})
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+});
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
-})
-import api from '@/api'
+  window.removeEventListener("resize", checkMobile);
+});
+import api from "@/api";
 
 // 📦 은행 로고 설정
 const bankOptions = [
-  { name: '국민은행', logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href },
-  { name: '신한은행', logo: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href },
-  { name: '우리은행', logo: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href },
-  { name: '하나은행', logo: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href },
-  { name: '카카오뱅크', logo: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href },
-  { name: '토스뱅크', logo: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href },
-  { name: '농협은행', logo: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href },
-  { name: '기타', logo: new URL('@/assets/bankLogo_images/plus.png', import.meta.url).href },
-]
+  { name: "국민은행", logo: new URL("@/assets/bankLogo_images/kb.png", import.meta.url).href },
+  { name: "신한은행", logo: new URL("@/assets/bankLogo_images/shinhan.png", import.meta.url).href },
+  { name: "우리은행", logo: new URL("@/assets/bankLogo_images/woori.png", import.meta.url).href },
+  { name: "하나은행", logo: new URL("@/assets/bankLogo_images/hana.png", import.meta.url).href },
+  { name: "카카오뱅크", logo: new URL("@/assets/bankLogo_images/kakao.png", import.meta.url).href },
+  { name: "토스뱅크", logo: new URL("@/assets/bankLogo_images/toss.png", import.meta.url).href },
+  { name: "농협은행", logo: new URL("@/assets/bankLogo_images/nh.png", import.meta.url).href },
+  { name: "기타", logo: new URL("@/assets/bankLogo_images/plus.png", import.meta.url).href },
+];
 
 // 📦 필터 관련 상태 및 초기값
-const loading = ref(false)
-const showSearchResults = ref(false)
-const selectedAmount = ref(10000)
+const loading = ref(false);
+const showSearchResults = ref(false);
+const selectedAmount = ref(10000);
 const filters = ref({
-  term: '12',
+  term: "12",
   amount: null,
-})
-filters.value.bank = null
+});
+filters.value.bank = null;
 
 // selectedAmount를 filters에 동기화
 watch(selectedAmount, (val) => {
-  filters.value.amount = val
-})
+  filters.value.amount = val;
+});
 
 const terms = [
-  { label: '전체', value: '전체' },
-  { label: '1개월', value: '1' },
-  { label: '3개월', value: '3' },
-  { label: '6개월', value: '6' },
-  { label: '12개월', value: '12' },
-  { label: '24개월', value: '24' },
-  { label: '36개월', value: '36' }
-]
+  { label: "전체", value: "전체" },
+  { label: "1개월", value: "1" },
+  { label: "3개월", value: "3" },
+  { label: "6개월", value: "6" },
+  { label: "12개월", value: "12" },
+  { label: "24개월", value: "24" },
+  { label: "36개월", value: "36" },
+];
 
-const userPersonaType = ref('') // default 빈값
+const userPersonaType = ref(""); // default 빈값
 
 // 📦 페르소나 추천 예금 목록
-const personaRecommendedDeposits = ref([])
+const personaRecommendedDeposits = ref([]);
 
 // 📦 데이터 정제 함수
 const getRate = (product, type) => {
-  const selectedTerm = filters.value?.term
-  if (!product.depositOptions || product.depositOptions.length === 0) return '-%'
-  if (selectedTerm === '전체') {
-    const allRates = product.depositOptions.map(opt =>
-      type === 'base' ? opt.intrRate : opt.intrRate2
-    )
-    const max = Math.max(...allRates)
-    return `${max.toFixed(2)}%`
+  const selectedTerm = filters.value?.term;
+  if (!product.depositOptions || product.depositOptions.length === 0) return "-%";
+  if (selectedTerm === "전체") {
+    const allRates = product.depositOptions.map((opt) => (type === "base" ? opt.intrRate : opt.intrRate2));
+    const max = Math.max(...allRates);
+    return `${max.toFixed(2)}%`;
   }
-  const match = product.depositOptions.find(opt => opt.saveTrm === selectedTerm)
-  if (!match) return '-%'
-  return `${(type === 'base' ? match.intrRate : match.intrRate2).toFixed(2)}%`
-}
+  const match = product.depositOptions.find((opt) => opt.saveTrm === selectedTerm);
+  if (!match) return "-%";
+  return `${(type === "base" ? match.intrRate : match.intrRate2).toFixed(2)}%`;
+};
 
 const getRateWithTerm = (product, type) => {
-  if (!product.depositOptions || product.depositOptions.length === 0) return '-%'
-  const selectedTerm = filters.value?.term
-  if (selectedTerm === '전체') {
+  if (!product.depositOptions || product.depositOptions.length === 0) return "-%";
+  const selectedTerm = filters.value?.term;
+  if (selectedTerm === "전체") {
     const sorted = [...product.depositOptions].sort((a, b) => {
-      const valA = type === 'base' ? a.intrRate : a.intrRate2
-      const valB = type === 'base' ? b.intrRate : b.intrRate2
-      return valB - valA
-    })
-    const best = sorted[0]
-    if (!best) return '-%'
-    const val = type === 'base' ? best.intrRate : best.intrRate2
-    return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
+      const valA = type === "base" ? a.intrRate : a.intrRate2;
+      const valB = type === "base" ? b.intrRate : b.intrRate2;
+      return valB - valA;
+    });
+    const best = sorted[0];
+    if (!best) return "-%";
+    const val = type === "base" ? best.intrRate : best.intrRate2;
+    return typeof val === "number" ? `${val.toFixed(2)}%` : "-%";
   }
-  const match = product.depositOptions.find(opt => opt.saveTrm === selectedTerm)
-  if (!match) return '-%'
-  const value = type === 'base' ? match.intrRate : match.intrRate2
-  return typeof value === 'number' ? `${value.toFixed(2)}%` : '-%'
-}
+  const match = product.depositOptions.find((opt) => opt.saveTrm === selectedTerm);
+  if (!match) return "-%";
+  const value = type === "base" ? match.intrRate : match.intrRate2;
+  return typeof value === "number" ? `${value.toFixed(2)}%` : "-%";
+};
 
 const get12MonthRate = (product, type) => {
-  if (!product.depositOptions || product.depositOptions.length === 0) return '-%'
-  const match = product.depositOptions.find(opt => opt.saveTrm === '12')
-  if (!match) return '-%'
-  const val = type === 'base' ? match.intrRate : match.intrRate2
-  return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
-}
+  if (!product.depositOptions || product.depositOptions.length === 0) return "-%";
+  const match = product.depositOptions.find((opt) => opt.saveTrm === "12");
+  if (!match) return "-%";
+  const val = type === "base" ? match.intrRate : match.intrRate2;
+  return typeof val === "number" ? `${val.toFixed(2)}%` : "-%";
+};
 
 const getBankInitial = (name) => {
-  if (name.includes('신한')) return 'shinhan'
-  if (name.includes('하나')) return 'hana'
-  if (name.includes('우리')) return 'woori'
-  if (name.includes('국민')) return 'kb'
-  if (name.includes('농협')) return 'nh'
-  if (name.includes('카카오')) return 'kakao'
-  if (name.includes('토스')) return 'toss'
-  if (name.includes('부산')) return 'bnk'
-  if (name.includes('광주')) return 'gwangju'
-  if (name.includes('중소기업')) return 'ibk'
-  if (name.includes('아이엠')) return 'im'
-  if (name.includes('제주')) return 'jeju'
-  if (name.includes('전북')) return 'jeonbook'
-  if (name.includes('산업')) return 'sanup'
-  if (name.includes('수협')) return 'su'
-  if (name.includes('SC제일') || name.includes('스탠다드차타드')) return 'sc'
-  if (name.includes('케이뱅크') || name.includes('K뱅크')) return 'k'
-  return 'shinhan'
-}
+  if (name.includes("신한")) return "shinhan";
+  if (name.includes("하나")) return "hana";
+  if (name.includes("우리")) return "woori";
+  if (name.includes("국민")) return "kb";
+  if (name.includes("농협")) return "nh";
+  if (name.includes("카카오")) return "kakao";
+  if (name.includes("토스")) return "toss";
+  if (name.includes("부산")) return "bnk";
+  if (name.includes("광주")) return "gwangju";
+  if (name.includes("중소기업")) return "ibk";
+  if (name.includes("아이엠")) return "im";
+  if (name.includes("제주")) return "jeju";
+  if (name.includes("전북")) return "jeonbook";
+  if (name.includes("산업")) return "sanup";
+  if (name.includes("수협")) return "su";
+  if (name.includes("SC제일") || name.includes("스탠다드차타드")) return "sc";
+  if (name.includes("케이뱅크") || name.includes("K뱅크")) return "k";
+  return "shinhan";
+};
 
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
-    hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
-    woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
-    kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
-    nh: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href,
-    kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
-    toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
-    bnk: new URL('@/assets/bankLogo_images/bnk.png', import.meta.url).href,
-    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url).href,
-    ibk: new URL('@/assets/bankLogo_images/ibk.png', import.meta.url).href,
-    im: new URL('@/assets/bankLogo_images/im.png', import.meta.url).href,
-    jeju: new URL('@/assets/bankLogo_images/jeju.png', import.meta.url).href,
-    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url).href,
-    sanup: new URL('@/assets/bankLogo_images/sanup.png', import.meta.url).href,
-    su: new URL('@/assets/bankLogo_images/su.png', import.meta.url).href,
-    sc: new URL('@/assets/bankLogo_images/sc.png', import.meta.url).href,
-    k: new URL('@/assets/bankLogo_images/k.png', import.meta.url).href
-  }
-  return logos[initial] || logos['shinhan']
-}
+    shinhan: new URL("@/assets/bankLogo_images/shinhan.png", import.meta.url).href,
+    hana: new URL("@/assets/bankLogo_images/hana.png", import.meta.url).href,
+    woori: new URL("@/assets/bankLogo_images/woori.png", import.meta.url).href,
+    kb: new URL("@/assets/bankLogo_images/kb.png", import.meta.url).href,
+    nh: new URL("@/assets/bankLogo_images/nh.png", import.meta.url).href,
+    kakao: new URL("@/assets/bankLogo_images/kakao.png", import.meta.url).href,
+    toss: new URL("@/assets/bankLogo_images/toss.png", import.meta.url).href,
+    bnk: new URL("@/assets/bankLogo_images/bnk.png", import.meta.url).href,
+    gwangju: new URL("@/assets/bankLogo_images/gwangju.png", import.meta.url).href,
+    ibk: new URL("@/assets/bankLogo_images/ibk.png", import.meta.url).href,
+    im: new URL("@/assets/bankLogo_images/im.png", import.meta.url).href,
+    jeju: new URL("@/assets/bankLogo_images/jeju.png", import.meta.url).href,
+    jeonbook: new URL("@/assets/bankLogo_images/jeonbook.png", import.meta.url).href,
+    sanup: new URL("@/assets/bankLogo_images/sanup.png", import.meta.url).href,
+    su: new URL("@/assets/bankLogo_images/su.png", import.meta.url).href,
+    sc: new URL("@/assets/bankLogo_images/sc.png", import.meta.url).href,
+    k: new URL("@/assets/bankLogo_images/k.png", import.meta.url).href,
+  };
+  return logos[initial] || logos["shinhan"];
+};
 
 const formatCurrency = (val) => {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW',
-    maximumFractionDigits: 0
-  }).format(val)
-}
+  return new Intl.NumberFormat("ko-KR", {
+    style: "currency",
+    currency: "KRW",
+    maximumFractionDigits: 0,
+  }).format(val);
+};
 
 const getMinAmountWithTerm = (product) => {
   if (!product.depositOptions || product.depositOptions.length === 0) return null;
   const selectedTerm = filters.value?.term;
-  if (!selectedTerm || selectedTerm === '전체') return null;
-  const matchedOption = product.depositOptions.find(opt => String(opt.saveTrm) === selectedTerm);
+  if (!selectedTerm || selectedTerm === "전체") return null;
+  const matchedOption = product.depositOptions.find((opt) => String(opt.saveTrm) === selectedTerm);
   return matchedOption?.minAmount || null;
 };
 
 // 📦 API 통신 (onMounted)
-const allProducts = ref([])
+const allProducts = ref([]);
 const carouselDeposits = computed(() => {
-  return personaRecommendedDeposits.value.map(d => ({
+  return personaRecommendedDeposits.value.map((d) => ({
     id: d.depositId,
     name: d.productName,
-    bankName : d.bankName,
+    bankName: d.bankName,
     image: d.companyImage,
     maxRate: `${d.maxRate.toFixed(2)}%`,
-    baseRate: `${d.basicRate.toFixed(2)}%`
-  }))
-})
+    baseRate: `${d.basicRate.toFixed(2)}%`,
+  }));
+});
 
 onMounted(async () => {
   let personaCode = null;
   const token = localStorage.getItem("accessToken");
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
   try {
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await api.get('/deposits/recommendations/user/persona-id', config);
+    const personaIdRes = await api.get("/deposits/recommendations/user/persona-id", config);
     personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 예금 추천 가져오기
-    const recommendationRes = await api.get('/deposits/recommendations/user/recommendation', config);
+    const recommendationRes = await api.get("/deposits/recommendations/user/recommendation", config);
     const result = recommendationRes.data.result;
 
-    userPersonaType.value = result.personaName || '토끼형';
+    userPersonaType.value = result.personaName || "토끼형";
     personaRecommendedDeposits.value = (result.deposits || []).map((item) => ({
       depositId: item.depositId,
       productName: item.productName,
-      bankName : item.bankName,
-      companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
+      bankName: item.bankName,
+      companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || "")),
       maxRate: item.maxRate ?? 0,
-      basicRate: item.basicRate ?? 0
+      basicRate: item.basicRate ?? 0,
     }));
   } catch (err) {
-    console.error('❌ 사용자 기반 페르소나 예금 불러오기 실패:', err);
-    userPersonaType.value = '토끼형';
+    console.error("❌ 사용자 기반 페르소나 예금 불러오기 실패:", err);
+    userPersonaType.value = "토끼형";
     personaRecommendedDeposits.value = [];
   }
 
   try {
     // 전체 적금 리스트
-    const allRes = await api.post('/deposit/search', {
-      korCoNm: '',
-      maxLimit: null
+    const allRes = await api.post("/deposit/search", {
+      korCoNm: "",
+      maxLimit: null,
     });
-    const fullList = allRes.data.map(item => ({
+    const fullList = allRes.data.map((item) => ({
       id: item.depositProductId,
       name: item.finPrdtNm,
       bank: item.korCoNm,
       bankInitial: getBankInitial(item.korCoNm),
       depositOptions: item.depositOptions,
-      baseRate: item.intrRate?.toFixed(2) ?? '-',
-      maxRate: item.intrRate2?.toFixed(2) ?? '-',
-      image: item.image || '',
-      personaType: item.personaType || ''
+      baseRate: item.intrRate?.toFixed(2) ?? "-",
+      maxRate: item.intrRate2?.toFixed(2) ?? "-",
+      image: item.image || "",
+      personaType: item.personaType || "",
     }));
     allProducts.value = fullList;
   } catch (err) {
-    console.error('❌ 전체 상품 불러오기 실패:', err);
+    console.error("❌ 전체 상품 불러오기 실패:", err);
   }
 });
 
 // 📦 정렬 및 필터링 로직
 const filteredProducts = computed(() => {
-  let result = [...allProducts.value]
+  let result = [...allProducts.value];
 
   // 기간 필터: "전체"가 아닌 다른 값이 선택된 경우에만 필터링
-  if (filters.value?.term && filters.value?.term !== '전체') {
-    result = result.filter(p =>
-      p.depositOptions?.some(opt => String(opt.saveTrm) === filters.value?.term)
-    )
+  if (filters.value?.term && filters.value?.term !== "전체") {
+    result = result.filter((p) => p.depositOptions?.some((opt) => String(opt.saveTrm) === filters.value?.term));
   }
 
   // 예치금액 필터 추가
   if (selectedAmount.value) {
-    result = result.filter(p =>
-      p.depositOptions?.some(opt => {
-        const amountNum = parseInt(opt.minAmount?.replace(/[^\d]/g, '')) || 0
-        return selectedAmount.value >= amountNum
+    result = result.filter((p) =>
+      p.depositOptions?.some((opt) => {
+        const amountNum = parseInt(opt.minAmount?.replace(/[^\d]/g, "")) || 0;
+        return selectedAmount.value >= amountNum;
       })
-    )
+    );
   }
 
   // 은행 필터
-  if (filters.value?.bank && filters.value?.bank !== '기타') {
-    result = result.filter(p => p.bank.includes(filters.value?.bank))
-  } else if (filters.value?.bank === '기타') {
+  if (filters.value?.bank && filters.value?.bank !== "기타") {
+    result = result.filter((p) => p.bank.includes(filters.value?.bank));
+  } else if (filters.value?.bank === "기타") {
     result = result.filter(
-      p =>
-        !['국민은행', '신한은행', '우리은행', '하나은행', '카카오뱅크', '토스뱅크', '농협은행'].some(bank =>
+      (p) =>
+        !["국민은행", "신한은행", "우리은행", "하나은행", "카카오뱅크", "토스뱅크", "농협은행"].some((bank) =>
           p.bank.includes(bank)
         )
-    )
+    );
   }
 
   // 🔽 선택된 기간의 최대 금리 기준 내림차순 정렬
   result.sort((a, b) => {
-    const aMax = Math.max(...(a.depositOptions?.map(opt => opt.intrRate2) || [0]))
-    const bMax = Math.max(...(b.depositOptions?.map(opt => opt.intrRate2) || [0]))
-    return bMax - aMax
-  })
+    const aMax = Math.max(...(a.depositOptions?.map((opt) => opt.intrRate2) || [0]));
+    const bMax = Math.max(...(b.depositOptions?.map((opt) => opt.intrRate2) || [0]));
+    return bMax - aMax;
+  });
 
-  return result
-})
+  return result;
+});
 
 // 무한 스크롤 관련 상태 및 로직
-const visibleCount = ref(6)
-const isLoadingMore = ref(false)
-const visibleProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value))
+const visibleCount = ref(6);
+const isLoadingMore = ref(false);
+const visibleProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value));
 
 function onScroll() {
   // 스크롤이 바닥에 도달하면 더 불러오기
-  if (isLoadingMore.value) return
-  if (filteredProducts.value.length <= visibleProducts.value.length) return
-  const scrollY = window.scrollY || window.pageYOffset
-  const viewportHeight = window.innerHeight
-  const fullHeight = document.documentElement.scrollHeight
+  if (isLoadingMore.value) return;
+  if (filteredProducts.value.length <= visibleProducts.value.length) return;
+  const scrollY = window.scrollY || window.pageYOffset;
+  const viewportHeight = window.innerHeight;
+  const fullHeight = document.documentElement.scrollHeight;
   if (scrollY + viewportHeight >= fullHeight - 200) {
     // 바닥에 가까우면
-    isLoadingMore.value = true
+    isLoadingMore.value = true;
     setTimeout(() => {
-      visibleCount.value += 6
-      isLoadingMore.value = false
-    }, 700) // 로딩 애니메이션 표시
+      visibleCount.value += 6;
+      isLoadingMore.value = false;
+    }, 700); // 로딩 애니메이션 표시
   }
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', onScroll)
-})
+  window.addEventListener("scroll", onScroll);
+});
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
-})
+  window.removeEventListener("scroll", onScroll);
+});
 
 // 필터가 바뀌면 visibleCount 리셋
 watch(filteredProducts, () => {
-  visibleCount.value = 6
-})
+  visibleCount.value = 6;
+});
 
 const selectProduct = (product) => {
-  alert(`${product.name}을 선택했습니다.`)
-}
+  alert(`${product.name}을 선택했습니다.`);
+};
 </script>
 
-
 <style scoped>
-
 /* 🔷 Layout 및 전체 구조 */
 .deposit-search-page {
-  font-family: 'Noto Sans', sans-serif;
+  font-family: "Noto Sans", sans-serif;
   background: var(--color-white);
   min-height: 100vh;
 }
@@ -769,7 +759,7 @@ const selectProduct = (product) => {
   border-radius: 50%;
   object-fit: contain;
   background: var(--color-white);
-  box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.04);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
   border: 0.1rem solid var(--color-gray-200);
 }
 /* Center: name block */
@@ -908,7 +898,6 @@ const selectProduct = (product) => {
   margin-bottom: 1rem;
 }
 
-
 /* 🔷 무한 스크롤 로딩 스피너 스타일 */
 .infinite-spinner-wrapper {
   grid-column: 1 / -1;
@@ -926,11 +915,13 @@ const selectProduct = (product) => {
   animation: spin 1s linear infinite;
 }
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
-
-
 
 .infinite-spinner-block {
   display: flex;
@@ -943,5 +934,4 @@ const selectProduct = (product) => {
   font-size: 0.95rem;
   color: var(--text-secondary);
 }
-
 </style>

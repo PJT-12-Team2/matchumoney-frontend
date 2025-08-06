@@ -1,134 +1,128 @@
 <template>
-	<div class="card-product-search">
-		<main class="main-content">
-			<!-- 🔷 페르소나 추천 캐러셀 -->
-			<h1 class="page-title">페르소나 추천</h1>
-			<section class="persona-carousel-section">
-				<h2 class="persona-carousel-title">
-					<span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는
-					카드
-				</h2>
-				<div class="carousel-card-list">
-					<div
-						v-for="card in carouselCards"
-						:key="card.id"
-						class="carousel-card"
-						@click="selectProduct(card)"
-					>
-						<img
-							:src="card.image"
-							:alt="card.name"
-							class="carousel-card-image"
-						/>
-						<div class="carousel-card-name">{{ card.name }}</div>
-						<div class="carousel-card-benefit">
-							<div><span class="label">카드사:</span> {{ card.issuer || '카드사 미정' }}</div>
-							<div><span class="label">전월실적금액:</span> {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}</div>
-							<div><span class="label">연회비 정보:</span> {{ card.annualFee || '정보 없음' }}</div>
-						</div>
-					</div>
-				</div>
-			</section>
-			<br />
-			<hr />
-			<br />
-			<!-- 🔷 직접 검색 필터 영역 -->
-			<h1 class="page-title">직접 찾아보는 카드</h1>
-			<section class="filter-selection-section">
-				<h3 class="filter-label">카드 종류 선택</h3>
-				<div class="card-type-toggle">
-					<button
-						:class="['type-btn', filters.creditCard ? 'active' : '']"
-						@click="
-							() => {
-								filters.creditCard = !filters.creditCard;
-								searchProducts();
-							}
-						"
-					>
-						신용카드
-					</button>
-					<button
-						:class="['type-btn', filters.debitCard ? 'active' : '']"
-						@click="
-							() => {
-								filters.debitCard = !filters.debitCard;
-								searchProducts();
-							}
-						"
-					>
-						체크카드
-					</button>
-				</div>
+  <div class="card-product-search">
+    <main class="main-content">
+      <!-- 🔷 페르소나 추천 캐러셀 -->
+      <h1 class="page-title">페르소나 추천</h1>
+      <section class="persona-carousel-section">
+        <h2 class="persona-carousel-title">
+          <span class="highlight">{{ userPersonaType }}</span>
+          유형에게 추천하는 카드
+        </h2>
+        <div class="carousel-card-list">
+          <div v-for="card in carouselCards" :key="card.id" class="carousel-card" @click="selectProduct(card)">
+            <img :src="card.image" :alt="card.name" class="carousel-card-image" />
+            <div class="carousel-card-name">{{ card.name }}</div>
+            <div class="carousel-card-benefit">
+              <div>
+                <span class="label">카드사:</span>
+                {{ card.issuer || "카드사 미정" }}
+              </div>
+              <div>
+                <span class="label">전월실적금액:</span>
+                {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + "원" : "정보 없음" }}
+              </div>
+              <div>
+                <span class="label">연회비 정보:</span>
+                {{ card.annualFee || "정보 없음" }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <br />
+      <hr />
+      <br />
+      <!-- 🔷 직접 검색 필터 영역 -->
+      <h1 class="page-title">직접 찾아보는 카드</h1>
+      <section class="filter-selection-section">
+        <h3 class="filter-label">카드 종류 선택</h3>
+        <div class="card-type-toggle">
+          <button
+            :class="['type-btn', filters.creditCard ? 'active' : '']"
+            @click="
+              () => {
+                filters.creditCard = !filters.creditCard;
+                searchProducts();
+              }
+            ">
+            신용카드
+          </button>
+          <button
+            :class="['type-btn', filters.debitCard ? 'active' : '']"
+            @click="
+              () => {
+                filters.debitCard = !filters.debitCard;
+                searchProducts();
+              }
+            ">
+            체크카드
+          </button>
+        </div>
 
-				<h3 class="filter-label">카드 혜택 선택</h3>
-				<div class="benefit-grid">
-					<div
-						v-for="benefit in benefitCategories"
-						:key="benefit.id"
-						class="benefit-button"
-						:class="{
-							selected: filters.selectedBenefits.includes(benefit.id),
-						}"
-						@click="toggleBenefit(benefit.id)"
-					>
-						<span class="emoji">{{ benefit.emoji }}</span>
-						<span>{{ benefit.name }}</span>
-					</div>
-				</div>
-			</section>
+        <h3 class="filter-label">카드 혜택 선택</h3>
+        <div class="benefit-grid">
+          <div
+            v-for="benefit in benefitCategories"
+            :key="benefit.id"
+            class="benefit-button"
+            :class="{
+              selected: filters.selectedBenefits.includes(benefit.id),
+            }"
+            @click="toggleBenefit(benefit.id)">
+            <span class="emoji">{{ benefit.emoji }}</span>
+            <span>{{ benefit.name }}</span>
+          </div>
+        </div>
+      </section>
 
-			<!-- 🔷 직접 검색 결과 리스트 -->
-			<section class="search-results" v-if="showSearchResults">
-				<h2 class="results-title">검색한 카드 상품</h2>
+      <!-- 🔷 직접 검색 결과 리스트 -->
+      <section class="search-results" v-if="showSearchResults">
+        <h2 class="results-title">검색한 카드 상품</h2>
 
-				<div v-if="loading" class="loading-state">
-					<div class="spinner"></div>
-					<div>상품을 검색하고 있습니다...</div>
-				</div>
+        <div v-if="loading" class="loading-state">
+          <div class="spinner"></div>
+          <div>상품을 검색하고 있습니다...</div>
+        </div>
 
-				<div v-else-if="searchResults.length === 0" class="empty-state">
-					<div class="empty-icon">🔍</div>
-					<div>검색 조건에 맞는 상품이 없습니다.</div>
-					<div>다른 조건으로 검색해보세요.</div>
-				</div>
+        <div v-else-if="searchResults.length === 0" class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div>검색 조건에 맞는 상품이 없습니다.</div>
+          <div>다른 조건으로 검색해보세요.</div>
+        </div>
 
-				<div v-else class="search-results-grid">
-					<div
-						v-for="product in searchResults"
-						:key="product.id"
-						class="product-card"
-						@click="selectProduct(product)"
-					>
-						<div class="product-content">
-							<img
-								:src="product.imageUrl"
-								:alt="product.name"
-							/>
-							<div class="product-info">
-								<h4>{{ product.name }}</h4>
-								<div><span class="label">카드사:</span> {{ product.issuer || '카드사 미정' }}</div>
-								<div><span class="label">전월실적금액:</span> {{
-									product.preMonthMoney
-										? product.preMonthMoney.toLocaleString() + '원'
-										: '정보 없음'
-								}}</div>
-								<div><span class="label">연회비 정보:</span> {{ product.annualFee || '정보 없음' }}</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-		</main>
-	</div>
+        <div v-else class="search-results-grid">
+          <div v-for="product in searchResults" :key="product.id" class="product-card" @click="selectProduct(product)">
+            <div class="product-content">
+              <img :src="product.imageUrl" :alt="product.name" />
+              <div class="product-info">
+                <h4>{{ product.name }}</h4>
+                <div>
+                  <span class="label">카드사:</span>
+                  {{ product.issuer || "카드사 미정" }}
+                </div>
+                <div>
+                  <span class="label">전월실적금액:</span>
+                  {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + "원" : "정보 없음" }}
+                </div>
+                <div>
+                  <span class="label">연회비 정보:</span>
+                  {{ product.annualFee || "정보 없음" }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 </template>
 
 <!--
   name: 'CardSearchPage'
 -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import api from '@/api';
+import { ref, onMounted } from "vue";
+import api from "@/api";
 
 // 📦 로딩 및 검색 결과 표시 상태
 const loading = ref(false);
@@ -143,35 +137,35 @@ const filters = ref({
 
 // 📦 혜택 카테고리 정의
 const benefitCategories = ref([
-  { id: '모든가맹점', name: '모든가맹점', emoji: '🏢' },
-  { id: '교통', name: '교통', emoji: '🚗' },
-  { id: '주유', name: '주유', emoji: '🛢️' },
-  { id: '통신', name: '통신', emoji: '📱' },
-  { id: '마트/편의점', name: '마트/편의점', emoji: '🛒' },
-  { id: '쇼핑', name: '쇼핑', emoji: '🎁' },
-  { id: '푸드', name: '푸드', emoji: '🍽️' },
-  { id: '카페/디저트', name: '카페/디저트', emoji: '☕' },
-  { id: '뷰티/피트니스', name: '뷰티/피트니스', emoji: '🚨' },
-  { id: '무실적', name: '무실적', emoji: '💰' },
-  { id: '공과금/렌탈', name: '공과금/렌탈', emoji: '🧾' },
-  { id: '병원/약국', name: '병원/약국', emoji: '🏥' },
-  { id: '애완동물', name: '애완동물', emoji: '🐱' },
-  { id: '교육/육아', name: '교육/육아', emoji: '✏️' },
-  { id: '자동차/하이패스', name: '자동차/하이패스', emoji: '🚗' },
-  { id: '레저/스포츠', name: '레저/스포츠', emoji: '⚾' },
-  { id: 'OTT/영화/문화', name: 'OTT/영화/문화', emoji: '🎬' },
-  { id: '간편결제', name: '간편결제', emoji: '💳' },
-  { id: '항공마일리지', name: '항공마일리지', emoji: '✈️' },
-  { id: '공항라운지/PP', name: '공항라운지/PP', emoji: '💺' },
-  { id: '프리미엄', name: '프리미엄', emoji: '💎' },
-  { id: '여행/숙박', name: '여행/숙박', emoji: '🧳' },
-  { id: '해외', name: '해외', emoji: '🌍' },
-  { id: '비즈니스', name: '비즈니스', emoji: '💼' },
+  { id: "모든가맹점", name: "모든가맹점", emoji: "🏢" },
+  { id: "교통", name: "교통", emoji: "🚗" },
+  { id: "주유", name: "주유", emoji: "🛢️" },
+  { id: "통신", name: "통신", emoji: "📱" },
+  { id: "마트/편의점", name: "마트/편의점", emoji: "🛒" },
+  { id: "쇼핑", name: "쇼핑", emoji: "🎁" },
+  { id: "푸드", name: "푸드", emoji: "🍽️" },
+  { id: "카페/디저트", name: "카페/디저트", emoji: "☕" },
+  { id: "뷰티/피트니스", name: "뷰티/피트니스", emoji: "🚨" },
+  { id: "무실적", name: "무실적", emoji: "💰" },
+  { id: "공과금/렌탈", name: "공과금/렌탈", emoji: "🧾" },
+  { id: "병원/약국", name: "병원/약국", emoji: "🏥" },
+  { id: "애완동물", name: "애완동물", emoji: "🐱" },
+  { id: "교육/육아", name: "교육/육아", emoji: "✏️" },
+  { id: "자동차/하이패스", name: "자동차/하이패스", emoji: "🚗" },
+  { id: "레저/스포츠", name: "레저/스포츠", emoji: "⚾" },
+  { id: "OTT/영화/문화", name: "OTT/영화/문화", emoji: "🎬" },
+  { id: "간편결제", name: "간편결제", emoji: "💳" },
+  { id: "항공마일리지", name: "항공마일리지", emoji: "✈️" },
+  { id: "공항라운지/PP", name: "공항라운지/PP", emoji: "💺" },
+  { id: "프리미엄", name: "프리미엄", emoji: "💎" },
+  { id: "여행/숙박", name: "여행/숙박", emoji: "🧳" },
+  { id: "해외", name: "해외", emoji: "🌍" },
+  { id: "비즈니스", name: "비즈니스", emoji: "💼" },
 ]);
 
 // 📦 추천 캐러셀 카드 및 페르소나명
 const carouselCards = ref([]);
-const userPersonaType = ref('');
+const userPersonaType = ref("");
 
 // 📦 추천 카드 불러오기
 const fetchRecommendedCards = async () => {
@@ -179,30 +173,30 @@ const fetchRecommendedCards = async () => {
     const token = localStorage.getItem("accessToken");
     const config = {
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     };
 
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await api.get('/cards/recommendations/user/persona-id', config);
+    const personaIdRes = await api.get("/cards/recommendations/user/persona-id", config);
     const personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 카드 추천 가져오기
-    const recommendationRes = await api.get('/cards/recommendations/user/recommendation', config);
+    const recommendationRes = await api.get("/cards/recommendations/user/recommendation", config);
     const result = recommendationRes.data.result;
 
-    userPersonaType.value = result.personaName || '토끼형';
+    userPersonaType.value = result.personaName || "토끼형";
     carouselCards.value = (result.cards || []).map((item) => ({
       id: item.cardId,
       name: item.cardName,
-      image: item.cardImageUrl || '',
-      issuer: item.issuer || '',
+      image: item.cardImageUrl || "",
+      issuer: item.issuer || "",
       preMonthMoney: item.preMonthMoney,
       annualFee: item.annualFee,
     }));
   } catch (err) {
-    console.error('❌ 사용자 기반 페르소나 카드 불러오기 실패:', err);
-    userPersonaType.value = '토끼형';
+    console.error("❌ 사용자 기반 페르소나 카드 불러오기 실패:", err);
+    userPersonaType.value = "토끼형";
     carouselCards.value = [];
   }
 };
@@ -215,16 +209,16 @@ const searchProducts = async () => {
   loading.value = true;
   showSearchResults.value = true;
   try {
-    const response = await api.post('/persona/cardsearch', {
+    const response = await api.post("/persona/cardsearch", {
       creditCard: filters.value.creditCard,
       debitCard: filters.value.debitCard,
       selectedBenefits: filters.value.selectedBenefits
-        .map(id => benefitCategories.value.find(b => b.id === id)?.name)
+        .map((id) => benefitCategories.value.find((b) => b.id === id)?.name)
         .filter(Boolean),
     });
     searchResults.value = response.data; // ← 백엔드에서 내려준 카드 리스트
   } catch (error) {
-    console.error('카드 검색 오류:', error);
+    console.error("카드 검색 오류:", error);
     searchResults.value = [];
   } finally {
     loading.value = false;
@@ -247,14 +241,10 @@ const selectProduct = (product) => {
 // 📦 은행 로고 가져오기 (for compatibility)
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan:
-      'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png',
-    hana: 'https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png',
+    shinhan: "https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png",
+    hana: "https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png",
   };
-  return (
-    logos[initial] ||
-    'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png'
-  );
+  return logos[initial] || "https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png";
 };
 
 onMounted(() => {
@@ -266,7 +256,7 @@ onMounted(() => {
 /* 🔷 Layout 및 전체 구조 */
 /* 🔷 Layout 및 전체 구조 */
 .card-product-search {
-  font-family: 'Noto Sans', sans-serif;
+  font-family: "Noto Sans", sans-serif;
   background: var(--color-white);
   min-height: 100vh;
 }
