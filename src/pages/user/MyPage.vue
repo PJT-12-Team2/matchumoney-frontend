@@ -55,12 +55,7 @@
         <template #title>보유 카드</template>
         <template #content>
           <div class="card-slider-wrapper">
-            <CardSlider
-              :cards="cards"
-              :hideCardInfo="true"
-              @cardChange="handleCardChange"
-              @register="showSyncModal = true"
-              @update="handleCardUpdate" />
+            <CardVisualSlider :cards="cards" />
           </div>
         </template>
       </BaseCardGrey>
@@ -118,7 +113,7 @@
 </template>
 
 <script setup>
-import CardSlider from '@/components/cards/CardSlider.vue';
+import CardVisualSlider from '@/components/cards/CardVisualSlider.vue';
 import CardSyncModal from '@/components/cards/CardSyncModal.vue';
 import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
 import { ref, computed, onMounted } from 'vue';
@@ -405,7 +400,6 @@ onMounted(() => {
   display: grid;
   grid-template-rows: 1fr 2fr;
   gap: var(--spacing-md);
-  height: 100%;
 }
 .right-grid {
   grid-area: right;
@@ -574,6 +568,7 @@ onMounted(() => {
 
 .product-card {
   transform: scale(0.95);
+  background-color: var(--color-primary);
 }
 .product-card:hover {
   transform: scale(1);
@@ -670,8 +665,8 @@ onMounted(() => {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  padding: 0 1rem;
-  margin: 0 auto;
+  padding: 0.5rem 0;
+  margin-top: var(--spacing-md);
   box-sizing: border-box;
 }
 
@@ -685,13 +680,20 @@ onMounted(() => {
 .card-visual-section {
   width: 150px;
   height: 100px;
-  border-radius: 12px;
+  border-radius: 1rem;
   box-shadow: var(--shadow-md);
-  background-color: white;
+  background-color: var(--color-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--color-secondary-30);
+  padding: var(--spacing-2xl);
+  transition: transform 0.2s ease;
+  transform: scale(0.95);
+}
+.card-visual-section:hover {
+  transform: scale(1);
 }
 .card-visual-section img.card-image {
   max-width: 80%;
@@ -720,5 +722,15 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 1px solid var(--color-secondary-30);
+  border-radius: 1rem;
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-md);
+  background-color: var(--color-primary);
+  transition: transform 0.2s ease;
+  transform: scale(0.95);
+}
+.slide-item:hover {
+  transform: scale(1);
 }
 </style>
