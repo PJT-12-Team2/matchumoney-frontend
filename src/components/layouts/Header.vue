@@ -246,6 +246,9 @@ onMounted(() => window.addEventListener('keydown', onKey));
 @import '@/assets/main.css'; /* 필요하면 경로 수정 */
 
 /* ─────────── 헤더 레이아웃 ─────────── */
+.html {
+  padding: 0 !important;
+}
 .header {
   background: var(--color-dark);
   color: var(--color-white);
@@ -254,14 +257,21 @@ onMounted(() => window.addEventListener('keydown', onKey));
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.header::after {
+  content: '';
+  display: block;
+  height: 0.01px;
+  background-color: #394a2d; /* dark green bar */
 }
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 1.25rem 2.5rem; /* horizontal padding moved here */
+  padding: 1.25rem 2.5rem;
 }
 /* 로고 */
 .logo-section {

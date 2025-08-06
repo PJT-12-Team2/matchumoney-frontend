@@ -6,15 +6,11 @@
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
         <h2 class="persona-carousel-title">
-          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천되는 예금
+          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는 예금
         </h2>
-        <swiper
-          v-if="!isMobile"
-          class="carousel-swiper"
-          :slides-per-view="3"
-          :space-between="20"
-        >
-          <swiper-slide
+        <!-- 데스크탑 화면: flex 목록 -->
+        <div class="carousel-deposit-list" v-if="!isMobile">
+          <div
             v-for="deposit in carouselDeposits"
             :key="deposit.id"
             class="carousel-deposit"
@@ -22,22 +18,24 @@
           >
             <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
             <div class="carousel-deposit-name">{{ deposit.name }}</div>
-            <div>{{ deposit.bankName }}</div>
+            <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
-              <span>최고 금리: <strong style="color:#2e7d32">{{ deposit.maxRate }}</strong></span>
-              <span>기본 금리: {{ deposit.baseRate }}</span>
+              <span><strong>최고 금리:</strong> {{ deposit.maxRate }}</span>
+              <span><strong>최저 금리:</strong> {{ deposit.baseRate }}</span>
             </div>
-          </swiper-slide>
-        </swiper>
-        <swiper
+          </div>
+        </div>
+
+        <!-- 모바일 화면: swiper 캐러셀 -->
+        <Swiper
           v-else
-          class="carousel-swiper"
-          :modules="[Pagination]"
-          :slides-per-view="1"
+          :modules="modules"
+          :slides-per-view="1.2"
+          :space-between="16"
           :pagination="{ clickable: true }"
-          style="width: 100%; height: auto;"
+          class="carousel-swiper"
         >
-          <swiper-slide
+          <SwiperSlide
             v-for="deposit in carouselDeposits"
             :key="deposit.id"
             class="carousel-deposit"
@@ -45,17 +43,15 @@
           >
             <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
             <div class="carousel-deposit-name">{{ deposit.name }}</div>
-            <div>{{ deposit.bankName }}</div>
+            <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
-              <span>최고 금리: <strong style="color:#2e7d32">{{ deposit.maxRate }}</strong></span>
-              <span>기본 금리: {{ deposit.baseRate }}</span>
+              <span><strong>최고 금리:</strong> {{ deposit.maxRate }}</span>
+              <span><strong>최저 금리:</strong> {{ deposit.baseRate }}</span>
             </div>
-          </swiper-slide>
-        </swiper>
+          </SwiperSlide>
+        </Swiper>
       </section>
-
       <br /><hr /><br />
-
       <!-- 🔷 직접 검색 필터 영역 -->
       <h1 class="page-title">직접 찾아보는 예금</h1>
       <section class="filter-selection-section">
@@ -163,9 +159,10 @@
 
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Pagination } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/pagination'
+import { Pagination } from 'swiper/modules'
+const modules = [Pagination]
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 const showTermDropdown = ref(false)
@@ -342,7 +339,7 @@ const carouselDeposits = computed(() => {
     id: d.depositId,
     name: d.productName,
     bankName : d.bankName,
-    image: d.companyImage,
+    image: getBankLogo(getBankInitial(d.bankName || '')),
     maxRate: `${d.maxRate.toFixed(2)}%`,
     baseRate: `${d.basicRate.toFixed(2)}%`
   }))
@@ -482,8 +479,8 @@ watch(filteredProducts, () => {
 })
 
 const selectProduct = (product) => {
-  alert(`${product.name}을 선택했습니다.`)
-}
+  window.location.href = `/detail/deposit/${product.id}`;
+};
 </script>
 
 
@@ -501,10 +498,10 @@ const selectProduct = (product) => {
   padding: var(--spacing-2xl);
 }
 .page-title {
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
-  margin-bottom: var(--spacing-xl);
-  text-align: center;
+font-size: var(--font-size-2xl);
+font-weight: 700;
+margin-bottom: var(--spacing-xl);
+text-align: center;
 }
 
 /* 🔷 페르소나 추천 캐러셀 스타일 */
@@ -522,21 +519,25 @@ const selectProduct = (product) => {
 } */
 .carousel-swiper {
   width: 100%;
-  max-width: 100%;
+  padding-bottom: 1rem;
+  overflow-x: hidden;
 }
 .carousel-deposit {
-  width: 350px; /* 고정 크기 */
+  width: 320px; /* 고정 크기 */
   padding: 2rem;
   border-radius: 1.5rem;
   box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between; /* 아래 요소 정렬 */
   background-color: white;
 }
+.carousel-deposit:hover{
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
 .carousel-deposit-image {
-  width: 50%;
+  width: 60%;
   border-radius: var(--spacing-sm);
   padding-bottom: 2rem;
 }
@@ -545,35 +546,20 @@ const selectProduct = (product) => {
   font-weight: 700;
   text-align: center;
   margin-bottom: 0.5rem;
-  line-height: 1.4;
-  height: 3.6rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-box-orient: vertical;
 }
 .persona-carousel-section {
   display: flex;
   flex-direction: column;
   align-items: center;
+    overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 .highlight {
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-2xl);
   text-decoration: underline;
 }
 
-:deep(.swiper-pagination-bullets) {
-  bottom: -10px;
-  text-align: center;
-}
-
-:deep(.swiper-pagination-bullet) {
-  background: #ccc;
-  opacity: 1;
-}
-
-:deep(.swiper-pagination-bullet-active) {
-  background: #609966;
-}
 
 /* 🔷 필터 영역 스타일 */
 .filter-selection-section {
@@ -789,10 +775,10 @@ const selectProduct = (product) => {
   gap: 0.1rem;
 }
 .bank-name-bold {
-  font-size: var(--font-size-base);
-  font-weight: 700;
-  color: #1e2b4e; /* strong navy blue */
-  margin-bottom: 0.1rem;
+font-size: var(--font-size-base);
+font-weight: 700;
+color: #1e2b4e; /* strong navy blue */
+margin-bottom: 0.1rem;
 }
 .product-name-bold {
   font-size: var(--font-size-lg);
@@ -814,15 +800,47 @@ const selectProduct = (product) => {
   color: #609966;
   font-weight: bold;
 }
-
+.carousel-deposit-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: var(--spacing-2xl);
+}
 /* 🔷 반응형 (모바일) 스타일 */
 @media (max-width: 768px) {
   .carousel-swiper {
     width: 100%;
-    overflow: visible;
+    padding-bottom: 1rem;
   }
-  .carousel-deposit-list {
-    grid-template-columns: 1fr;
+  .carousel-deposit {
+    width: 280px;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+  }
+  .carousel-deposit-image {
+    width: 60%;
+    border-radius: var(--spacing-sm);
+    padding-bottom: 2rem;
+  }
+  .carousel-deposit-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+  .carousel-deposit-rates-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
   }
   .search-results-grid {
     grid-template-columns: 1fr;
@@ -830,7 +848,6 @@ const selectProduct = (product) => {
   .bank-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
   .carousel-deposit-benefit {
     font-size: var(--font-size-sm);
   }
@@ -876,6 +893,25 @@ const selectProduct = (product) => {
     align-items: center;
     margin-bottom: var(--spacing-lg);
   }
+}
+
+/* Swiper custom pagination bullets for persona carousel */
+:deep(.swiper-pagination-bullets) {
+  bottom: -0.5rem;
+  text-align: center;
+}
+
+:deep(.swiper-pagination-bullet) {
+  background: #ccc;
+  width: 10px;
+  height: 10px;
+  opacity: 1;
+  border-radius: 50%;
+  margin: 0 4px;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  background: #007bff;
 }
 
 /* 🔷 페르소나 추천 캐러셀 금리 인라인 스타일 */
@@ -942,6 +978,13 @@ const selectProduct = (product) => {
 .infinite-spinner-text {
   font-size: 0.95rem;
   color: var(--text-secondary);
+}
+
+
+
+
+html, body {
+  overflow-x: hidden;
 }
 
 </style>
