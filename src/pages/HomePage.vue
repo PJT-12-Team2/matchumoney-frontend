@@ -240,6 +240,8 @@
         <i :class="isAutoPlaying ? 'icon-pause' : 'icon-play'"></i>
       </button>
     </div>
+
+    <!-- 슬라이드 아래 설명 -->
     <section class="features-section alt-layout">
       <div class="container">
         <div class="section-header text-center">
@@ -529,12 +531,16 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
 });
 </script>
-<style scoped>
+<style>
 .default-layout {
   padding: 0 !important;
   margin: 0 !important;
 }
-
+.content {
+  margin: 0 !important;
+}
+</style>
+<style scoped>
 /* 슬라이더 스타일 */
 .slider-container {
   position: relative;
@@ -658,6 +664,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
+  margin-top: 50px;
 }
 
 .play-pause-btn:hover {
@@ -989,7 +996,7 @@ onUnmounted(() => {
 /* Persona Cards */
 .persona-grid {
   display: grid;
-  grid-template-columns: repeat(4, 180px); /* 한 줄에 4개, 고정된 너비 */
+  grid-template-columns: repeat(4, 180px);
   gap: 1.5rem;
   justify-content: center; /* 가운데 정렬 */
 }
@@ -1337,21 +1344,23 @@ onUnmounted(() => {
     padding: 0.4rem 1rem;
     font-size: 0.8rem;
   }
+  .persona-grid {
+    grid-template-columns: repeat(2, 160px);
+  }
 }
 
 /* Mobile Responsive (480px - 768px) */
 @media (max-width: 768px) {
   .slider-container {
     height: auto;
-    min-height: 100vh;
+    min-height: auto;
   }
 
   .slide {
     height: auto;
-    min-height: 100vh;
-    padding: 3rem 0;
+    min-height: auto;
+    padding: 2rem 0;
   }
-
   .hero-content-wrapper,
   .mydata-content-wrapper {
     grid-template-columns: 1fr;
@@ -1453,27 +1462,16 @@ onUnmounted(() => {
 
 /* Small Mobile Responsive (< 480px) */
 @media (max-width: 480px) {
+  /* 🔹 공통 레이아웃 */
   .container {
     padding: 0 0.75rem;
   }
 
-  .persona-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .persona-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    text-align: left;
-    padding: 1rem !important;
-  }
-
-  .persona-img {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 0;
+  /* 🔹 슬라이드 */
+  .slider-container,
+  .slide {
+    min-height: auto !important;
+    height: auto !important;
   }
 
   .slide-indicators {
@@ -1494,6 +1492,24 @@ onUnmounted(() => {
     font-size: 0.875rem;
   }
 
+  /* 🔹 페르소나 카드 */
+  .persona-grid {
+    grid-template-columns: repeat(2, calc(50% - 0.75rem));
+    padding: 0 1rem;
+  }
+
+  .persona-card {
+    width: 100%;
+    max-width: none;
+  }
+
+  .persona-img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0;
+  }
+
+  /* 🔹 카드 / 상품 */
   .feature-card,
   .product-card {
     padding: 1rem;
@@ -1504,6 +1520,7 @@ onUnmounted(() => {
     text-align: center;
   }
 
+  /* 🔹 마이데이터 데모 카드 */
   .mydata-demo-card {
     padding: 1rem;
   }
@@ -1512,11 +1529,13 @@ onUnmounted(() => {
     gap: 0.5rem;
   }
 
+  /* 🔹 버튼 */
   .btn {
     padding: 0.875rem 1.5rem;
     font-size: 0.9rem;
   }
 
+  /* 🔹 섹션 헤더 */
   .section-header {
     margin-bottom: 1.5rem;
   }
