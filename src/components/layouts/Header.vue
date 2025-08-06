@@ -40,7 +40,9 @@
             @mouseenter="showDropdown = 'mydata'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/asset" active-class="active"
+            <RouterLink
+              to="/deposits/recommendations/history"
+              active-class="active"
               >마이데이터</RouterLink
             >
             <div v-if="showDropdown === 'mydata'" class="dropdown-submenu">
@@ -88,7 +90,9 @@
             @mouseenter="showDropdown = 'education'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/loan" active-class="active">교육</RouterLink>
+            <RouterLink to="/education/quiz" active-class="active"
+              >교육</RouterLink
+            >
             <div v-if="showDropdown === 'education'" class="dropdown-submenu">
               <RouterLink to="/education/quiz" class="dropdown-item"
                 >퀴즈</RouterLink
@@ -261,11 +265,6 @@ onMounted(() => window.addEventListener('keydown', onKey));
   border-bottom: 1px solid var(--border-dark);
 }
 
-/* .header::after {
-  display: block;
-  height: 33px;
-  background-color: #394a2d;
-} */
 .header-content {
   display: flex;
   justify-content: space-between;
