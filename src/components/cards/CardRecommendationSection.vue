@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3>
         <i class="bi bi-stars"></i>
-        {{ selectedCard?.cardName || "카드" }} 맞춤 추천
+        {{ selectedCard?.cardName || '카드' }} 맞춤 추천
       </h3>
       <p class="section-subtitle">
         소비 패턴을 분석하여 더 나은 카드를 추천해드립니다
@@ -37,7 +37,7 @@
       <p>
         {{
           recommendationData.message ||
-          "현재 사용 중인 카드가 소비 패턴에 가장 적합합니다."
+          '현재 사용 중인 카드가 소비 패턴에 가장 적합합니다.'
         }}
       </p>
     </div>
@@ -86,21 +86,46 @@
           :key="card.cardId"
           class="recommendation-item"
           :class="{ 'top-recommendation': index === 0 }"
+          @click="navigateToCardDetail(card.cardId)"
         >
           <div class="rank-badge">{{ index + 1 }}</div>
 
+          <!-- 즐겨찾기 버튼 -->
+          <div
+            class="favorite-toggle"
+            @click.stop="handleDirectFavoriteToggle(card)"
+          >
+            <i
+              :class="[
+                card.is_starred ? 'fas fa-star' : 'far fa-star',
+                'favorite-icon',
+              ]"
+              title="즐겨찾기"
+            ></i>
+          </div>
+
           <div class="card-info">
-            <div class="card-image-container">
-              <img
-                :src="card.cardImageUrl"
-                :alt="card.cardName"
-                class="card-image"
-                @error="handleImageError"
-                @load="handleImageLoad"
-                loading="lazy"
-              />
-              <div class="image-loading" v-if="!imageLoaded">
-                <div class="loading-spinner"></div>
+            <div class="card-image-section">
+              <div class="card-image-container">
+                <img
+                  :src="card.cardImageUrl"
+                  :alt="card.cardName"
+                  class="card-image"
+                  @error="handleImageError"
+                  @load="handleImageLoad"
+                  loading="lazy"
+                />
+                <div class="image-loading" v-if="!imageLoaded">
+                  <div class="loading-spinner"></div>
+                </div>
+              </div>
+
+              <!-- 비교함 버튼 - 이미지 바로 아래 -->
+              <div class="compare-container">
+                <CompareButton
+                  :productId="Number(card.cardId)"
+                  :productType="productType"
+                />
               </div>
             </div>
 
@@ -116,27 +141,17 @@
                   {{ card.cardType }}
                 </span>
                 <span class="annual-fee">{{
-                  card.annualFee || "연회비 정보 없음"
+                  card.annualFee || '연회비 정보 없음'
                 }}</span>
               </div>
-            </div>
-          </div>
 
-          <div class="benefit-info">
-            <div class="benefit-amount">
-              <span class="amount"
-                >{{ formatCurrency(card.estimatedBenefit) }}원</span
-              >
-              <span class="label">예상 혜택</span>
-            </div>
-            <div class="apply-actions">
-              <button
-                v-if="card.requestMobileUrl"
-                @click="openApplicationLink(card.requestMobileUrl)"
-                class="btn-apply mobile"
-              >
-                신청
-              </button>
+              <!-- 예상 혜택 정보 - 연회비 아래로 이동 -->
+              <div class="benefit-amount">
+                <span class="label">예상 혜택 </span>
+                <span class="amount">
+                  {{ formatCurrency(card.estimatedBenefit) }}원</span
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -164,182 +179,253 @@
   </div>
 </template>
 
-<script>
-import BaseSpinner from "@/components/base/BaseSpinner.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import cardsApi from "@/api/cards.js";
+<script setup>
+import { ref, watch, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import CompareButton from '@/components/common/CompareButton.vue';
+import cardsApi from '@/api/cards.js';
+import favorite from '@/api/favorite.js';
+import { ProductType } from '@/constants/productTypes';
 
-export default {
-  name: "CardRecommendationSection",
-  components: {
-    BaseSpinner,
-    BaseButton,
+// Props
+const props = defineProps({
+  selectedCard: {
+    type: Object,
+    default: null,
   },
-  props: {
-    selectedCard: {
-      type: Object,
-      default: null,
-    },
-    hasTransactions: {
-      type: Boolean,
-      default: false,
-    },
+  hasTransactions: {
+    type: Boolean,
+    default: false,
   },
-  emits: ["requestTransactionSync"],
-  data() {
-    return {
-      loading: false,
-      error: null,
-      recommendationData: null,
-    };
-  },
-  watch: {
-    selectedCard: {
-      handler(newCard) {
-        if (newCard && newCard.cardId && this.hasTransactions) {
-          this.loadRecommendations();
-        }
-      },
-      immediate: true,
-    },
-    hasTransactions: {
-      handler(hasTransactions) {
-        if (hasTransactions && this.selectedCard?.cardId) {
-          this.loadRecommendations();
-        }
-      },
-    },
-  },
-  methods: {
-    async loadRecommendations() {
-      if (!this.selectedCard?.cardId || !this.hasTransactions) {
-        return;
-      }
+});
 
-      try {
-        this.loading = true;
-        this.error = null;
+// Emits
+const emit = defineEmits(['requestTransactionSync']);
 
-        console.log("🎯 카드 추천 로딩 시작:", this.selectedCard.cardId);
+// Router
+const router = useRouter();
 
-        // 1단계: 먼저 현재 카드의 혜택 조회
-        console.log("💰 현재 카드 혜택 조회 시작");
-        const benefitsResponse = await cardsApi.getCardBenefits(
-          this.selectedCard.cardId
-        );
-        console.log("✅ 현재 카드 혜택 조회 완료:", benefitsResponse);
+// Reactive data
+const loading = ref(false);
+const error = ref(null);
+const recommendationData = ref(null);
+const productType = ref(ProductType.CARD);
 
-        // 2단계: 혜택 정보를 바탕으로 추천 카드 조회
-        // 저장된 추천 데이터 먼저 시도
-        try {
-          const response = await cardsApi.getSavedRecommendations(
-            this.selectedCard.cardId
-          );
-          this.recommendationData = response.data || response;
+// Methods
+const loadRecommendations = async () => {
+  if (!props.selectedCard?.cardId || !props.hasTransactions) {
+    return;
+  }
 
-          // 현재 카드 혜택 정보 추가
-          if (this.recommendationData && benefitsResponse) {
-            this.recommendationData.currentCardBenefits =
-              benefitsResponse.data || benefitsResponse;
-          }
+  try {
+    loading.value = true;
+    error.value = null;
 
-          console.log(
-            "✅ 저장된 추천 데이터 로딩 완료:",
-            this.recommendationData
-          );
-        } catch (savedError) {
-          // 저장된 데이터가 없으면 실시간 추천 조회
-          console.log("💾 저장된 추천 없음, 실시간 조회 시도");
-          const response = await cardsApi.getCardRecommendations(
-            this.selectedCard.cardId
-          );
-          this.recommendationData = response.data || response;
+    console.log('🎯 카드 추천 로딩 시작:', props.selectedCard.cardId);
 
-          // 현재 카드 혜택 정보 추가
-          if (this.recommendationData && benefitsResponse) {
-            this.recommendationData.currentCardBenefits =
-              benefitsResponse.data || benefitsResponse;
-          }
+    // 1단계: 먼저 현재 카드의 혜택 조회
+    console.log('💰 현재 카드 혜택 조회 시작');
+    const benefitsResponse = await cardsApi.getCardBenefits(
+      props.selectedCard.cardId
+    );
+    console.log('✅ 현재 카드 혜택 조회 완료:', benefitsResponse);
 
-          console.log(
-            "✅ 실시간 추천 데이터 로딩 완료:",
-            this.recommendationData
-          );
-        }
-      } catch (error) {
-        console.error("❌ 추천 데이터 로딩 실패:", error);
-        this.error = error.message || "추천 데이터를 불러오는데 실패했습니다.";
-        this.recommendationData = null;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    getCurrentBenefit() {
-      // 현재 카드의 예상 혜택 반환 (ownedCardBenefits 배열에서 첫 번째 카드의 estimatedBenefit)
-      if (
-        this.recommendationData?.currentCardBenefits?.ownedCardBenefits
-          ?.length > 0
-      ) {
-        return this.recommendationData.currentCardBenefits.ownedCardBenefits[0]
-          .estimatedBenefit;
-      }
-      return 0;
-    },
-
-    getBenefitImprovement() {
-      if (!this.recommendationData?.recommendedCards[0]?.estimatedBenefit) {
-        return 0;
-      }
-      return (
-        this.recommendationData.recommendedCards[0].estimatedBenefit -
-        this.getCurrentBenefit()
+    // 2단계: 혜택 정보를 바탕으로 추천 카드 조회
+    // 저장된 추천 데이터 먼저 시도
+    try {
+      const response = await cardsApi.getSavedRecommendations(
+        props.selectedCard.cardId
       );
-    },
+      recommendationData.value = response.data || response;
 
-    formatCurrency(amount) {
-      if (!amount) return "0";
-      return Number(amount).toLocaleString();
-    },
-
-    getCardTypeClass(cardType) {
-      return {
-        "type-credit": cardType === "신용",
-        "type-debit": cardType === "체크",
-      };
-    },
-
-    handleImageError(event) {
-      event.target.src = "/logo.png";
-    },
-
-    handleImageLoad(event) {
-      const img = event.target;
-      const container = img.parentElement;
-
-      // 이미지의 가로세로 비율 확인
-      if (img.naturalHeight > img.naturalWidth) {
-        // 세로 이미지인 경우
-        container.classList.add("vertical-image");
-      } else {
-        // 가로 이미지인 경우
-        container.classList.add("horizontal-image");
+      // 현재 카드 혜택 정보 추가
+      if (recommendationData.value && benefitsResponse) {
+        recommendationData.value.currentCardBenefits =
+          benefitsResponse.data || benefitsResponse;
       }
-    },
 
-    openApplicationLink(url) {
-      if (url) {
-        window.open(url, "_blank", "noopener,noreferrer");
+      // 추천 카드에 즐겨찾기 상태 초기화
+      initializeFavoriteStatus();
+
+      console.log('✅ 저장된 추천 데이터 로딩 완료:', recommendationData.value);
+    } catch (savedError) {
+      // 저장된 데이터가 없으면 실시간 추천 조회
+      console.log('💾 저장된 추천 없음, 실시간 조회 시도');
+      const response = await cardsApi.getCardRecommendations(
+        props.selectedCard.cardId
+      );
+      recommendationData.value = response.data || response;
+
+      // 현재 카드 혜택 정보 추가
+      if (recommendationData.value && benefitsResponse) {
+        recommendationData.value.currentCardBenefits =
+          benefitsResponse.data || benefitsResponse;
       }
-    },
-  },
+
+      // 추천 카드에 즐겨찾기 상태 초기화
+      initializeFavoriteStatus();
+
+      console.log('✅ 실시간 추천 데이터 로딩 완료:', recommendationData.value);
+    }
+  } catch (err) {
+    console.error('❌ 추천 데이터 로딩 실패:', err);
+    error.value = err.message || '추천 데이터를 불러오는데 실패했습니다.';
+    recommendationData.value = null;
+  } finally {
+    loading.value = false;
+  }
 };
+
+// 추천 카드에 즐겨찾기 상태 초기화
+const initializeFavoriteStatus = async () => {
+  if (recommendationData.value?.recommendedCards) {
+    try {
+      // 사용자의 즐겨찾기 목록을 가져와서 상태 설정
+      // getFavorites 메서드가 없으므로 초기값으로 설정
+      const favoriteIds = [];
+
+      recommendationData.value.recommendedCards.forEach((card) => {
+        // 즐겨찾기 목록에 있는지 확인하여 상태 설정
+        card.is_starred = favoriteIds.includes(String(card.cardId));
+      });
+    } catch (error) {
+      console.error('즐겨찾기 상태 초기화 실패:', error);
+      // 에러가 발생한 경우 기본값으로 설정
+      recommendationData.value.recommendedCards.forEach((card) => {
+        card.is_starred = false;
+      });
+    }
+  }
+};
+
+const getCurrentBenefit = () => {
+  // 현재 카드의 예상 혜택 반환 (ownedCardBenefits 배열에서 첫 번째 카드의 estimatedBenefit)
+  if (
+    recommendationData.value?.currentCardBenefits?.ownedCardBenefits?.length > 0
+  ) {
+    return recommendationData.value.currentCardBenefits.ownedCardBenefits[0]
+      .estimatedBenefit;
+  }
+  return 0;
+};
+
+const getBenefitImprovement = () => {
+  if (!recommendationData.value?.recommendedCards[0]?.estimatedBenefit) {
+    return 0;
+  }
+  return (
+    recommendationData.value.recommendedCards[0].estimatedBenefit -
+    getCurrentBenefit()
+  );
+};
+
+const formatCurrency = (amount) => {
+  if (!amount) return '0';
+  return Number(amount).toLocaleString();
+};
+
+const getCardTypeClass = (cardType) => {
+  return {
+    'type-credit': cardType === '신용',
+    'type-debit': cardType === '체크',
+  };
+};
+
+const handleImageError = (event) => {
+  event.target.src = '/logo.png';
+};
+
+const handleImageLoad = (event) => {
+  const img = event.target;
+  const container = img.parentElement;
+
+  // 이미지의 가로세로 비율 확인
+  if (img.naturalHeight > img.naturalWidth) {
+    // 세로 이미지인 경우
+    container.classList.add('vertical-image');
+  } else {
+    // 가로 이미지인 경우
+    container.classList.add('horizontal-image');
+  }
+};
+
+const openApplicationLink = (url) => {
+  if (url) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+};
+
+const navigateToCardDetail = (cardId) => {
+  router.push(`/detail/card/${cardId}`);
+};
+
+// 직접 즐겨찾기 토글 핸들러
+const handleDirectFavoriteToggle = async (card) => {
+  const currentState = card.is_starred;
+  const newState = !currentState;
+
+  // 즉시 UI 업데이트 (낙관적 업데이트)
+  card.is_starred = newState;
+
+  try {
+    if (newState) {
+      // 즐겨찾기 추가
+      await favorite.addFavorite(String(card.cardId), ProductType.CARD);
+    } else {
+      // 즐겨찾기 제거
+      await favorite.deleteFavorite(String(card.cardId), ProductType.CARD);
+    }
+
+    console.log(
+      `카드 즐겨찾기 ${newState ? '추가' : '제거'} 완료:`,
+      card.cardName
+    );
+  } catch (error) {
+    console.error('즐겨찾기 토글 실패:', error);
+
+    // 409 에러 (이미 즐겨찾기에 존재하거나 제거됨) 처리
+    if (error.response?.status === 409) {
+      // 409 에러의 경우 현재 UI 상태를 유지 (서버 상태와 일치한다고 가정)
+      console.log(
+        `즐겨찾기 상태가 이미 ${newState ? '등록' : '제거'}되어 있습니다:`,
+        card.cardName
+      );
+    } else {
+      // 다른 에러의 경우 이전 상태로 되돌리기
+      card.is_starred = currentState;
+    }
+  }
+};
+
+// Watchers
+watch(
+  () => props.selectedCard,
+  (newCard) => {
+    if (newCard && newCard.cardId && props.hasTransactions) {
+      loadRecommendations();
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.hasTransactions,
+  (hasTransactions) => {
+    if (hasTransactions && props.selectedCard?.cardId) {
+      loadRecommendations();
+    }
+  }
+);
 </script>
 
 <style scoped>
 /* main.css 변수 import */
-@import "@/assets/main.css";
+@import '@/assets/main.css';
 
+/* ===== 기본 스타일 (웹 - 1025px 이상) ===== */
 .card-recommendation-section {
   background: var(--bg-card);
   border-radius: 16px;
@@ -392,53 +478,6 @@ export default {
 .error-message {
   color: var(--text-secondary);
   margin-bottom: var(--spacing-lg);
-}
-
-.current-card-benefits {
-  background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.current-card-benefits h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-}
-
-.benefit-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 4px;
-}
-
-.benefit-stat .stat-label {
-  font-size: 12px;
-  color: #666;
-}
-
-.benefit-stat .stat-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-
-.benefit-stat .stat-value.current {
-  color: #2196f3;
 }
 
 .benefit-summary {
@@ -566,6 +605,32 @@ export default {
   color: var(--color-dark);
 }
 
+.favorite-toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--spacing-sm);
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.favorite-toggle {
+  cursor: pointer;
+}
+
+.favorite-toggle .favorite-icon {
+  color: #ffbb00;
+  font-size: var(--font-size-2xl);
+  transition: transform 0.2s ease;
+}
+
+.favorite-toggle:hover .favorite-icon {
+  transform: scale(1.1);
+}
+
+.favorite-toggle:hover {
+  transform: translateY(-50%) scale(1) !important;
+}
+
 .card-info {
   display: flex;
   align-items: flex-start;
@@ -573,6 +638,13 @@ export default {
   flex: 1;
   min-width: 0;
   padding-top: var(--spacing-xs);
+}
+
+.card-image-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .card-image-container {
@@ -588,6 +660,12 @@ export default {
   position: relative;
 }
 
+.compare-container {
+  display: flex;
+  justify-content: center;
+  width: 140px;
+}
+
 .card-image {
   max-width: 100%;
   max-height: 100%;
@@ -595,13 +673,11 @@ export default {
   object-position: center;
 }
 
-/* 세로 이미지: 높이를 최대한 활용 */
 .card-image-container.vertical-image .card-image {
   height: 85px;
   width: auto;
 }
 
-/* 가로 이미지: 너비를 최대한 활용 */
 .card-image-container.horizontal-image .card-image {
   width: 110px;
   height: auto;
@@ -633,6 +709,7 @@ export default {
   gap: var(--spacing-sm);
   align-items: center;
   flex-wrap: wrap;
+  margin-bottom: var(--spacing-sm);
 }
 
 .card-type {
@@ -659,32 +736,44 @@ export default {
   color: var(--text-muted);
 }
 
+/* 예상 혜택 정보 - card-details 안으로 이동 */
+.card-details .benefit-amount {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 12px;
+  margin-top: var(--spacing-xs);
+  background: var(--color-success-light);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.recommendation-item:hover .card-details .benefit-amount {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-details .benefit-amount .label {
+  font-size: var(--font-size-xs);
+  color: var(--color-success-dark);
+  margin-right: var(--spacing-xs);
+}
+
+.card-details .benefit-amount .amount {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-success-dark);
+}
+
 .benefit-info {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--spacing-sm);
   min-width: 120px;
   height: 100%;
   padding-top: var(--spacing-xs);
-}
-
-.benefit-amount {
-  text-align: right;
-}
-
-.benefit-amount .amount {
-  display: block;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-success);
-}
-
-.benefit-amount .label {
-  display: block;
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  padding-right: 40px;
 }
 
 .btn-apply {
@@ -706,6 +795,10 @@ export default {
   box-shadow: var(--shadow-md);
 }
 
+.recommendation-item {
+  cursor: pointer;
+}
+
 .recommendation-summary {
   border-top: 1px solid var(--border-light);
   padding-top: var(--spacing-lg);
@@ -719,7 +812,7 @@ export default {
   font-style: italic;
 }
 
-/* 태블릿 */
+/* ===== 태블릿 스타일 (769px - 1024px) ===== */
 @media (max-width: 1024px) and (min-width: 769px) {
   .card-recommendation-section {
     padding: var(--spacing-xl);
@@ -734,6 +827,10 @@ export default {
   .card-image-container {
     width: 120px;
     height: 76px;
+  }
+
+  .compare-container {
+    width: 120px;
   }
 
   .card-image-container.vertical-image .card-image {
@@ -760,8 +857,26 @@ export default {
   }
 }
 
-/* 모바일 */
+/* ===== 모바일 스타일 (481px - 768px) ===== */
 @media (max-width: 768px) {
+  .favorite-toggle {
+    top: var(--spacing-xs);
+    right: var(--spacing-xs);
+    transform: none;
+  }
+
+  .favorite-toggle:hover {
+    transform: none !important;
+  }
+
+  .favorite-toggle:hover .favorite-icon {
+    transform: scale(1.1);
+  }
+
+  .benefit-info {
+    padding-right: 35px;
+  }
+
   .card-recommendation-section {
     padding: var(--spacing-lg);
     border-radius: 12px;
@@ -817,7 +932,10 @@ export default {
   .card-image-container {
     width: 100px;
     height: 64px;
-    flex-shrink: 0;
+  }
+
+  .compare-container {
+    width: 100px;
   }
 
   .card-image-container.vertical-image .card-image {
@@ -837,13 +955,22 @@ export default {
 
   .benefit-info {
     align-items: center;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     height: auto;
     padding-top: 0;
+    padding-right: 35px;
     min-width: auto;
     width: 100%;
     margin-top: var(--spacing-xs);
+    gap: var(--spacing-md);
+  }
+
+  .apply-actions {
+    order: 2;
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .rank-badge {
@@ -865,7 +992,7 @@ export default {
     margin-bottom: var(--spacing-sm);
   }
 
-  .benefit-amount .amount {
+  .card-details .benefit-amount .amount {
     font-size: var(--font-size-xl);
   }
 
@@ -873,11 +1000,17 @@ export default {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-size-base);
     border-radius: 12px;
+    width: 100%;
+    max-width: 200px;
   }
 }
 
-/* 작은 모바일 */
+/* ===== 작은 모바일 스타일 (최대 480px) ===== */
 @media (max-width: 480px) {
+  .benefit-info {
+    padding-right: 30px;
+  }
+
   .card-recommendation-section {
     padding: var(--spacing-md);
     border-radius: 12px;
@@ -920,6 +1053,12 @@ export default {
     align-self: center;
   }
 
+  .compare-container {
+    width: 100%;
+    max-width: 160px;
+    align-self: center;
+  }
+
   .card-image-container.horizontal-image .card-image {
     width: 120px;
     height: auto;
@@ -942,11 +1081,11 @@ export default {
     margin-top: var(--spacing-xs);
   }
 
-  .benefit-amount {
+  .card-details .benefit-amount {
     text-align: center;
   }
 
-  .benefit-amount .amount {
+  .card-details .benefit-amount .amount {
     font-size: var(--font-size-lg);
   }
 
