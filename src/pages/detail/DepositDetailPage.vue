@@ -5,23 +5,28 @@
         <div class="card-image-wrapper">
           <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
           <div class="reaction-group">
-            <span
-              class="reaction-button"
-              @click.stop="handleLikeClick"
-              :class="{ active: isLiked }"
-            >
-              {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
-            </span>
+            <LikeToggle
+          :productId="depositData.depositProductId"
+          productType="deposit-products"
+          :initialLiked="isLiked"
+          :initialCount="likeCount"
+          @update="
+            ({ liked, count }) => {
+              isLiked = liked;
+              likeCount = count;
+            }
+          "
+        />
             <button class="compare-button">➕ 비교함 담기</button>
+            <FavoriteToggle
+            v-model="isFavorite"
+            :productId="depositData.depositProductId"
+            :productType="productType"
+          />
           </div>
+          
         </div>
-
         <div class="card-info">
-          <i
-            :class="[isFavorite ? 'fas fa-star' : 'far fa-star', 'favorite-icon']"
-            @click="toggleFavorite"
-            title="즐겨찾기"
-          ></i>
           <h2 class="card-title">{{ depositData.finPrdtNm }}</h2>
           <p class="subtitle">{{ depositData.korCoNm }}</p>
 
@@ -169,10 +174,16 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
 import favorite from '@/api/favorite';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import { ProductType } from '@/constants/productTypes';
+import LikeToggle from '@/components/common/LikeToggle.vue'; // 이름 변경 후
 
+const productType = ProductType.DEPOSIT;
 const personaNameMap = {
   1: '거북이',
   2: '다람쥐',
@@ -232,166 +243,120 @@ const getBankLogo = (initial) => {
   return logos[initial] || logos['shinhan'];
 };
 
-export default {
-  data() {
-    return {
-      depositData: null,
-      depositAmount: 10000000,
-      likeCount: 0,
-      isLiked: false,
-      isFavorite: false,
-      bankLogoUrl: '',
-      selectedRateType: 'top',
-      userId: null,
-    };
-  },
-  computed: {
-    topRate() {
-      if (!this.depositData || !this.depositData.options) return 0;
-      return (
-        Math.max(
-          ...this.depositData.options.map((o) => parseFloat(o.intrRate2 || 0))
-        ) / 100
-      );
-    },
-    baseRate() {
-      if (!this.depositData || !this.depositData.options) return 0;
-      const twelveMonth = this.depositData.options.find(
-        (o) => o.saveTrm === '12'
-      );
-      return (twelveMonth ? parseFloat(twelveMonth.intrRate) : 0) / 100;
-    },
-    topRateTerm() {
-      if (!this.depositData || !this.depositData.options) return '-';
-      const best = this.depositData.options.reduce((prev, curr) => {
-        const prevRate = parseFloat(prev?.intrRate2 || 0);
-        const currRate = parseFloat(curr?.intrRate2 || 0);
-        return currRate > prevRate ? curr : prev;
-      }, {});
-      return best?.saveTrm || '-';
-    },
-    baseRateTerm() {
-      if (!this.depositData || !this.depositData.options) return '-';
-      const twelveMonth = this.depositData.options.find(
-        (o) => o.saveTrm === '12'
-      );
-      return twelveMonth?.saveTrm || '-';
-    },
-    formattedAmount() {
-      return this.depositAmount.toLocaleString();
-    },
-    preTaxInterest() {
-      const rate =
-        this.selectedRateType === 'top' ? this.topRate : this.baseRate;
-      return this.depositAmount * rate;
-    },
-    tax() {
-      return this.preTaxInterest * 0.154;
-    },
-    afterTax() {
-      return this.depositAmount + this.preTaxInterest - this.tax;
-    },
-    formattedPreTaxInterest() {
-      return Math.round(this.preTaxInterest).toLocaleString();
-    },
-    formattedTax() {
-      return Math.round(this.tax).toLocaleString();
-    },
-    formattedAfterTax() {
-      return Math.round(this.afterTax).toLocaleString();
-    },
-    formattedAmountMan() {
-      return Math.floor(this.depositAmount / 10000).toLocaleString();
-    },
-    personaName() {
-      return personaNameMap[this.depositData?.personaId] || '기타';
-    },
-  },
-  mounted() {
-    const id = this.$route.params.depositId;
-    let userId = null;
-    try {
-      userId = sessionStorage.getItem('userId');
-      if (userId) userId = Number(userId);
-    } catch (e) {
-      userId = null;
-    }
-    this.userId = userId;
+// State
+const depositData = ref(null);
+const depositAmount = ref(10000000);
+const likeCount = ref(0);
+const isLiked = ref(false);
+const isFavorite = ref(false);
+const bankLogoUrl = ref('');
+const selectedRateType = ref('top');
+const userId = ref(null);
+const route = useRoute();
+const router = useRouter();
 
-    api
-      .get(`/deposit-products/${id}`)
-      .then((res) => {
-        console.log(res);
-        this.depositData = res.data;
-        const initial = getBankInitial(this.depositData.korCoNm || '');
-        this.bankLogoUrl = getBankLogo(initial);
+// Computed properties
+const topRate = computed(() => {
+  if (!depositData.value || !depositData.value.options) return 0;
+  return (
+    Math.max(
+      ...depositData.value.options.map((o) => parseFloat(o.intrRate2 || 0))
+    ) / 100
+  );
+});
 
-        this.isLiked = res.data.liked;
-        this.likeCount = res.data.likeCount;
-      })
-      //   .then((res) => {      })
-      .catch((err) => {
-        console.error(err);
-      });
-  },
-  methods: {
-    toggle(index) {
-      this.activeIndex = this.activeIndex === index ? null : index;
-    },
-    async toggleFavorite() {
-      if (!this.userId) {
-        if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
-          this.$router.push('/login');
-        }
-        return;
-      }
+const baseRate = computed(() => {
+  if (!depositData.value || !depositData.value.options) return 0;
+  const twelveMonth = depositData.value.options.find((o) => o.saveTrm === '12');
+  return (twelveMonth ? parseFloat(twelveMonth.intrRate) : 0) / 100;
+});
 
-      const productId = this.depositData?.depositProductId;
-      const productType = 'DEPOSIT';
+const topRateTerm = computed(() => {
+  if (!depositData.value || !depositData.value.options) return '-';
+  const best = depositData.value.options.reduce((prev, curr) => {
+    const prevRate = parseFloat(prev?.intrRate2 || 0);
+    const currRate = parseFloat(curr?.intrRate2 || 0);
+    return currRate > prevRate ? curr : prev;
+  }, {});
+  return best?.saveTrm || '-';
+});
 
-      try {
-        if (this.isFavorite) {
-          await favorite.deleteFavorite(productId, productType);
-        } else {
-          await favorite.addFavorite(productId, productType);
-        }
-        this.isFavorite = !this.isFavorite;
-      } catch (error) {
-        console.error('즐겨찾기 처리 중 오류 발생:', error);
-      }
-    },
-    handleLikeClick() {
-      if (!this.userId) {
-        if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
-          this.$router.push('/login');
-        }
-        return;
-      }
-      this.toggleLike();
-    },
-    toggleLike() {
-      if (!this.depositData) return;
+const baseRateTerm = computed(() => {
+  if (!depositData.value || !depositData.value.options) return '-';
+  const twelveMonth = depositData.value.options.find((o) => o.saveTrm === '12');
+  return twelveMonth?.saveTrm || '-';
+});
 
-      const id = this.depositData.depositProductId;
+const formattedAmount = computed(() => {
+  return depositAmount.value.toLocaleString();
+});
 
-      const likePromise = this.isLiked
-        ? api.delete(`/deposit-products/${id}/likes`)
-        : api.post(`/deposit-products/${id}/likes`);
+const preTaxInterest = computed(() => {
+  const rate =
+    selectedRateType.value === 'top' ? topRate.value : baseRate.value;
+  return depositAmount.value * rate;
+});
 
-      likePromise
-        .then((res) => {
-          this.isLiked = res.data.liked;
-          this.likeCount = res.data.likeCount;
-          //console.log(res);
-          //return response;
-          //return api.get(`/deposit-products/${id}/likes`);
-        })
-        //.then((res) => {})
-        .catch((err) => console.error(err));
-    },
-  },
-// removed created() lifecycle hook that initializes userId
+const tax = computed(() => {
+  return preTaxInterest.value * 0.154;
+});
+
+const afterTax = computed(() => {
+  return depositAmount.value + preTaxInterest.value - tax.value;
+});
+
+const formattedPreTaxInterest = computed(() => {
+  return Math.round(preTaxInterest.value).toLocaleString();
+});
+
+const formattedTax = computed(() => {
+  return Math.round(tax.value).toLocaleString();
+});
+
+const formattedAfterTax = computed(() => {
+  return Math.round(afterTax.value).toLocaleString();
+});
+
+const formattedAmountMan = computed(() => {
+  return Math.floor(depositAmount.value / 10000).toLocaleString();
+});
+
+const personaName = computed(() => {
+  return personaNameMap[depositData.value?.personaId] || '기타';
+});
+
+// Methods
+const toggle = (index) => {
+  // Not used in template, but included for parity
+  activeIndex.value = activeIndex.value === index ? null : index;
 };
+
+
+// onMounted logic
+onMounted(() => {
+  const id = route.params.depositId;
+  let uid = null;
+  try {
+    uid = sessionStorage.getItem('userId');
+    if (uid) uid = Number(uid);
+  } catch (e) {
+    uid = null;
+  }
+  userId.value = uid;
+  api
+    .get(`/deposit-products/${id}`)
+    .then((res) => {
+      //console.log(res);
+      depositData.value = res.data;
+      const initial = getBankInitial(depositData.value.korCoNm || '');
+      bankLogoUrl.value = getBankLogo(initial);
+      isLiked.value = res.data.liked;
+      likeCount.value = res.data.likeCount;
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+});
 </script>
 
 <style scoped>
