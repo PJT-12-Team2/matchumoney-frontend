@@ -2,18 +2,33 @@
   <div class="container" v-if="cardData">
     <div class="saving-detail-page">
       <section class="card-header-wrapper">
-        <div class="favorite-icon" @click="toggleFavorite">
-          <span v-if="isFavorite">⭐</span>
-          <span v-else>☆</span>
-        </div>
         <section class="card-header">
           <div class="card-image-wrapper">
-            <img :src="cardData.cardImageUrl" alt="카드 이미지" class="card-image" />
+            <div class="favorite-wrapper">
+              <FavoriteToggle
+                v-model="isFavorite"
+                :productId="cardData.cardProductId"
+                :productType="productType"
+              />
+            </div>
+            <img
+              :src="cardData.cardImageUrl"
+              alt="카드 이미지"
+              class="card-image"
+            />
             <div class="reaction-group">
-              <span class="reaction-button" @click="toggleLike">
-                <span v-if="isLiked">❤️</span>
-                <span v-else>🤍</span> {{ likeCount }}
-              </span>
+              <LikeToggle
+                :productId="cardData.cardProductId"
+                productType="card-products"
+                :initialLiked="isLiked"
+                :initialCount="likeCount"
+                @update="
+                  ({ liked, count }) => {
+                    isLiked = liked;
+                    likeCount = count;
+                  }
+                "
+              />
               <button class="compare-button">➕ 비교함 담기</button>
             </div>
           </div>
@@ -21,14 +36,19 @@
             <h2 class="card-title">{{ cardData.name }}</h2>
             <p class="subtitle">{{ cardData.issuer }}({{ cardData.type }})</p>
             <p class="card-meta">
-              전월 실적: <strong>{{ cardData.preMonthMoney ? Number(cardData.preMonthMoney).toLocaleString() + '원' : '없음' }}</strong>
-              &nbsp;|&nbsp;
-              연회비: <strong>{{ cardData.annualFee || '정보 없음' }}</strong>
+              전월 실적:
+              <strong>{{
+                cardData.preMonthMoney
+                  ? Number(cardData.preMonthMoney).toLocaleString() + '원'
+                  : '없음'
+              }}</strong>
+              &nbsp;|&nbsp; 연회비:
+              <strong>{{ cardData.annualFee || '정보 없음' }}</strong>
             </p>
             <div class="benefit-hashtags">
-              <span 
-                v-for="(option, index) in cardData.options.slice(0, 3)" 
-                :key="index" 
+              <span
+                v-for="(option, index) in cardData.options.slice(0, 3)"
+                :key="index"
                 class="hashtag"
               >
                 #{{ option.title }}
@@ -38,7 +58,9 @@
               <!-- other benefits can be listed here -->
             </ul>
             <div class="button-group">
-              <button class="go-to-card" @click="goToCardSite">카드사 바로가기</button>
+              <button class="go-to-card" @click="goToCardSite">
+                카드사 바로가기
+              </button>
               <button class="compare-link">비교함 바로가기</button>
             </div>
           </div>
@@ -47,7 +69,10 @@
 
       <section class="persona-banner-section">
         <div class="info-banner">
-          <p class="badge"><span class="highlight">{{ personaName }}</span> 유형이 많이 찾는 상품</p>
+          <p class="badge">
+            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
+            상품
+          </p>
         </div>
       </section>
 
@@ -58,33 +83,56 @@
             <div
               v-for="(option, idx) in cardData.options"
               :key="idx"
-              :class="option.title.includes('유의사항') ? '' : 'collapsible-card green-card'"
-              @click="!option.title.includes('유의사항') && (option.expanded = !option.expanded)"
+              :class="
+                option.title.includes('유의사항')
+                  ? ''
+                  : 'collapsible-card green-card'
+              "
+              @click="
+                !option.title.includes('유의사항') &&
+                  (option.expanded = !option.expanded)
+              "
             >
-              <div class="benefit-header-line" v-if="!option.title.includes('유의사항')">
+              <div
+                class="benefit-header-line"
+                v-if="!option.title.includes('유의사항')"
+              >
                 <span class="benefit-icon-inline">🏷️</span>
                 <div class="benefit-title-wrapper">
                   <strong class="benefit-title-text">{{ option.title }}</strong>
-                  <span class="benefit-discount-black">최대 {{ formatValue(option.value) }} 할인</span>
+                  <span class="benefit-discount-black"
+                    >최대 {{ formatValue(option.value) }} 할인</span
+                  >
                 </div>
               </div>
               <p
                 class="note-paragraph"
                 v-if="option.title.includes('유의사항')"
-                v-html="formatDescription(option.description).replaceAll('\n', '<br>')"
-              >
-              </p>
+                v-html="
+                  formatDescription(option.description).replaceAll('\n', '<br>')
+                "
+              ></p>
               <transition name="slide-fade">
-                <div class="benefit-expand-box" v-if="option.expanded && !option.title.includes('유의사항')">
+                <div
+                  class="benefit-expand-box"
+                  v-if="option.expanded && !option.title.includes('유의사항')"
+                >
                   <p v-if="!option.showFull">
                     {{ formattedBrief(option.description) }}
-                    <span class="see-more" @click.stop="option.showFull = true">더보기</span>
+                    <span class="see-more" @click.stop="option.showFull = true"
+                      >더보기</span
+                    >
                   </p>
                   <p v-else>
-                    <span v-for="(line, idx) in formattedLines(option.description)" :key="idx">
+                    <span
+                      v-for="(line, idx) in formattedLines(option.description)"
+                      :key="idx"
+                    >
                       {{ line }}<br />
                     </span>
-                    <span class="see-less" @click.stop="option.showFull = false">접기</span>
+                    <span class="see-less" @click.stop="option.showFull = false"
+                      >접기</span
+                    >
                   </p>
                 </div>
               </transition>
@@ -96,16 +144,25 @@
         </div>
       </section>
       <section class="recommend-buttons">
-        <router-link to="/persona/cards" class="recommend-button green">나의 페르소나로 카드 추천 받기</router-link>
-        <router-link to="/mydata/cards" class="recommend-button">마이데이터 기반 카드 추천 받기</router-link>
+        <router-link to="/persona/cards" class="recommend-button green"
+          >나의 페르소나로 카드 추천 받기</router-link
+        >
+        <router-link to="/mydata/cards" class="recommend-button"
+          >마이데이터 기반 카드 추천 받기</router-link
+        >
       </section>
     </div>
   </div>
 </template>
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
+import LikeToggle from '@/components/common/LikeToggle.vue';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import { ProductType } from '@/constants/productTypes';
+
+const productType = ProductType.CARD;
 
 const personaNameMap = {
   1: '거북이',
@@ -116,40 +173,33 @@ const personaNameMap = {
   6: '고양이',
   7: '호랑이',
   8: '펭귄',
-  9: '기타'
+  9: '기타',
 };
 
 const route = useRoute();
 
 const cardData = ref(null);
-const likeCount = ref(10);
+const likeCount = ref(0);
 const isLiked = ref(false);
 const isFavorite = ref(false);
 const savingData = ref(null);
+const userId = ref(null);
+const router = useRouter();
 const personaName = computed(() => {
   return personaNameMap[cardData.value?.personaId] || '기타';
 });
-
-function toggleFavorite() {
-  isFavorite.value = !isFavorite.value;
-}
-
-function toggleLike() {
-  isLiked.value = !isLiked.value;
-}
 
 function formatValue(value) {
   const num = parseFloat(value);
   return num >= 100 ? `${num.toLocaleString()}원` : `${num}%`;
 }
 
-
 function formattedLines(text) {
   return text
     .replace('Powered by Froala Editor', '')
     .split(/ - |\* /)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 }
 
 function formattedBrief(text) {
@@ -158,16 +208,28 @@ function formattedBrief(text) {
 }
 
 onMounted(() => {
+  // Extract userId from sessionStorage
+  let uid = null;
+  try {
+    uid = sessionStorage.getItem('userId');
+    if (uid) uid = Number(uid);
+  } catch (e) {
+    uid = null;
+  }
+  userId.value = uid;
+
   const id = route.params.cardId;
-  api.get(`/card-products/${id}`).then(res => {
+  api.get(`/card-products/${id}`).then((res) => {
     cardData.value = res.data;
     savingData.value = res.data; // Assuming savingData is part of cardData or same data
     if (cardData.value.options && Array.isArray(cardData.value.options)) {
-      cardData.value.options.forEach(option => {
+      cardData.value.options.forEach((option) => {
         option.expanded = false;
         option.showFull = false;
       });
     }
+    isLiked.value = res.data.liked;
+    likeCount.value = res.data.likeCount;
   });
 });
 
@@ -197,9 +259,10 @@ function goToCardSite() {
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
-.benefit-table th, .benefit-table td {
+.benefit-table th,
+.benefit-table td {
   border: 1px solid #e0e0e0;
   padding: 10px 8px;
   text-align: center;
@@ -236,6 +299,7 @@ function goToCardSite() {
   flex-direction: column;
   align-items: center;
   margin-right: 40px;
+  position: relative;
 }
 
 .card-image {
@@ -262,7 +326,7 @@ function goToCardSite() {
 }
 
 .badge {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
   margin-bottom: 5px;
   font-size: 14px;
@@ -291,25 +355,25 @@ function goToCardSite() {
   margin-bottom: 6px;
 }
 
- .button-group {
-   display: flex;
-   width: 100%;
-   gap: 12px;
- }
+.button-group {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+}
 
- .button-group > .go-to-card,
- .button-group > .compare-link {
-   flex: 1 1 0;
-   width: 100%;
-   text-align: center;
- }
+.button-group > .go-to-card,
+.button-group > .compare-link {
+  flex: 1 1 0;
+  width: 100%;
+  text-align: center;
+}
 
 .full-width {
   width: 100%;
 }
 
 .go-to-card {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 12px 0;
@@ -363,7 +427,6 @@ function goToCardSite() {
   margin-bottom: 12px;
 }
 
-
 .highlight {
   color: #2e7d32;
   font-weight: 900;
@@ -401,10 +464,11 @@ function goToCardSite() {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
+
 .favorite-icon {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 20px;
+  right: 20px;
   font-size: 24px;
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -413,6 +477,7 @@ function goToCardSite() {
 .favorite-icon:hover {
   transform: scale(1.2);
 }
+
 
 /* 금리 안내 스타일 */
 .interest-section {
@@ -425,7 +490,6 @@ function goToCardSite() {
 .interest-summary {
   margin-bottom: 20px;
 }
-
 
 .saving-amount .value {
   font-size: 24px;
@@ -588,8 +652,6 @@ function goToCardSite() {
   font-weight: 500;
 }
 
-/* Added styles for benefit list */
-/* benefit-row: updated for expand/collapse */
 .benefit-row {
   display: flex;
   flex-direction: column;
@@ -599,7 +661,7 @@ function goToCardSite() {
   padding: 16px;
   margin-bottom: 10px;
   background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   cursor: pointer;
 }
 
@@ -636,14 +698,13 @@ function goToCardSite() {
   color: #555;
 }
 
-.see-more, .see-less {
+.see-more,
+.see-less {
   color: #2e7d32;
   font-weight: bold;
   cursor: pointer;
   margin-left: 6px;
 }
-</style>
-<style scoped>
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: all 0.3s ease;
@@ -659,8 +720,7 @@ function goToCardSite() {
   max-height: 200px;
   opacity: 1;
 }
-</style>
-<style scoped>
+
 .benefit-block {
   border-top: 1px solid #e0e0e0;
   padding-top: 16px;
@@ -680,9 +740,6 @@ function goToCardSite() {
   margin: 0;
 }
 
-
-
-
 .won-label {
   position: absolute;
   right: 0;
@@ -691,8 +748,6 @@ function goToCardSite() {
   font-size: 20px;
   color: #333;
 }
-
-
 
 .info-banner {
   background-color: #f0f8f5;
@@ -755,7 +810,6 @@ function goToCardSite() {
   font-weight: 500;
 }
 
-
 .benefit-description {
   margin-top: 8px;
   font-size: 14px;
@@ -799,7 +853,7 @@ function goToCardSite() {
   margin-right: 8px;
   font-size: 15px;
   color: #333;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   border: 1px solid #e0e0e0;
 }
 
@@ -856,5 +910,9 @@ function goToCardSite() {
   background-color: #e0f3e7;
 }
 
+.reaction-button.active {
+  background-color: #ffe6e6;
+  color: red;
+}
 
 </style>
