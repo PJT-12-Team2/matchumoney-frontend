@@ -1,5 +1,3 @@
-// favorite.js - 즐겨찾기 API 모듈
-
 import apiClient from './index';
 
 const favorite = {

@@ -79,7 +79,13 @@
           <div class="bank-logo-container">
             <img :src="getBankLogo(product.bankName)" alt="은행 로고" />
             <div class="likes_compare">
-              <div>좋아요</div>
+              <span
+                class="reaction-button"
+                @click.stop="handleLikeClick(product)"
+                :class="{ active: product.isLiked || false }"
+              >
+                {{ product.isLiked ? '❤️' : '🤍' }} {{ product.likeCount || 0 }}
+              </span>
               <CompareButton
                 :productId="product.depositProductId"
                 :productType="ProductType.DEPOSIT"
@@ -119,6 +125,7 @@ import { useRouter } from 'vue-router';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import { ProductType } from '@/constants/productTypes';
 import CompareButton from '@/components/common/CompareButton.vue';
+import api from '@/api';
 
 const router = useRouter();
 
@@ -152,6 +159,56 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['productSelect', 'favoriteChanged']);
+
+// 🆕 사용자 ID 가져오기
+const getUserId = () => {
+  try {
+    const userId = sessionStorage.getItem('userId');
+    return userId ? Number(userId) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// 🆕 좋아요 클릭 처리
+const handleLikeClick = (product) => {
+  const userId = getUserId();
+
+  if (!userId) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      router.push('/login');
+    }
+    return;
+  }
+
+  toggleLike(product);
+};
+
+// 🆕 좋아요 토글 기능
+const toggleLike = async (product) => {
+  const productId = product.depositProductId;
+  const currentLiked = product.isLiked || false;
+
+  try {
+    const likePromise = currentLiked
+      ? api.delete(`/deposit-products/${productId}/likes`)
+      : api.post(`/deposit-products/${productId}/likes`);
+
+    const response = await likePromise;
+
+    // 상품 객체 업데이트
+    product.isLiked = response.data.liked;
+    product.likeCount = response.data.likeCount;
+
+    console.log('좋아요 상태 업데이트:', {
+      productId,
+      isLiked: product.isLiked,
+      likeCount: product.likeCount,
+    });
+  } catch (error) {
+    console.error('좋아요 처리 중 오류:', error);
+  }
+};
 
 // 즐겨찾기 토글 처리
 const handleFavoriteToggle = (product, value) => {
@@ -391,7 +448,7 @@ const getBankLogo = (bankName) => {
 
 .top-recommendation .rank-badge {
   background: var(--color-warning, #ffd700);
-  color: var(--color-dark, #333);
+  color: var(--color-white);
 }
 
 .product-card-horizontal {
@@ -529,6 +586,25 @@ const getBankLogo = (bankName) => {
   right: 12px;
   transform: translateY(-50%);
   z-index: 10;
+}
+.reaction-button {
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.reaction-button:hover {
+  background-color: #e0e0e0;
+}
+
+.reaction-button.active {
+  background-color: #ffe6e6;
+  color: red;
 }
 
 @keyframes spin {
