@@ -4,61 +4,72 @@
       <!-- 🔷 페르소나 추천 캐러셀 -->
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
-        <h2 class="persona-carousel-title">
-          <span class="highlight">{{ userPersonaType }}</span>
-          유형에게 추천하는 예금
-        </h2>
-        <!-- 데스크탑 화면: flex 목록 -->
-        <div class="carousel-deposit-list" v-if="!isMobile">
-          <div
-            v-for="deposit in carouselDeposits"
-            :key="deposit.id"
-            class="carousel-deposit"
-            @click="selectProduct(deposit)">
-            <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
-            <div class="carousel-deposit-name">{{ deposit.name }}</div>
-            <div class="bank-name-bold">{{ deposit.bankName }}</div>
-            <div class="carousel-deposit-rates-inline">
-              <span>
-                <strong>최고 금리: </strong>
-                {{ deposit.maxRate }}
-              </span>
-              <span>
-                <strong>최저 금리: </strong>
-                {{ deposit.baseRate }}
-              </span>
+        <div v-if="!userPersonaType" class="persona-empty-state">
+          <p class="persona-message">
+            아직 페르소나 유형이 없습니다.<br />
+            나에게 맞는 예금 상품을 추천받으려면 페르소나 검사를 진행해주세요.
+          </p>
+          <button class="persona-start-button" @click="() => window.location.href = '/persona/start'">
+            👉 페르소나 검사하러 가기
+          </button>
+        </div>
+        <template v-if="userPersonaType">
+          <h2 class="persona-carousel-title">
+            <span class="highlight">{{ userPersonaType }}</span>
+            유형에게 추천하는 예금
+          </h2>
+          <!-- 데스크탑 화면: flex 목록 -->
+          <div class="carousel-deposit-list" v-if="!isMobile">
+            <div
+              v-for="deposit in carouselDeposits"
+              :key="deposit.id"
+              class="carousel-deposit"
+              @click="selectProduct(deposit)">
+              <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
+              <div class="carousel-deposit-name">{{ deposit.name }}</div>
+              <div class="bank-name-bold">{{ deposit.bankName }}</div>
+              <div class="carousel-deposit-rates-inline">
+                <span>
+                  <strong>최고 금리: </strong>
+                  {{ deposit.maxRate }}
+                </span>
+                <span>
+                  <strong>최저 금리: </strong>
+                  {{ deposit.baseRate }}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 모바일 화면: swiper 캐러셀 -->
-        <Swiper
-          v-else
-          :modules="modules"
-          :slides-per-view="1.2"
-          :space-between="16"
-          :pagination="{ clickable: true }"
-          class="carousel-swiper">
-          <SwiperSlide
-            v-for="deposit in carouselDeposits"
-            :key="deposit.id"
-            class="carousel-deposit"
-            @click="selectProduct(deposit)">
-            <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
-            <div class="carousel-deposit-name">{{ deposit.name }}</div>
-            <div class="bank-name-bold">{{ deposit.bankName }}</div>
-            <div class="carousel-deposit-rates-inline">
-              <span>
-                <strong>최고 금리:</strong>
-                {{ deposit.maxRate }}
-              </span>
-              <span>
-                <strong>최저 금리:</strong>
-                {{ deposit.baseRate }}
-              </span>
-            </div>
-          </SwiperSlide>
-        </Swiper>
+          <!-- 모바일 화면: swiper 캐러셀 -->
+          <Swiper
+            v-else
+            :modules="modules"
+            :slides-per-view="1.2"
+            :space-between="16"
+            :pagination="{ clickable: true }"
+            class="carousel-swiper">
+            <SwiperSlide
+              v-for="deposit in carouselDeposits"
+              :key="deposit.id"
+              class="carousel-deposit"
+              @click="selectProduct(deposit)">
+              <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
+              <div class="carousel-deposit-name">{{ deposit.name }}</div>
+              <div class="bank-name-bold">{{ deposit.bankName }}</div>
+              <div class="carousel-deposit-rates-inline">
+                <span>
+                  <strong>최고 금리:</strong>
+                  {{ deposit.maxRate }}
+                </span>
+                <span>
+                  <strong>최저 금리:</strong>
+                  {{ deposit.baseRate }}
+                </span>
+              </div>
+            </SwiperSlide>
+          </Swiper>
+        </template>
       </section>
       <br />
       <hr />
@@ -351,7 +362,6 @@ const carouselDeposits = computed(() => {
 });
 
 onMounted(async () => {
-  let personaCode = null;
   const token = localStorage.getItem("accessToken");
   const config = {
     headers: {
@@ -362,13 +372,18 @@ onMounted(async () => {
   try {
     // 1. 사용자 personaId 가져오기
     const personaIdRes = await api.get("/deposits/recommendations/user/persona-id", config);
-    personaCode = personaIdRes.data.personaId;
+    const personaCode = personaIdRes.data.personaId;
+
+    if (!personaCode) {
+      window.location.href = "/persona/start";
+      return;
+    }
 
     // 2. 사용자 페르소나 예금 추천 가져오기
     const recommendationRes = await api.get("/deposits/recommendations/user/recommendation", config);
     const result = recommendationRes.data.result;
 
-    userPersonaType.value = result.personaName || "토끼형";
+    userPersonaType.value = result.personaName || "";
     personaRecommendedDeposits.value = (result.deposits || []).map((item) => ({
       depositId: item.depositId,
       productName: item.productName,
@@ -379,8 +394,8 @@ onMounted(async () => {
     }));
   } catch (err) {
     console.error("❌ 사용자 기반 페르소나 예금 불러오기 실패:", err);
-    userPersonaType.value = "토끼형";
-    personaRecommendedDeposits.value = [];
+    window.location.href = "/persona/start";
+    return;
   }
 
   try {
@@ -984,5 +999,37 @@ const selectProduct = (product) => {
 html,
 body {
   overflow-x: hidden;
+}
+
+.persona-empty-state {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 2rem;
+  border-radius: 1rem;
+  background-color: var(--color-light);
+  border: 2px dashed var(--color-success);
+}
+
+.persona-message {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.persona-start-button {
+  background-color: var(--color-success);
+  color: white;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.persona-start-button:hover {
+  background-color: var(--color-accent);
 }
 </style>
