@@ -51,51 +51,42 @@
           <!-- 예금 탭 -->
           <div v-if="currentTab === 'deposit'" class="card-search-results-grid">
             <div
-              v-for="product in filteredFavorites"
-              :key="product.id"
+              v-for="deposit in filteredFavorites"
+              :key="deposit.depositId"
               class="product-card"
-              @click="selectProduct(product)">
+              @click="selectProduct(deposit)">
               <div class="favorite-top-right">
                 <FavoriteToggle
                   @click.stop
-                  v-model="product.isStarred"
-                  :productId="product.id"
+                  v-model="deposit.isStarred"
+                  :productId="deposit.depositId"
                   :productType="productType" />
               </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
-                  <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+                  <img :src="getBankLogo(deposit.bankName)" alt="은행 로고" class="bank-logo-round" />
                 </div>
                 <div class="product-name-block">
-                  <div class="bank-name-bold">{{ product.bank }}</div>
-                  <div class="product-name-bold">{{ product.name }}</div>
+                  <div class="bank-name-bold">{{ deposit.bankName }}</div>
+                  <div class="product-name-bold">{{ deposit.productName }}</div>
                 </div>
                 <div class="product-info-block">
                   <div class="rate-line no-wrap">
                     <span class="label-bold">최고 금리 :&nbsp;</span>
-                    <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span>
+                    <span class="highlight-rate">{{ deposit.maxRate }}</span>
                   </div>
                   <div class="rate-line no-wrap">
                     최저 금리 :
-                    {{ getRateWithTerm(product, 'base') }}
+                    {{ deposit.basicRate }}
                   </div>
                   <div class="rate-line no-wrap">
                     기준 기간 :
-                    {{
-                      (() => {
-                        const best = product.depositOptions?.reduce((prev, curr) => {
-                          const prevRate = prev?.intrRate2 ?? 0;
-                          const currRate = curr?.intrRate2 ?? 0;
-                          return currRate > prevRate ? curr : prev;
-                        }, null);
-                        return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
-                      })()
-                    }}
+                    {{ deposit.term ? deposit.term + '개월' : '정보 없음' }}
                   </div>
                 </div>
               </div>
               <div class="product-action-row">
-                <CompareButton :productId="product.id" :productType="productType" @click.stop />
+                <CompareButton :productId="deposit.depositId" :productType="deposit" @click.stop />
                 <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
                   {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
                 </span>
@@ -106,50 +97,46 @@
           <!-- 적금 탭 -->
           <div v-else-if="currentTab === 'saving'" class="card-search-results-grid">
             <div
-              v-for="product in filteredFavorites"
-              :key="product.id"
+              v-for="saving in filteredFavorites"
+              :key="saving.savingId"
               class="product-card"
-              @click="selectProduct(product)">
+              @click="selectProduct(saving)">
               <div class="favorite-top-right">
                 <FavoriteToggle
                   @click.stop
-                  v-model="product.isStarred"
-                  :productId="product.id"
+                  v-model="saving.isStarred"
+                  :productId="saving.savingId"
                   :productType="productType" />
               </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
-                  <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+                  <img :src="getBankLogo(saving.bankName)" alt="은행 로고" class="bank-logo-round" />
                 </div>
-
                 <div class="product-name-block">
-                  <div class="bank-name-bold">{{ product.bank }}</div>
-                  <div class="product-name-bold">{{ product.name }}</div>
+                  <div class="bank-name-bold">{{ saving.bankName }}</div>
+                  <div class="product-name-bold">{{ saving.savingName }}</div>
                 </div>
-
                 <div class="product-info-block">
                   <div class="rate-line no-wrap">
                     <span class="label-bold">최고 금리 :&nbsp;</span>
-
-                    <span class="highlight-rate">{{ product.maxRate }}</span>
+                    <span class="highlight-rate">{{ saving.maxRate }}</span>
                   </div>
                   <div class="rate-line no-wrap">
                     최저 금리 :
-                    {{ product.baseRate }}
+                    {{ saving.basicRate }}
                   </div>
                   <div class="rate-line no-wrap">
                     매월 최대 금액 :
-                    {{ product.maxLimit }}
+                    {{ saving.maxLimit }}
                   </div>
                   <div class="rate-line no-wrap">
                     기준 기간 :
-                    {{ filters.term !== '전체' ? filters.term + '개월' : '정보 없음' }}
+                    {{ saving.term ? saving.term + '개월' : '정보 없음' }}
                   </div>
                 </div>
               </div>
-
               <div class="product-action-row">
-                <CompareButton :productId="product.id" :productType="productType" @click.stop />
+                <CompareButton :productId="saving.savingId" :productType="saving" @click.stop />
                 <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
                   {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
                 </span>
@@ -159,38 +146,34 @@
 
           <!-- 카드 탭 -->
           <div v-else-if="currentTab === 'card'" class="card-search-results-grid">
-            <div
-              v-for="product in filteredFavorites"
-              :key="product.id"
-              class="product-card"
-              @click="selectProduct(product)">
+            <div v-for="card in filteredFavorites" :key="card.cardId" class="product-card" @click="selectProduct(card)">
               <div class="favorite-top-right">
                 <FavoriteToggle
                   @click.stop
-                  v-model="product.isStarred"
-                  :productId="product.id"
+                  v-model="card.isStarred"
+                  :productId="card.cardId"
                   :productType="productType" />
               </div>
               <div class="product-content">
-                <img :src="product.imageUrl" :alt="product.name" />
+                <img :src="card.cardImageUrl" :alt="card.cardName" />
                 <div class="product-info">
-                  <h4>{{ product.name }}</h4>
+                  <h4>{{ card.cardName }}</h4>
                   <div>
                     <span class="label">카드사:</span>
-                    {{ product.issuer || '카드사 미정' }}
+                    {{ card.issuer || '카드사 미정' }}
                   </div>
                   <div>
                     <span class="label">전월실적금액:</span>
-                    {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
+                    {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
                   </div>
                   <div>
                     <span class="label">연회비 정보:</span>
-                    {{ product.annualFee || '정보 없음' }}
+                    {{ card.annualFee || '정보 없음' }}
                   </div>
                 </div>
               </div>
               <div class="product-action-row">
-                <CompareButton :productId="product.id" :productType="productType" @click.stop />
+                <CompareButton :productId="card.cardId" :productType="card" @click.stop />
                 <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
                   {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
                 </span>
@@ -209,6 +192,7 @@ import BaseButton from '@/components/base/BaseButton.vue';
 
 import CompareButton from '@/components/common/CompareButton.vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import favoriteAPI from '@/api/favorite';
 
 const selectedTab = ref('deposit');
 const tabs = [
@@ -225,136 +209,51 @@ const filters = ref({
   term: '전체',
 });
 
-const allFavorites = ref([
-  {
-    id: 1,
-    name: '스마트적금',
-    bank: '신한은행',
-    bankInitial: 'shinhan',
-    baseRate: '3.00%',
-    maxRate: '4.00%',
-    maxLimit: '300,000원',
-    type: 'saving',
-  },
-  {
-    id: 2,
-    name: '정기예금',
-    bank: '국민은행',
-    bankInitial: 'kb',
-    baseRate: '2.50%',
-    maxRate: '3.10%',
-    maxLimit: '한도 없음',
-    type: 'deposit',
-    depositOptions: [
-      { intrRate2: 2.5, saveTrm: 12 },
-      { intrRate2: 3.1, saveTrm: 24 },
-    ],
-  },
-  {
-    id: 3,
-    name: '신한카드 B.Big(삑)',
-    bank: '신한카드',
-    bankInitial: 'woori',
-    baseRate: '-',
-    maxRate: '-',
-    maxLimit: '-',
-    type: 'card',
-  },
-  {
-    id: 4,
-    name: '하나적금플러스',
-    bank: '하나은행',
-    bankInitial: 'hana',
-    baseRate: '3.10%',
-    maxRate: '4.20%',
-    maxLimit: '200,000원',
-    type: 'saving',
-  },
-  {
-    id: 5,
-    name: 'NH주거래우대예금',
-    bank: '농협은행',
-    bankInitial: 'nh',
-    baseRate: '2.80%',
-    maxRate: '3.50%',
-    maxLimit: '무제한',
-    type: 'deposit',
-    depositOptions: [
-      { intrRate2: 2.8, saveTrm: 6 },
-      { intrRate2: 3.5, saveTrm: 12 },
-    ],
-  },
-  {
-    id: 6,
-    name: '카카오프렌즈카드',
-    bank: '카카오뱅크',
-    bankInitial: 'kakao',
-    baseRate: '-',
-    maxRate: '-',
-    maxLimit: '-',
-    type: 'card',
-  },
-  {
-    id: 7,
-    name: '우대적금',
-    bank: '우리은행',
-    bankInitial: 'woori',
-    baseRate: '3.20%',
-    maxRate: '4.00%',
-    maxLimit: '100,000원',
-    type: 'saving',
-  },
-  {
-    id: 8,
-    name: '신한쏠편한예금',
-    bank: '신한은행',
-    bankInitial: 'shinhan',
-    baseRate: '2.60%',
-    maxRate: '3.20%',
-    maxLimit: '무제한',
-    type: 'deposit',
-    depositOptions: [
-      { intrRate2: 2.6, saveTrm: 12 },
-      { intrRate2: 3.2, saveTrm: 18 },
-    ],
-  },
-  {
-    id: 9,
-    name: '토스하이브카드',
-    bank: '토스뱅크',
-    bankInitial: 'toss',
-    baseRate: '-',
-    maxRate: '-',
-    maxLimit: '-',
-    type: 'card',
-  },
-  {
-    id: 10,
-    name: '청년우대적금',
-    bank: '신한',
-    bankInitial: 'kb',
-    baseRate: '3.40%',
-    maxRate: '4.50%',
-    maxLimit: '300,000원',
-    type: 'saving',
-  },
-]);
+const allFavorites = ref([]);
 
 const filteredFavorites = computed(() => {
   return allFavorites.value.filter((p) => p.type === currentTab.value);
 });
 
-const getBankLogo = (initial) => {
-  const logos = {
-    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
-    hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
-    woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
-    kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
-    nh: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href,
-    kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
-    toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
+const getBankLogo = (bankName) => {
+  // 공통 로고 파일
+  const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
+  const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
+
+  const logoMap = {
+    // 주요 시중은행
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
+    하나은행: hanaLogo,
+    농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
+    신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
+    우리은행: new URL('@/assets/bankLogo_images/BK_Woori_Profile.png', import.meta.url).href,
+
+    // 특수은행
+    중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
+    한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
+
+    // 지방은행
+    경남은행: busanLogo,
+    부산은행: busanLogo,
+    광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
+    전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
+    제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
+    아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
+
+    // 외국계은행
+    한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
+
+    // 인터넷은행
+    '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
+    '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
+    '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
+
+    // 주식회사 명칭 포함
+    '주식회사 하나은행': hanaLogo,
   };
-  return logos[initial] || logos['shinhan'];
+
+  return logoMap[bankName] || null;
 };
 
 const getRateWithTerm = (product, rateType) => {
@@ -406,6 +305,57 @@ const handleLikeClick = () => {
   }
   toggleLike();
 };
+
+onMounted(async () => {
+  console.log('[MyFavoritePage] onMounted triggered');
+  loading.value = true;
+  try {
+    const res = await favoriteAPI.getFavoriteProducts();
+    console.log('[MyFavoritePage] API response:', res);
+
+    allFavorites.value = [
+      ...(res.depositList ?? []).map((d) => ({
+        ...d,
+        type: 'deposit',
+        name: d.productName || d.finPrdtNm,
+        bank: d.bankName || d.korCoNm,
+        bankInitial: d.bankInitial || '',
+        productName: d.productName || d.finPrdtNm,
+        bankName: d.bankName || d.korCoNm,
+        depositId: d.depositId, // adapt as needed
+        basicRate: d.basicRate,
+        maxRate: d.maxRate,
+        term: d.term || null,
+      })),
+      ...(res.savingList ?? []).map((s) => ({
+        ...s,
+        type: 'saving',
+        name: s.savingName || s.finPrdtNm,
+        bank: s.bankName || s.korCoNm,
+        bankInitial: s.bankInitial || '',
+        savingId: s.savingId || s.savingProductId || s.id,
+        basicRate: s.basicRate,
+        maxRate: s.maxRate,
+        maxLimit: s.maxLimit,
+        term: s.term || null,
+      })),
+      ...(res.cardList ?? []).map((c) => ({
+        ...c,
+        type: 'card',
+        name: c.cardName,
+        bank: c.issuer,
+        imageUrl: c.cardImageUrl,
+        cardId: c.cardId || c.id,
+        annualFee: c.annualFee,
+        preMonthMoney: c.preMonthMoney,
+      })),
+    ];
+  } catch (e) {
+    console.error('[MyFavoritePage] 즐겨찾기 불러오기 실패:', e);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -475,15 +425,6 @@ const handleLikeClick = () => {
   display: flex;
   gap: 1rem;
   align-items: center;
-}
-
-.product-content img {
-  width: 5rem;
-  height: 5rem;
-  border-radius: 8px;
-  object-fit: cover;
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
-  border: 0.1rem solid var(--color-gray-200);
 }
 
 .product-info h4 {
