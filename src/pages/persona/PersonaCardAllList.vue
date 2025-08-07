@@ -191,7 +191,7 @@
           >
             <div class="card-favorite-button">
               <FavoriteToggle
-                v-model="product.is_starred"
+                v-model="product.isStarred"
                 :productId="product.id"
                 productType="CARD"
               />
