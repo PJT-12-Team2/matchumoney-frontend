@@ -602,7 +602,7 @@ watch(
 
 .top-recommendation .rank-badge {
   background: var(--color-warning);
-  color: var(--color-dark);
+  color: var(--color-white);
 }
 
 .favorite-toggle {
@@ -745,11 +745,12 @@ watch(
   background: var(--color-success-light);
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--color-white);
+  box-shadow: var(--shadow-md);
 }
 
 .recommendation-item:hover .card-details .benefit-amount {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
 }
 
 .card-details .benefit-amount .label {
