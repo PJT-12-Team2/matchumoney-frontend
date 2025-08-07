@@ -4,10 +4,10 @@
     @click.stop="onCompareClick"
     v-if="isAlreadyCompared"
   >
-    ⊖ 비교제거
+    ⊖비교제거
   </button>
   <button class="compare-button" @click.stop="onCompareClick" v-else>
-    ⊕ 비교추가
+    ⊕비교추가
   </button>
 </template>
 
@@ -56,7 +56,8 @@ const onCompareClick = () => {
   transition: transform 0.2s ease;
   background: none;
   border: none;
-  padding: 0.4rem;
+  padding: 0.2rem 0.1rem;
+  border-radius: 0.4rem;
 }
 .compare-button:hover {
   transform: scale(1.05);
