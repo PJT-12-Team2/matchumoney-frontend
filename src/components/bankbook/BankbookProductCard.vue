@@ -27,18 +27,21 @@
         class="product-card__logo"
         v-else
       />
-      <div class="botton-container">
-        <div
-          style="font-size: var(--font-size-xs); align-self: center; color: red"
-          @click.stop
-        >
-          ❤️ 12
-        </div>
-        <!-- <CompareButton
+      <div class="button-container">
+        <LikeToggle
           :productId="saving.id"
-          :productType="productType"
+          productType="saving-products"
+          :initialLiked="saving.isLiked"
+          :initialCount="saving.likeCount"
+          @update="
+            ({ liked, count }) => {
+              saving.isLiked = liked;
+              saving.likeCount = count;
+            }
+          "
           @click.stop
-        /> -->
+        />
+
         <CompareButton
           :productId="saving.id"
           :productType="productType"
@@ -91,6 +94,8 @@ import CompareButton from '@/components/common/CompareButton.vue';
 import { roundToTwoDecimalPlaces } from '@/util/numberFormatter';
 import { ProductType } from '@/constants/productTypes';
 import { useRouter } from 'vue-router';
+import LikeToggle from '../common/LikeToggle.vue';
+
 const router = useRouter();
 
 function goToDetail(id) {
@@ -267,7 +272,7 @@ const props = defineProps({
 .product-card__info--highlight:hover {
   transform: translateY(-1px);
 }
-.botton-container {
+.button-container {
   display: flex;
   gap: 0.2rem;
   margin-top: 0.2rem;
@@ -277,7 +282,7 @@ const props = defineProps({
   display: flex;
 }
 @media (max-width: 640px) {
-  .botton-container,
+  .button-container,
   .info-container {
     display: initial;
     justify-self: end;
