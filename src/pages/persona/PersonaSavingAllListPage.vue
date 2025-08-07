@@ -5,7 +5,8 @@
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
         <h2 class="persona-carousel-title">
-          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는 적금
+          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는
+          적금
         </h2>
         <!-- 데스크탑 화면: flex 목록 -->
         <div class="carousel-saving-list" v-if="!isMobile">
@@ -15,17 +16,24 @@
             class="carousel-saving"
             @click="selectProduct(saving)"
           >
-            <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
+            <img
+              :src="saving.image"
+              :alt="saving.name"
+              class="carousel-saving-image"
+            />
             <div class="carousel-saving-name">{{ saving.name }}</div>
             <div>{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
               <span><strong>최고 금리: </strong> {{ saving.maxRate }}</span>
               <span><strong>최저 금리: </strong> {{ saving.baseRate }}</span>
-              <span><strong>매월 최대 금액:</strong> {{
-                saving.maxLimit === 999999999 || "999999999"
-                  ? '한도 없음'
-                  : formatCurrency(Number(saving.maxLimit))
-              }}</span>
+              <span
+                ><strong>매월 최대 금액:</strong>
+                {{
+                  saving.maxLimit === 999999999 || '999999999'
+                    ? '한도 없음'
+                    : formatCurrency(Number(saving.maxLimit))
+                }}</span
+              >
               <span><strong>기준 기간:</strong> 12개월</span>
             </div>
           </div>
@@ -46,100 +54,123 @@
             class="carousel-saving"
             @click="selectProduct(saving)"
           >
-            <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
+            <img
+              :src="saving.image"
+              :alt="saving.name"
+              class="carousel-saving-image"
+            />
             <div class="carousel-saving-name">{{ saving.name }}</div>
             <div class="bank-name-bold">{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
               <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
               <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
-              <span><strong>매월 최대 금액:</strong> {{
-                saving.maxLimit === "999999999"
-                  ? '한도 없음'
-                  : formatCurrency(Number(saving.maxLimit))
-              }}</span>
+              <span
+                ><strong>매월 최대 금액:</strong>
+                {{
+                  saving.maxLimit === '999999999'
+                    ? '한도 없음'
+                    : formatCurrency(Number(saving.maxLimit))
+                }}</span
+              >
               <span><strong>기준 기간:</strong> 12개월</span>
             </div>
           </SwiperSlide>
         </Swiper>
       </section>
 
-      <br /><hr /><br />
+      <br />
+      <hr />
+      <br />
 
       <!-- 🔍 직접 찾아보기 -->
-      <h1 class="page-title">직접 찾아보는 적금
-      </h1>
+      <h1 class="page-title">직접 찾아보는 적금</h1>
 
       <!-- ✅ 필터 영역 -->
-<section class="filter-selection-section">
-  <div class="term-selector">
-    <div
-      v-for="(term, idx) in terms"
-      :key="term.value"
-      :class="['term-button', { active: filters?.term === term.value }]"
-      @click="filters.term = term.value"
-    >
-      {{ term.label }}
-    </div>
-  </div>
-  <div class="term-dropdown-wrapper">
-    <button class="term-toggle-button" @click="showTermDropdown = !showTermDropdown">
-      {{ filters.term }}개월 선택 ▼
-    </button>
-    <div class="term-dropdown" v-if="showTermDropdown">
-      <div
-        v-for="term in terms"
-        :key="term.value"
-        class="term-dropdown-option"
-        @click="selectTerm(term.value)"
-      >
-        {{ term.label }}
-      </div>
-    </div>
-  </div>
-  <div class="amount-filter-container">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <h3 class="filter-label" style="margin: 0;">매월 저축 금액 설정</h3>
-      <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
-        <input type="checkbox" v-model="useMaxLimitFilter" />
-        <span>최대금액 필터 사용</span>
-      </label>
-    </div>
-    <br>
-    <transition name="slide-fade">
-      <div v-if="useMaxLimitFilter" class="slider-box">
-        <input
-          type="range"
-          v-model="selectedAmount"
-          :min="10000"
-          :max="maxAmount + sliderStep"
-          :step="sliderStep"
-          class="amount-slider"
-        />
-        <div class="slider-value">
-          {{
-            selectedAmount > maxAmount
-              ? '한도 없음'
-              : formatCurrency(selectedAmount)
-          }}
+      <section class="filter-selection-section">
+        <div class="term-selector">
+          <div
+            v-for="(term, idx) in terms"
+            :key="term.value"
+            :class="['term-button', { active: filters?.term === term.value }]"
+            @click="filters.term = term.value"
+          >
+            {{ term.label }}
+          </div>
         </div>
-      </div>
-    </transition>
-  </div>
-  <br><br>
-  <h3 class="filter-label">은행을 선택해주세요</h3>
-  <div class="bank-grid">
-    <div
-      v-for="bank in bankOptions"
-      :key="bank.name"
-      :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
-      @click="filters.bank = (filters?.bank === bank.name ? null : bank.name)"
-    >
-      <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
-      <div class="bank-label">{{ bank.name }}</div>
-    </div>
-  </div>
-  <br>
-</section>
+        <div class="term-dropdown-wrapper">
+          <button
+            class="term-toggle-button"
+            @click="showTermDropdown = !showTermDropdown"
+          >
+            {{ filters.term }}개월 선택 ▼
+          </button>
+          <div class="term-dropdown" v-if="showTermDropdown">
+            <div
+              v-for="term in terms"
+              :key="term.value"
+              class="term-dropdown-option"
+              @click="selectTerm(term.value)"
+            >
+              {{ term.label }}
+            </div>
+          </div>
+        </div>
+        <div class="amount-filter-container">
+          <div style="display: flex; align-items: center; gap: 1rem">
+            <h3 class="filter-label" style="margin: 0">매월 저축 금액 설정</h3>
+            <label
+              style="
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              "
+            >
+              <input type="checkbox" v-model="useMaxLimitFilter" />
+              <span>최대금액 필터 사용</span>
+            </label>
+          </div>
+          <br />
+          <transition name="slide-fade">
+            <div v-if="useMaxLimitFilter" class="slider-box">
+              <input
+                type="range"
+                v-model="selectedAmount"
+                :min="10000"
+                :max="maxAmount + sliderStep"
+                :step="sliderStep"
+                class="amount-slider"
+              />
+              <div class="slider-value">
+                {{
+                  selectedAmount > maxAmount
+                    ? '한도 없음'
+                    : formatCurrency(selectedAmount)
+                }}
+              </div>
+            </div>
+          </transition>
+        </div>
+        <br /><br />
+        <h3 class="filter-label">은행을 선택해주세요</h3>
+        <div class="bank-grid">
+          <div
+            v-for="bank in bankOptions"
+            :key="bank.name"
+            :class="[
+              'bank-logo-option',
+              { selected: filters?.bank === bank.name },
+            ]"
+            @click="
+              filters.bank = filters?.bank === bank.name ? null : bank.name
+            "
+          >
+            <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
+            <div class="bank-label">{{ bank.name }}</div>
+          </div>
+        </div>
+        <br />
+      </section>
       <!-- 🔍 검색 결과 -->
       <section class="search-results">
         <h2 class="results-title">검색한 적금 상품</h2>
@@ -157,22 +188,44 @@
             v-for="product in visibleProducts"
             :key="product.id"
             class="product-card"
-            @click="selectProduct(product)"
           >
-            <div class="product-card-horizontal">
+            <div class="saving-favorite-button" @click.stop>
+              <FavoriteToggle
+                v-model="product.isStarred"
+                :productId="product.id"
+                productType="SAVING"
+              />
+            </div>
+            <div class="product-card-row" @click="selectProduct(product)">
+              <!-- 왼쪽(로고) -->
               <div class="bank-logo-container">
-                <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+                <img
+                  :src="getBankLogo(product.bankInitial)"
+                  alt="은행 로고"
+                  class="bank-logo-round"
+                />
+                <div class="saving-compare-button">
+                  <CompareButton :productId="product.id" productType="SAVING" />
+                </div>
               </div>
-              <div class="product-name-block">
-                <div class="bank-name-bold">{{ product.bank }}</div>
+              <div class="product-info-column">
                 <div class="product-name-bold">{{ product.name }}</div>
-              </div>
-              <div class="product-info-block">
-                <div class="rate-line"><span class="label-bold">최고 금리 :</span> <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span></div>
-                <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
+                <div class="bank-name-bold">{{ product.bank }}</div>
+
+                <div class="rate-line">
+                  <span class="label-bold">최고 금리 :</span>
+                  <span class="highlight-rate">{{
+                    getRateWithTerm(product, 'max')
+                  }}</span>
+                </div>
+                <div class="rate-line">
+                  <span class="label-bold">최저 금리 :</span>
+                  <span>{{ getRateWithTerm(product, 'base') }}</span>
+                </div>
                 <div class="rate-line no-wrap">
-                  매월 최대 금액 : {{
-                    product.maxLimit === "999999999"
+                  매월 최대 금액 :
+                  {{
+                    product.maxLimit === '999999999'
                       ? '한도 없음'
                       : formatCurrency(product.maxLimit)
                   }}
@@ -183,12 +236,17 @@
                     filters.term !== '전체'
                       ? filters.term + '개월'
                       : (() => {
-                          const best = product.savingOptions?.reduce((prev, curr) => {
-                            const prevRate = prev?.intrRate2 ?? 0;
-                            const currRate = curr?.intrRate2 ?? 0;
-                            return currRate > prevRate ? curr : prev;
-                          }, null);
-                          return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+                          const best = product.savingOptions?.reduce(
+                            (prev, curr) => {
+                              const prevRate = prev?.intrRate2 ?? 0;
+                              const currRate = curr?.intrRate2 ?? 0;
+                              return currRate > prevRate ? curr : prev;
+                            },
+                            null
+                          );
+                          return best?.saveTrm
+                            ? best.saveTrm + '개월'
+                            : '정보 없음';
                         })()
                   }}
                 </div>
@@ -209,173 +267,208 @@
 </template>
 
 <script setup>
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import 'swiper/css'
-import 'swiper/css/pagination'
-import { Pagination } from 'swiper/modules'
-const modules = [Pagination]
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { Pagination } from 'swiper/modules';
+const modules = [Pagination];
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import CompareButton from '@/components/common/CompareButton.vue';
 // 반응형 상태: 모바일 화면 여부
-const isMobile = ref(window.innerWidth <= 768)
+const isMobile = ref(window.innerWidth <= 768);
 
 const handleResize = () => {
-  isMobile.value = window.innerWidth <= 768
-}
+  isMobile.value = window.innerWidth <= 768;
+};
 
 onMounted(() => {
-  window.addEventListener('resize', handleResize)
-  handleResize()
-})
+  window.addEventListener('resize', handleResize);
+  handleResize();
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-})
-import api from "@/api"
+  window.removeEventListener('resize', handleResize);
+});
+import api from '@/api';
 // 매월 최대금액 필터링 사용 여부
-const useMaxLimitFilter = ref(false)
+const useMaxLimitFilter = ref(false);
 
 const bankOptions = [
-{ name: '국민은행', logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href },
-{ name: '신한은행', logo: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href },
-{ name: '우리은행', logo: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href },
-{ name: '하나은행', logo: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href },
-{ name: '카카오뱅크', logo: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href },
-{ name: '토스뱅크', logo: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href },
-{ name: '농협은행', logo: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href },
-{ name: '기타', logo: new URL('@/assets/bankLogo_images/plus.png', import.meta.url).href },
+  {
+    name: '국민은행',
+    logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
+  },
+  {
+    name: '신한은행',
+    logo: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
+  },
+  {
+    name: '우리은행',
+    logo: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
+  },
+  {
+    name: '하나은행',
+    logo: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
+  },
+  {
+    name: '카카오뱅크',
+    logo: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
+  },
+  {
+    name: '토스뱅크',
+    logo: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
+  },
+  {
+    name: '농협은행',
+    logo: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href,
+  },
+  {
+    name: '기타',
+    logo: new URL('@/assets/bankLogo_images/plus.png', import.meta.url).href,
+  },
+];
 
-]
-
-
-const loading = ref(false)
-const showSearchResults = ref(false)
-const selectedAmount = ref(10000)
-const maxAmount = 3000000
-const sliderStep = 10000
+const loading = ref(false);
+const showSearchResults = ref(false);
+const selectedAmount = ref(10000);
+const maxAmount = 3000000;
+const sliderStep = 10000;
 
 const getRate = (product, type) => {
-  const selectedTerm = filters.value?.term
+  const selectedTerm = filters.value?.term;
 
-if (!product.savingOptions || product.savingOptions.length === 0) return '-%'
+  if (!product.savingOptions || product.savingOptions.length === 0) return '-%';
 
-if (selectedTerm === '전체') {
-  const allRates = product.savingOptions.map(opt =>
-    type === 'base' ? opt.intrRate : opt.intrRate2
-  )
-  const max = Math.max(...allRates)
-  return `${max.toFixed(2)}%`
-}
+  if (selectedTerm === '전체') {
+    const allRates = product.savingOptions.map((opt) =>
+      type === 'base' ? opt.intrRate : opt.intrRate2
+    );
+    const max = Math.max(...allRates);
+    return `${max.toFixed(2)}%`;
+  }
 
-const match = product.savingOptions.find(opt => opt.saveTrm === selectedTerm)
-if (!match) return '-%'
-return `${(type === 'base' ? match.intrRate : match.intrRate2).toFixed(2)}%`
-}
+  const match = product.savingOptions.find(
+    (opt) => opt.saveTrm === selectedTerm
+  );
+  if (!match) return '-%';
+  return `${(type === 'base' ? match.intrRate : match.intrRate2).toFixed(2)}%`;
+};
 
 const getRateWithTerm = (product, type) => {
-if (!product.savingOptions || product.savingOptions.length === 0) return '-%'
+  if (!product.savingOptions || product.savingOptions.length === 0) return '-%';
 
-const selectedTerm = filters.value?.term
+  const selectedTerm = filters.value?.term;
 
-if (selectedTerm === '전체') {
-  const sorted = [...product.savingOptions].sort((a, b) => {
-    const valA = type === 'base' ? a.intrRate : a.intrRate2
-    const valB = type === 'base' ? b.intrRate : b.intrRate2
-    return valB - valA
-  })
-  const best = sorted[0]
-  if (!best) return '-%'
-  const val = type === 'base' ? best.intrRate : best.intrRate2
-  return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
-}
+  if (selectedTerm === '전체') {
+    const sorted = [...product.savingOptions].sort((a, b) => {
+      const valA = type === 'base' ? a.intrRate : a.intrRate2;
+      const valB = type === 'base' ? b.intrRate : b.intrRate2;
+      return valB - valA;
+    });
+    const best = sorted[0];
+    if (!best) return '-%';
+    const val = type === 'base' ? best.intrRate : best.intrRate2;
+    return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%';
+  }
 
-const match = product.savingOptions.find(opt => opt.saveTrm === selectedTerm)
-if (!match) return '-%'
-const value = type === 'base' ? match.intrRate : match.intrRate2
-return typeof value === 'number' ? `${value.toFixed(2)}%` : '-%'
-}
+  const match = product.savingOptions.find(
+    (opt) => opt.saveTrm === selectedTerm
+  );
+  if (!match) return '-%';
+  const value = type === 'base' ? match.intrRate : match.intrRate2;
+  return typeof value === 'number' ? `${value.toFixed(2)}%` : '-%';
+};
 
 const filters = ref({
   term: '12',
   amount: null,
-})
-filters.value.bank = null
+});
+filters.value.bank = null;
 
-const showTermDropdown = ref(false)
+const showTermDropdown = ref(false);
 
 const selectTerm = (val) => {
-  filters.value.term = val
-  showTermDropdown.value = false
-}
+  filters.value.term = val;
+  showTermDropdown.value = false;
+};
 
 // selectedAmount를 filters에 동기화
 watch(selectedAmount, (val) => {
-  filters.value.amount = val > maxAmount ? null : val
-})
+  filters.value.amount = val > maxAmount ? null : val;
+});
 
 const terms = [
-{ label: '전체', value: '전체' },
-{ label: '1개월', value: '1' },
-{ label: '3개월', value: '3' },
-{ label: '6개월', value: '6' },
-{ label: '12개월', value: '12' },
-{ label: '24개월', value: '24' },
-{ label: '36개월', value: '36' }
-]
+  { label: '전체', value: '전체' },
+  { label: '1개월', value: '1' },
+  { label: '3개월', value: '3' },
+  { label: '6개월', value: '6' },
+  { label: '12개월', value: '12' },
+  { label: '24개월', value: '24' },
+  { label: '36개월', value: '36' },
+];
 
-const userPersonaType = ref('') // default 빈값
+const userPersonaType = ref(''); // default 빈값
 
 // 페르소나 추천 적금 목록
-const personaRecommendedSavings = ref([])
+const personaRecommendedSavings = ref([]);
 
 const get12MonthRate = (product, type) => {
-if (!product.savingOptions || product.savingOptions.length === 0) return '-%'
-const match = product.savingOptions.find(opt => opt.saveTrm === '12')
-if (!match) return '-%'
-const val = type === 'base' ? match.intrRate : match.intrRate2
-return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%'
-}
+  if (!product.savingOptions || product.savingOptions.length === 0) return '-%';
+  const match = product.savingOptions.find((opt) => opt.saveTrm === '12');
+  if (!match) return '-%';
+  const val = type === 'base' ? match.intrRate : match.intrRate2;
+  return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%';
+};
 
 const carouselSavings = computed(() => {
-  return personaRecommendedSavings.value.map(d => ({
+  return personaRecommendedSavings.value.map((d) => ({
     id: d.savingId,
     name: d.savingName,
     bankName: d.bankName,
     image: d.companyImage,
     maxLimit: d.maxLimit,
     maxRate: `${d.maxRate.toFixed(2)}%`,
-    baseRate: `${d.basicRate.toFixed(2)}%`
-  }))
-})
+    baseRate: `${d.basicRate.toFixed(2)}%`,
+  }));
+});
 
-const allProducts = ref([])
+const allProducts = ref([]);
 
 onMounted(async () => {
   let personaCode = null;
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem('accessToken');
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
   try {
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await api.get('/savings/recommendations/user/persona-id', config);
+    const personaIdRes = await api.get(
+      '/savings/recommendations/user/persona-id',
+      config
+    );
     personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 적금 추천 가져오기
-    const recommendationRes = await api.get('/savings/recommendations/user/recommendation', config);
+    const recommendationRes = await api.get(
+      '/savings/recommendations/user/recommendation',
+      config
+    );
     const result = recommendationRes.data.result;
 
     userPersonaType.value = result.personaName || '토끼형';
     personaRecommendedSavings.value = (result.savings || []).map((item) => ({
       savingId: item.savingId,
       savingName: item.savingName,
-      bankName : item.bankName,
-      maxLimit : item.maxLimit,
-      companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
+      bankName: item.bankName,
+      maxLimit: item.maxLimit,
+      companyImage:
+        item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
       maxRate: item.maxRate ?? 0,
-      basicRate: item.basicRate ?? 0
+      basicRate: item.basicRate ?? 0,
     }));
   } catch (err) {
     console.error('❌ 사용자 기반 페르소나 적금 불러오기 실패:', err);
@@ -387,19 +480,19 @@ onMounted(async () => {
     // 전체 적금 리스트
     const allRes = await api.post('/saving/search', {
       korCoNm: '',
-      maxLimit: null
+      maxLimit: null,
     });
-    const fullList = allRes.data.map(item => ({
+    const fullList = allRes.data.map((item) => ({
       id: item.savingProductId,
       name: item.finPrdtNm,
       bank: item.korCoNm,
-      maxLimit : item.maxLimit,
+      maxLimit: item.maxLimit,
       bankInitial: getBankInitial(item.korCoNm),
       savingOptions: item.savingOptions,
       baseRate: item.intrRate?.toFixed(2) ?? '-',
       maxRate: item.intrRate2?.toFixed(2) ?? '-',
       image: item.image || '',
-      personaType: item.personaType || ''
+      personaType: item.personaType || '',
     }));
     allProducts.value = fullList;
   } catch (err) {
@@ -408,161 +501,180 @@ onMounted(async () => {
 });
 
 const getBankInitial = (name) => {
-if (name.includes('신한')) return 'shinhan'
-if (name.includes('하나')) return 'hana'
-if (name.includes('우리')) return 'woori'
-if (name.includes('국민')) return 'kb'
-if (name.includes('농협')) return 'nh'
-if (name.includes('카카오')) return 'kakao'
-if (name.includes('토스')) return 'toss'
-if (name.includes('부산')) return 'bnk'
-if (name.includes('광주')) return 'gwangju'
-if (name.includes('중소기업')) return 'ibk'
-if (name.includes('아이엠')) return 'im'
-if (name.includes('제주')) return 'jeju'
-if (name.includes('전북')) return 'jeonbook'
-if (name.includes('산업')) return 'sanup'
-if (name.includes('수협')) return 'su'
-if (name.includes('SC제일') || name.includes('스탠다드차타드')) return 'sc'
-if (name.includes('케이뱅크') || name.includes('K뱅크')) return 'k'
-return 'shinhan'
-}
+  if (name.includes('신한')) return 'shinhan';
+  if (name.includes('하나')) return 'hana';
+  if (name.includes('우리')) return 'woori';
+  if (name.includes('국민')) return 'kb';
+  if (name.includes('농협')) return 'nh';
+  if (name.includes('카카오')) return 'kakao';
+  if (name.includes('토스')) return 'toss';
+  if (name.includes('부산')) return 'bnk';
+  if (name.includes('광주')) return 'gwangju';
+  if (name.includes('중소기업')) return 'ibk';
+  if (name.includes('아이엠')) return 'im';
+  if (name.includes('제주')) return 'jeju';
+  if (name.includes('전북')) return 'jeonbook';
+  if (name.includes('산업')) return 'sanup';
+  if (name.includes('수협')) return 'su';
+  if (name.includes('SC제일') || name.includes('스탠다드차타드')) return 'sc';
+  if (name.includes('케이뱅크') || name.includes('K뱅크')) return 'k';
+  return 'shinhan';
+};
 
 const getBankLogo = (initial) => {
-const logos = {
-  shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
-  hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
-  woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
-  kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
-  nh: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href,
-  kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
-  toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
-  bnk: new URL('@/assets/bankLogo_images/bnk.png', import.meta.url).href,
-  gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url).href,
-  ibk: new URL('@/assets/bankLogo_images/ibk.png', import.meta.url).href,
-  im: new URL('@/assets/bankLogo_images/im.png', import.meta.url).href,
-  jeju: new URL('@/assets/bankLogo_images/jeju.png', import.meta.url).href,
-  jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url).href,
-  sanup: new URL('@/assets/bankLogo_images/sanup.png', import.meta.url).href,
-  su: new URL('@/assets/bankLogo_images/su.png', import.meta.url).href,
-  sc: new URL('@/assets/bankLogo_images/sc.png', import.meta.url).href,
-  k: new URL('@/assets/bankLogo_images/k.png', import.meta.url).href
-}
-return logos[initial] || logos['shinhan']
-}
+  const logos = {
+    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url)
+      .href,
+    hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
+    woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
+    kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
+    nh: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href,
+    kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
+    toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
+    bnk: new URL('@/assets/bankLogo_images/bnk.png', import.meta.url).href,
+    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url)
+      .href,
+    ibk: new URL('@/assets/bankLogo_images/ibk.png', import.meta.url).href,
+    im: new URL('@/assets/bankLogo_images/im.png', import.meta.url).href,
+    jeju: new URL('@/assets/bankLogo_images/jeju.png', import.meta.url).href,
+    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url)
+      .href,
+    sanup: new URL('@/assets/bankLogo_images/sanup.png', import.meta.url).href,
+    su: new URL('@/assets/bankLogo_images/su.png', import.meta.url).href,
+    sc: new URL('@/assets/bankLogo_images/sc.png', import.meta.url).href,
+    k: new URL('@/assets/bankLogo_images/k.png', import.meta.url).href,
+  };
+  return logos[initial] || logos['shinhan'];
+};
 
 const selectProduct = (product) => {
   window.location.href = `/detail/saving/${product.id}`;
 };
 
 const filteredProducts = computed(() => {
-  let result = [...allProducts.value]
+  let result = [...allProducts.value];
 
   // 기간 필터: "전체"가 아닌 다른 값이 선택된 경우에만 필터링
   if (filters.value?.term && filters.value?.term !== '전체') {
-    result = result.filter(p =>
-      p.savingOptions?.some(opt => String(opt.saveTrm) === filters.value?.term)
-    )
+    result = result.filter((p) =>
+      p.savingOptions?.some(
+        (opt) => String(opt.saveTrm) === filters.value?.term
+      )
+    );
   }
 
   // 예치금액 필터 추가
   if (selectedAmount.value <= maxAmount) {
-    result = result.filter(p =>
-      p.savingOptions?.some(opt => {
-        const amountNum = parseInt(opt.minAmount?.replace(/[^\d]/g, '')) || 0
-        return selectedAmount.value >= amountNum
+    result = result.filter((p) =>
+      p.savingOptions?.some((opt) => {
+        const amountNum = parseInt(opt.minAmount?.replace(/[^\d]/g, '')) || 0;
+        return selectedAmount.value >= amountNum;
       })
-    )
+    );
     if (useMaxLimitFilter.value) {
-      result = result.filter(p =>
-        !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value
-      )
+      result = result.filter(
+        (p) => !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value
+      );
     }
   }
 
   // 은행 필터
   if (filters.value?.bank && filters.value?.bank !== '기타') {
-    result = result.filter(p => p.bank.includes(filters.value?.bank))
+    result = result.filter((p) => p.bank.includes(filters.value?.bank));
   } else if (filters.value?.bank === '기타') {
     result = result.filter(
-      p =>
-        !['국민은행', '신한은행', '우리은행', '하나은행', '카카오뱅크', '토스뱅크', '농협은행'].some(bank =>
-          p.bank.includes(bank)
-        )
-    )
+      (p) =>
+        ![
+          '국민은행',
+          '신한은행',
+          '우리은행',
+          '하나은행',
+          '카카오뱅크',
+          '토스뱅크',
+          '농협은행',
+        ].some((bank) => p.bank.includes(bank))
+    );
   }
 
   // 🔽 선택된 기간의 최대 금리 기준 내림차순 정렬
   result.sort((a, b) => {
-    const aMax = Math.max(...(a.savingOptions?.map(opt => opt.intrRate2) || [0]))
-    const bMax = Math.max(...(b.savingOptions?.map(opt => opt.intrRate2) || [0]))
-    return bMax - aMax
-  })
+    const aMax = Math.max(
+      ...(a.savingOptions?.map((opt) => opt.intrRate2) || [0])
+    );
+    const bMax = Math.max(
+      ...(b.savingOptions?.map((opt) => opt.intrRate2) || [0])
+    );
+    return bMax - aMax;
+  });
 
-  return result
-})
+  return result;
+});
 
 // 무한 스크롤 관련 로직
-const VISIBLE_STEP = 6
-const visibleCount = ref(VISIBLE_STEP)
-const infiniteLoading = ref(false)
-const visibleProducts = ref([])
+const VISIBLE_STEP = 6;
+const visibleCount = ref(VISIBLE_STEP);
+const infiniteLoading = ref(false);
+const visibleProducts = ref([]);
 
 const updateVisibleProducts = () => {
-  visibleProducts.value = filteredProducts.value.slice(0, visibleCount.value)
-}
+  visibleProducts.value = filteredProducts.value.slice(0, visibleCount.value);
+};
 
 // filteredProducts가 변경될 때 visibleProducts 초기화
 watch(filteredProducts, () => {
-  visibleCount.value = VISIBLE_STEP
-  updateVisibleProducts()
-})
+  visibleCount.value = VISIBLE_STEP;
+  updateVisibleProducts();
+});
 
 // visibleCount가 변경될 때 visibleProducts 업데이트
-watch(visibleCount, updateVisibleProducts)
+watch(visibleCount, updateVisibleProducts);
 
 // 최초 filteredProducts 준비 시 visibleProducts 초기화
 onMounted(() => {
-  updateVisibleProducts()
-})
+  updateVisibleProducts();
+});
 
-const allVisibleLoaded = computed(() => visibleProducts.value.length >= filteredProducts.value.length)
+const allVisibleLoaded = computed(
+  () => visibleProducts.value.length >= filteredProducts.value.length
+);
 
-let scrollTimer = null
+let scrollTimer = null;
 const onScroll = () => {
-  if (infiniteLoading.value || allVisibleLoaded.value || loading.value) return
+  if (infiniteLoading.value || allVisibleLoaded.value || loading.value) return;
   // 스크롤이 하단에 도달했는지 체크
-  const scrollContainer = document.documentElement
-  const scrollTop = scrollContainer.scrollTop
-  const clientHeight = scrollContainer.clientHeight
-  const scrollHeight = scrollContainer.scrollHeight
+  const scrollContainer = document.documentElement;
+  const scrollTop = scrollContainer.scrollTop;
+  const clientHeight = scrollContainer.clientHeight;
+  const scrollHeight = scrollContainer.scrollHeight;
   if (scrollTop + clientHeight >= scrollHeight - 10) {
-    infiniteLoading.value = true
+    infiniteLoading.value = true;
     // 자연스러운 로딩을 위해 살짝 딜레이
-    clearTimeout(scrollTimer)
+    clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => {
       visibleCount.value = Math.min(
         visibleCount.value + VISIBLE_STEP,
         filteredProducts.value.length
-      )
-      infiniteLoading.value = false
-    }, 700)
+      );
+      infiniteLoading.value = false;
+    }, 700);
   }
-}
+};
 
 onMounted(() => {
-  window.addEventListener('scroll', onScroll)
-})
+  window.addEventListener('scroll', onScroll);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
-  clearTimeout(scrollTimer)
-})
+  window.removeEventListener('scroll', onScroll);
+  clearTimeout(scrollTimer);
+});
 const formatCurrency = (val) => {
-  return new Intl.NumberFormat('ko-KR', {
-    maximumFractionDigits: 0
-  }).format(val) + '원'
-}
+  return (
+    new Intl.NumberFormat('ko-KR', {
+      maximumFractionDigits: 0,
+    }).format(val) + '원'
+  );
+};
 
 const getMinAmountWithTerm = (product) => {
   if (!product.savingOptions || product.savingOptions.length === 0) return null;
@@ -570,35 +682,37 @@ const getMinAmountWithTerm = (product) => {
   const selectedTerm = filters.value?.term;
   if (!selectedTerm || selectedTerm === '전체') return null;
 
-  const matchedOption = product.savingOptions.find(opt => String(opt.saveTrm) === selectedTerm);
+  const matchedOption = product.savingOptions.find(
+    (opt) => String(opt.saveTrm) === selectedTerm
+  );
   return matchedOption?.minAmount || null;
 };
 </script>
 
 <style scoped>
 .saving-search-page {
-font-family: 'Noto Sans', sans-serif;
-background: var(--color-white);
-min-height: 100vh;
+  font-family: 'Noto Sans', sans-serif;
+  background: var(--color-white);
+  min-height: 100vh;
 }
 
 .main-content {
-max-width: 75rem;
-margin: 0 auto;
-padding: var(--spacing-2xl);
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: var(--spacing-2xl);
 }
 
 .page-title {
-font-size: var(--font-size-2xl);
-font-weight: 700;
-margin-bottom: var(--spacing-xl);
-text-align: center;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
 }
 
 .persona-carousel-title {
-font-size: var(--font-size-xl);
-margin-bottom: var(--spacing-lg);
-text-align: center;
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
 }
 
 /* Swiper 스타일 */
@@ -640,58 +754,57 @@ text-align: center;
   margin-bottom: 0.5rem;
 }
 
-
 .highlight {
   font-size: var(--font-size-2xl);
   text-decoration: underline;
 }
 
 .filter-selection-section {
-padding: var(--spacing-xl);
-border: 2px solid var(--border-light);
-border-radius: var(--spacing-xl);
-background: var(--bg-card);
-margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-xl);
+  border: 2px solid var(--border-light);
+  border-radius: var(--spacing-xl);
+  background: var(--bg-card);
+  margin-bottom: var(--spacing-2xl);
 }
 
 .term-selector {
-display: flex;
-justify-content: space-between;
-margin-bottom: var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
 }
 
 .term-button {
-flex: 1;
-text-align: center;
-padding: var(--spacing-md);
-border-bottom: 3px solid transparent;
-cursor: pointer;
-color: var(--text-secondary);
+  flex: 1;
+  text-align: center;
+  padding: var(--spacing-md);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
 }
 
 .term-button.active {
-color: var(--color-success);
-border-color: var(--color-success);
-font-weight: bold;
+  color: var(--color-success);
+  border-color: var(--color-success);
+  font-weight: bold;
 }
 
 .amount-filter-container {
-margin: var(--spacing-2xl) 0;
+  margin: var(--spacing-2xl) 0;
 }
 
 .slider-box {
-display: flex;
-align-items: center;
-gap: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
 }
 
 .amount-slider {
-width: 100%;
-appearance: none;
-height: 6px;
-border-radius: 3px;
-background: var(--color-gray-300);
-outline: none;
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-gray-300);
+  outline: none;
 }
 
 .amount-slider::-webkit-slider-thumb {
@@ -714,170 +827,176 @@ outline: none;
 }
 
 .slider-value {
-min-width: 120px;
-font-weight: bold;
-font-size: var(--font-size-lg);
-color: var(--text-primary);
+  min-width: 120px;
+  font-weight: bold;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
 }
 
 .filter-label {
-font-size: var(--font-size-lg);
-font-weight: 700;
-color: var(--color-dark);
-margin-bottom: var(--spacing-md);
-text-align: left;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-md);
+  text-align: left;
 }
 
 .bank-grid {
-display: grid;
-grid-template-columns: repeat(4, 1fr);
-gap: var(--spacing-lg);
-justify-content: center;
-place-items: center;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+  justify-content: center;
+  place-items: center;
 }
 
 .bank-logo-option {
-width: 140px;
-height: 140px;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-border: 2px solid transparent;
-border-radius: var(--spacing-xl);
-padding: var(--spacing-md);
-background: var(--color-white);
-transition: all 0.3s ease;
-text-align: center;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-md);
+  background: var(--color-white);
+  transition: all 0.3s ease;
+  text-align: center;
 }
 
 .bank-logo-option:hover {
-transform: translateY(-4px);
-border-color: var(--border-medium);
+  transform: translateY(-4px);
+  border-color: var(--border-medium);
 }
 
 .bank-logo-option.selected {
-border-color: var(--color-success);
-background: var(--color-success-light);
+  border-color: var(--color-success);
+  background: var(--color-success-light);
 }
 
 .bank-label {
-font-size: var(--font-size-sm);
-color: var(--text-primary);
-font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .bank-logo-img {
-width: 110px;
-height: 110px;
-object-fit: contain;
-background-color: var(--color-white);
-border-radius: 50%;
-padding: 4px;
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  background-color: var(--color-white);
+  border-radius: 50%;
+  padding: 4px;
 }
 
 .search-results-grid {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: var(--spacing-xl);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xl);
 }
 
 /* ---- Product Card Horizontal Layout ---- */
 .product-card {
-background: var(--color-light);
-border-radius: 16px;
-padding: 20px;
-cursor: pointer;
-transition: all 0.3s ease;
-border: 2px solid transparent;
-box-shadow: var(--shadow-card);
+  background: var(--bg-content);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 18rem;
+  display: flex;
+  flex-direction: column;
+  /* flex-direction: row; */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .product-card:hover {
-transform: translateY(-2px);
-box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-accent);
 }
 
 /* --- 3-column product card horizontal --- */
 .product-card-horizontal {
-display: flex;
-align-items: center;
-justify-content: space-between;
-gap: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
 }
 
 /* Left: logo */
 .bank-logo-container {
-flex-shrink: 0;
-display: flex;
-align-items: center;
-justify-content: center;
-width: 5rem;
-height: 5rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  flex-direction: column;
 }
 
 .bank-logo-round {
-width: 5rem;
-height: 5rem;
-border-radius: 50%;
-object-fit: contain;
-background: var(--color-white);
-box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.04);
-border: 0.1rem solid var(--color-gray-200);
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  object-fit: contain;
+  background: var(--color-white);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
+  border: 0.1rem solid var(--color-gray-200);
 }
 
 /* Center: name block */
 .product-name-block {
-flex: 1;
-padding: 0 var(--spacing-md);
-display: flex;
-flex-direction: column;
-justify-content: center;
+  flex: 1;
+  padding: 0 var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Right: info block */
 .product-info-block {
-flex: 1;
-display: flex;
-flex-direction: column;
-align-items: flex-end;
-gap: 0.1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
 }
 
 .bank-name-bold {
-font-size: var(--font-size-base);
-font-weight: 700;
-color: #1e2b4e; /* strong navy blue */
-margin-bottom: 0.1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #1e2b4e; /* strong navy blue */
+  margin-bottom: 0.5rem;
 }
 
 .product-name-bold {
-font-size: var(--font-size-lg);
-font-weight: 800;
-color: var(--text-primary);
-margin-bottom: 0.2rem;
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-primary);
+  /* margin-bottom: 0.2rem; */
 }
 
 .rate-line {
-font-size: var(--font-size-sm);
-color: var(--text-secondary);
-margin-bottom: 0.1rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  /* margin-bottom: 0.1rem; */
 }
 
 .label-bold {
-font-weight: bold;
-color: var(--color-dark);
+  font-weight: bold;
+  color: var(--color-dark);
 }
 
 .highlight-rate {
   font-size: 18px;
   color: #609966;
   font-weight: bold;
+  margin-right: 0.4rem;
 }
 
 @media (max-width: 768px) {
-
   .search-results-grid {
     grid-template-columns: 1fr;
   }
@@ -926,7 +1045,7 @@ color: var(--color-dark);
   }
 
   .bank-logo-container {
-    width: 4rem;
+    width: 5.6rem;
     height: 4rem;
     flex-shrink: 0;
     display: flex;
@@ -934,8 +1053,8 @@ color: var(--color-dark);
     justify-content: center;
   }
   .bank-logo-round {
-    width: 4rem;
-    height: 4rem;
+    width: 5.6rem;
+    height: 5.6rem;
   }
 }
 </style>
@@ -1050,6 +1169,31 @@ text-align: center;
   max-height: 100px;
   opacity: 1;
 }
+
+.product-card-row {
+  width: 80%;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.product-info-column {
+  display: flex;
+  flex-direction: column;
+  /* gap: 0.25rem; */
+  align-items: flex-start;
+}
+.saving-favorite-button {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.saving-compare-button {
+  margin-top: 0.5rem;
+}
+
 /* 무한 스크롤 로딩 스피너 */
 .infinite-scroll-loading {
   display: flex;
@@ -1072,7 +1216,11 @@ text-align: center;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
