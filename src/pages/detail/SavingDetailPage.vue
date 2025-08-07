@@ -5,17 +5,26 @@
         <div class="card-image-wrapper">
           <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
           <div class="reaction-group">
-            <span class="reaction-button" @click="toggleLike">
-              <span v-if="isLiked">❤️</span>
-              <span v-else>🤍</span> {{ likeCount }}
-            </span>
+            <LikeToggle
+              :productId="savingData.savingProductId"
+              productType="saving-products"
+              :initialLiked="isLiked"
+              :initialCount="likeCount"
+              @update="
+                ({ liked, count }) => {
+                  isLiked = liked;
+                  likeCount = count;
+                }
+              "
+            />
             <button class="compare-button">➕ 비교함 담기</button>
           </div>
         </div>
-        <div class="favorite-icon" @click="toggleFavorite">
-          <span v-if="isFavorite">⭐</span>
-          <span v-else>☆</span>
-        </div>
+        <FavoriteToggle
+          v-model="isFavorite"
+          :productId="savingData.savingProductId"
+          :productType="productType"
+        />
         <div class="card-info">
           <h2 class="card-title">{{ savingData.finPrdtNm }}</h2>
           <p class="subtitle">{{ savingData.korCoNm }}</p>
@@ -23,18 +32,23 @@
             월별 최대 저축 한도:
             <strong>
               {{
-                parseInt(savingData.maxLimit.replace(/[^\d]/g, '')) === 999999999
+                parseInt(savingData.maxLimit.replace(/[^\d]/g, '')) ===
+                999999999
                   ? '한도 없음'
-                  : Number(savingData.maxLimit.replace(/[^\d]/g, '')).toLocaleString() + '원'
+                  : Number(
+                      savingData.maxLimit.replace(/[^\d]/g, '')
+                    ).toLocaleString() + '원'
               }}
             </strong>
           </p>
           <ul class="card-benefits">
             <li>
-              {{ topRateTerm }}개월 기준 최대 금리 <strong>{{ (topRate * 100).toFixed(2) }}%</strong>
+              {{ topRateTerm }}개월 기준 최대 금리
+              <strong>{{ (topRate * 100).toFixed(2) }}%</strong>
             </li>
             <li>
-              {{ baseRateTerm }}개월 기준 기본 금리 <strong>{{ (baseRate * 100).toFixed(2) }}%</strong>
+              {{ baseRateTerm }}개월 기준 기본 금리
+              <strong>{{ (baseRate * 100).toFixed(2) }}%</strong>
             </li>
           </ul>
           <div class="button-group">
@@ -42,14 +56,19 @@
             <button class="compare-link full-width">비교함 바로가기</button>
           </div>
           <div class="card-meta">
-            <span>가입 방법 : <strong>{{ savingData.joinWay }}</strong></span>
+            <span
+              >가입 방법 : <strong>{{ savingData.joinWay }}</strong></span
+            >
           </div>
         </div>
       </section>
 
       <section class="persona-banner-section">
         <div class="info-banner">
-          <p class="badge"><span class="highlight">{{ personaName }}</span> 유형이 많이 찾는 상품</p>
+          <p class="badge">
+            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
+            상품
+          </p>
         </div>
       </section>
 
@@ -60,7 +79,13 @@
           <div class="saving-amount">
             <div class="label">월 적립액</div>
             <div class="formatted-input-wrapper">
-              <input v-model.number="savingAmount" class="amount-input" type="number" min="0" step="10000" />
+              <input
+                v-model.number="savingAmount"
+                class="amount-input"
+                type="number"
+                min="0"
+                step="10000"
+              />
               <span class="won-label">원</span>
             </div>
             <div class="input-guide">{{ formattedAmountMan }}만원</div>
@@ -82,10 +107,19 @@
             </div>
           </div>
           <div class="payout-summary">
-            <div>원금합계 <strong>{{ (savingAmount * 12).toLocaleString() }}원</strong></div>
-            <div>세전이자 <strong>+{{ formattedPreTaxInterest }}원</strong></div>
-            <div>이자과세(15.4%) <strong>-{{ formattedTax }}원</strong></div>
-            <div class="total">세후수령액 <strong>{{ formattedAfterTax }}원</strong></div>
+            <div>
+              원금합계
+              <strong>{{ (savingAmount * 12).toLocaleString() }}원</strong>
+            </div>
+            <div>
+              세전이자 <strong>+{{ formattedPreTaxInterest }}원</strong>
+            </div>
+            <div>
+              이자과세(15.4%) <strong>-{{ formattedTax }}원</strong>
+            </div>
+            <div class="total">
+              세후수령액 <strong>{{ formattedAfterTax }}원</strong>
+            </div>
           </div>
         </div>
 
@@ -94,10 +128,16 @@
             <h4>기간별 금리</h4>
             <table>
               <thead>
-                <tr><th>기간</th><th>금리</th></tr>
+                <tr>
+                  <th>기간</th>
+                  <th>금리</th>
+                </tr>
               </thead>
               <tbody>
-                <tr v-for="option in savingData.options" :key="option.savingOptionId">
+                <tr
+                  v-for="option in savingData.options"
+                  :key="option.savingOptionId"
+                >
                   <td>{{ option.saveTrm }}개월</td>
                   <td>{{ option.intrRate }}%</td>
                 </tr>
@@ -132,15 +172,27 @@
         </div>
       </section>
       <section class="recommend-buttons">
-        <router-link to="/persona/savings" class="recommend-button green">나의 페르소나로 적금 추천 받기</router-link>
-        <router-link to="/mydata/savings" class="recommend-button">마이데이터 기반 적금 추천 받기</router-link>
+        <router-link to="/persona/savings" class="recommend-button green"
+          >나의 페르소나로 적금 추천 받기</router-link
+        >
+        <router-link to="/mydata/savings" class="recommend-button"
+          >마이데이터 기반 적금 추천 받기</router-link
+        >
       </section>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
+import favorite from '@/api/favorite';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import { ProductType } from '@/constants/productTypes';
+import LikeToggle from '@/components/common/LikeToggle.vue';
+
+const productType = ProductType.SAVING;
 
 const personaNameMap = {
   1: '거북이',
@@ -151,33 +203,34 @@ const personaNameMap = {
   6: '고양이',
   7: '호랑이',
   8: '펭귄',
-  9: '기타'
+  9: '기타',
 };
 
 const getBankInitial = (name) => {
-  if (name.includes('신한')) return 'shinhan'
-  if (name.includes('하나')) return 'hana'
-  if (name.includes('우리')) return 'woori'
-  if (name.includes('국민')) return 'kb'
-  if (name.includes('농협')) return 'nh'
-  if (name.includes('카카오')) return 'kakao'
-  if (name.includes('토스')) return 'toss'
-  if (name.includes('부산')) return 'bnk'
-  if (name.includes('광주')) return 'gwangju'
-  if (name.includes('중소기업')) return 'ibk'
-  if (name.includes('아이엠')) return 'im'
-  if (name.includes('제주')) return 'jeju'
-  if (name.includes('전북')) return 'jeonbook'
-  if (name.includes('산업')) return 'sanup'
-  if (name.includes('수협')) return 'su'
-  if (name.includes('SC제일') || name.includes('스탠다드차타드')) return 'sc'
-  if (name.includes('케이뱅크') || name.includes('K뱅크')) return 'k'
-  return 'shinhan'
-}
+  if (name.includes('신한')) return 'shinhan';
+  if (name.includes('하나')) return 'hana';
+  if (name.includes('우리')) return 'woori';
+  if (name.includes('국민')) return 'kb';
+  if (name.includes('농협')) return 'nh';
+  if (name.includes('카카오')) return 'kakao';
+  if (name.includes('토스')) return 'toss';
+  if (name.includes('부산')) return 'bnk';
+  if (name.includes('광주')) return 'gwangju';
+  if (name.includes('중소기업')) return 'ibk';
+  if (name.includes('아이엠')) return 'im';
+  if (name.includes('제주')) return 'jeju';
+  if (name.includes('전북')) return 'jeonbook';
+  if (name.includes('산업')) return 'sanup';
+  if (name.includes('수협')) return 'su';
+  if (name.includes('SC제일') || name.includes('스탠다드차타드')) return 'sc';
+  if (name.includes('케이뱅크') || name.includes('K뱅크')) return 'k';
+  return 'shinhan';
+};
 
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
+    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url)
+      .href,
     hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
     woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
     kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
@@ -185,119 +238,167 @@ const getBankLogo = (initial) => {
     kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
     toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
     bnk: new URL('@/assets/bankLogo_images/bnk.png', import.meta.url).href,
-    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url).href,
+    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url)
+      .href,
     ibk: new URL('@/assets/bankLogo_images/ibk.png', import.meta.url).href,
     im: new URL('@/assets/bankLogo_images/im.png', import.meta.url).href,
     jeju: new URL('@/assets/bankLogo_images/jeju.png', import.meta.url).href,
-    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url).href,
+    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url)
+      .href,
     sanup: new URL('@/assets/bankLogo_images/sanup.png', import.meta.url).href,
     su: new URL('@/assets/bankLogo_images/su.png', import.meta.url).href,
     sc: new URL('@/assets/bankLogo_images/sc.png', import.meta.url).href,
-    k: new URL('@/assets/bankLogo_images/k.png', import.meta.url).href
-  }
-  return logos[initial] || logos['shinhan']
-}
+    k: new URL('@/assets/bankLogo_images/k.png', import.meta.url).href,
+  };
+  return logos[initial] || logos['shinhan'];
+};
 
-export default {
-  data() {
-    return {
-      savingData: null,
-      savingAmount: 10000,
-      likeCount: 10,
-      isLiked: false,
-      isFavorite: false,
-      bankLogoUrl: '',
-      selectedRateType: 'top',
+const route = useRoute();
+const router = useRouter();
+
+const savingData = ref(null);
+const savingAmount = ref(10000);
+const likeCount = ref(0);
+const isLiked = ref(false);
+const isFavorite = ref(false);
+const bankLogoUrl = ref('');
+const selectedRateType = ref('top');
+const userId = ref(sessionStorage.getItem('userId'));
+
+const topRate = computed(() => {
+  if (!savingData.value?.options) return 0;
+  return (
+    Math.max(
+      ...savingData.value.options.map((o) => parseFloat(o.intrRate2 || 0))
+    ) / 100
+  );
+});
+
+const baseRate = computed(() => {
+  if (!savingData.value?.options) return 0;
+  const twelveMonth = savingData.value.options.find((o) => o.saveTrm === '12');
+  return (twelveMonth ? parseFloat(twelveMonth.intrRate) : 0) / 100;
+});
+
+const topRateTerm = computed(() => {
+  if (!savingData.value?.options) return '-';
+  const best = savingData.value.options.reduce((prev, curr) => {
+    const prevRate = parseFloat(prev?.intrRate2 || 0);
+    const currRate = parseFloat(curr?.intrRate2 || 0);
+    return currRate > prevRate ? curr : prev;
+  }, {});
+  return best?.saveTrm || '-';
+});
+
+const baseRateTerm = computed(() => {
+  if (!savingData.value?.options) return '-';
+  const twelveMonth = savingData.value.options.find((o) => o.saveTrm === '12');
+  return twelveMonth?.saveTrm || '-';
+});
+
+const preTaxInterest = computed(() => {
+  const rate =
+    selectedRateType.value === 'top' ? topRate.value : baseRate.value;
+  const months = 12;
+  if (
+    !savingData.value?.intrRateTypeNm ||
+    savingData.value.intrRateTypeNm.includes('단리')
+  ) {
+    return (((savingAmount.value * months * (months + 1)) / 2) * rate) / 12;
+  } else {
+    let total = 0;
+    for (let i = 0; i < months; i++) {
+      total += savingAmount.value * Math.pow(1 + rate / 12, months - i);
     }
-  },
-  computed: {
-    topRate() {
-      if (!this.savingData || !this.savingData.options) return 0;
-      return Math.max(...this.savingData.options.map(o => parseFloat(o.intrRate2 || 0))) / 100;
-    },
-    baseRate() {
-      if (!this.savingData || !this.savingData.options) return 0;
-      const twelveMonth = this.savingData.options.find(o => o.saveTrm === '12');
-      return (twelveMonth ? parseFloat(twelveMonth.intrRate) : 0) / 100;
-    },
-    topRateTerm() {
-      if (!this.savingData || !this.savingData.options) return '-';
-      const best = this.savingData.options.reduce((prev, curr) => {
-        const prevRate = parseFloat(prev?.intrRate2 || 0);
-        const currRate = parseFloat(curr?.intrRate2 || 0);
-        return currRate > prevRate ? curr : prev;
-      }, {});
-      return best?.saveTrm || '-';
-    },
-    baseRateTerm() {
-      if (!this.savingData || !this.savingData.options) return '-';
-      const twelveMonth = this.savingData.options.find(o => o.saveTrm === '12');
-      return twelveMonth?.saveTrm || '-';
-    },
-    formattedAmount() {
-      return this.savingAmount.toLocaleString();
-    },
-    preTaxInterest() {
-      const rate = this.selectedRateType === 'top' ? this.topRate : this.baseRate;
-      const months = 12;
-      if (!this.savingData?.intrRateTypeNm || this.savingData.intrRateTypeNm.includes('단리')) {
-        // 단리: 세전이자 = 월적립액 × 개월수 × (개월수 + 1) / 2 × 이율 / 12
-        return this.savingAmount * months * (months + 1) / 2 * rate / 12;
-      } else {
-        // 복리: 매달 납입 후 월복리 계산
-        let total = 0;
-        for (let i = 0; i < months; i++) {
-          total += this.savingAmount * Math.pow(1 + rate / 12, months - i);
-        }
-        return total - this.savingAmount * months;
-      }
-    },
-    tax() {
-      return this.preTaxInterest * 0.154;
-    },
-    afterTax() {
-      return this.savingAmount * 12 + this.preTaxInterest - this.tax;
-    },
-    formattedPreTaxInterest() {
-      return Math.round(this.preTaxInterest).toLocaleString();
-    },
-    formattedTax() {
-      return Math.round(this.tax).toLocaleString();
-    },
-    formattedAfterTax() {
-      return Math.round(this.afterTax).toLocaleString();
-    },
-    formattedAmountMan() {
-      return Math.floor(this.savingAmount / 10000).toLocaleString();
-    },
-    personaName() {
-      return personaNameMap[this.savingData?.personaId] || '기타';
-    }
-  },
-  mounted() {
-    const id = this.$route.params.savingId;
-    api.get(`/saving-products/${id}`)
-      .then(res => {
-        this.savingData = res.data;
-        const initial = getBankInitial(this.savingData.korCoNm || '');
-        this.bankLogoUrl = getBankLogo(initial);
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  },
-  methods: {
-    toggle(index) {
-      this.activeIndex = this.activeIndex === index ? null : index;
-    },
-    toggleFavorite() {
-      this.isFavorite = !this.isFavorite;
-    },
-    toggleLike() {
-      this.isLiked = !this.isLiked;
-    }
+    return total - savingAmount.value * months;
   }
-}
+});
+
+const tax = computed(() => preTaxInterest.value * 0.154);
+const afterTax = computed(
+  () => savingAmount.value * 12 + preTaxInterest.value - tax.value
+);
+
+const formattedPreTaxInterest = computed(() =>
+  Math.round(preTaxInterest.value).toLocaleString()
+);
+const formattedTax = computed(() => Math.round(tax.value).toLocaleString());
+const formattedAfterTax = computed(() =>
+  Math.round(afterTax.value).toLocaleString()
+);
+const formattedAmountMan = computed(() =>
+  Math.floor(savingAmount.value / 10000).toLocaleString()
+);
+const personaName = computed(
+  () => personaNameMap[savingData.value?.personaId] || '기타'
+);
+
+const handleLikeClick = () => {
+  if (!userId.value) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      router.push('/login');
+    }
+    return;
+  }
+  toggleLike();
+};
+
+const toggleLike = () => {
+  if (!savingData.value) return;
+  const id =
+    savingData.value.savingProductId ||
+    savingData.value.savingId ||
+    savingData.value.id;
+  const likePromise = isLiked.value
+    ? api.delete(`/saving-products/${id}/likes`)
+    : api.post(`/saving-products/${id}/likes`);
+  likePromise
+    .then((res) => {
+      isLiked.value = res.data.liked;
+      likeCount.value = res.data.likeCount;
+    })
+    .catch((err) => console.error(err));
+};
+
+const toggleFavorite = async () => {
+  if (!userId.value) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      router.push('/login');
+    }
+    return;
+  }
+  const productId =
+    savingData.value?.savingProductId ||
+    savingData.value?.savingId ||
+    savingData.value?.id;
+  const productType = 'SAVING';
+  try {
+    if (isFavorite.value) {
+      await favorite.deleteFavorite(productId, productType);
+    } else {
+      await favorite.addFavorite(productId, productType);
+    }
+    isFavorite.value = !isFavorite.value;
+  } catch (error) {
+    console.error('즐겨찾기 처리 중 오류 발생:', error);
+  }
+};
+
+onMounted(() => {
+  const id = route.params.savingId;
+  api
+    .get(`/saving-products/${id}`)
+    .then((res) => {
+      savingData.value = res.data;
+      const initial = getBankInitial(res.data.korCoNm || '');
+      bankLogoUrl.value = getBankLogo(initial);
+      isLiked.value = res.data.liked;
+      likeCount.value = res.data.likeCount;
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+});
 </script>
 
 <style scoped>
@@ -314,7 +415,7 @@ export default {
   background: #fff;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   align-items: center;
   justify-content: space-between;
   position: relative;
@@ -350,7 +451,7 @@ export default {
 }
 
 .badge {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
   margin-bottom: 5px;
   font-size: 14px;
@@ -391,7 +492,7 @@ export default {
 }
 
 .go-to-card {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 12px 0;
@@ -443,7 +544,6 @@ export default {
   color: #444;
   margin-bottom: 12px;
 }
-
 
 .highlight {
   color: #2e7d32;
@@ -500,7 +600,6 @@ export default {
 .interest-summary {
   margin-bottom: 20px;
 }
-
 
 .saving-amount .value {
   font-size: 24px;
@@ -646,9 +745,6 @@ export default {
   margin: 0;
 }
 
-
-
-
 .won-label {
   position: absolute;
   right: 0;
@@ -657,8 +753,6 @@ export default {
   font-size: 20px;
   color: #333;
 }
-
-
 
 .info-banner {
   background-color: #f0f8f5;
@@ -721,7 +815,6 @@ export default {
   font-weight: 500;
 }
 
-
 .recommend-buttons {
   display: flex;
   flex-direction: row;
@@ -756,5 +849,10 @@ export default {
 
 .recommend-button:hover {
   background-color: #e0f3e7;
+}
+
+.reaction-button.active {
+  background-color: #ffe6e6;
+  color: red;
 }
 </style>
