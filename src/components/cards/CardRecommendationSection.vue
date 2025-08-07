@@ -120,12 +120,23 @@
                 </div>
               </div>
 
-              <!-- 비교함 버튼 - 이미지 바로 아래 -->
-              <div class="compare-container">
-                <CompareButton
-                  :productId="Number(card.cardId)"
-                  :productType="productType"
+              <div class="like-compare-row">
+                <LikeToggle
+                  :productId="card.cardId"
+                  productType="card-products"
+                  :initialLiked="card.is_liked"
+                  :initialCount="card.like_count"
+                  @update="(payload) => handleLikeUpdate(card, payload)"
+                  @click.stop
                 />
+
+                <!-- 비교함 버튼 - 이미지 바로 아래 -->
+                <div class="compare-container">
+                  <CompareButton
+                    :productId="Number(card.cardId)"
+                    :productType="productType"
+                  />
+                </div>
               </div>
             </div>
 
@@ -189,6 +200,7 @@ import CompareButton from '@/components/common/CompareButton.vue';
 import cardsApi from '@/api/cards.js';
 import favorite from '@/api/favorite.js';
 import { ProductType } from '@/constants/productTypes';
+import LikeToggle from '@/components/common/LikeToggle.vue';
 
 // Props
 const props = defineProps({
@@ -214,7 +226,9 @@ const error = ref(null);
 const recommendationData = ref(null);
 const productType = ref(ProductType.CARD);
 
-// Methods
+// 즐겨찾기 상태는 백엔드에서 이미 제공되므로 별도 초기화 불필요
+
+// ---- 카드 추천/비교 로딩 ----
 const loadRecommendations = async () => {
   if (!props.selectedCard?.cardId || !props.hasTransactions) {
     return;
@@ -226,48 +240,36 @@ const loadRecommendations = async () => {
 
     console.log('🎯 카드 추천 로딩 시작:', props.selectedCard.cardId);
 
-    // 1단계: 먼저 현재 카드의 혜택 조회
+    // 1단계: 현재 카드의 혜택 조회
     console.log('💰 현재 카드 혜택 조회 시작');
     const benefitsResponse = await cardsApi.getCardBenefits(
       props.selectedCard.cardId
     );
     console.log('✅ 현재 카드 혜택 조회 완료:', benefitsResponse);
 
-    // 2단계: 혜택 정보를 바탕으로 추천 카드 조회
-    // 저장된 추천 데이터 먼저 시도
+    // 2단계: 추천 카드 로드
+    let response = null;
     try {
-      const response = await cardsApi.getSavedRecommendations(
+      response = await cardsApi.getSavedRecommendations(
         props.selectedCard.cardId
       );
       recommendationData.value = response.data || response;
-
-      // 현재 카드 혜택 정보 추가
       if (recommendationData.value && benefitsResponse) {
         recommendationData.value.currentCardBenefits =
           benefitsResponse.data || benefitsResponse;
       }
-
-      // 추천 카드에 즐겨찾기 상태 초기화
-      initializeFavoriteStatus();
-
       console.log('✅ 저장된 추천 데이터 로딩 완료:', recommendationData.value);
     } catch (savedError) {
       // 저장된 데이터가 없으면 실시간 추천 조회
       console.log('💾 저장된 추천 없음, 실시간 조회 시도');
-      const response = await cardsApi.getCardRecommendations(
+      response = await cardsApi.getCardRecommendations(
         props.selectedCard.cardId
       );
       recommendationData.value = response.data || response;
-
-      // 현재 카드 혜택 정보 추가
       if (recommendationData.value && benefitsResponse) {
         recommendationData.value.currentCardBenefits =
           benefitsResponse.data || benefitsResponse;
       }
-
-      // 추천 카드에 즐겨찾기 상태 초기화
-      initializeFavoriteStatus();
-
       console.log('✅ 실시간 추천 데이터 로딩 완료:', recommendationData.value);
     }
   } catch (err) {
@@ -279,30 +281,8 @@ const loadRecommendations = async () => {
   }
 };
 
-// 추천 카드에 즐겨찾기 상태 초기화
-const initializeFavoriteStatus = async () => {
-  if (recommendationData.value?.recommendedCards) {
-    try {
-      // 사용자의 즐겨찾기 목록을 가져와서 상태 설정
-      // getFavorites 메서드가 없으므로 초기값으로 설정
-      const favoriteIds = [];
-
-      recommendationData.value.recommendedCards.forEach((card) => {
-        // 즐겨찾기 목록에 있는지 확인하여 상태 설정
-        card.is_starred = favoriteIds.includes(String(card.cardId));
-      });
-    } catch (error) {
-      console.error('즐겨찾기 상태 초기화 실패:', error);
-      // 에러가 발생한 경우 기본값으로 설정
-      recommendationData.value.recommendedCards.forEach((card) => {
-        card.is_starred = false;
-      });
-    }
-  }
-};
-
+// ---- 예상 혜택 계산 등 ----
 const getCurrentBenefit = () => {
-  // 현재 카드의 예상 혜택 반환 (ownedCardBenefits 배열에서 첫 번째 카드의 estimatedBenefit)
   if (
     recommendationData.value?.currentCardBenefits?.ownedCardBenefits?.length > 0
   ) {
@@ -341,13 +321,9 @@ const handleImageError = (event) => {
 const handleImageLoad = (event) => {
   const img = event.target;
   const container = img.parentElement;
-
-  // 이미지의 가로세로 비율 확인
   if (img.naturalHeight > img.naturalWidth) {
-    // 세로 이미지인 경우
     container.classList.add('vertical-image');
   } else {
-    // 가로 이미지인 경우
     container.classList.add('horizontal-image');
   }
 };
@@ -362,39 +338,33 @@ const navigateToCardDetail = (cardId) => {
   router.push(`/detail/card/${cardId}`);
 };
 
-// 직접 즐겨찾기 토글 핸들러
+// ---- 좋아요 업데이트 핸들러 ----
+const handleLikeUpdate = (card, payload) => {
+  // payload: { isLiked: boolean, likeCount: number }
+  card.is_liked = payload.isLiked;
+  card.like_count = payload.likeCount;
+};
+
+// ---- 즐겨찾기 토글 ----
 const handleDirectFavoriteToggle = async (card) => {
   const currentState = card.is_starred;
   const newState = !currentState;
 
-  // 즉시 UI 업데이트 (낙관적 업데이트)
+  // 낙관적 UI 업데이트
   card.is_starred = newState;
 
   try {
     if (newState) {
-      // 즐겨찾기 추가
       await favorite.addFavorite(String(card.cardId), ProductType.CARD);
     } else {
-      // 즐겨찾기 제거
       await favorite.deleteFavorite(String(card.cardId), ProductType.CARD);
     }
-
-    console.log(
-      `카드 즐겨찾기 ${newState ? '추가' : '제거'} 완료:`,
-      card.cardName
-    );
+    console.log(`카드 ${card.cardName} 즐겨찾기 ${newState ? '추가' : '제거'} 완료`);
   } catch (error) {
     console.error('즐겨찾기 토글 실패:', error);
-
-    // 409 에러 (이미 즐겨찾기에 존재하거나 제거됨) 처리
-    if (error.response?.status === 409) {
-      // 409 에러의 경우 현재 UI 상태를 유지 (서버 상태와 일치한다고 가정)
-      console.log(
-        `즐겨찾기 상태가 이미 ${newState ? '등록' : '제거'}되어 있습니다:`,
-        card.cardName
-      );
-    } else {
-      // 다른 에러의 경우 이전 상태로 되돌리기
+    
+    // 409 에러(이미 추가/삭제됨)가 아닌 경우에만 롤백
+    if (!(error.response?.status === 409)) {
       card.is_starred = currentState;
     }
   }
@@ -663,7 +633,6 @@ watch(
 .compare-container {
   display: flex;
   justify-content: center;
-  width: 140px;
 }
 
 .card-image {
@@ -813,6 +782,10 @@ watch(
   font-style: italic;
 }
 
+.like-compare-row {
+  display: flex;
+}
+
 /* ===== 태블릿 스타일 (769px - 1024px) ===== */
 @media (max-width: 1024px) and (min-width: 769px) {
   .card-recommendation-section {
@@ -831,7 +804,6 @@ watch(
   }
 
   .compare-container {
-    width: 120px;
   }
 
   .card-image-container.vertical-image .card-image {
@@ -936,7 +908,6 @@ watch(
   }
 
   .compare-container {
-    width: 100px;
   }
 
   .card-image-container.vertical-image .card-image {
@@ -1055,8 +1026,6 @@ watch(
   }
 
   .compare-container {
-    width: 100%;
-    max-width: 160px;
     align-self: center;
   }
 
