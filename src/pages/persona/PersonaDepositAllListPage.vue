@@ -148,9 +148,15 @@
             v-for="product in visibleProducts"
             :key="product.id"
             class="product-card"
-            @click="selectProduct(product)"
           >
-            <div class="product-card-row">
+            <div class="card-favorite-button" @click.stop>
+              <FavoriteToggle
+                v-model="product.isStarred"
+                :productId="product.id"
+                productType="DEPOSIT"
+              />
+            </div>
+            <div class="product-card-row" @click="selectProduct(product)">
               <!-- 왼쪽(로고) -->
               <div class="bank-logo-container">
                 <img
@@ -158,6 +164,12 @@
                   alt="은행 로고"
                   class="bank-logo-round"
                 />
+                <div class="card-compare-button">
+                  <CompareButton
+                    :productId="product.id"
+                    productType="DEPOSIT"
+                  />
+                </div>
               </div>
               <!-- 오른쪽(정보) -->
               <div class="product-info-column">
@@ -168,9 +180,10 @@
                   <span class="highlight-rate">{{
                     getRateWithTerm(product, 'max')
                   }}</span>
-                  <span
-                    >최저 금리 : {{ getRateWithTerm(product, 'base') }}</span
-                  >
+                </div>
+                <div class="rate-line">
+                  <span class="label-bold">최저 금리 :</span>
+                  <span>{{ getRateWithTerm(product, 'base') }}</span>
                 </div>
                 <div class="rate-line">
                   기준 기간 :
@@ -216,6 +229,8 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 const modules = [Pagination];
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import CompareButton from '@/components/common/CompareButton.vue';
 
 const showTermDropdown = ref(false);
 const isMobile = ref(false);
@@ -490,6 +505,7 @@ onMounted(async () => {
       maxRate: item.intrRate2?.toFixed(2) ?? '-',
       image: item.image || '',
       personaType: item.personaType || '',
+      isStarred: item.isStarred,
     }));
     allProducts.value = fullList;
   } catch (err) {
@@ -842,7 +858,7 @@ const selectProduct = (product) => {
   padding: var(--spacing-xl);
   cursor: pointer;
   transition: all 0.3s ease;
-  height: 16rem;
+  height: 18rem;
   display: flex;
   flex-direction: column;
   /* flex-direction: row; */
@@ -869,6 +885,8 @@ const selectProduct = (product) => {
   justify-content: center;
   width: 5rem;
   height: 5rem;
+  flex-direction: column;
+  /* gap: 0.5rem; */
 }
 .bank-logo-round {
   width: 6rem;
@@ -910,7 +928,7 @@ const selectProduct = (product) => {
 .rate-line {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin-bottom: 0.1rem;
+  /* margin-bottom: 0.1rem; */
 }
 .label-bold {
   font-weight: bold;
@@ -929,6 +947,14 @@ const selectProduct = (product) => {
   gap: 2rem;
   margin-bottom: var(--spacing-2xl);
 }
+.card-action-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 /* 🔷 반응형 (모바일) 스타일 */
 @media (max-width: 768px) {
   .carousel-swiper {
@@ -979,7 +1005,7 @@ const selectProduct = (product) => {
     gap: var(--spacing-lg);
   }
   .bank-logo-container {
-    width: 2rem;
+    width: 5.6rem;
     height: 2rem;
   }
   .bank-logo-round {
@@ -1119,13 +1145,24 @@ body {
   justify-content: flex-start;
   display: flex;
   align-items: center;
-  gap: 2.8rem;
+  gap: 2rem;
 }
 
 .product-info-column {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  /* gap: 0.25rem; */
   align-items: flex-start;
+}
+.card-favorite-button {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-compare-button {
+  margin-top: 0.5rem;
 }
 </style>
