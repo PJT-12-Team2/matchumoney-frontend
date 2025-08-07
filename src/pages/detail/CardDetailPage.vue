@@ -230,6 +230,7 @@ onMounted(() => {
     }
     isLiked.value = res.data.liked;
     likeCount.value = res.data.likeCount;
+    isFavorite.value = res.data.starred; // 즐겨찾기 상태 설정
   });
 });
 

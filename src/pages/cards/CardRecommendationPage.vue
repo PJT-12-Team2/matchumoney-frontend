@@ -99,7 +99,9 @@
             <div class="summary-stats">
               <div class="stat-item">
                 <span class="stat-label">분석 기간</span>
-                <span class="stat-value">최근 {{ ANALYSIS_PERIOD_DAYS }}일</span>
+                <span class="stat-value"
+                  >최근 {{ ANALYSIS_PERIOD_DAYS }}일</span
+                >
               </div>
               <div class="stat-item">
                 <span class="stat-label">총 소비금액</span>
@@ -145,15 +147,15 @@
 </template>
 
 <script>
-import { useAuthStore } from "@/stores/auth";
-import BaseSpinner from "@/components/base/BaseSpinner.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import RecommendedCardItem from "@/components/cards/RecommendedCardItem.vue";
-import SpendingCategoryChart from "@/components/cards/SpendingCategoryChart.vue";
-import cardsApi from "@/api/cards.js";
+import { useAuthStore } from '@/stores/auth';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import RecommendedCardItem from '@/components/cards/RecommendedCardItem.vue';
+import SpendingCategoryChart from '@/components/cards/SpendingCategoryChart.vue';
+import cardsApi from '@/api/cards.js';
 
 export default {
-  name: "CardRecommendationPage",
+  name: 'CardRecommendationPage',
   components: {
     BaseSpinner,
     BaseButton,
@@ -168,7 +170,7 @@ export default {
     return {
       loading: false,
       error: null,
-      selectedCardId: "",
+      selectedCardId: '',
       userCards: [],
       recommendationData: null,
       ANALYSIS_PERIOD_DAYS: 30, // 분석 기간 상수
@@ -192,39 +194,39 @@ export default {
 
         const userId = this.authStore.getUserId;
         if (!userId) {
-          this.error = "로그인이 필요합니다.";
-          this.$router.push("/login");
+          this.error = '로그인이 필요합니다.';
+          this.$router.push('/login');
           return;
         }
 
-        console.log("📋 사용자 카드 목록 조회 시작, userId:", userId);
+        console.log('📋 사용자 카드 목록 조회 시작, userId:', userId);
         const response = await cardsApi.getUserCards(userId);
-        console.log("✅ 사용자 카드 응답:", response);
+        console.log('✅ 사용자 카드 응답:', response);
 
         // API 응답 구조에 맞게 처리
         this.userCards = response.result || response.data || response || [];
 
         if (this.userCards.length === 0) {
           this.error =
-            "등록된 카드가 없습니다. 먼저 마이데이터에서 카드를 연동해주세요.";
+            '등록된 카드가 없습니다. 먼저 마이데이터에서 카드를 연동해주세요.';
         } else {
           console.log(`💡 ${this.userCards.length}개의 카드를 불러왔습니다.`);
         }
       } catch (error) {
-        console.error("❌ 사용자 카드 로딩 실패:", error);
+        console.error('❌ 사용자 카드 로딩 실패:', error);
 
         if (error.response?.status === 401) {
-          this.error = "인증이 만료되었습니다. 다시 로그인해주세요.";
+          this.error = '인증이 만료되었습니다. 다시 로그인해주세요.';
           this.authStore.logout();
-          this.$router.push("/login");
+          this.$router.push('/login');
         } else if (error.response?.status === 404) {
           this.error =
-            "등록된 카드가 없습니다. 먼저 마이데이터에서 카드를 연동해주세요.";
+            '등록된 카드가 없습니다. 먼저 마이데이터에서 카드를 연동해주세요.';
         } else {
           this.error =
             error.response?.data?.message ||
             error.message ||
-            "카드 목록을 불러오는데 실패했습니다.";
+            '카드 목록을 불러오는데 실패했습니다.';
         }
       } finally {
         this.loading = false;
@@ -238,23 +240,27 @@ export default {
         this.loading = true;
         this.error = null;
 
-        console.log("🎯 카드 추천 로딩 시작:", this.selectedCardId);
+        console.log('🎯 카드 추천 로딩 시작:', this.selectedCardId);
 
         // 1단계: 먼저 현재 카드의 혜택 조회
-        console.log("💰 현재 카드 혜택 조회 시작");
-        const benefitsResponse = await cardsApi.getCardBenefits(this.selectedCardId);
-        console.log("✅ 현재 카드 혜택 조회 완료:", benefitsResponse);
+        console.log('💰 현재 카드 혜택 조회 시작');
+        const benefitsResponse = await cardsApi.getCardBenefits(
+          this.selectedCardId
+        );
+        console.log('✅ 현재 카드 혜택 조회 완료:', benefitsResponse);
 
         // 2단계: 혜택 정보를 바탕으로 추천 카드 조회
         let response;
         try {
-          response = await cardsApi.getSavedRecommendations(this.selectedCardId);
-          console.log("✅ 저장된 추천 데이터 로딩 완료:", response);
+          response = await cardsApi.getSavedRecommendations(
+            this.selectedCardId
+          );
+          console.log('✅ 저장된 추천 데이터 로딩 완료:', response);
         } catch (savedError) {
           // 저장된 데이터가 없으면 실시간 추천 조회
-          console.log("💾 저장된 추천 없음, 실시간 조회 시도");
+          console.log('💾 저장된 추천 없음, 실시간 조회 시도');
           response = await cardsApi.getCardRecommendations(this.selectedCardId);
-          console.log("✅ 실시간 추천 데이터 로딩 완료:", response);
+          console.log('✅ 실시간 추천 데이터 로딩 완료:', response);
         }
 
         // API 응답 구조에 맞게 처리
@@ -262,22 +268,23 @@ export default {
 
         // 현재 카드 혜택 정보 추가
         if (this.recommendationData && benefitsResponse) {
-          this.recommendationData.currentCardBenefits = benefitsResponse.data || benefitsResponse;
+          this.recommendationData.currentCardBenefits =
+            benefitsResponse.data || benefitsResponse;
         }
 
         // URL 업데이트
         if (this.$route.params.cardId !== this.selectedCardId.toString()) {
           this.$router.replace({
-            name: "CardRecommendation",
+            name: 'CardRecommendation',
             params: { cardId: this.selectedCardId },
           });
         }
       } catch (error) {
-        console.error("❌ 추천 데이터 로딩 실패:", error);
+        console.error('❌ 추천 데이터 로딩 실패:', error);
         this.error =
           error.response?.data?.message ||
           error.message ||
-          "추천 데이터를 불러오는데 실패했습니다.";
+          '추천 데이터를 불러오는데 실패했습니다.';
         this.recommendationData = null;
       } finally {
         this.loading = false;
@@ -293,7 +300,7 @@ export default {
     },
 
     formatCurrency(amount) {
-      if (!amount) return "0";
+      if (!amount) return '0';
       return Number(amount).toLocaleString();
     },
   },
@@ -394,9 +401,9 @@ export default {
   display: grid;
   gap: 24px;
   grid-template-areas:
-    "analysis"
-    "recommendations"
-    "summary";
+    'analysis'
+    'recommendations'
+    'summary';
 }
 
 .analysis-section {
@@ -560,8 +567,8 @@ export default {
 @media (min-width: 1024px) {
   .analysis-results {
     grid-template-areas:
-      "analysis recommendations"
-      "summary summary";
+      'analysis recommendations'
+      'summary summary';
     grid-template-columns: 1fr 1fr;
   }
 
