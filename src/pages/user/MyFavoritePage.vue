@@ -39,13 +39,9 @@
           <div class="spinner"></div>
           <div>상품을 불러오는 중입니다...</div>
         </div>
-        <div v-else-if="!allFavorites || allFavorites.length === 0" class="empty-state">
+        <div v-else-if="!allFavorites?.length || !filteredFavorites?.length" class="empty-state">
           <div class="empty-icon">📭</div>
           <div>즐겨찾기한 상품이 없습니다.</div>
-        </div>
-        <div v-else-if="!filteredFavorites || filteredFavorites.length === 0" class="empty-state">
-          <div class="empty-icon">⭐</div>
-          <div>즐겨찾기한 {{ currentTabLabel }} 상품이 없습니다.</div>
         </div>
         <div v-else>
           <!-- 예금 탭 -->
@@ -88,15 +84,16 @@
               <div class="product-action-row">
                 <LikeToggle
                   :productId="deposit.depositId"
-                  productType="deposits-products"
-                  :initialLiked="isLiked"
-                  :initialCount="likeCount"
+                  productType="deposit-products"
+                  :initialLiked="deposit.isLiked"
+                  :initialCount="deposit.likeCount"
                   @update="
                     ({ liked, count }) => {
-                      isLiked = liked;
-                      likeCount = count;
+                      deposit.isLiked = liked;
+                      deposit.likeCount = count;
                     }
-                  " />
+                  "
+                  @click.stop />
                 <CompareButton :productId="deposit.depositId" :productType="'DEPOSIT'" @click.stop />
               </div>
             </div>
@@ -147,14 +144,15 @@
                 <LikeToggle
                   :productId="saving.savingId"
                   productType="saving-products"
-                  :initialLiked="isLiked"
-                  :initialCount="likeCount"
+                  :initialLiked="saving.isLiked"
+                  :initialCount="saving.likeCount"
                   @update="
                     ({ liked, count }) => {
-                      isLiked = liked;
-                      likeCount = count;
+                      saving.isLiked = liked;
+                      saving.likeCount = count;
                     }
-                  " />
+                  "
+                  @click.stop />
                 <CompareButton :productId="saving.savingId" :productType="'SAVING'" @click.stop />
               </div>
             </div>
@@ -188,14 +186,15 @@
                 <LikeToggle
                   :productId="card.cardId"
                   productType="card-products"
-                  :initialLiked="isLiked"
-                  :initialCount="likeCount"
+                  :initialLiked="card.isLiked"
+                  :initialCount="card.likeCount"
                   @update="
                     ({ liked, count }) => {
-                      isLiked = liked;
-                      likeCount = count;
+                      card.isLiked = liked;
+                      card.likeCount = count;
                     }
-                  " />
+                  "
+                  @click.stop />
                 <CompareButton :productId="card.cardId" :productType="'CARD'" @click.stop />
               </div>
             </div>
@@ -347,6 +346,7 @@ onMounted(async () => {
         basicRate: d.basicRate,
         maxRate: d.maxRate,
         term: d.term || null,
+        isStarred: d.isStarred ?? false,
       })),
       ...(res.savingList ?? []).map((s) => ({
         ...s,
@@ -359,6 +359,7 @@ onMounted(async () => {
         maxRate: s.maxRate,
         maxLimit: s.maxLimit,
         term: s.term || null,
+        isStarred: s.isStarred ?? false,
       })),
       ...(res.cardList ?? []).map((c) => ({
         ...c,
@@ -369,6 +370,7 @@ onMounted(async () => {
         cardId: c.cardId || c.id,
         annualFee: c.annualFee,
         preMonthMoney: c.preMonthMoney,
+        isStarred: c.isStarred ?? false,
       })),
     ];
   } catch (e) {
