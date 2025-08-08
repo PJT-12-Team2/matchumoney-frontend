@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3>
         <i class="bi bi-stars"></i>
-        {{ selectedCard?.cardName || "카드" }} 맞춤 추천
+        {{ selectedCard?.cardName || '카드' }} 맞춤 추천
       </h3>
       <p class="section-subtitle">
         소비 패턴을 분석하여 더 나은 카드를 추천해드립니다
@@ -37,7 +37,7 @@
       <p>
         {{
           recommendationData.message ||
-          "현재 사용 중인 카드가 소비 패턴에 가장 적합합니다."
+          '현재 사용 중인 카드가 소비 패턴에 가장 적합합니다.'
         }}
       </p>
     </div>
@@ -116,7 +116,7 @@
                   {{ card.cardType }}
                 </span>
                 <span class="annual-fee">{{
-                  card.annualFee || "연회비 정보 없음"
+                  card.annualFee || '연회비 정보 없음'
                 }}</span>
               </div>
             </div>
@@ -165,12 +165,12 @@
 </template>
 
 <script>
-import BaseSpinner from "@/components/base/BaseSpinner.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import cardsApi from "@/api/cards.js";
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import cardsApi from '@/api/cards.js';
 
 export default {
-  name: "CardRecommendationSection",
+  name: 'CardRecommendationSection',
   components: {
     BaseSpinner,
     BaseButton,
@@ -185,7 +185,7 @@ export default {
       default: false,
     },
   },
-  emits: ["requestTransactionSync"],
+  emits: ['requestTransactionSync'],
   data() {
     return {
       loading: false,
@@ -220,14 +220,14 @@ export default {
         this.loading = true;
         this.error = null;
 
-        console.log("🎯 카드 추천 로딩 시작:", this.selectedCard.cardId);
+        console.log('🎯 카드 추천 로딩 시작:', this.selectedCard.cardId);
 
         // 1단계: 먼저 현재 카드의 혜택 조회
-        console.log("💰 현재 카드 혜택 조회 시작");
+        console.log('💰 현재 카드 혜택 조회 시작');
         const benefitsResponse = await cardsApi.getCardBenefits(
           this.selectedCard.cardId
         );
-        console.log("✅ 현재 카드 혜택 조회 완료:", benefitsResponse);
+        console.log('✅ 현재 카드 혜택 조회 완료:', benefitsResponse);
 
         // 2단계: 혜택 정보를 바탕으로 추천 카드 조회
         // 저장된 추천 데이터 먼저 시도
@@ -244,12 +244,12 @@ export default {
           }
 
           console.log(
-            "✅ 저장된 추천 데이터 로딩 완료:",
+            '✅ 저장된 추천 데이터 로딩 완료:',
             this.recommendationData
           );
         } catch (savedError) {
           // 저장된 데이터가 없으면 실시간 추천 조회
-          console.log("💾 저장된 추천 없음, 실시간 조회 시도");
+          console.log('💾 저장된 추천 없음, 실시간 조회 시도');
           const response = await cardsApi.getCardRecommendations(
             this.selectedCard.cardId
           );
@@ -262,13 +262,13 @@ export default {
           }
 
           console.log(
-            "✅ 실시간 추천 데이터 로딩 완료:",
+            '✅ 실시간 추천 데이터 로딩 완료:',
             this.recommendationData
           );
         }
       } catch (error) {
-        console.error("❌ 추천 데이터 로딩 실패:", error);
-        this.error = error.message || "추천 데이터를 불러오는데 실패했습니다.";
+        console.error('❌ 추천 데이터 로딩 실패:', error);
+        this.error = error.message || '추천 데이터를 불러오는데 실패했습니다.';
         this.recommendationData = null;
       } finally {
         this.loading = false;
@@ -298,19 +298,19 @@ export default {
     },
 
     formatCurrency(amount) {
-      if (!amount) return "0";
+      if (!amount) return '0';
       return Number(amount).toLocaleString();
     },
 
     getCardTypeClass(cardType) {
       return {
-        "type-credit": cardType === "신용",
-        "type-debit": cardType === "체크",
+        'type-credit': cardType === '신용',
+        'type-debit': cardType === '체크',
       };
     },
 
     handleImageError(event) {
-      event.target.src = "/logo.png";
+      event.target.src = '/logo.png';
     },
 
     handleImageLoad(event) {
@@ -320,16 +320,16 @@ export default {
       // 이미지의 가로세로 비율 확인
       if (img.naturalHeight > img.naturalWidth) {
         // 세로 이미지인 경우
-        container.classList.add("vertical-image");
+        container.classList.add('vertical-image');
       } else {
         // 가로 이미지인 경우
-        container.classList.add("horizontal-image");
+        container.classList.add('horizontal-image');
       }
     },
 
     openApplicationLink(url) {
       if (url) {
-        window.open(url, "_blank", "noopener,noreferrer");
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     },
   },
@@ -338,7 +338,7 @@ export default {
 
 <style scoped>
 /* main.css 변수 import */
-@import "@/assets/main.css";
+@import '@/assets/main.css';
 
 .card-recommendation-section {
   background: var(--bg-card);
