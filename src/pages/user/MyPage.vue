@@ -16,7 +16,7 @@
             <h2 class="user-name">
               <span class="nickname">{{ user?.nickname ?? '정보 없음' }}</span>
               <span class="level-title">님</span>
-              <span class="edit" @click="router.push('/myinfo')">수정하기</span>
+              <button class="fav-view-all-btn edit-btn" @click="router.push('/myinfo')">수정하기</button>
             </h2>
             <p class="user-level">
               <span class="level-value">Lv. {{ level }}</span>
@@ -63,7 +63,12 @@
 
     <div class="right-grid">
       <BaseCardGrey style="height: 100%">
-        <template #title>즐겨찾기</template>
+        <template #title>
+          <div class="fav-header">
+            <span>즐겨찾기</span>
+            <button class="fav-view-all-btn" @click="router.push('/favorites')">전체 보기</button>
+          </div>
+        </template>
         <template #content>
           <div class="tabs">
             <button :class="{ active: selectedTab === '예금' }" @click="selectedTab = '예금'">예금</button>
@@ -283,18 +288,22 @@ function updateProducts() {
       bankName: item.company,
       productName: item.title,
       type: '적금',
+      // 보유한 필드 중 하나를 사용 (백엔드 DTO에 맞춰 자동 대응)
+      savingId: item.savingId ?? item.saving_product_id ?? item.savingProductId ?? item.id,
     }));
   } else if (selectedTab.value === '예금') {
     items = favoriteDeposits.value.map((item) => ({
       bankName: item.bankName,
       productName: item.productName,
       type: '예금',
+      depositId: item.depositId ?? item.deposit_product_id ?? item.id,
     }));
   } else if (selectedTab.value === '카드') {
     items = favoriteCards.value.map((item) => ({
       productName: item.name,
       productImage: item.imageUrl,
       type: '카드',
+      cardId: item.cardId ?? item.card_product_id ?? item.id,
     }));
   }
 
@@ -358,7 +367,20 @@ const getBankLogo = (bankName) => {
 };
 
 function selectProduct(product) {
-  console.log('Selected product:', product);
+  if (product?.isFallback) return;
+  if (product?.type === '적금' && product?.savingId) {
+    router.push(`/detail/saving/${product.savingId}`);
+    return;
+  }
+  if (product?.type === '예금' && product?.depositId) {
+    router.push(`/detail/deposit/${product.depositId}`);
+    return;
+  }
+  if (product?.type === '카드' && product?.cardId) {
+    router.push(`/detail/card/${product.cardId}`);
+    return;
+  }
+  console.warn('선택한 상품에 유효한 ID가 없어 상세 페이지로 이동할 수 없습니다:', product);
 }
 
 onMounted(() => {
@@ -441,13 +463,6 @@ onMounted(() => {
   font-size: var(--font-size-3xl);
   font-weight: 800;
   margin-bottom: var(--spacing-sm);
-}
-
-.user-name .edit {
-  font-size: var(--font-size-base);
-  margin-left: var(--spacing-lg);
-  color: var(--color-accent);
-  cursor: pointer;
 }
 
 .nickname {
@@ -534,16 +549,46 @@ onMounted(() => {
   font-size: var(--font-size-base);
   transition: background-color 0.2s ease;
 }
+
 .tabs button.active {
   background-color: var(--color-accent);
   color: white;
   font-weight: 600;
 }
 
+.fav-header {
+  display: flex;
+  align-items: baseline; /* keep baseline alignment */
+  justify-content: space-between; /* move button to right */
+  gap: var(--spacing-md);
+  width: 100%;
+}
+.fav-view-all-btn {
+  border: 1px solid var(--color-secondary-30);
+  background: var(--bg-content);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 2px; /* nudge down to match title underline */
+  margin-right: 16px; /* add spacing from right edge */
+}
+.fav-view-all-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-accent);
+}
+
+.edit-btn {
+  margin-left: var(--spacing-lg);
+  padding: 0.25rem 0.75rem; /* keep same as fav-view-all-btn */
+}
+
 .product-list {
   display: grid;
   grid-template-columns: 1fr;
-  grid-auto-rows: 12.5rem;
+  grid-auto-rows: 14rem;
   gap: var(--spacing-lg);
   padding: var(--spacing-md);
   height: auto;
@@ -552,7 +597,7 @@ onMounted(() => {
 .product-card {
   border: 1px solid var(--color-secondary-30);
   border-radius: 1rem;
-  padding: var(--spacing-2xl);
+  padding: calc(var(--spacing-2xl) * 1.2);
   box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
@@ -579,13 +624,13 @@ onMounted(() => {
   align-items: center;
 }
 .bank-logo img {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
 }
 .fallback-img {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
 }
 
 .product-info {
@@ -648,13 +693,13 @@ onMounted(() => {
     height: auto;
   }
   .bank-logo img {
-    width: 70px;
-    height: 70px;
+    width: 84px;
+    height: 84px;
     object-fit: contain;
   }
   .fallback-img {
-    width: 70px;
-    height: 70px;
+    width: 84px;
+    height: 84px;
   }
 
   .product-info {
