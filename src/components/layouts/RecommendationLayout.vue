@@ -8,7 +8,7 @@
     </div>
 
     <!-- 강조 문구 영역 -->
-    <div class="recommendation-highlight text-center mt-5">
+    <div class="recommendation-highlight text-center">
       <slot name="highlight" />
     </div>
 
@@ -50,5 +50,10 @@ const props = defineProps({
 .recommendation-highlight {
   color: var(--color-accent);
   font-weight: bold;
+  background: var(--color-info-light);
+  padding: 16px 20px;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--color-accent);
 }
 </style>

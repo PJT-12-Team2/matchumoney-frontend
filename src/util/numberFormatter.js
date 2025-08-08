@@ -1,4 +1,5 @@
 export function roundToTwoDecimalPlaces(value) {
   if (isNaN(value)) return value;
-  return Math.round(parseFloat(value) * 100) / 100;
+  let roundValue = Math.round(parseFloat(value) * 100) / 100;
+  return parseFloat(roundValue).toFixed(2);
 }
