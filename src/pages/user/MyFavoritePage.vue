@@ -6,151 +6,188 @@
       <hr />
       <div class="tab-selector">
         <BaseButton
-          :style="{
-            margin: '0 0.5rem',
-            backgroundColor: selectedTab === 'deposit' ? 'var(--color-accent)' : 'var(--bg-content)',
-            color: selectedTab === 'deposit' ? 'var(--color-white)' : 'var(--text-primary)',
-          }"
+          :class="['tab-btn', { 'tab-btn--active': selectedTab === 'deposit' }]"
           @click="selectedTab = 'deposit'">
           예금
         </BaseButton>
         <BaseButton
-          :style="{
-            margin: '0 0.5rem',
-            backgroundColor: selectedTab === 'saving' ? 'var(--color-accent)' : 'var(--bg-content)',
-            color: selectedTab === 'saving' ? 'var(--color-white)' : 'var(--text-primary)',
-          }"
+          :class="['tab-btn', { 'tab-btn--active': selectedTab === 'saving' }]"
           @click="selectedTab = 'saving'">
           적금
         </BaseButton>
-        <BaseButton
-          :style="{
-            margin: '0 0.5rem',
-            backgroundColor: selectedTab === 'card' ? 'var(--color-accent)' : 'var(--bg-content)',
-            color: selectedTab === 'card' ? 'var(--color-white)' : 'var(--text-primary)',
-          }"
-          @click="selectedTab = 'card'">
+        <BaseButton :class="['tab-btn', { 'tab-btn--active': selectedTab === 'card' }]" @click="selectedTab = 'card'">
           카드
         </BaseButton>
       </div>
 
-      <section class="search-results">
+      <section class="search-results" :key="selectedTab">
         <div v-if="loading" class="loading-state">
           <div class="spinner"></div>
           <div>상품을 불러오는 중입니다...</div>
         </div>
-        <div v-else-if="!allFavorites || allFavorites.length === 0" class="empty-state">
+        <div v-else-if="!allFavorites?.length || !filteredFavorites?.length" class="empty-state">
           <div class="empty-icon">📭</div>
           <div>즐겨찾기한 상품이 없습니다.</div>
         </div>
-        <div v-else-if="!filteredFavorites || filteredFavorites.length === 0" class="empty-state">
-          <div class="empty-icon">⭐</div>
-          <div>즐겨찾기한 {{ currentTabLabel }} 상품이 없습니다.</div>
-        </div>
         <div v-else>
-          <!-- 예금 탭 -->
-          <div v-if="currentTab === 'deposit'" class="search-results-grid">
+          <div v-if="currentTab === 'deposit'" class="card-search-results-grid">
             <div
-              v-for="product in filteredFavorites"
-              :key="product.id"
+              v-for="deposit in filteredFavorites"
+              :key="deposit.depositId"
               class="product-card"
-              @click="selectProduct(product)">
+              @click="goToDepositDetail(deposit.depositId)">
+              <div class="favorite-top-right">
+                <FavoriteToggle
+                  @click.stop
+                  v-model="deposit.isStarred"
+                  :productId="deposit.depositId"
+                  :productType="'DEPOSIT'" />
+              </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
-                  <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+                  <img :src="getBankLogo(deposit.bankName)" alt="은행 로고" class="bank-logo-round" />
                 </div>
                 <div class="product-name-block">
-                  <div class="bank-name-bold">{{ product.bank }}</div>
-                  <div class="product-name-bold">{{ product.name }}</div>
+                  <div class="bank-name-bold">{{ deposit.bankName }}</div>
+                  <div class="product-name-bold">{{ deposit.productName }}</div>
                 </div>
                 <div class="product-info-block">
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">최고 금리 :</span>
-                    <span class="highlight-rate">{{ getRateWithTerm(product, "max") }}</span>
+                    <span class="label-bold">최고 금리 :&nbsp;</span>
+                    <span class="highlight-rate">{{ deposit.maxRate }}</span>
                   </div>
                   <div class="rate-line no-wrap">
                     최저 금리 :
-                    {{ getRateWithTerm(product, "base") }}
+                    {{ deposit.basicRate }}
                   </div>
                   <div class="rate-line no-wrap">
                     기준 기간 :
-                    {{
-                      (() => {
-                        const best = product.depositOptions?.reduce((prev, curr) => {
-                          const prevRate = prev?.intrRate2 ?? 0;
-                          const currRate = curr?.intrRate2 ?? 0;
-                          return currRate > prevRate ? curr : prev;
-                        }, null);
-                        return best?.saveTrm ? best.saveTrm + "개월" : "정보 없음";
-                      })()
-                    }}
+                    {{ deposit.term ? deposit.term + '개월' : '정보 없음' }}
                   </div>
                 </div>
+              </div>
+              <div class="product-action-row">
+                <LikeToggle
+                  :productId="deposit.depositId"
+                  productType="deposit-products"
+                  :initialLiked="deposit.isLiked"
+                  :initialCount="deposit.likeCount"
+                  @update="
+                    ({ liked, count }) => {
+                      deposit.isLiked = liked;
+                      deposit.likeCount = count;
+                    }
+                  "
+                  @click.stop />
+                <CompareButton :productId="deposit.depositId" :productType="'DEPOSIT'" @click.stop />
               </div>
             </div>
           </div>
 
-          <!-- 적금 탭 -->
-          <div v-else-if="currentTab === 'saving'" class="search-results-grid">
+          <div v-else-if="currentTab === 'saving'" class="card-search-results-grid">
             <div
-              v-for="product in filteredFavorites"
-              :key="product.id"
+              v-for="saving in filteredFavorites"
+              :key="saving.savingId"
               class="product-card"
-              @click="selectProduct(product)">
+              @click="goToSavingDetail(saving.savingId)">
+              <div class="favorite-top-right">
+                <FavoriteToggle
+                  @click.stop
+                  v-model="saving.isStarred"
+                  :productId="saving.savingId"
+                  :productType="'SAVING'" />
+              </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
-                  <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+                  <img :src="getBankLogo(saving.bankName)" alt="은행 로고" class="bank-logo-round" />
                 </div>
                 <div class="product-name-block">
-                  <div class="bank-name-bold">{{ product.bank }}</div>
-                  <div class="product-name-bold">{{ product.name }}</div>
+                  <div class="bank-name-bold">{{ saving.bankName }}</div>
+                  <div class="product-name-bold">{{ saving.savingName }}</div>
                 </div>
                 <div class="product-info-block">
                   <div class="rate-line no-wrap">
-                    <span class="label-bold">최고 금리 :</span>
-                    <span class="highlight-rate">{{ product.maxRate }}</span>
+                    <span class="label-bold">최고 금리 :&nbsp;</span>
+                    <span class="highlight-rate">{{ saving.maxRate }}</span>
                   </div>
                   <div class="rate-line no-wrap">
                     최저 금리 :
-                    {{ product.baseRate }}
+                    {{ saving.basicRate }}
                   </div>
                   <div class="rate-line no-wrap">
                     매월 최대 금액 :
-                    {{ product.maxLimit }}
+                    {{ saving.maxLimit }}
                   </div>
                   <div class="rate-line no-wrap">
                     기준 기간 :
-                    {{ filters.term !== "전체" ? filters.term + "개월" : "정보 없음" }}
+                    {{ saving.term ? saving.term + '개월' : '정보 없음' }}
                   </div>
                 </div>
+              </div>
+              <div class="product-action-row">
+                <LikeToggle
+                  :productId="saving.savingId"
+                  productType="saving-products"
+                  :initialLiked="saving.isLiked"
+                  :initialCount="saving.likeCount"
+                  @update="
+                    ({ liked, count }) => {
+                      saving.isLiked = liked;
+                      saving.likeCount = count;
+                    }
+                  "
+                  @click.stop />
+                <CompareButton :productId="saving.savingId" :productType="'SAVING'" @click.stop />
               </div>
             </div>
           </div>
 
-          <!-- 카드 탭 -->
           <div v-else-if="currentTab === 'card'" class="card-search-results-grid">
             <div
-              v-for="product in filteredFavorites"
-              :key="product.id"
+              v-for="card in filteredFavorites"
+              :key="card.cardId"
               class="product-card"
-              @click="selectProduct(product)">
+              @click="goToCardDetail(card.cardId)">
+              <div class="favorite-top-right">
+                <FavoriteToggle @click.stop v-model="card.isStarred" :productId="card.cardId" :productType="'CARD'" />
+              </div>
               <div class="product-content">
-                <img :src="product.imageUrl" :alt="product.name" />
+                <img :src="card.cardImageUrl" :alt="card.cardName" />
                 <div class="product-info">
-                  <h4>{{ product.name }}</h4>
+                  <h4>{{ card.cardName }}</h4>
                   <div>
                     <span class="label">카드사:</span>
-                    {{ product.issuer || "카드사 미정" }}
+                    {{ card.issuer || '카드사 미정' }}
                   </div>
                   <div>
                     <span class="label">전월실적금액:</span>
-                    {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + "원" : "정보 없음" }}
+                    {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
                   </div>
                   <div>
                     <span class="label">연회비 정보:</span>
-                    {{ product.annualFee || "정보 없음" }}
+                    {{ card.annualFee || '정보 없음' }}
+                  </div>
+                  <div v-if="card.options && card.options.length > 0" class="benefit-hashtags">
+                    <span v-for="(option, index) in card.options.slice(0, 3)" :key="index" class="hashtag">
+                      #{{ option.title }}
+                    </span>
                   </div>
                 </div>
+              </div>
+              <div class="product-action-row">
+                <LikeToggle
+                  :productId="card.cardId"
+                  productType="card-products"
+                  :initialLiked="card.isLiked"
+                  :initialCount="card.likeCount"
+                  @update="
+                    ({ liked, count }) => {
+                      card.isLiked = liked;
+                      card.likeCount = count;
+                    }
+                  "
+                  @click.stop />
+                <CompareButton :productId="card.cardId" :productType="'CARD'" @click.stop />
               </div>
             </div>
           </div>
@@ -161,184 +198,152 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import BaseButton from "@/components/base/BaseButton.vue";
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 
-const selectedTab = ref("deposit");
-const tabs = [
-  { label: "예금", value: "deposit" },
-  { label: "적금", value: "saving" },
-  { label: "카드", value: "card" },
-];
+import BaseButton from '@/components/base/BaseButton.vue';
+import CompareButton from '@/components/common/CompareButton.vue';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
+import favoriteAPI from '@/api/favorite';
+
+/* ───────────────── Router & Route ───────────────── */
+const route = useRoute();
+const router = useRouter();
+
+/* ───────────────── State ───────────────── */
+const selectedTab = ref('deposit');
 const currentTab = selectedTab;
-const currentTabLabel = computed(() => tabs.find((t) => t.value === selectedTab.value)?.label || "");
 
 const loading = ref(false);
+const allFavorites = ref([]);
 
-const filters = ref({
-  term: "전체",
-});
-
-const allFavorites = ref([
-  {
-    id: 1,
-    name: "스마트적금",
-    bank: "신한은행",
-    bankInitial: "shinhan",
-    baseRate: "3.00%",
-    maxRate: "4.00%",
-    maxLimit: "300,000원",
-    type: "saving",
-  },
-  {
-    id: 2,
-    name: "정기예금",
-    bank: "국민은행",
-    bankInitial: "kb",
-    baseRate: "2.50%",
-    maxRate: "3.10%",
-    maxLimit: "한도 없음",
-    type: "deposit",
-    depositOptions: [
-      { intrRate2: 2.5, saveTrm: 12 },
-      { intrRate2: 3.1, saveTrm: 24 },
-    ],
-  },
-  {
-    id: 3,
-    name: "신한카드 B.Big(삑)",
-    bank: "신한카드",
-    bankInitial: "woori",
-    baseRate: "-",
-    maxRate: "-",
-    maxLimit: "-",
-    type: "card",
-  },
-  {
-    id: 4,
-    name: "하나적금플러스",
-    bank: "하나은행",
-    bankInitial: "hana",
-    baseRate: "3.10%",
-    maxRate: "4.20%",
-    maxLimit: "200,000원",
-    type: "saving",
-  },
-  {
-    id: 5,
-    name: "NH주거래우대예금",
-    bank: "농협은행",
-    bankInitial: "nh",
-    baseRate: "2.80%",
-    maxRate: "3.50%",
-    maxLimit: "무제한",
-    type: "deposit",
-    depositOptions: [
-      { intrRate2: 2.8, saveTrm: 6 },
-      { intrRate2: 3.5, saveTrm: 12 },
-    ],
-  },
-  {
-    id: 6,
-    name: "카카오프렌즈카드",
-    bank: "카카오뱅크",
-    bankInitial: "kakao",
-    baseRate: "-",
-    maxRate: "-",
-    maxLimit: "-",
-    type: "card",
-  },
-  {
-    id: 7,
-    name: "우대적금",
-    bank: "우리은행",
-    bankInitial: "woori",
-    baseRate: "3.20%",
-    maxRate: "4.00%",
-    maxLimit: "100,000원",
-    type: "saving",
-  },
-  {
-    id: 8,
-    name: "신한쏠편한예금",
-    bank: "신한은행",
-    bankInitial: "shinhan",
-    baseRate: "2.60%",
-    maxRate: "3.20%",
-    maxLimit: "무제한",
-    type: "deposit",
-    depositOptions: [
-      { intrRate2: 2.6, saveTrm: 12 },
-      { intrRate2: 3.2, saveTrm: 18 },
-    ],
-  },
-  {
-    id: 9,
-    name: "토스하이브카드",
-    bank: "토스뱅크",
-    bankInitial: "toss",
-    baseRate: "-",
-    maxRate: "-",
-    maxLimit: "-",
-    type: "card",
-  },
-  {
-    id: 10,
-    name: "청년우대적금",
-    bank: "신한",
-    bankInitial: "kb",
-    baseRate: "3.40%",
-    maxRate: "4.50%",
-    maxLimit: "300,000원",
-    type: "saving",
-  },
-]);
-
+/* ───────────────── Derived ───────────────── */
 const filteredFavorites = computed(() => {
   return allFavorites.value.filter((p) => p.type === currentTab.value);
 });
 
-const getBankLogo = (initial) => {
-  const logos = {
-    shinhan: new URL("@/assets/bankLogo_images/shinhan.png", import.meta.url).href,
-    hana: new URL("@/assets/bankLogo_images/hana.png", import.meta.url).href,
-    woori: new URL("@/assets/bankLogo_images/woori.png", import.meta.url).href,
-    kb: new URL("@/assets/bankLogo_images/kb.png", import.meta.url).href,
-    nh: new URL("@/assets/bankLogo_images/nh.png", import.meta.url).href,
-    kakao: new URL("@/assets/bankLogo_images/kakao.png", import.meta.url).href,
-    toss: new URL("@/assets/bankLogo_images/toss.png", import.meta.url).href,
+/* ───────────────── Initialize tab from URL ───────────────── */
+const tabFromQuery = route.query.tab;
+if (tabFromQuery === 'deposit' || tabFromQuery === 'saving' || tabFromQuery === 'card') {
+  selectedTab.value = tabFromQuery;
+}
+
+/* ───────────────── Navigation ───────────────── */
+const goToDepositDetail = (id) => {
+  router.push(`/detail/deposit/${id}`);
+};
+
+const goToSavingDetail = (id) => {
+  router.push(`/detail/saving/${id}`);
+};
+
+const goToCardDetail = (id) => {
+  router.push(`/detail/card/${id}`);
+};
+
+/* ───────────────── Watchers ───────────────── */
+watch(selectedTab, (v) => {
+  router.replace({ query: { ...route.query, tab: v } });
+});
+
+/* ───────────────── Utils ───────────────── */
+const getBankLogo = (bankName) => {
+  const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
+  const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
+  const defaultLogo = new URL('@/assets/logo_dis.png', import.meta.url).href;
+
+  const logoMap = {
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
+    하나은행: hanaLogo,
+    농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
+    신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
+    우리은행: new URL('@/assets/bank-Logos/BK_Woori_Profile.png', import.meta.url).href,
+    중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
+    한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
+    경남은행: busanLogo,
+    부산은행: busanLogo,
+    광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
+    전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
+    제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
+    아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
+    한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
+    '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
+    '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
+    '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
+    '주식회사 하나은행': hanaLogo,
   };
-  return logos[initial] || logos["shinhan"];
+
+  return logoMap[bankName] || defaultLogo;
 };
 
-const getRateWithTerm = (product, rateType) => {
-  if (currentTab.value === "deposit") {
-    // For deposit products, return max or base rate from depositOptions if available
-    if (product.depositOptions && product.depositOptions.length > 0) {
-      if (rateType === "max") {
-        const maxOption = product.depositOptions.reduce((prev, curr) => {
-          return (curr.intrRate2 ?? 0) > (prev.intrRate2 ?? 0) ? curr : prev;
-        }, product.depositOptions[0]);
-        return maxOption ? maxOption.intrRate2 + "%" : "-";
-      } else if (rateType === "base") {
-        const minOption = product.depositOptions.reduce((prev, curr) => {
-          return (curr.intrRate2 ?? Infinity) < (prev.intrRate2 ?? Infinity) ? curr : prev;
-        }, product.depositOptions[0]);
-        return minOption ? minOption.intrRate2 + "%" : "-";
-      }
-    }
-    return "-";
-  } else {
-    // For other products, return maxRate or baseRate directly
-    if (rateType === "max") return product.maxRate;
-    if (rateType === "base") return product.baseRate;
-    return "-";
+/* ───────────────── Lifecycle ───────────────── */
+onMounted(async () => {
+  const qTab = route.query.tab;
+  if (qTab === 'deposit' || qTab === 'saving' || qTab === 'card') {
+    selectedTab.value = qTab;
   }
-};
 
-const selectProduct = (product) => {
-  alert(`${product.name}을 선택했습니다.`);
-};
+  console.log('[MyFavoritePage] onMounted triggered');
+  loading.value = true;
+
+  try {
+    const res = await favoriteAPI.getFavoriteProducts();
+    console.log('[MyFavoritePage] API response:', res);
+
+    allFavorites.value = [
+      ...(res.depositList ?? []).map((d) => ({
+        ...d,
+        type: 'deposit',
+        name: d.productName || d.finPrdtNm,
+        bank: d.bankName || d.korCoNm,
+        bankInitial: d.bankInitial || '',
+        productName: d.productName || d.finPrdtNm,
+        bankName: d.bankName || d.korCoNm,
+        depositId: d.depositId,
+        basicRate: d.basicRate,
+        maxRate: d.maxRate,
+        term: d.term || null,
+        isStarred: d.isStarred ?? false,
+        isLiked: d.isLiked ?? false,
+        likeCount: d.likeCount ?? 0,
+      })),
+      ...(res.savingList ?? []).map((s) => ({
+        ...s,
+        type: 'saving',
+        name: s.savingName || s.finPrdtNm,
+        bank: s.bankName || s.korCoNm,
+        bankInitial: s.bankInitial || '',
+        savingId: s.savingId || s.savingProductId || s.id,
+        basicRate: s.basicRate,
+        maxRate: s.maxRate,
+        maxLimit: s.maxLimit,
+        term: s.term || null,
+        isStarred: s.isStarred ?? false,
+        isLiked: s.isLiked ?? false,
+        likeCount: s.likeCount ?? 0,
+      })),
+      ...(res.cardList ?? []).map((c) => ({
+        ...c,
+        type: 'card',
+        name: c.cardName,
+        bank: c.issuer,
+        imageUrl: c.cardImageUrl,
+        cardId: c.cardId || c.id,
+        annualFee: c.annualFee,
+        preMonthMoney: c.preMonthMoney,
+        isStarred: c.isStarred ?? false,
+        isLiked: c.isLiked ?? false,
+        likeCount: c.likeCount ?? 0,
+      })),
+    ];
+  } catch (e) {
+    console.error('[MyFavoritePage] 즐겨찾기 불러오기 실패:', e);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -358,33 +363,30 @@ const selectProduct = (product) => {
 .tab-selector {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
-/* Tab button and BaseButton border and hover effect, matching product cards */
-.base-button {
+:deep(.base-button) {
   border: 2px solid transparent;
   border-radius: var(--spacing-xl);
   transition: all 0.3s ease;
   box-shadow: var(--shadow-card);
-  background-color: var(--bg-content); /* match card background */
+  background-color: var(--bg-content);
   color: var(--text-primary);
 }
 
-.base-button:hover {
+:deep(.base-button:hover) {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   border-color: var(--color-accent);
   background-color: var(--color-gray-200);
 }
 
-.search-results-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-xl);
-}
-
 .product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
   background: var(--color-light);
   border-radius: 16px;
   padding: 20px;
@@ -406,32 +408,10 @@ const selectProduct = (product) => {
   align-items: center;
 }
 
-.product-content img {
-  width: 5rem;
-  height: 5rem;
-  border-radius: 8px;
-  object-fit: cover;
-  background: var(--color-white);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
-  border: 0.1rem solid var(--color-gray-200);
-}
-
 .product-info h4 {
   margin: 0;
   font-size: var(--font-size-lg);
   font-weight: bold;
-}
-
-.product-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  text-align: left;
-}
-.product-info > div,
-.product-info > h4 {
-  line-height: 1.6;
 }
 
 .label {
@@ -445,6 +425,8 @@ const selectProduct = (product) => {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-lg);
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .bank-logo-container {
@@ -474,7 +456,6 @@ const selectProduct = (product) => {
   justify-content: center;
 }
 
-/* Typography styles grouped together */
 .bank-name-bold {
   font-size: var(--font-size-base);
   font-weight: 700;
@@ -554,14 +535,20 @@ const selectProduct = (product) => {
   margin-bottom: 0.5rem;
 }
 
-.card-product-search {
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
 .search-results {
   margin-top: 1rem;
+}
+
+.benefit-hashtags .hashtag {
+  display: inline-block;
+  background-color: #e6f4ec;
+  color: #2e7d32;
+  padding: 0.3rem 0.7rem;
+  border-radius: 1.2rem;
+  margin-right: 0.6rem;
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 500;
 }
 
 @keyframes spin {
@@ -572,8 +559,6 @@ const selectProduct = (product) => {
     transform: rotate(360deg);
   }
 }
-
-/* Card tab specific styles */
 
 .product-info {
   display: flex;
@@ -629,42 +614,54 @@ const selectProduct = (product) => {
 }
 
 @media (max-width: 768px) {
-  .search-results-grid {
-    grid-template-columns: 1fr;
+  .main-content {
+    padding: 1rem;
   }
-
-  .product-card-horizontal {
-    flex-direction: row;
-    gap: 1rem;
+  .page-title {
+    font-size: 1.25rem;
   }
-
-  .bank-logo-container,
-  .bank-logo-round {
-    width: 4rem;
-    height: 4rem;
-  }
-
-  .product-name-block {
-    padding: 0 0.5rem;
-    align-items: center;
-  }
-
-  .product-info-block {
-    align-items: flex-end;
-  }
-
   .card-search-results-grid {
-    display: grid;
     grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-
-  .card-search-results-grid .product-card {
-    height: auto;
-  }
-
-  .card-search-results-grid .product-content {
     gap: 1rem;
   }
+  .card-search-results-grid .product-card {
+    min-height: 0;
+    height: auto;
+    padding: 1rem;
+  }
+  .card-search-results-grid .product-content img {
+    height: 120px;
+  }
+  .product-card-horizontal {
+    align-items: stretch;
+    gap: 0.5rem;
+    text-align: left;
+  }
+}
+
+.product-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.favorite-top-right {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.25rem;
+  margin: 0 1.25rem;
+  background-color: var(--bg-content);
+  color: var(--text-primary);
+}
+.tab-btn--active {
+  background-color: var(--color-accent);
+  color: var(--color-white);
 }
 </style>

@@ -11,4 +11,8 @@ export default {
     const query = new URLSearchParams({ productType }).toString();
     await api.delete(`${BASE_URL}/${productId}?${query}`);
   },
+  async getFavoriteProducts() {
+    const { data } = await api.get(`${BASE_URL}`);
+    return data;
+  },
 };
