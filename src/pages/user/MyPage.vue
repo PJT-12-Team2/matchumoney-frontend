@@ -4,7 +4,11 @@
       <template #content>
         <section class="user-info">
           <div class="profile-image-placeholder">
-            <img :src="personaImageUrl" alt="유형 이미지" class="profile-image" />
+            <img
+              :src="personaImageUrl"
+              alt="유형 이미지"
+              class="profile-image"
+            />
           </div>
           <div class="user-text">
             <div class="user-type">
@@ -14,7 +18,7 @@
               </p>
             </div>
             <h2 class="user-name">
-              <span class="nickname">{{ user?.nickname ?? "정보 없음" }}</span>
+              <span class="nickname">{{ user?.nickname ?? '정보 없음' }}</span>
               <span class="level-title">님</span>
               <span class="edit" @click="router.push('/myinfo')">수정하기</span>
             </h2>
@@ -35,7 +39,9 @@
       <template #title>
         <section class="change-type type-inner">
           <p>유형을 변경하고 싶다면?</p>
-          <button class="edit-button" @click="router.push('/persona/start')">✏️</button>
+          <button class="edit-button" @click="router.push('/persona/start')">
+            ✏️
+          </button>
         </section>
       </template>
     </BaseCardGrey>
@@ -59,7 +65,8 @@
               :cards="cards"
               @cardChange="handleCardChange"
               @register="showSyncModal = true"
-              @update="handleCardUpdate" />
+              @update="handleCardUpdate"
+            />
           </div>
         </template>
       </BaseCardGrey>
@@ -70,9 +77,24 @@
         <template #title>즐겨찾기</template>
         <template #content>
           <div class="tabs">
-            <button :class="{ active: selectedTab === '예금' }" @click="selectedTab = '예금'">예금</button>
-            <button :class="{ active: selectedTab === '적금' }" @click="selectedTab = '적금'">적금</button>
-            <button :class="{ active: selectedTab === '카드' }" @click="selectedTab = '카드'">카드</button>
+            <button
+              :class="{ active: selectedTab === '예금' }"
+              @click="selectedTab = '예금'"
+            >
+              예금
+            </button>
+            <button
+              :class="{ active: selectedTab === '적금' }"
+              @click="selectedTab = '적금'"
+            >
+              적금
+            </button>
+            <button
+              :class="{ active: selectedTab === '카드' }"
+              @click="selectedTab = '카드'"
+            >
+              카드
+            </button>
           </div>
           <div class="product-list fade-in">
             <div
@@ -80,7 +102,8 @@
               :key="index"
               class="product-card"
               @click="!product.isFallback && selectProduct(product)"
-              :style="{ animationDelay: `${index * 0.1}s` }">
+              :style="{ animationDelay: `${index * 0.1}s` }"
+            >
               <div class="product-header">
                 <div class="bank-logo">
                   <template v-if="product.isFallback">
@@ -88,21 +111,38 @@
                       v-if="selectedTab === '예금'"
                       src="@/assets/logo_dis.png"
                       alt="예금 이모지"
-                      class="fallback-img" />
+                      class="fallback-img"
+                    />
                     <img
                       v-else-if="selectedTab === '적금'"
                       src="@/assets/logo_dis.png"
                       alt="적금 이모지"
-                      class="fallback-img" />
-                    <img v-else src="@/assets/logo_dis.png" alt="카드 이모지" class="fallback-img" />
+                      class="fallback-img"
+                    />
+                    <img
+                      v-else
+                      src="@/assets/logo_dis.png"
+                      alt="카드 이모지"
+                      class="fallback-img"
+                    />
                   </template>
                   <template v-else>
-                    <img v-if="product.productImage" :src="product.productImage" alt="카드 이미지" />
-                    <img v-else :src="getBankLogo(product.bankName)" alt="은행 로고" />
+                    <img
+                      v-if="product.productImage"
+                      :src="product.productImage"
+                      alt="카드 이미지"
+                    />
+                    <img
+                      v-else
+                      :src="getBankLogo(product.bankName)"
+                      alt="은행 로고"
+                    />
                   </template>
                 </div>
                 <div class="product-info">
-                  <h3>{{ product.isFallback ? "상품 없음" : product.productName }}</h3>
+                  <h3>
+                    {{ product.isFallback ? '상품 없음' : product.productName }}
+                  </h3>
                 </div>
               </div>
             </div>
@@ -114,20 +154,20 @@
 </template>
 
 <script setup>
-import CardSlider from "@/components/cards/CardSlider.vue";
-import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
-import { ref, computed, onMounted } from "vue";
-import userApi from "@/api/user";
-import cardsApi from "@/api/cards";
-import { useRouter } from "vue-router";
+import CardSlider from '@/components/cards/CardSlider.vue';
+import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
+import { ref, computed, onMounted } from 'vue';
+import userApi from '@/api/user';
+import cardsApi from '@/api/cards';
+import { useRouter } from 'vue-router';
 const cards = ref([]);
 const showSyncModal = ref(false);
 
 const handleCardChange = (card) => {
-  console.log("카드 선택됨:", card);
+  console.log('카드 선택됨:', card);
 };
 const handleCardUpdate = () => {
-  console.log("카드 업데이트 요청");
+  console.log('카드 업데이트 요청');
 };
 
 const userId = ref(null); // or use an existing user ID value
@@ -141,14 +181,14 @@ const user = ref({});
 const exp = ref(0); // default exp
 const level = computed(() => Math.floor(exp.value / 100) + 1);
 const fillPercentage = computed(() => `${exp.value % 100}%`);
-const selectedTab = ref("예금");
+const selectedTab = ref('예금');
 
 const favoriteSavings = ref([]);
 const favoriteDeposits = ref([]);
 const favoriteCards = ref([]);
 const products = ref([]);
 const myPageInfo = ref({ persona: {} });
-const personaImageUrl = ref("");
+const personaImageUrl = ref('');
 
 onMounted(async () => {
   try {
@@ -161,13 +201,16 @@ onMounted(async () => {
 
     // Updated logic for extracting filename and generating image URL
     const rawImagePath = data.persona?.imageUrl;
-    const fileName = rawImagePath?.split("/").pop();
-    const imageUrl = fileName ? new URL(`../../assets/character_images/${fileName}`, import.meta.url).href : "";
+    const fileName = rawImagePath?.split('/').pop();
+    const imageUrl = fileName
+      ? new URL(`../../assets/character_images/${fileName}`, import.meta.url)
+          .href
+      : '';
     personaImageUrl.value = imageUrl;
 
     myPageInfo.value.persona = {
-      quote: data.persona?.quote ?? "",
-      nameKo: data.persona?.nameKo ?? "",
+      quote: data.persona?.quote ?? '',
+      nameKo: data.persona?.nameKo ?? '',
       imageUrl,
     };
 
@@ -180,29 +223,29 @@ onMounted(async () => {
     userId.value = data.userId ?? data.id ?? null;
     fetchCards();
   } catch (error) {
-    console.error("❌ 마이페이지 정보 조회 실패", error);
+    console.error('❌ 마이페이지 정보 조회 실패', error);
   }
 });
 
 function updateProducts() {
   let items = [];
-  if (selectedTab.value === "적금") {
+  if (selectedTab.value === '적금') {
     items = favoriteSavings.value.map((item) => ({
       bankName: item.company,
       productName: item.title,
-      type: "적금",
+      type: '적금',
     }));
-  } else if (selectedTab.value === "예금") {
+  } else if (selectedTab.value === '예금') {
     items = favoriteDeposits.value.map((item) => ({
       bankName: item.bankName,
       productName: item.productName,
-      type: "예금",
+      type: '예금',
     }));
-  } else if (selectedTab.value === "카드") {
+  } else if (selectedTab.value === '카드') {
     items = favoriteCards.value.map((item) => ({
       productName: item.name,
       productImage: item.imageUrl,
-      type: "카드",
+      type: '카드',
     }));
   }
 
@@ -217,7 +260,7 @@ function updateProducts() {
   products.value = items;
 }
 
-import { watch } from "vue";
+import { watch } from 'vue';
 watch(selectedTab, () => {
   updateProducts();
 });
@@ -226,47 +269,94 @@ const getProductsByTab = computed(() => products.value);
 
 const getBankLogo = (bankName) => {
   // 공통 로고 파일
-  const busanLogo = new URL("@/assets/bank-Logos/BK_BUSAN_Profile.png", import.meta.url).href;
-  const hanaLogo = new URL("@/assets/bank-Logos/BK_HANA_Profile.png", import.meta.url).href;
+  const busanLogo = new URL(
+    '@/assets/bank-Logos/BK_BUSAN_Profile.png',
+    import.meta.url
+  ).href;
+  const hanaLogo = new URL(
+    '@/assets/bank-Logos/BK_HANA_Profile.png',
+    import.meta.url
+  ).href;
 
   const logoMap = {
     // 주요 시중은행
-    국민은행: new URL("@/assets/bank-Logos/BK_KB_Profile.png", import.meta.url).href,
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
+      .href,
     하나은행: hanaLogo,
-    농협은행주식회사: new URL("@/assets/bank-Logos/BK_NH_Profile.png", import.meta.url).href,
-    신한은행: new URL("@/assets/bank-Logos/BK_Shinhan_Profile.png", import.meta.url).href,
-    우리은행: new URL("@/assets/bankLogo_images/BK_Woori_Profile.png", import.meta.url).href,
+    농협은행주식회사: new URL(
+      '@/assets/bank-Logos/BK_NH_Profile.png',
+      import.meta.url
+    ).href,
+    신한은행: new URL(
+      '@/assets/bank-Logos/BK_Shinhan_Profile.png',
+      import.meta.url
+    ).href,
+    우리은행: new URL(
+      '@/assets/bankLogo_images/BK_Woori_Profile.png',
+      import.meta.url
+    ).href,
 
     // 특수은행
-    중소기업은행: new URL("@/assets/bank-Logos/BK_IBK_Profile.png", import.meta.url).href,
-    한국산업은행: new URL("@/assets/bank-Logos/BK_KDB_Profile.png", import.meta.url).href,
-    수협은행: new URL("@/assets/bank-Logos/BK_SH_Profile.png", import.meta.url).href,
+    중소기업은행: new URL(
+      '@/assets/bank-Logos/BK_IBK_Profile.png',
+      import.meta.url
+    ).href,
+    한국산업은행: new URL(
+      '@/assets/bank-Logos/BK_KDB_Profile.png',
+      import.meta.url
+    ).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url)
+      .href,
 
     // 지방은행
     경남은행: busanLogo,
     부산은행: busanLogo,
-    광주은행: new URL("@/assets/bank-Logos/BK_KWANGJU_Profile.png", import.meta.url).href,
-    전북은행: new URL("@/assets/bank-Logos/BK_JEONBUK_Profile.png", import.meta.url).href,
-    제주은행: new URL("@/assets/bank-Logos/BK_JEJU_Profile.png", import.meta.url).href,
-    아이엠뱅크: new URL("@/assets/bank-Logos/BK_DAEGU_Profile.png", import.meta.url).href,
+    광주은행: new URL(
+      '@/assets/bank-Logos/BK_KWANGJU_Profile.png',
+      import.meta.url
+    ).href,
+    전북은행: new URL(
+      '@/assets/bank-Logos/BK_JEONBUK_Profile.png',
+      import.meta.url
+    ).href,
+    제주은행: new URL(
+      '@/assets/bank-Logos/BK_JEJU_Profile.png',
+      import.meta.url
+    ).href,
+    아이엠뱅크: new URL(
+      '@/assets/bank-Logos/BK_DAEGU_Profile.png',
+      import.meta.url
+    ).href,
 
     // 외국계은행
-    한국스탠다드차타드은행: new URL("@/assets/bank-Logos/BK_SC_Profile.png", import.meta.url).href,
+    한국스탠다드차타드은행: new URL(
+      '@/assets/bank-Logos/BK_SC_Profile.png',
+      import.meta.url
+    ).href,
 
     // 인터넷은행
-    "주식회사 카카오뱅크": new URL("@/assets/bank-Logos/BK_KAKAO_Profile.png", import.meta.url).href,
-    "주식회사 케이뱅크": new URL("@/assets/bank-Logos/BK_K_Profile.png", import.meta.url).href,
-    "토스뱅크 주식회사": new URL("@/assets/bank-Logos/BK_TOSS_Profile.png", import.meta.url).href,
+    '주식회사 카카오뱅크': new URL(
+      '@/assets/bank-Logos/BK_KAKAO_Profile.png',
+      import.meta.url
+    ).href,
+    '주식회사 케이뱅크': new URL(
+      '@/assets/bank-Logos/BK_K_Profile.png',
+      import.meta.url
+    ).href,
+    '토스뱅크 주식회사': new URL(
+      '@/assets/bank-Logos/BK_TOSS_Profile.png',
+      import.meta.url
+    ).href,
 
     // 주식회사 명칭 포함
-    "주식회사 하나은행": hanaLogo,
+    '주식회사 하나은행': hanaLogo,
   };
 
   return logoMap[bankName] || null;
 };
 
 function selectProduct(product) {
-  console.log("Selected product:", product);
+  console.log('Selected product:', product);
 }
 </script>
 
@@ -275,9 +365,9 @@ function selectProduct(product) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   grid-template-areas:
-    "profile profile"
-    "type type"
-    "left right";
+    'profile profile'
+    'type type'
+    'left right';
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-xl);
   box-sizing: border-box;
@@ -506,10 +596,10 @@ function selectProduct(product) {
 @media (max-width: 768px) {
   .my-page {
     grid-template-areas:
-      "profile"
-      "type"
-      "left"
-      "right";
+      'profile'
+      'type'
+      'left'
+      'right';
     grid-template-columns: 1fr;
   }
   .profile-image-placeholder {
