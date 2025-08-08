@@ -4,73 +4,61 @@
       <!-- 🔷 페르소나 추천 캐러셀 -->
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
-        <div v-if="!userPersonaType" class="persona-empty-state">
-          <p class="persona-message">
-            아직 페르소나 유형이 없습니다.
-            <br />
-            나에게 맞는 예금 상품을 추천받으려면 페르소나 검사를 진행해주세요.
-          </p>
-          <button class="persona-start-button" @click="() => (window.location.href = '/persona/start')">
-            👉 페르소나 검사하러 가기
-          </button>
-        </div>
-        <template v-if="userPersonaType">
-          <h2 class="persona-carousel-title">
-            <span class="highlight">{{ userPersonaType }}</span>
-            유형에게 추천하는 예금
-          </h2>
-          <!-- 데스크탑 화면: flex 목록 -->
-          <div class="carousel-deposit-list" v-if="!isMobile">
-            <div
-              v-for="deposit in carouselDeposits"
-              :key="deposit.id"
-              class="carousel-deposit"
-              @click="selectProduct(deposit)">
-              <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
-              <div class="carousel-deposit-name">{{ deposit.name }}</div>
-              <div class="bank-name-bold">{{ deposit.bankName }}</div>
-              <div class="carousel-deposit-rates-inline">
-                <span>
-                  <strong>최고 금리:</strong>
-                  {{ deposit.maxRate }}
-                </span>
-                <span>
-                  <strong>최저 금리:</strong>
-                  {{ deposit.baseRate }}
-                </span>
-              </div>
+        <h2 class="persona-carousel-title">
+          <span class="highlight">{{ userPersonaType }}</span>
+          유형에게 추천하는 예금
+        </h2>
+        <!-- 데스크탑 화면: flex 목록 -->
+        <div class="carousel-deposit-list" v-if="!isMobile">
+          <div
+            v-for="deposit in carouselDeposits"
+            :key="deposit.id"
+            class="carousel-deposit"
+            @click="selectProduct(deposit)">
+            <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
+            <div class="carousel-deposit-name">{{ deposit.name }}</div>
+            <div class="bank-name-bold">{{ deposit.bankName }}</div>
+            <div class="carousel-deposit-rates-inline">
+              <span>
+                <strong>최고 금리:</strong>
+                {{ deposit.maxRate }}
+              </span>
+              <span>
+                <strong>최저 금리:</strong>
+                {{ deposit.baseRate }}
+              </span>
             </div>
           </div>
+        </div>
 
-          <!-- 모바일 화면: swiper 캐러셀 -->
-          <Swiper
-            v-else
-            :modules="modules"
-            :slides-per-view="1.2"
-            :space-between="16"
-            :pagination="{ clickable: true }"
-            class="carousel-swiper">
-            <SwiperSlide
-              v-for="deposit in carouselDeposits"
-              :key="deposit.id"
-              class="carousel-deposit"
-              @click="selectProduct(deposit)">
-              <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
-              <div class="carousel-deposit-name">{{ deposit.name }}</div>
-              <div class="bank-name-bold">{{ deposit.bankName }}</div>
-              <div class="carousel-deposit-rates-inline">
-                <span>
-                  <strong>최고 금리:</strong>
-                  {{ deposit.maxRate }}
-                </span>
-                <span>
-                  <strong>최저 금리:</strong>
-                  {{ deposit.baseRate }}
-                </span>
-              </div>
-            </SwiperSlide>
-          </Swiper>
-        </template>
+        <!-- 모바일 화면: swiper 캐러셀 -->
+        <Swiper
+          v-else
+          :modules="modules"
+          :slides-per-view="1.2"
+          :space-between="16"
+          :pagination="{ clickable: true }"
+          class="carousel-swiper">
+          <SwiperSlide
+            v-for="deposit in carouselDeposits"
+            :key="deposit.id"
+            class="carousel-deposit"
+            @click="selectProduct(deposit)">
+            <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
+            <div class="carousel-deposit-name">{{ deposit.name }}</div>
+            <div class="bank-name-bold">{{ deposit.bankName }}</div>
+            <div class="carousel-deposit-rates-inline">
+              <span>
+                <strong>최고 금리:</strong>
+                {{ deposit.maxRate }}
+              </span>
+              <span>
+                <strong>최저 금리:</strong>
+                {{ deposit.baseRate }}
+              </span>
+            </div>
+          </SwiperSlide>
+        </Swiper>
       </section>
       <br />
       <hr />
@@ -127,25 +115,30 @@
           <div>다른 조건으로 검색해보세요.</div>
         </div>
         <div v-else-if="filteredProducts.length > 0" class="search-results-grid">
-          <div
-            v-for="product in visibleProducts"
-            :key="product.id"
-            class="product-card"
-            @click="selectProduct(product)">
-            <div class="product-card-horizontal">
+          <div v-for="product in visibleProducts" :key="product.id" class="product-card">
+            <div class="card-favorite-button" @click.stop>
+              <FavoriteToggle v-model="product.isStarred" :productId="product.id" productType="DEPOSIT" />
+            </div>
+            <div class="product-card-row" @click="selectProduct(product)">
+              <!-- 왼쪽(로고) -->
               <div class="bank-logo-container">
                 <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
+                <div class="card-compare-button">
+                  <CompareButton :productId="product.id" productType="DEPOSIT" />
+                </div>
               </div>
-              <div class="product-name-block">
-                <div class="bank-name-bold">{{ product.bank }}</div>
+              <!-- 오른쪽(정보) -->
+              <div class="product-info-column">
                 <div class="product-name-bold">{{ product.name }}</div>
-              </div>
-              <div class="product-info-block">
+                <div class="bank-name-bold">{{ product.bank }}</div>
                 <div class="rate-line">
                   <span class="label-bold">최고 금리 :</span>
                   <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span>
                 </div>
-                <div class="rate-line">최저 금리 : {{ getRateWithTerm(product, 'base') }}</div>
+                <div class="rate-line">
+                  <span class="label-bold">최저 금리 :</span>
+                  <span>{{ getRateWithTerm(product, 'base') }}</span>
+                </div>
                 <div class="rate-line">
                   기준 기간 :
                   {{
@@ -183,6 +176,8 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 const modules = [Pagination];
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import CompareButton from '@/components/common/CompareButton.vue';
 
 const showTermDropdown = ref(false);
 const isMobile = ref(false);
@@ -207,14 +202,38 @@ import api from '@/api';
 
 // 📦 은행 로고 설정
 const bankOptions = [
-  { name: '국민은행', logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href },
-  { name: '신한은행', logo: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href },
-  { name: '우리은행', logo: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href },
-  { name: '하나은행', logo: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href },
-  { name: '카카오뱅크', logo: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href },
-  { name: '토스뱅크', logo: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href },
-  { name: '농협은행', logo: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href },
-  { name: '기타', logo: new URL('@/assets/bankLogo_images/plus.png', import.meta.url).href },
+  {
+    name: '국민은행',
+    logo: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
+  },
+  {
+    name: '신한은행',
+    logo: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
+  },
+  {
+    name: '우리은행',
+    logo: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
+  },
+  {
+    name: '하나은행',
+    logo: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
+  },
+  {
+    name: '카카오뱅크',
+    logo: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
+  },
+  {
+    name: '토스뱅크',
+    logo: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
+  },
+  {
+    name: '농협은행',
+    logo: new URL('@/assets/bankLogo_images/nh.png', import.meta.url).href,
+  },
+  {
+    name: '기타',
+    logo: new URL('@/assets/bankLogo_images/plus.png', import.meta.url).href,
+  },
 ];
 
 // 📦 필터 관련 상태 및 초기값
@@ -349,7 +368,7 @@ const getMinAmountWithTerm = (product) => {
   return matchedOption?.minAmount || null;
 };
 
-// 📦 API 통신 (onMounted)
+// �� API 통신 (onMounted)
 const allProducts = ref([]);
 const carouselDeposits = computed(() => {
   return personaRecommendedDeposits.value.map((d) => ({
@@ -363,6 +382,7 @@ const carouselDeposits = computed(() => {
 });
 
 onMounted(async () => {
+  let personaCode = null;
   const token = localStorage.getItem('accessToken');
   const config = {
     headers: {
@@ -373,18 +393,13 @@ onMounted(async () => {
   try {
     // 1. 사용자 personaId 가져오기
     const personaIdRes = await api.get('/deposits/recommendations/user/persona-id', config);
-    const personaCode = personaIdRes.data.personaId;
-
-    if (!personaCode) {
-      window.location.href = '/persona/start';
-      return;
-    }
+    personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 예금 추천 가져오기
     const recommendationRes = await api.get('/deposits/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
-    userPersonaType.value = result.personaName || '';
+    userPersonaType.value = result.personaName || '토끼형';
     personaRecommendedDeposits.value = (result.deposits || []).map((item) => ({
       depositId: item.depositId,
       productName: item.productName,
@@ -395,8 +410,8 @@ onMounted(async () => {
     }));
   } catch (err) {
     console.error('❌ 사용자 기반 페르소나 예금 불러오기 실패:', err);
-    window.location.href = '/persona/start';
-    return;
+    userPersonaType.value = '토끼형';
+    personaRecommendedDeposits.value = [];
   }
 
   try {
@@ -415,6 +430,7 @@ onMounted(async () => {
       maxRate: item.intrRate2?.toFixed(2) ?? '-',
       image: item.image || '',
       personaType: item.personaType || '',
+      isStarred: item.isStarred,
     }));
     allProducts.value = fullList;
   } catch (err) {
@@ -453,7 +469,7 @@ const filteredProducts = computed(() => {
     );
   }
 
-  // 🔽 선택된 기간의 최대 금리 기준 내림차순 정렬
+  // �� 선택된 기간의 최대 금리 기준 내림차순 정렬
   result.sort((a, b) => {
     const aMax = Math.max(...(a.depositOptions?.map((opt) => opt.intrRate2) || [0]));
     const bMax = Math.max(...(b.depositOptions?.map((opt) => opt.intrRate2) || [0]));
@@ -736,7 +752,7 @@ const selectProduct = (product) => {
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-xl);
 }
-.product-card {
+/* .product-card {
   background: var(--color-light);
   border-radius: 16px;
   padding: 20px;
@@ -744,6 +760,20 @@ const selectProduct = (product) => {
   transition: all 0.3s ease;
   border: 2px solid transparent;
   box-shadow: var(--shadow-card);
+} */
+.product-card {
+  background: var(--bg-content);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 18rem;
+  display: flex;
+  flex-direction: column;
+  /* flex-direction: row; */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .product-card:hover {
   transform: translateY(-2px);
@@ -764,10 +794,12 @@ const selectProduct = (product) => {
   justify-content: center;
   width: 5rem;
   height: 5rem;
+  flex-direction: column;
+  /* gap: 0.5rem; */
 }
 .bank-logo-round {
-  width: 5rem;
-  height: 5rem;
+  width: 6rem;
+  height: 6rem;
   border-radius: 50%;
   object-fit: contain;
   background: var(--color-white);
@@ -805,7 +837,7 @@ const selectProduct = (product) => {
 .rate-line {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin-bottom: 0.1rem;
+  /* margin-bottom: 0.1rem; */
 }
 .label-bold {
   font-weight: bold;
@@ -815,6 +847,7 @@ const selectProduct = (product) => {
   font-size: 18px;
   color: #609966;
   font-weight: bold;
+  margin-right: 0.4rem;
 }
 .carousel-deposit-list {
   display: flex;
@@ -823,6 +856,14 @@ const selectProduct = (product) => {
   gap: 2rem;
   margin-bottom: var(--spacing-2xl);
 }
+.card-action-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 /* 🔷 반응형 (모바일) 스타일 */
 @media (max-width: 768px) {
   .carousel-swiper {
@@ -873,12 +914,12 @@ const selectProduct = (product) => {
     gap: var(--spacing-lg);
   }
   .bank-logo-container {
-    width: 2rem;
+    width: 5.6rem;
     height: 2rem;
   }
   .bank-logo-round {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 5.6rem;
+    height: 5.6rem;
   }
   .bank-logo-img {
     width: 80px;
@@ -892,13 +933,19 @@ const selectProduct = (product) => {
     align-items: flex-end;
     width: auto;
   }
-  .product-name-bold,
-  .bank-name-bold,
+  .product-name-bold {
+    font-size: var(--font-size-lg);
+  }
+  .bank-name-bold {
+    font-size: var(--font-size-sm);
+  }
   .rate-line {
     font-size: var(--font-size-sm);
   }
+
   .highlight-rate {
     font-size: 1rem;
+    margin-right: 0.4rem;
   }
   .term-selector {
     display: none;
@@ -1002,35 +1049,29 @@ body {
   overflow-x: hidden;
 }
 
-.persona-empty-state {
-  text-align: center;
-  margin: 2rem 0;
-  padding: 2rem;
-  border-radius: 1rem;
-  background-color: var(--color-light);
-  border: 2px dashed var(--color-success);
+.product-card-row {
+  width: 80%;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
-.persona-message {
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
+.product-info-column {
+  display: flex;
+  flex-direction: column;
+  /* gap: 0.25rem; */
+  align-items: flex-start;
+}
+.card-favorite-button {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.persona-start-button {
-  background-color: var(--color-success);
-  color: white;
-  font-weight: bold;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.persona-start-button:hover {
-  background-color: var(--color-accent);
+.card-compare-button {
+  margin-top: 0.5rem;
 }
 </style>

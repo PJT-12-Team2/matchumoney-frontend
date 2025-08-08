@@ -139,16 +139,20 @@
         </div>
 
         <div v-else class="search-results-grid">
-          <div
-            v-for="product in searchResults"
-            :key="product.id || product.cardId"
-            class="product-card"
-            @click="selectProduct(product)">
-            <div class="product-content">
-              <img
-                :src="product.imageUrl || product.cardImageUrl || getBankLogo('default')"
-                :alt="product.name || product.cardName"
-                class="product-image" />
+          <div v-for="product in searchResults" :key="product.id" class="product-card">
+            <div class="card-favorite-button">
+              <FavoriteToggle v-model="product.isStarred" :productId="product.id" productType="CARD" />
+            </div>
+            <div class="product-content" @click="selectProduct(product)">
+              <div class="card-left-section">
+                <img
+                  :src="product.imageUrl || product.cardImageUrl || getBankLogo('default')"
+                  :alt="product.name || product.cardName"
+                  class="product-image" />
+                <div class="card-compare-button">
+                  <CompareButton :productId="product.id || product.cardId" productType="CARD" />
+                </div>
+              </div>
               <div class="product-info">
                 <h4>{{ product.name || product.cardName }}</h4>
                 <div>
@@ -189,6 +193,8 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import CompareButton from '@/components/common/CompareButton.vue';
 const modules = [Pagination];
 
 const isMobile = ref(window.innerWidth <= 768);
@@ -553,6 +559,7 @@ onMounted(() => {
   align-items: center;
   justify-content: start;
   text-align: center;
+  min-height: 24rem;
 }
 .product-card:hover {
   transform: translateY(-0.3125rem);
@@ -633,5 +640,21 @@ onMounted(() => {
 }
 .swiper-pagination-bullet-active {
   opacity: 1;
+}
+.card-favorite-button {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.card-left-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-compare-button {
+  margin-top: 0.5rem;
 }
 </style>

@@ -60,7 +60,7 @@
                   @click.stop
                   v-model="deposit.isStarred"
                   :productId="deposit.depositId"
-                  :productType="DEPOSIT" />
+                  :productType="'DEPOSIT'" />
               </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
@@ -86,10 +86,18 @@
                 </div>
               </div>
               <div class="product-action-row">
+                <LikeToggle
+                  :productId="deposit.depositId"
+                  productType="deposits-products"
+                  :initialLiked="isLiked"
+                  :initialCount="likeCount"
+                  @update="
+                    ({ liked, count }) => {
+                      isLiked = liked;
+                      likeCount = count;
+                    }
+                  " />
                 <CompareButton :productId="deposit.depositId" :productType="'DEPOSIT'" @click.stop />
-                <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
-                  {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
-                </span>
               </div>
             </div>
           </div>
@@ -106,7 +114,7 @@
                   @click.stop
                   v-model="saving.isStarred"
                   :productId="saving.savingId"
-                  :productType="SAVING" />
+                  :productType="'SAVING'" />
               </div>
               <div class="product-card-horizontal">
                 <div class="bank-logo-container">
@@ -136,10 +144,18 @@
                 </div>
               </div>
               <div class="product-action-row">
+                <LikeToggle
+                  :productId="saving.savingId"
+                  productType="saving-products"
+                  :initialLiked="isLiked"
+                  :initialCount="likeCount"
+                  @update="
+                    ({ liked, count }) => {
+                      isLiked = liked;
+                      likeCount = count;
+                    }
+                  " />
                 <CompareButton :productId="saving.savingId" :productType="'SAVING'" @click.stop />
-                <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
-                  {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
-                </span>
               </div>
             </div>
           </div>
@@ -148,7 +164,7 @@
           <div v-else-if="currentTab === 'card'" class="card-search-results-grid">
             <div v-for="card in filteredFavorites" :key="card.cardId" class="product-card" @click="selectProduct(card)">
               <div class="favorite-top-right">
-                <FavoriteToggle @click.stop v-model="card.isStarred" :productId="card.cardId" :productType="CARD" />
+                <FavoriteToggle @click.stop v-model="card.isStarred" :productId="card.cardId" :productType="'CARD'" />
               </div>
               <div class="product-content">
                 <img :src="card.cardImageUrl" :alt="card.cardName" />
@@ -169,10 +185,18 @@
                 </div>
               </div>
               <div class="product-action-row">
+                <LikeToggle
+                  :productId="card.cardId"
+                  productType="card-products"
+                  :initialLiked="isLiked"
+                  :initialCount="likeCount"
+                  @update="
+                    ({ liked, count }) => {
+                      isLiked = liked;
+                      likeCount = count;
+                    }
+                  " />
                 <CompareButton :productId="card.cardId" :productType="'CARD'" @click.stop />
-                <span class="reaction-button" @click.stop="handleLikeClick" :class="{ active: isLiked }">
-                  {{ isLiked ? '❤️' : '🤍' }} {{ likeCount }}
-                </span>
               </div>
             </div>
           </div>
@@ -188,6 +212,7 @@ import BaseButton from '@/components/base/BaseButton.vue';
 
 import CompareButton from '@/components/common/CompareButton.vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
 import favoriteAPI from '@/api/favorite';
 
 const selectedTab = ref('deposit');
