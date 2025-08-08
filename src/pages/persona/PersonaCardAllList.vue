@@ -185,11 +185,12 @@
 
         <div v-else class="search-results-grid">
           <div
-            v-for="product in searchResults"
+            v-for="product in visibleSearchResults"
             :key="product.id"
             class="product-card"
+            @click="selectProduct(product)"
           >
-            <div class="card-favorite-button">
+            <div class="card-favorite-button" @click.stop>
               <FavoriteToggle
                 v-model="product.isStarred"
                 :productId="product.id"
@@ -207,7 +208,19 @@
                   :alt="product.name || product.cardName"
                   class="product-image"
                 />
-                <div class="card-compare-button">
+                <div class="card-compare-button" @click.stop>
+                  <LikeToggle
+                    :productId="product.id"
+                    productType="card-products"
+                    :initialLiked="isLiked"
+                    :initialCount="likeCount"
+                    @update="
+                      ({ liked, count }) => {
+                        isLiked = liked;
+                        likeCount = count;
+                      }
+                    "
+                  />
                   <CompareButton
                     :productId="product.id || product.cardId"
                     productType="CARD"
@@ -253,13 +266,19 @@
       </section>
     </main>
   </div>
+  <div v-if="isLoadingMore" class="infinite-spinner-wrapper">
+    <div class="infinite-spinner-block">
+      <div class="infinite-spinner"></div>
+      <div class="infinite-spinner-text">상품을 불러오는 중입니다...</div>
+    </div>
+  </div>
 </template>
 
 <!--
   name: 'CardSearchPage'
 -->
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import api from '@/api';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
@@ -267,7 +286,28 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
+
 const modules = [Pagination];
+const visibleCount = ref(6); // 한 번에 보여줄 카드 수
+const isLoadingMore = ref(false);
+
+const onScroll = () => {
+  if (isLoadingMore.value) return;
+  if (searchResults.value.length <= visibleCount.value) return;
+
+  const scrollY = window.scrollY || window.pageYOffset;
+  const viewportHeight = window.innerHeight;
+  const fullHeight = document.documentElement.scrollHeight;
+
+  if (scrollY + viewportHeight >= fullHeight - 200) {
+    isLoadingMore.value = true;
+    setTimeout(() => {
+      visibleCount.value += 6;
+      isLoadingMore.value = false;
+    }, 700);
+  }
+};
 
 const isMobile = ref(window.innerWidth <= 768);
 const handleResize = () => {
@@ -384,7 +424,16 @@ const searchProducts = async () => {
     loading.value = false;
   }
 };
+onMounted(() => {
+  window.addEventListener('scroll', onScroll);
+});
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll);
+});
 
+const visibleSearchResults = computed(() =>
+  searchResults.value.slice(0, visibleCount.value)
+);
 // 📦 혜택 토글 함수
 const toggleBenefit = (id) => {
   const index = filters.value.selectedBenefits.indexOf(id);
@@ -471,7 +520,6 @@ onMounted(() => {
   width: 14rem;
   height: 14rem;
   object-fit: contain;
-
   border-radius: 12px;
 }
 .carousel-card-name {
@@ -738,5 +786,38 @@ onMounted(() => {
 
 .card-compare-button {
   margin-top: 0.5rem;
+}
+.infinite-spinner-wrapper {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0 1rem 0;
+}
+.infinite-spinner {
+  border: 6px solid #eee;
+  border-top: 6px solid #609966;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.infinite-spinner-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+.infinite-spinner-text {
+  font-size: 0.95rem;
+  color: var(—text-secondary);
 }
 </style>

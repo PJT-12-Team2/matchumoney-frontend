@@ -204,7 +204,19 @@
                   alt="은행 로고"
                   class="bank-logo-round"
                 />
-                <div class="saving-compare-button">
+                <div class="saving-compare-button" @click.stop>
+                  <LikeToggle
+                    :productId="product.id"
+                    productType="saving-products"
+                    :initialLiked="isLiked"
+                    :initialCount="likeCount"
+                    @update="
+                      ({ liked, count }) => {
+                        isLiked = liked;
+                        likeCount = count;
+                      }
+                    "
+                  />
                   <CompareButton :productId="product.id" productType="SAVING" />
                 </div>
               </div>
@@ -275,6 +287,7 @@ const modules = [Pagination];
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
 // 반응형 상태: 모바일 화면 여부
 const isMobile = ref(window.innerWidth <= 768);
 
@@ -493,6 +506,7 @@ onMounted(async () => {
       maxRate: item.intrRate2?.toFixed(2) ?? '-',
       image: item.image || '',
       personaType: item.personaType || '',
+      isStarred: item.isStarred,
     }));
     allProducts.value = fullList;
   } catch (err) {

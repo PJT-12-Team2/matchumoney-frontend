@@ -164,7 +164,19 @@
                   alt="은행 로고"
                   class="bank-logo-round"
                 />
-                <div class="card-compare-button">
+                <div class="card-compare-button" @click.stop>
+                  <LikeToggle
+                    :productId="product.id"
+                    productType="deposit-products"
+                    :initialLiked="isLiked"
+                    :initialCount="likeCount"
+                    @update="
+                      ({ liked, count }) => {
+                        isLiked = liked;
+                        likeCount = count;
+                      }
+                    "
+                  />
                   <CompareButton
                     :productId="product.id"
                     productType="DEPOSIT"
@@ -231,6 +243,7 @@ const modules = [Pagination];
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
 
 const showTermDropdown = ref(false);
 const isMobile = ref(false);

@@ -1,6 +1,15 @@
 <template>
   <div class="container" v-if="savingData">
     <div class="saving-detail-page">
+      <section class="persona-banner-section">
+        <div class="info-banner">
+          <p class="badge">
+            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
+            상품
+          </p>
+        </div>
+      </section>
+      <br>
       <section class="card-header">
         <div class="card-image-wrapper">
           <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
@@ -17,7 +26,10 @@
                 }
               "
             />
-            <button class="compare-button">➕ 비교함 담기</button>
+            <CompareButton
+              :productId="savingData.savingProductId"
+              :productType="productType"
+            />
           </div>
         </div>
         <FavoriteToggle
@@ -34,7 +46,7 @@
               {{
                 parseInt(savingData.maxLimit.replace(/[^\d]/g, '')) ===
                 999999999
-                  ? '한도 없음'
+                  ? '한도 설정 안함'
                   : Number(
                       savingData.maxLimit.replace(/[^\d]/g, '')
                     ).toLocaleString() + '원'
@@ -52,23 +64,21 @@
             </li>
           </ul>
           <div class="button-group">
-            <button class="go-to-card full-width">카드사 바로가기</button>
-            <button class="compare-link full-width">비교함 바로가기</button>
+            <button class="go-to-card full-width">신청하러 바로가기</button>
+            <button
+              class="compare-link full-width"
+              @click="
+                router.push({ path: '/compare', query: { type: 'SAVING' } })
+              "
+            >
+              비교함 바로가기
+            </button>
           </div>
           <div class="card-meta">
             <span
               >가입 방법 : <strong>{{ savingData.joinWay }}</strong></span
             >
           </div>
-        </div>
-      </section>
-
-      <section class="persona-banner-section">
-        <div class="info-banner">
-          <p class="badge">
-            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
-            상품
-          </p>
         </div>
       </section>
 
@@ -191,6 +201,7 @@ import favorite from '@/api/favorite';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import { ProductType } from '@/constants/productTypes';
 import LikeToggle from '@/components/common/LikeToggle.vue';
+import CompareButton from '@/components/common/CompareButton.vue';
 
 const productType = ProductType.SAVING;
 
