@@ -136,17 +136,11 @@ const userId = computed(() => authStore.getUserId());
 
 // 카드 동기화
 const handleCardSync = async (syncData) => {
-  console.log('📍 handleCardSync 호출됨');
-  console.log('테스트 로그1');
-
-  console.log('📌 현재 userId:', userId.value);
-  console.log('✅ userId 유효성 체크 완료:', !!userId.value);
   if (!userId.value) {
     alert('로그인이 필요합니다.');
     router.push('/login');
     return;
   }
-  console.log('테스트 로그2');
   try {
     const requestData = {
       userId: parseInt(userId.value),
@@ -154,11 +148,7 @@ const handleCardSync = async (syncData) => {
       cardPw: syncData.cardPw,
     };
 
-    console.log('📤 syncKbCards 요청 보냄, 데이터:', requestData);
-    console.log('🔄 카드 동기화 시작:', requestData);
     const response = await cardsApi.syncKbCards(requestData);
-    console.log('📥 syncKbCards 응답 수신:', response);
-    console.log('✅ 카드 동기화 완료:', response);
 
     alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
 
@@ -168,10 +158,6 @@ const handleCardSync = async (syncData) => {
     // 목록 새로고침
     await fetchCards();
   } catch (error) {
-    console.error('🧨 동기화 에러 발생:', error);
-    console.error('🧨 error.response:', error.response);
-    console.error('❌ 카드 동기화 실패:', error);
-
     if (error.response?.status === 401) {
       alert('인증이 만료되었습니다. 다시 로그인해주세요.');
       authStore.logout();
