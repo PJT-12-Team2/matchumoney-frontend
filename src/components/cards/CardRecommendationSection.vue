@@ -359,10 +359,12 @@ const handleDirectFavoriteToggle = async (card) => {
     } else {
       await favorite.deleteFavorite(String(card.cardId), ProductType.CARD);
     }
-    console.log(`카드 ${card.cardName} 즐겨찾기 ${newState ? '추가' : '제거'} 완료`);
+    console.log(
+      `카드 ${card.cardName} 즐겨찾기 ${newState ? '추가' : '제거'} 완료`
+    );
   } catch (error) {
     console.error('즐겨찾기 토글 실패:', error);
-    
+
     // 409 에러(이미 추가/삭제됨)가 아닌 경우에만 롤백
     if (!(error.response?.status === 409)) {
       card.is_starred = currentState;
