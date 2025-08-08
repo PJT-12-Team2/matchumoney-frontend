@@ -1,12 +1,25 @@
 <template>
-  <div class="product-list">
+  <transition-group name="fade-in" tag="div" class="product-list">
     <BankbookProductCard
       v-for="(saving, index) in savings"
-      :key="index"
+      :key="saving.id"
       :saving="saving"
+      :index="index"
     />
-  </div>
+  </transition-group>
 </template>
+
+<script setup>
+import { defineProps } from 'vue';
+import BankbookProductCard from './BankbookProductCard.vue';
+
+const props = defineProps({
+  selectedId: String,
+  savings: Array,
+  animationKey: Number, // 💡 외부에서 전달받음
+});
+</script>
+
 <style scoped>
 .product-list {
   display: flex;
@@ -14,43 +27,14 @@
   gap: var(--spacing-lg);
 }
 
-.product-card {
-  flex: 1 1 calc(50% - var(--font-size-xs)); /* 2개씩 */
-  max-width: calc(50% - var(--font-size-xs));
-  padding: 2% 6%;
+/* ===== 페이드 인 애니메이션 ===== */
+.fade-in-enter-active,
+.fade-in-leave-active {
+  transition: all 0.4s ease;
 }
-
-@media (max-width: 1024px) {
-  .product-card {
-    flex: 1 1 calc(50% - var(--font-size-xs)); /* 2개씩 */
-    max-width: calc(50% - var(--font-size-xs));
-    padding: 4%;
-  }
-}
-
-@media (max-width: 600px) {
-  .product-card {
-    flex: 1 1 100%;
-    max-width: 100%;
-    padding: 4% 8%;
-  }
-}
-@media (max-width: 480px) {
-  .product-card {
-    flex: 1 1 100%;
-    max-width: 100%;
-    padding: 4%;
-  }
+.fade-in-enter-from,
+.fade-in-leave-to {
+  opacity: 0;
+  transform: translateY(+12px);
 }
 </style>
-<script setup>
-import { defineProps } from 'vue';
-import BankbookProductCard from './BankbookProductCard.vue';
-
-const props = defineProps({
-  selectedId: String,
-  savings: {
-    type: Array,
-  },
-});
-</script>
