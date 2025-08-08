@@ -50,7 +50,7 @@
               v-for="deposit in filteredFavorites"
               :key="deposit.depositId"
               class="product-card"
-              @click="selectProduct(deposit)">
+              @click="goToDepositDetail(deposit.depositId)">
               <div class="favorite-top-right">
                 <FavoriteToggle
                   @click.stop
@@ -105,7 +105,7 @@
               v-for="saving in filteredFavorites"
               :key="saving.savingId"
               class="product-card"
-              @click="selectProduct(saving)">
+              @click="goToSavingDetail(saving.savingId)">
               <div class="favorite-top-right">
                 <FavoriteToggle
                   @click.stop
@@ -160,7 +160,11 @@
 
           <!-- 카드 탭 -->
           <div v-else-if="currentTab === 'card'" class="card-search-results-grid">
-            <div v-for="card in filteredFavorites" :key="card.cardId" class="product-card" @click="selectProduct(card)">
+            <div
+              v-for="card in filteredFavorites"
+              :key="card.cardId"
+              class="product-card"
+              @click="goToCardDetail(card.cardId)">
               <div class="favorite-top-right">
                 <FavoriteToggle @click.stop v-model="card.isStarred" :productId="card.cardId" :productType="'CARD'" />
               </div>
@@ -206,9 +210,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import BaseButton from '@/components/base/BaseButton.vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 
+import BaseButton from '@/components/base/BaseButton.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
@@ -223,12 +228,32 @@ const tabs = [
 const currentTab = selectedTab;
 const currentTabLabel = computed(() => tabs.find((t) => t.value === selectedTab.value)?.label || '');
 
-const loading = ref(false);
+// ✅ URL 쿼리에서 탭 복원 (첫 렌더 시)
+const route = useRoute();
+const router = useRouter();
+const tabFromQuery = route.query.tab;
+if (tabFromQuery === 'deposit' || tabFromQuery === 'saving' || tabFromQuery === 'card') {
+  selectedTab.value = tabFromQuery;
+}
 
-const filters = ref({
-  term: '전체',
+// ✅ 상세 이동 함수들 (router.push)
+const goToDepositDetail = (id) => {
+  router.push(`/detail/deposit/${id}`);
+};
+const goToSavingDetail = (id) => {
+  router.push(`/detail/saving/${id}`);
+};
+const goToCardDetail = (id) => {
+  router.push(`/detail/card/${id}`);
+};
+
+// ✅ 탭 변경 시 URL 쿼리 동기화 → 뒤로가기로 돌아올 때도 유지
+watch(selectedTab, (v) => {
+  router.replace({ query: { ...route.query, tab: v } });
 });
 
+const loading = ref(false);
+const filters = ref({ term: '전체' });
 const allFavorites = ref([]);
 
 const filteredFavorites = computed(() => {
@@ -236,40 +261,28 @@ const filteredFavorites = computed(() => {
 });
 
 const getBankLogo = (bankName) => {
-  // 공통 로고 파일
   const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
   const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
 
   const logoMap = {
-    // 주요 시중은행
     국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
     하나은행: hanaLogo,
     농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
     신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
     우리은행: new URL('@/assets/bankLogo_images/BK_Woori_Profile.png', import.meta.url).href,
-
-    // 특수은행
     중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
     한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
     수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
-
-    // 지방은행
     경남은행: busanLogo,
     부산은행: busanLogo,
     광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
     전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
     제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
     아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
-
-    // 외국계은행
     한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
-
-    // 인터넷은행
     '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
     '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
     '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
-
-    // 주식회사 명칭 포함
     '주식회사 하나은행': hanaLogo,
   };
 
@@ -278,7 +291,6 @@ const getBankLogo = (bankName) => {
 
 const getRateWithTerm = (product, rateType) => {
   if (currentTab.value === 'deposit') {
-    // For deposit products, return max or base rate from depositOptions if available
     if (product.depositOptions && product.depositOptions.length > 0) {
       if (rateType === 'max') {
         const maxOption = product.depositOptions.reduce((prev, curr) => {
@@ -294,22 +306,14 @@ const getRateWithTerm = (product, rateType) => {
     }
     return '-';
   } else {
-    // For other products, return maxRate or baseRate directly
     if (rateType === 'max') return product.maxRate;
     if (rateType === 'base') return product.baseRate;
     return '-';
   }
 };
 
-const selectProduct = (product) => {
-  alert(`${product.name}을 선택했습니다.`);
-};
-
-// --- Like/Reaction logic ---
-import { useRouter } from 'vue-router';
-// Dummy userId for demo; replace with actual user logic as needed
-const userId = ref(null); // or e.g. ref('user123')
-const router = useRouter();
+// --- Like/Reaction logic (기존 유지) ---
+const userId = ref(null);
 const isLiked = ref(false);
 const likeCount = ref(0);
 const toggleLike = () => {
@@ -327,6 +331,12 @@ const handleLikeClick = () => {
 };
 
 onMounted(async () => {
+  // ✅ 마운트 시에도 쿼리 재확인 (SSR/HMR 대비)
+  const qTab = route.query.tab;
+  if (qTab === 'deposit' || qTab === 'saving' || qTab === 'card') {
+    selectedTab.value = qTab;
+  }
+
   console.log('[MyFavoritePage] onMounted triggered');
   loading.value = true;
   try {
@@ -342,11 +352,13 @@ onMounted(async () => {
         bankInitial: d.bankInitial || '',
         productName: d.productName || d.finPrdtNm,
         bankName: d.bankName || d.korCoNm,
-        depositId: d.depositId, // adapt as needed
+        depositId: d.depositId,
         basicRate: d.basicRate,
         maxRate: d.maxRate,
         term: d.term || null,
         isStarred: d.isStarred ?? false,
+        isLiked: d.isLiked ?? false,
+        likeCount: d.likeCount ?? 0,
       })),
       ...(res.savingList ?? []).map((s) => ({
         ...s,
@@ -360,6 +372,8 @@ onMounted(async () => {
         maxLimit: s.maxLimit,
         term: s.term || null,
         isStarred: s.isStarred ?? false,
+        isLiked: s.isLiked ?? false,
+        likeCount: s.likeCount ?? 0,
       })),
       ...(res.cardList ?? []).map((c) => ({
         ...c,
@@ -371,6 +385,8 @@ onMounted(async () => {
         annualFee: c.annualFee,
         preMonthMoney: c.preMonthMoney,
         isStarred: c.isStarred ?? false,
+        isLiked: c.isLiked ?? false,
+        likeCount: c.likeCount ?? 0,
       })),
     ];
   } catch (e) {
