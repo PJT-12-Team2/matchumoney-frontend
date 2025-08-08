@@ -6,35 +6,21 @@
       <hr />
       <div class="tab-selector">
         <BaseButton
-          :style="{
-            margin: '0 0.5rem',
-            backgroundColor: selectedTab === 'deposit' ? 'var(--color-accent)' : 'var(--bg-content)',
-            color: selectedTab === 'deposit' ? 'var(--color-white)' : 'var(--text-primary)',
-          }"
+          :class="['tab-btn', { 'tab-btn--active': selectedTab === 'deposit' }]"
           @click="selectedTab = 'deposit'">
           예금
         </BaseButton>
         <BaseButton
-          :style="{
-            margin: '0 0.5rem',
-            backgroundColor: selectedTab === 'saving' ? 'var(--color-accent)' : 'var(--bg-content)',
-            color: selectedTab === 'saving' ? 'var(--color-white)' : 'var(--text-primary)',
-          }"
+          :class="['tab-btn', { 'tab-btn--active': selectedTab === 'saving' }]"
           @click="selectedTab = 'saving'">
           적금
         </BaseButton>
-        <BaseButton
-          :style="{
-            margin: '0 0.5rem',
-            backgroundColor: selectedTab === 'card' ? 'var(--color-accent)' : 'var(--bg-content)',
-            color: selectedTab === 'card' ? 'var(--color-white)' : 'var(--text-primary)',
-          }"
-          @click="selectedTab = 'card'">
+        <BaseButton :class="['tab-btn', { 'tab-btn--active': selectedTab === 'card' }]" @click="selectedTab = 'card'">
           카드
         </BaseButton>
       </div>
 
-      <section class="search-results">
+      <section class="search-results" :key="selectedTab">
         <div v-if="loading" class="loading-state">
           <div class="spinner"></div>
           <div>상품을 불러오는 중입니다...</div>
@@ -44,7 +30,6 @@
           <div>즐겨찾기한 상품이 없습니다.</div>
         </div>
         <div v-else>
-          <!-- 예금 탭 -->
           <div v-if="currentTab === 'deposit'" class="card-search-results-grid">
             <div
               v-for="deposit in filteredFavorites"
@@ -99,7 +84,6 @@
             </div>
           </div>
 
-          <!-- 적금 탭 -->
           <div v-else-if="currentTab === 'saving'" class="card-search-results-grid">
             <div
               v-for="saving in filteredFavorites"
@@ -158,7 +142,6 @@
             </div>
           </div>
 
-          <!-- 카드 탭 -->
           <div v-else-if="currentTab === 'card'" class="card-search-results-grid">
             <div
               v-for="card in filteredFavorites"
@@ -224,57 +207,58 @@ import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
 import favoriteAPI from '@/api/favorite';
 
-const selectedTab = ref('deposit');
-const tabs = [
-  { label: '예금', value: 'deposit' },
-  { label: '적금', value: 'saving' },
-  { label: '카드', value: 'card' },
-];
-const currentTab = selectedTab;
-const currentTabLabel = computed(() => tabs.find((t) => t.value === selectedTab.value)?.label || '');
-
-// ✅ URL 쿼리에서 탭 복원 (첫 렌더 시)
+/* ───────────────── Router & Route ───────────────── */
 const route = useRoute();
 const router = useRouter();
+
+/* ───────────────── State ───────────────── */
+const selectedTab = ref('deposit');
+const currentTab = selectedTab;
+
+const loading = ref(false);
+const allFavorites = ref([]);
+
+/* ───────────────── Derived ───────────────── */
+const filteredFavorites = computed(() => {
+  return allFavorites.value.filter((p) => p.type === currentTab.value);
+});
+
+/* ───────────────── Initialize tab from URL ───────────────── */
 const tabFromQuery = route.query.tab;
 if (tabFromQuery === 'deposit' || tabFromQuery === 'saving' || tabFromQuery === 'card') {
   selectedTab.value = tabFromQuery;
 }
 
-// ✅ 상세 이동 함수들 (router.push)
+/* ───────────────── Navigation ───────────────── */
 const goToDepositDetail = (id) => {
   router.push(`/detail/deposit/${id}`);
 };
+
 const goToSavingDetail = (id) => {
   router.push(`/detail/saving/${id}`);
 };
+
 const goToCardDetail = (id) => {
   router.push(`/detail/card/${id}`);
 };
 
-// ✅ 탭 변경 시 URL 쿼리 동기화 → 뒤로가기로 돌아올 때도 유지
+/* ───────────────── Watchers ───────────────── */
 watch(selectedTab, (v) => {
   router.replace({ query: { ...route.query, tab: v } });
 });
 
-const loading = ref(false);
-const filters = ref({ term: '전체' });
-const allFavorites = ref([]);
-
-const filteredFavorites = computed(() => {
-  return allFavorites.value.filter((p) => p.type === currentTab.value);
-});
-
+/* ───────────────── Utils ───────────────── */
 const getBankLogo = (bankName) => {
   const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
   const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
+  const defaultLogo = new URL('@/assets/logo_dis.png', import.meta.url).href;
 
   const logoMap = {
     국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
     하나은행: hanaLogo,
     농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
     신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
-    우리은행: new URL('@/assets/bankLogo_images/BK_Woori_Profile.png', import.meta.url).href,
+    우리은행: new URL('@/assets/bank-Logos/BK_Woori_Profile.png', import.meta.url).href,
     중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
     한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
     수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
@@ -291,52 +275,11 @@ const getBankLogo = (bankName) => {
     '주식회사 하나은행': hanaLogo,
   };
 
-  return logoMap[bankName] || null;
+  return logoMap[bankName] || defaultLogo;
 };
 
-const getRateWithTerm = (product, rateType) => {
-  if (currentTab.value === 'deposit') {
-    if (product.depositOptions && product.depositOptions.length > 0) {
-      if (rateType === 'max') {
-        const maxOption = product.depositOptions.reduce((prev, curr) => {
-          return (curr.intrRate2 ?? 0) > (prev.intrRate2 ?? 0) ? curr : prev;
-        }, product.depositOptions[0]);
-        return maxOption ? maxOption.intrRate2 + '%' : '-';
-      } else if (rateType === 'base') {
-        const minOption = product.depositOptions.reduce((prev, curr) => {
-          return (curr.intrRate2 ?? Infinity) < (prev.intrRate2 ?? Infinity) ? curr : prev;
-        }, product.depositOptions[0]);
-        return minOption ? minOption.intrRate2 + '%' : '-';
-      }
-    }
-    return '-';
-  } else {
-    if (rateType === 'max') return product.maxRate;
-    if (rateType === 'base') return product.baseRate;
-    return '-';
-  }
-};
-
-// --- Like/Reaction logic (기존 유지) ---
-const userId = ref(null);
-const isLiked = ref(false);
-const likeCount = ref(0);
-const toggleLike = () => {
-  isLiked.value = !isLiked.value;
-  likeCount.value += isLiked.value ? 1 : -1;
-};
-const handleLikeClick = () => {
-  if (!userId.value) {
-    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
-      router.push('/login');
-    }
-    return;
-  }
-  toggleLike();
-};
-
+/* ───────────────── Lifecycle ───────────────── */
 onMounted(async () => {
-  // ✅ 마운트 시에도 쿼리 재확인 (SSR/HMR 대비)
   const qTab = route.query.tab;
   if (qTab === 'deposit' || qTab === 'saving' || qTab === 'card') {
     selectedTab.value = qTab;
@@ -344,6 +287,7 @@ onMounted(async () => {
 
   console.log('[MyFavoritePage] onMounted triggered');
   loading.value = true;
+
   try {
     const res = await favoriteAPI.getFavoriteProducts();
     console.log('[MyFavoritePage] API response:', res);
@@ -419,30 +363,23 @@ onMounted(async () => {
 .tab-selector {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
-/* Tab button and BaseButton border and hover effect, matching product cards */
-.base-button {
+:deep(.base-button) {
   border: 2px solid transparent;
   border-radius: var(--spacing-xl);
   transition: all 0.3s ease;
   box-shadow: var(--shadow-card);
-  background-color: var(--bg-content); /* match card background */
+  background-color: var(--bg-content);
   color: var(--text-primary);
 }
 
-.base-button:hover {
+:deep(.base-button:hover) {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   border-color: var(--color-accent);
   background-color: var(--color-gray-200);
-}
-
-.search-results-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-xl);
 }
 
 .product-card {
@@ -475,18 +412,6 @@ onMounted(async () => {
   margin: 0;
   font-size: var(--font-size-lg);
   font-weight: bold;
-}
-
-.product-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  text-align: left;
-}
-.product-info > div,
-.product-info > h4 {
-  line-height: 1.6;
 }
 
 .label {
@@ -531,7 +456,6 @@ onMounted(async () => {
   justify-content: center;
 }
 
-/* Typography styles grouped together */
 .bank-name-bold {
   font-size: var(--font-size-base);
   font-weight: 700;
@@ -611,12 +535,6 @@ onMounted(async () => {
   margin-bottom: 0.5rem;
 }
 
-.card-product-search {
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
 .search-results {
   margin-top: 1rem;
 }
@@ -641,8 +559,6 @@ onMounted(async () => {
     transform: rotate(360deg);
   }
 }
-
-/* Card tab specific styles */
 
 .product-info {
   display: flex;
@@ -737,7 +653,15 @@ onMounted(async () => {
   right: 1rem;
   z-index: 10;
 }
-.product-card {
-  position: relative; /* Ensure absolute positioning works inside */
+
+.tab-btn {
+  padding: 0.75rem 1.25rem;
+  margin: 0 1.25rem;
+  background-color: var(--bg-content);
+  color: var(--text-primary);
+}
+.tab-btn--active {
+  background-color: var(--color-accent);
+  color: var(--color-white);
 }
 </style>
