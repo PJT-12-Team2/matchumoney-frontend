@@ -681,42 +681,28 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
-  .search-results-grid {
-    grid-template-columns: 1fr;
+  .main-content {
+    padding: 1rem;
   }
-
-  .product-card-horizontal {
-    flex-direction: row;
-    gap: 1rem;
+  .page-title {
+    font-size: 1.25rem;
   }
-
-  .bank-logo-container,
-  .bank-logo-round {
-    width: 4rem;
-    height: 4rem;
-  }
-
-  .product-name-block {
-    padding: 0 0.5rem;
-    align-items: center;
-  }
-
-  .product-info-block {
-    align-items: flex-end;
-  }
-
   .card-search-results-grid {
-    display: grid;
     grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-
-  .card-search-results-grid .product-card {
-    height: auto;
-  }
-
-  .card-search-results-grid .product-content {
     gap: 1rem;
+  }
+  .card-search-results-grid .product-card {
+    min-height: 0;
+    height: auto;
+    padding: 1rem;
+  }
+  .card-search-results-grid .product-content img {
+    height: 120px;
+  }
+  .product-card-horizontal {
+    align-items: stretch;
+    gap: 0.5rem;
+    text-align: left;
   }
 }
 
