@@ -184,6 +184,11 @@
                     <span class="label">연회비 정보:</span>
                     {{ card.annualFee || '정보 없음' }}
                   </div>
+                  <div v-if="card.options && card.options.length > 0" class="benefit-hashtags">
+                    <span v-for="(option, index) in card.options.slice(0, 3)" :key="index" class="hashtag">
+                      #{{ option.title }}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div class="product-action-row">
@@ -614,6 +619,18 @@ onMounted(async () => {
 
 .search-results {
   margin-top: 1rem;
+}
+
+.benefit-hashtags .hashtag {
+  display: inline-block;
+  background-color: #e6f4ec;
+  color: #2e7d32;
+  padding: 0.3rem 0.7rem;
+  border-radius: 1.2rem;
+  margin-right: 0.6rem;
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 500;
 }
 
 @keyframes spin {
