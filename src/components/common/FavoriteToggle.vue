@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import favorite from '@/api/favorite';
 
 const props = defineProps({
@@ -16,7 +16,9 @@ const props = defineProps({
   productType: { type: String, required: true },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(['update:modelValue']);
+
+const busy = ref(false);
 
 const isActive = computed({
   get: () => Boolean(props.modelValue),
@@ -24,38 +26,31 @@ const isActive = computed({
 });
 
 const toggle = async () => {
+  if (busy.value) return; // 클릭 중복 방지
   if (!props.productId) {
     console.error('❌ productId가 없습니다:', props.productId);
     return;
   }
 
-  const newState = !isActive.value;
-
-  // 낙관적 업데이트
-  isActive.value = newState;
-  emit('change', newState);
+  busy.value = true;
 
   try {
-    if (newState) {
-      await favorite.addFavorite(props.productId, props.productType);
-      console.log('✅ 즐겨찾기 추가 성공:', props.productId);
-    } else {
+    // 현재 상태에 따라 추가 또는 삭제
+    if (isActive.value) {
+      // 현재 즐겨찾기 상태 → 삭제
       await favorite.deleteFavorite(props.productId, props.productType);
       console.log('✅ 즐겨찾기 제거 성공:', props.productId);
+      isActive.value = false;
+    } else {
+      // 현재 즐겨찾기가 아닌 상태 → 추가
+      await favorite.addFavorite(props.productId, props.productType);
+      console.log('✅ 즐겨찾기 추가 성공:', props.productId);
+      isActive.value = true;
     }
   } catch (error) {
-    console.error('❌ 즐겨찾기 API 호출 실패:', error);
-
-    // API 실패 시 롤백
-    isActive.value = !newState;
-    emit('change', !newState);
-
-    // 409 에러 (이미 존재) 처리
-    if (error.response?.status === 409 && newState) {
-      console.log('ℹ️ 이미 즐겨찾기에 있는 상품, 상태 유지:', props.productId);
-      isActive.value = true;
-      emit('change', true);
-    }
+    console.error('❌ 즐겨찾기 토글 실패:', error);
+  } finally {
+    busy.value = false;
   }
 };
 </script>
@@ -67,7 +62,6 @@ const toggle = async () => {
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(0.33, 1, 0.68, 1);
 }
-
 .favorite-icon:hover {
   transform: scale(1.2);
 }

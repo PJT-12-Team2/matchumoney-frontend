@@ -41,4 +41,16 @@ export default {
     const { data } = await api.get(`${BASE_URL}/recommendations/allProducts`);
     return data;
   },
+
+  // 로그인 사용자용 - 즐겨찾기 정보 포함된 모든 예금 상품 조회
+
+  async getAllDepositProductsWithFavorites() {
+    try {
+      const response = await apiClient.get('/deposits/deposit-products');
+      return response.data;
+    } catch (error) {
+      console.error('즐겨찾기 포함 예금 상품 조회 실패:', error);
+      throw new Error('상품 목록을 불러올 수 없습니다.');
+    }
+  },
 };

@@ -52,7 +52,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import depositApi from '@/api/deposit';
-import favorite from '@/api/favorite';
 import AccountSlider from './AccountSlider.vue';
 import ProductList from './ProductList.vue';
 
@@ -165,73 +164,19 @@ const isKBOnlyMode = computed(() => {
   return accounts.value.length === 0;
 });
 
-// 🆕 즐겨찾기 상태 로드 함수 (수정됨)
-const loadFavoriteStatus = async (productList) => {
-  if (!effectiveUserId.value || !productList.length) {
-    return productList.map((product) => ({
-      ...product,
-      isFavorite: false,
-      isStarred: false,
-    }));
-  }
-
-  try {
-    // 서버에서 사용자의 전체 즐겨찾기 목록 가져오기
-    const favoriteList = await favorite.getFavorites();
-    console.log('🔍 서버에서 가져온 즐겨찾기 원본 데이터:', favoriteList);
-
-    // FavoriteVO 구조에 맞게 즐겨찾기 ID 추출
-    const favoriteDepositIds = new Set(
-      favoriteList
-        .filter(
-          (fav) =>
-            fav.depositProductId !== null && fav.depositProductId !== undefined
-        )
-        .map((fav) => Number(fav.depositProductId))
-    );
-
-    console.log('🔍 추출된 즐겨찾기 예금 상품 ID들:', favoriteDepositIds);
-
-    return productList.map((product) => {
-      // depositProductId를 사용해서 즐겨찾기 여부 확인
-      const productId = Number(product.depositProductId);
-      const isFavorite = favoriteDepositIds.has(productId);
-
-      console.log(
-        `🎯 상품 "${product.productName}" (ID: ${productId}) 즐겨찾기 상태:`,
-        isFavorite
-      );
-
-      return {
-        ...product,
-        isFavorite,
-        isStarred: isFavorite, // 둘 다 동일한 값으로 설정
-      };
-    });
-  } catch (error) {
-    console.log('즐겨찾기 상태 로드 실패:', error);
-    return productList.map((product) => ({
-      ...product,
-      isFavorite: false,
-      isStarred: false,
-    }));
-  }
-};
-
-// 🆕 즐겨찾기 변경 핸들러 (수정됨)
-const handleFavoriteChanged = async (productId, isStarred) => {
+// 🆕 즐겨찾기 변경 핸들러 (간소화됨)
+const handleFavoriteChanged = (productId, isStarred) => {
   console.log('🎯 RecommendDeposit에서 즐겨찾기 변경 감지:', {
     productId,
     isStarred,
   });
 
-  // 현재 products 배열에서 해당 상품의 isStarred 상태 업데이트
+  // 현재 products 배열에서 해당 상품의 isFavorite 상태 업데이트
   const updatedProducts = products.value.map((product) => {
     if (Number(product.depositProductId) === Number(productId)) {
       return {
         ...product,
         isFavorite: isStarred,
-        isStarred,
       };
     }
     return product;
@@ -248,7 +193,6 @@ const handleFavoriteChanged = async (productId, isStarred) => {
           return {
             ...product,
             isFavorite: isStarred,
-            isStarred,
           };
         }
         return product;
@@ -277,18 +221,14 @@ const getBalance = () => {
   return '';
 };
 
-// KB국민은행 상품 검색 (즐겨찾기 상태 없는 API 사용)
+// KB국민은행 상품 검색 (비로그인용 API 사용)
 const searchKBProducts = async () => {
   loading.value = true;
 
   try {
     const kbProducts = await depositApi.getKBProducts();
-
-    // 🆕 즐겨찾기 상태 추가
-    const productsWithFavorites = await loadFavoriteStatus(kbProducts);
-
     hasSearched.value = true;
-    products.value = productsWithFavorites;
+    products.value = kbProducts; // 즐겨찾기 정보 없음 (isFavorite: false)
   } catch (error) {
     hasSearched.value = true;
     products.value = [];
@@ -319,10 +259,8 @@ const searchProducts = async () => {
     const cachedData = searchCache.value[accountKey];
 
     if (cachedData) {
-      // 🆕 캐시된 데이터도 최신 즐겨찾기 상태로 업데이트
-      const updatedProducts = await loadFavoriteStatus(cachedData.products);
       hasSearched.value = true;
-      products.value = updatedProducts;
+      products.value = cachedData.products; // 이미 즐겨찾기 정보 포함됨
       loading.value = false;
       return;
     }
@@ -339,19 +277,17 @@ const searchProducts = async () => {
 
     const data = await depositApi.getProductsByBalance(requestData);
 
-    // 🆕 즐겨찾기 상태 추가
-    const productsWithFavorites = await loadFavoriteStatus(data);
-
     hasSearched.value = true;
-    products.value = productsWithFavorites;
+    products.value = data; // 백엔드에서 즐겨찾기 정보 포함해서 반환
 
-    // 캐시에 저장 (원본 데이터만)
+    // 캐시에 저장
     saveCachedResults(currentAccountData, data);
   } catch (error) {
     if (error.message && error.message.includes('500')) {
       try {
-        // 🔄 getAllProducts -> getAllDepositProducts로 변경 (즐겨찾기 정보가 포함된 API)
-        const allProducts = await depositApi.getAllProducts();
+        // 🔄 백엔드의 즐겨찾기 포함 API 사용
+        const allProducts =
+          await depositApi.getAllDepositProductsWithFavorites();
         hasSearched.value = true;
         products.value = allProducts; // 이미 즐겨찾기 정보가 포함되어 있음
       } catch (fallbackError) {
@@ -441,9 +377,8 @@ const handleSlideChange = async (index) => {
   const cachedData = searchCache.value[accountKey];
 
   if (cachedData) {
-    const updatedProducts = await loadFavoriteStatus(cachedData.products);
     hasSearched.value = true;
-    products.value = updatedProducts;
+    products.value = cachedData.products; // 이미 즐겨찾기 정보 포함됨
   } else {
     await searchProducts();
   }

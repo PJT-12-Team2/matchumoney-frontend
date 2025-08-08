@@ -63,14 +63,8 @@
           <FavoriteToggle
             :productId="product.depositProductId"
             :productType="ProductType.DEPOSIT"
-            :modelValue="
-              Boolean(product.isFavorite || product.isStarred || false)
-            "
+            :modelValue="Boolean(product.favorite)"
             @update:modelValue="(value) => handleFavoriteToggle(product, value)"
-            @change="
-              (isStarred) =>
-                handleFavoriteChanged(product.depositProductId, isStarred)
-            "
           />
         </div>
 
@@ -82,9 +76,9 @@
               <span
                 class="reaction-button"
                 @click.stop="handleLikeClick(product)"
-                :class="{ active: product.isLiked || false }"
+                :class="{ active: product.liked || false }"
               >
-                {{ product.isLiked ? '❤️' : '🤍' }} {{ product.likeCount || 0 }}
+                {{ product.liked ? '❤️' : '🤍' }} {{ product.likeCount || 0 }}
               </span>
               <CompareButton
                 :productId="product.depositProductId"
@@ -187,7 +181,7 @@ const handleLikeClick = (product) => {
 // 🆕 좋아요 토글 기능
 const toggleLike = async (product) => {
   const productId = product.depositProductId;
-  const currentLiked = product.isLiked || false;
+  const currentLiked = product.liked || false;
 
   try {
     const likePromise = currentLiked
@@ -197,12 +191,12 @@ const toggleLike = async (product) => {
     const response = await likePromise;
 
     // 상품 객체 업데이트
-    product.isLiked = response.data.liked;
+    product.liked = response.data.liked;
     product.likeCount = response.data.likeCount;
 
     console.log('좋아요 상태 업데이트:', {
       productId,
-      isLiked: product.isLiked,
+      liked: product.liked,
       likeCount: product.likeCount,
     });
   } catch (error) {
@@ -213,8 +207,7 @@ const toggleLike = async (product) => {
 // 즐겨찾기 토글 처리
 const handleFavoriteToggle = (product, value) => {
   // 상품 객체의 즐겨찾기 상태 업데이트
-  product.isFavorite = value;
-  product.isStarred = value;
+  product.favorite = !!value;
 
   emit('favoriteChanged', product.depositProductId, value);
 };
