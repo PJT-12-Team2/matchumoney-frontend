@@ -1,10 +1,7 @@
 <template>
   <div class="product-section">
     <!-- 🆕 KB국민은행 전용 메시지 (계좌가 없을 때) -->
-    <div
-      v-if="isKbOnly && hasSearched && !loading && products.length > 0"
-      class="kb-only-message slide-up fade-in"
-    >
+    <div v-if="isKbOnly && hasSearched && !loading && products.length > 0" class="kb-only-message slide-up fade-in">
       <div class="kb-only-text">
         <span class="bank-icon">🏦</span>
         {{ customerName }}님을 위한 KB국민은행 추천 상품을 보여드립니다!
@@ -14,28 +11,19 @@
     <!-- 추천 메시지 (계좌가 있을 때) -->
     <div
       v-else-if="!isKbOnly && hasSearched && !loading && products.length > 0"
-      class="recommendation-message slide-up fade-in"
-    >
+      class="recommendation-message slide-up fade-in">
       <div class="recommendation-text">
         <span class="recommendation-icon">💰</span>
-        {{ customerName }}님의 {{ balance }} 잔액으로 가입 가능한
-        {{ products.length }}개 상품을 찾았어요!
+        {{ customerName }}님의 {{ balance }} 잔액으로 가입 가능한 {{ products.length }}개 상품을 찾았어요!
       </div>
     </div>
 
     <!-- 검색 결과가 없을 때 메시지 -->
-    <div
-      v-if="hasSearched && !loading && products.length === 0"
-      class="no-results-message slide-up fade-in"
-    >
+    <div v-if="hasSearched && !loading && products.length === 0" class="no-results-message slide-up fade-in">
       <div class="no-results-text">
         <span class="sad-icon">😔</span>
-        <span v-if="isKbOnly">
-          현재 KB국민은행 상품을 불러올 수 없습니다.
-        </span>
-        <span v-else>
-          {{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.
-        </span>
+        <span v-if="isKbOnly">현재 KB국민은행 상품을 불러올 수 없습니다.</span>
+        <span v-else>{{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.</span>
       </div>
     </div>
 
@@ -53,8 +41,7 @@
           :key="product.id || index"
           class="product-card"
           @click="$emit('productSelect', product)"
-          :style="{ animationDelay: `${index * 0.1}s` }"
-        >
+          :style="{ animationDelay: `${index * 0.1}s` }">
           <div class="product-card-horizontal">
             <!-- 왼쪽: 로고 -->
             <div class="bank-logo-container">
@@ -70,18 +57,12 @@
             <!-- 오른쪽: 금리 및 기타 정보 -->
             <div class="product-info-block">
               <div class="rate-line">
-                <span class="label-bold">최고 금리 : </span>
+                <span class="label-bold">최고 금리 :</span>
                 <span class="highlight-rate">{{ product.maxIntrRate2 }}%</span>
               </div>
-              <div class="rate-line">
-                기준 금리 : {{ product.maxIntrRate }}%
-              </div>
-              <div class="rate-line">
-                최소 가입 금액 : {{ product.minAmount }}
-              </div>
-              <div class="rate-line">
-                기준 기간 : {{ product.maxSaveTrm }}개월
-              </div>
+              <div class="rate-line">기준 금리 : {{ product.maxIntrRate }}%</div>
+              <div class="rate-line">최소 가입 금액 : {{ product.minAmount }}</div>
+              <div class="rate-line">기준 기간 : {{ product.maxSaveTrm }}개월</div>
             </div>
           </div>
         </div>
@@ -127,84 +108,37 @@ const emit = defineEmits(['productSelect']);
 
 // 은행 로고 가져오기 함수
 const getBankLogo = (bankName) => {
-  const busanLogo = new URL(
-    '@/assets/bank-Logos/BK_BUSAN_Profile.png',
-    import.meta.url
-  ).href;
-  const hanaLogo = new URL(
-    '@/assets/bank-Logos/BK_HANA_Profile.png',
-    import.meta.url
-  ).href;
+  const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
+  const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
 
   const logoMap = {
     // 주요 시중은행
-    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
-      .href,
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
     하나은행: hanaLogo,
-    농협은행주식회사: new URL(
-      '@/assets/bank-Logos/BK_NH_Profile.png',
-      import.meta.url
-    ).href,
-    신한은행: new URL(
-      '@/assets/bank-Logos/BK_Shinhan_Profile.png',
-      import.meta.url
-    ).href,
-    우리은행: new URL(
-      '@/assets/bank-Logos/BK_Woori_Profile.png',
-      import.meta.url
-    ).href,
+    농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
+    신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
+    우리은행: new URL('@/assets/bank-Logos/BK_Woori_Profile.png', import.meta.url).href,
 
     // 특수은행
-    중소기업은행: new URL(
-      '@/assets/bank-Logos/BK_IBK_Profile.png',
-      import.meta.url
-    ).href,
-    한국산업은행: new URL(
-      '@/assets/bank-Logos/BK_KDB_Profile.png',
-      import.meta.url
-    ).href,
-    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url)
-      .href,
+    중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
+    한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
 
     // 지방은행
     경남은행: busanLogo,
     부산은행: busanLogo,
-    광주은행: new URL(
-      '@/assets/bank-Logos/BK_KWANGJU_Profile.png',
-      import.meta.url
-    ).href,
-    전북은행: new URL(
-      '@/assets/bank-Logos/BK_JEONBUK_Profile.png',
-      import.meta.url
-    ).href,
-    제주은행: new URL(
-      '@/assets/bank-Logos/BK_JEJU_Profile.png',
-      import.meta.url
-    ).href,
-    아이엠뱅크: new URL(
-      '@/assets/bank-Logos/BK_DAEGU_Profile.png',
-      import.meta.url
-    ).href,
+    광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
+    전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
+    제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
+    아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
 
     // 외국계은행
-    한국스탠다드차타드은행: new URL(
-      '@/assets/bank-Logos/BK_SC_Profile.png',
-      import.meta.url
-    ).href,
+    한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
 
     // 인터넷은행
-    '주식회사 카카오뱅크': new URL(
-      '@/assets/bank-Logos/BK_KAKAO_Profile.png',
-      import.meta.url
-    ).href,
-    '주식회사 케이뱅크': new URL(
-      '@/assets/bank-Logos/BK_K_Profile.png',
-      import.meta.url
-    ).href,
-    '토스뱅크 주식회사': new URL(
-      '@/assets/bank-Logos/BK_TOSS_Profile.png',
-      import.meta.url
-    ).href,
+    '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
+    '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
+    '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
 
     // 주식회사 명칭 포함
     '주식회사 하나은행': hanaLogo,
