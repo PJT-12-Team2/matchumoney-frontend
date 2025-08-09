@@ -208,12 +208,12 @@
                   <LikeToggle
                     :productId="product.id"
                     productType="saving-products"
-                    :initialLiked="isLiked"
-                    :initialCount="likeCount"
+                    :initialLiked="product.isLiked"
+                    :initialCount="product.likeCount"
                     @update="
                       ({ liked, count }) => {
-                        isLiked = liked;
-                        likeCount = count;
+                        product.isLiked = liked;
+                        product.likeCount = count;
                       }
                     "
                   />
@@ -405,6 +405,10 @@ const selectTerm = (val) => {
   filters.value.term = val;
   showTermDropdown.value = false;
 };
+function getAuthConfig() {
+  const token = localStorage.getItem('accessToken');
+  return token ? { headers: { Authorization: `Bearer ${token}` } } : undefined;
+}
 
 // selectedAmount를 filters에 동기화
 watch(selectedAmount, (val) => {
@@ -491,11 +495,12 @@ onMounted(async () => {
 
   try {
     // 전체 적금 리스트
-    const allRes = await api.post('/saving/search', {
-      korCoNm: '',
-      maxLimit: null,
-    });
-    const fullList = allRes.data.map((item) => ({
+    const res = await api.post(
+      '/saving/search',
+      { korCoNm: '', maxLimit: null },
+      getAuthConfig() // ✅ 항상 3번째 인자
+    );
+    const fullList = res.data.map((item) => ({
       id: item.savingProductId,
       name: item.finPrdtNm,
       bank: item.korCoNm,
@@ -507,6 +512,8 @@ onMounted(async () => {
       image: item.image || '',
       personaType: item.personaType || '',
       isStarred: item.isStarred,
+      isLiked: item.isLiked ?? false, // ✅ 오타 수정
+      likeCount: item.likeCount ?? 0, // ✅ 오타 수정
     }));
     allProducts.value = fullList;
   } catch (err) {

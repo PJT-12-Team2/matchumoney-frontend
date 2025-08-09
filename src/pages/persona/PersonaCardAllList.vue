@@ -216,8 +216,8 @@
                     :initialCount="product.likeCount"
                     @update="
                       ({ liked, count }) => {
-                        isLiked = liked;
-                        likeCount = count;
+                        product.isLiked = liked;
+                        product.likeCount = count;
                       }
                     "
                   />
@@ -418,7 +418,21 @@ const searchProducts = async () => {
         .map((id) => benefitCategories.value.find((b) => b.id === id)?.name)
         .filter(Boolean),
     });
-    searchResults.value = response.data;
+
+    // ✅ 정규화
+    searchResults.value = (response.data || []).map((item) => ({
+      id: item.cardProductId ?? item.id ?? item.cardId, // 라우팅/좋아요에 쓰는 PK
+      name: item.name ?? item.cardName,
+      issuer: item.issuer,
+      preMonthMoney: item.preMonthMoney ?? null,
+      annualFee: item.annualFee ?? null,
+      imageUrl: item.cardImageUrl ?? item.imageUrl ?? '',
+      options: item.options ?? [],
+      // 즐겨찾기/좋아요 기본값 (백엔드가 주면 덮어씀)
+      isStarred: item.isStarred ?? false,
+      isLiked: item.isLiked ?? false,
+      likeCount: item.likeCount ?? 0,
+    }));
   } catch (error) {
     console.error('카드 검색 오류:', error);
     searchResults.value = [];
@@ -426,6 +440,7 @@ const searchProducts = async () => {
     loading.value = false;
   }
 };
+
 onMounted(() => {
   window.addEventListener('scroll', onScroll);
 });
