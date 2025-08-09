@@ -9,7 +9,7 @@
           </p>
         </div>
       </section>
-      <br>
+      <br />
       <section class="card-header">
         <div class="card-image-wrapper">
           <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
@@ -26,7 +26,10 @@
                 }
               "
             />
-            <CompareButton :productId="depositData.depositProductId" :productType="productType" />
+            <CompareButton
+              :productId="depositData.depositProductId"
+              :productType="productType"
+            />
             <FavoriteToggle
               v-model="isFavorite"
               :productId="depositData.depositProductId"
@@ -51,11 +54,13 @@
 
           <div class="button-group">
             <button class="go-to-card" @click="goToCardSite">
-                신청하러 바로가기
-              </button>
+              신청하러 바로가기
+            </button>
             <button
               class="compare-link full-width"
-              @click="router.push({ path: '/compare', query: { type: 'DEPOSIT' } })"
+              @click="
+                router.push({ path: '/compare', query: { type: 'DEPOSIT' } })
+              "
             >
               비교함 바로가기
             </button>
@@ -349,7 +354,9 @@ onMounted(() => {
   }
   userId.value = uid;
   api
-    .get(`/deposit-products/${id}`)
+    .get(`/deposit-products/${id}`, {
+      params: uid ? { userId: uid } : undefined,
+    })
     .then((res) => {
       //console.log(res);
       depositData.value = res.data;
@@ -357,6 +364,7 @@ onMounted(() => {
       bankLogoUrl.value = getBankLogo(initial);
       isLiked.value = res.data.liked;
       likeCount.value = res.data.likeCount;
+      isFavorite.value = res.data.isStarred ?? false;
     })
     .catch((err) => {
       console.error(err);

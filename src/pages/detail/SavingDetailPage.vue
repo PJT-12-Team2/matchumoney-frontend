@@ -9,7 +9,7 @@
           </p>
         </div>
       </section>
-      <br>
+      <br />
       <section class="card-header">
         <div class="card-image-wrapper">
           <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
@@ -274,7 +274,7 @@ const isLiked = ref(false);
 const isFavorite = ref(false);
 const bankLogoUrl = ref('');
 const selectedRateType = ref('top');
-const userId = ref(sessionStorage.getItem('userId'));
+const userId = ref(null);
 
 const topRate = computed(() => {
   if (!savingData.value?.options) return 0;
@@ -397,18 +397,34 @@ const toggleFavorite = async () => {
 
 onMounted(() => {
   const id = route.params.savingId;
+
+  // 세션에서 userId 안전하게 읽기
+  let uid = null;
+  try {
+    const raw = sessionStorage.getItem('userId');
+    uid = raw ? Number(raw) : null;
+    if (Number.isNaN(uid)) uid = null;
+  } catch (e) {
+    uid = null;
+  }
+  userId.value = uid;
+
+  // ✅ userId 있으면 쿼리로 전달 (백엔드가 isStarred 계산 가능)
   api
-    .get(`/saving-products/${id}`)
+    .get(`/saving-products/${id}`, {
+      params: userId.value ? { userId: userId.value } : undefined,
+    })
     .then((res) => {
       savingData.value = res.data;
       const initial = getBankInitial(res.data.korCoNm || '');
       bankLogoUrl.value = getBankLogo(initial);
-      isLiked.value = res.data.liked;
-      likeCount.value = res.data.likeCount;
+
+      // ✅ 초기 상태들 세팅 (예금 페이지와 동일 패턴)
+      isLiked.value = res.data.liked ?? false;
+      likeCount.value = res.data.likeCount ?? 0;
+      isFavorite.value = res.data.isStarred ?? false; // ← 핵심
     })
-    .catch((err) => {
-      console.error(err);
-    });
+    .catch((err) => console.error(err));
 });
 </script>
 
