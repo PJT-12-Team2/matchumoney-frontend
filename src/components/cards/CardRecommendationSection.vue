@@ -1015,9 +1015,9 @@ watch(
   }
 
   .card-info {
-    gap: var(--spacing-sm);
+    gap: var(—spacing-sm);
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
   }
 
   .card-image-container {
