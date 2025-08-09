@@ -2,7 +2,7 @@
 <script setup>
 import { useRoute } from "vue-router";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
-import ChatBot from "./components/ChatBot.vue";
+import ChatBot from "./components/chatbot/ChatBot.vue";
 
 // 현재 라우트를 가져오기
 const route = useRoute();

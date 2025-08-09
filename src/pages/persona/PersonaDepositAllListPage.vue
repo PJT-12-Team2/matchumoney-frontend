@@ -14,22 +14,17 @@
             v-for="deposit in carouselDeposits"
             :key="deposit.id"
             class="carousel-deposit"
-            @click="selectProduct(deposit)"
-          >
-            <img
-              :src="deposit.image"
-              :alt="deposit.name"
-              class="carousel-deposit-image"
-            />
+            @click="selectProduct(deposit)">
+            <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
             <div class="carousel-deposit-name">{{ deposit.name }}</div>
             <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>
-                <strong>최고 금리: </strong>
+                <strong>최고 금리:</strong>
                 {{ deposit.maxRate }}
               </span>
               <span>
-                <strong>최저 금리: </strong>
+                <strong>최저 금리:</strong>
                 {{ deposit.baseRate }}
               </span>
             </div>
@@ -43,19 +38,13 @@
           :slides-per-view="1.2"
           :space-between="16"
           :pagination="{ clickable: true }"
-          class="carousel-swiper"
-        >
+          class="carousel-swiper">
           <SwiperSlide
             v-for="deposit in carouselDeposits"
             :key="deposit.id"
             class="carousel-deposit"
-            @click="selectProduct(deposit)"
-          >
-            <img
-              :src="deposit.image"
-              :alt="deposit.name"
-              class="carousel-deposit-image"
-            />
+            @click="selectProduct(deposit)">
+            <img :src="deposit.image" :alt="deposit.name" class="carousel-deposit-image" />
             <div class="carousel-deposit-name">{{ deposit.name }}</div>
             <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
@@ -82,25 +71,16 @@
             v-for="(term, idx) in terms"
             :key="term.value"
             :class="['term-button', { active: filters?.term === term.value }]"
-            @click="filters.term = term.value"
-          >
+            @click="filters.term = term.value">
             {{ term.label }}
           </div>
         </div>
         <div class="term-dropdown-wrapper">
-          <button
-            class="term-toggle-button"
-            @click="showTermDropdown = !showTermDropdown"
-          >
+          <button class="term-toggle-button" @click="showTermDropdown = !showTermDropdown">
             {{ filters.term }}개월 선택 ▼
           </button>
           <div class="term-dropdown" v-if="showTermDropdown">
-            <div
-              v-for="term in terms"
-              :key="term.value"
-              class="term-dropdown-option"
-              @click="selectTerm(term.value)"
-            >
+            <div v-for="term in terms" :key="term.value" class="term-dropdown-option" @click="selectTerm(term.value)">
               {{ term.label }}
             </div>
           </div>
@@ -113,14 +93,8 @@
           <div
             v-for="bank in bankOptions"
             :key="bank.name"
-            :class="[
-              'bank-logo-option',
-              { selected: filters?.bank === bank.name },
-            ]"
-            @click="
-              filters.bank = filters?.bank === bank.name ? null : bank.name
-            "
-          >
+            :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
+            @click="filters.bank = filters?.bank === bank.name ? null : bank.name">
             <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
             <div class="bank-label">{{ bank.name }}</div>
           </div>
@@ -140,21 +114,10 @@
           <div>검색 조건에 맞는 상품이 없습니다.</div>
           <div>다른 조건으로 검색해보세요.</div>
         </div>
-        <div
-          v-else-if="filteredProducts.length > 0"
-          class="search-results-grid"
-        >
-          <div
-            v-for="product in visibleProducts"
-            :key="product.id"
-            class="product-card"
-          >
+        <div v-else-if="filteredProducts.length > 0" class="search-results-grid">
+          <div v-for="product in visibleProducts" :key="product.id" class="product-card">
             <div class="card-favorite-button" @click.stop>
-              <FavoriteToggle
-                v-model="product.isStarred"
-                :productId="product.id"
-                productType="DEPOSIT"
-              />
+              <FavoriteToggle v-model="product.isStarred" :productId="product.id" productType="DEPOSIT" />
             </div>
             <div class="product-card-row" @click="selectProduct(product)">
               <!-- 왼쪽(로고) -->
@@ -164,7 +127,19 @@
                   alt="은행 로고"
                   class="bank-logo-round"
                 />
-                <div class="card-compare-button">
+                <div class="card-compare-button" @click.stop>
+                  <LikeToggle
+                    :productId="product.id"
+                    productType="deposit-products"
+                    :initialLiked="isLiked"
+                    :initialCount="likeCount"
+                    @update="
+                      ({ liked, count }) => {
+                        isLiked = liked;
+                        likeCount = count;
+                      }
+                    "
+                  />
                   <CompareButton
                     :productId="product.id"
                     productType="DEPOSIT"
@@ -177,9 +152,7 @@
                 <div class="bank-name-bold">{{ product.bank }}</div>
                 <div class="rate-line">
                   <span class="label-bold">최고 금리 :</span>
-                  <span class="highlight-rate">{{
-                    getRateWithTerm(product, 'max')
-                  }}</span>
+                  <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span>
                 </div>
                 <div class="rate-line">
                   <span class="label-bold">최저 금리 :</span>
@@ -191,17 +164,12 @@
                     filters.term !== '전체'
                       ? filters.term + '개월'
                       : (() => {
-                          const best = product.depositOptions?.reduce(
-                            (prev, curr) => {
-                              const prevRate = prev?.intrRate2 ?? 0;
-                              const currRate = curr?.intrRate2 ?? 0;
-                              return currRate > prevRate ? curr : prev;
-                            },
-                            null
-                          );
-                          return best?.saveTrm
-                            ? best.saveTrm + '개월'
-                            : '정보 없음';
+                          const best = product.depositOptions?.reduce((prev, curr) => {
+                            const prevRate = prev?.intrRate2 ?? 0;
+                            const currRate = curr?.intrRate2 ?? 0;
+                            return currRate > prevRate ? curr : prev;
+                          }, null);
+                          return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
                         })()
                   }}
                 </div>
@@ -211,9 +179,7 @@
           <div v-if="isLoadingMore" class="infinite-spinner-wrapper">
             <div class="infinite-spinner-block">
               <div class="infinite-spinner"></div>
-              <div class="infinite-spinner-text">
-                상품을 불러오는 중입니다...
-              </div>
+              <div class="infinite-spinner-text">상품을 불러오는 중입니다...</div>
             </div>
           </div>
         </div>
@@ -231,6 +197,7 @@ const modules = [Pagination];
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
 
 const showTermDropdown = ref(false);
 const isMobile = ref(false);
@@ -322,25 +289,19 @@ const personaRecommendedDeposits = ref([]);
 // 📦 데이터 정제 함수
 const getRate = (product, type) => {
   const selectedTerm = filters.value?.term;
-  if (!product.depositOptions || product.depositOptions.length === 0)
-    return '-%';
+  if (!product.depositOptions || product.depositOptions.length === 0) return '-%';
   if (selectedTerm === '전체') {
-    const allRates = product.depositOptions.map((opt) =>
-      type === 'base' ? opt.intrRate : opt.intrRate2
-    );
+    const allRates = product.depositOptions.map((opt) => (type === 'base' ? opt.intrRate : opt.intrRate2));
     const max = Math.max(...allRates);
     return `${max.toFixed(2)}%`;
   }
-  const match = product.depositOptions.find(
-    (opt) => opt.saveTrm === selectedTerm
-  );
+  const match = product.depositOptions.find((opt) => opt.saveTrm === selectedTerm);
   if (!match) return '-%';
   return `${(type === 'base' ? match.intrRate : match.intrRate2).toFixed(2)}%`;
 };
 
 const getRateWithTerm = (product, type) => {
-  if (!product.depositOptions || product.depositOptions.length === 0)
-    return '-%';
+  if (!product.depositOptions || product.depositOptions.length === 0) return '-%';
   const selectedTerm = filters.value?.term;
   if (selectedTerm === '전체') {
     const sorted = [...product.depositOptions].sort((a, b) => {
@@ -353,17 +314,14 @@ const getRateWithTerm = (product, type) => {
     const val = type === 'base' ? best.intrRate : best.intrRate2;
     return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%';
   }
-  const match = product.depositOptions.find(
-    (opt) => opt.saveTrm === selectedTerm
-  );
+  const match = product.depositOptions.find((opt) => opt.saveTrm === selectedTerm);
   if (!match) return '-%';
   const value = type === 'base' ? match.intrRate : match.intrRate2;
   return typeof value === 'number' ? `${value.toFixed(2)}%` : '-%';
 };
 
 const get12MonthRate = (product, type) => {
-  if (!product.depositOptions || product.depositOptions.length === 0)
-    return '-%';
+  if (!product.depositOptions || product.depositOptions.length === 0) return '-%';
   const match = product.depositOptions.find((opt) => opt.saveTrm === '12');
   if (!match) return '-%';
   const val = type === 'base' ? match.intrRate : match.intrRate2;
@@ -393,8 +351,7 @@ const getBankInitial = (name) => {
 
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url)
-      .href,
+    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
     hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
     woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
     kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
@@ -402,13 +359,11 @@ const getBankLogo = (initial) => {
     kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
     toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
     bnk: new URL('@/assets/bankLogo_images/bnk.png', import.meta.url).href,
-    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url)
-      .href,
+    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url).href,
     ibk: new URL('@/assets/bankLogo_images/ibk.png', import.meta.url).href,
     im: new URL('@/assets/bankLogo_images/im.png', import.meta.url).href,
     jeju: new URL('@/assets/bankLogo_images/jeju.png', import.meta.url).href,
-    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url)
-      .href,
+    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url).href,
     sanup: new URL('@/assets/bankLogo_images/sanup.png', import.meta.url).href,
     su: new URL('@/assets/bankLogo_images/su.png', import.meta.url).href,
     sc: new URL('@/assets/bankLogo_images/sc.png', import.meta.url).href,
@@ -426,13 +381,10 @@ const formatCurrency = (val) => {
 };
 
 const getMinAmountWithTerm = (product) => {
-  if (!product.depositOptions || product.depositOptions.length === 0)
-    return null;
+  if (!product.depositOptions || product.depositOptions.length === 0) return null;
   const selectedTerm = filters.value?.term;
   if (!selectedTerm || selectedTerm === '전체') return null;
-  const matchedOption = product.depositOptions.find(
-    (opt) => String(opt.saveTrm) === selectedTerm
-  );
+  const matchedOption = product.depositOptions.find((opt) => String(opt.saveTrm) === selectedTerm);
   return matchedOption?.minAmount || null;
 };
 
@@ -460,17 +412,11 @@ onMounted(async () => {
 
   try {
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await api.get(
-      '/deposits/recommendations/user/persona-id',
-      config
-    );
+    const personaIdRes = await api.get('/deposits/recommendations/user/persona-id', config);
     personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 예금 추천 가져오기
-    const recommendationRes = await api.get(
-      '/deposits/recommendations/user/recommendation',
-      config
-    );
+    const recommendationRes = await api.get('/deposits/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
     userPersonaType.value = result.personaName || '토끼형';
@@ -478,8 +424,7 @@ onMounted(async () => {
       depositId: item.depositId,
       productName: item.productName,
       bankName: item.bankName,
-      companyImage:
-        item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
+      companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
       maxRate: item.maxRate ?? 0,
       basicRate: item.basicRate ?? 0,
     }));
@@ -519,11 +464,7 @@ const filteredProducts = computed(() => {
 
   // 기간 필터: "전체"가 아닌 다른 값이 선택된 경우에만 필터링
   if (filters.value?.term && filters.value?.term !== '전체') {
-    result = result.filter((p) =>
-      p.depositOptions?.some(
-        (opt) => String(opt.saveTrm) === filters.value?.term
-      )
-    );
+    result = result.filter((p) => p.depositOptions?.some((opt) => String(opt.saveTrm) === filters.value?.term));
   }
 
   // 예치금액 필터 추가
@@ -542,26 +483,16 @@ const filteredProducts = computed(() => {
   } else if (filters.value?.bank === '기타') {
     result = result.filter(
       (p) =>
-        ![
-          '국민은행',
-          '신한은행',
-          '우리은행',
-          '하나은행',
-          '카카오뱅크',
-          '토스뱅크',
-          '농협은행',
-        ].some((bank) => p.bank.includes(bank))
+        !['국민은행', '신한은행', '우리은행', '하나은행', '카카오뱅크', '토스뱅크', '농협은행'].some((bank) =>
+          p.bank.includes(bank)
+        )
     );
   }
 
   // �� 선택된 기간의 최대 금리 기준 내림차순 정렬
   result.sort((a, b) => {
-    const aMax = Math.max(
-      ...(a.depositOptions?.map((opt) => opt.intrRate2) || [0])
-    );
-    const bMax = Math.max(
-      ...(b.depositOptions?.map((opt) => opt.intrRate2) || [0])
-    );
+    const aMax = Math.max(...(a.depositOptions?.map((opt) => opt.intrRate2) || [0]));
+    const bMax = Math.max(...(b.depositOptions?.map((opt) => opt.intrRate2) || [0]));
     return bMax - aMax;
   });
 
@@ -571,9 +502,7 @@ const filteredProducts = computed(() => {
 // 무한 스크롤 관련 상태 및 로직
 const visibleCount = ref(6);
 const isLoadingMore = ref(false);
-const visibleProducts = computed(() =>
-  filteredProducts.value.slice(0, visibleCount.value)
-);
+const visibleProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value));
 
 function onScroll() {
   // 스크롤이 바닥에 도달하면 더 불러오기

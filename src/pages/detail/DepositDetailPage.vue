@@ -1,30 +1,38 @@
 <template>
   <div class="container" v-if="depositData">
     <div class="deposit-detail-page">
+      <section class="persona-banner-section">
+        <div class="info-banner">
+          <p class="badge">
+            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
+            상품
+          </p>
+        </div>
+      </section>
+      <br>
       <section class="card-header">
         <div class="card-image-wrapper">
           <img :src="bankLogoUrl" alt="은행 로고" class="card-image" />
           <div class="reaction-group">
             <LikeToggle
-          :productId="depositData.depositProductId"
-          productType="deposit-products"
-          :initialLiked="isLiked"
-          :initialCount="likeCount"
-          @update="
-            ({ liked, count }) => {
-              isLiked = liked;
-              likeCount = count;
-            }
-          "
-        />
-            <button class="compare-button">➕ 비교함 담기</button>
+              :productId="depositData.depositProductId"
+              productType="deposit-products"
+              :initialLiked="isLiked"
+              :initialCount="likeCount"
+              @update="
+                ({ liked, count }) => {
+                  isLiked = liked;
+                  likeCount = count;
+                }
+              "
+            />
+            <CompareButton :productId="depositData.depositProductId" :productType="productType" />
             <FavoriteToggle
-            v-model="isFavorite"
-            :productId="depositData.depositProductId"
-            :productType="productType"
-          />
+              v-model="isFavorite"
+              :productId="depositData.depositProductId"
+              :productType="productType"
+            />
           </div>
-          
         </div>
         <div class="card-info">
           <h2 class="card-title">{{ depositData.finPrdtNm }}</h2>
@@ -42,8 +50,15 @@
           </ul>
 
           <div class="button-group">
-            <button class="go-to-card full-width">카드사 바로가기</button>
-            <button class="compare-link full-width">비교함 바로가기</button>
+            <button class="go-to-card" @click="goToCardSite">
+                신청하러 바로가기
+              </button>
+            <button
+              class="compare-link full-width"
+              @click="router.push({ path: '/compare', query: { type: 'DEPOSIT' } })"
+            >
+              비교함 바로가기
+            </button>
           </div>
 
           <div class="card-meta">
@@ -51,15 +66,6 @@
               >가입 방법 : <strong>{{ depositData.joinWay }}</strong></span
             >
           </div>
-        </div>
-      </section>
-
-      <section class="persona-banner-section">
-        <div class="info-banner">
-          <p class="badge">
-            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
-            상품
-          </p>
         </div>
       </section>
 
@@ -178,7 +184,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
-import favorite from '@/api/favorite';
+import CompareButton from '@/components/common/CompareButton.vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import { ProductType } from '@/constants/productTypes';
 import LikeToggle from '@/components/common/LikeToggle.vue'; // 이름 변경 후
@@ -331,7 +337,6 @@ const toggle = (index) => {
   activeIndex.value = activeIndex.value === index ? null : index;
 };
 
-
 // onMounted logic
 onMounted(() => {
   const id = route.params.depositId;
@@ -357,6 +362,11 @@ onMounted(() => {
       console.error(err);
     });
 });
+function goToCardSite() {
+  if (depositData.value?.requestUrl) {
+    window.open(depositData.value.requestUrl, '_blank');
+  }
+}
 </script>
 
 <style scoped>

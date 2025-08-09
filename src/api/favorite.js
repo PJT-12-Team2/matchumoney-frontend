@@ -72,6 +72,10 @@ const favorite = {
       throw new Error('즐겨찾기 목록 조회에 실패했습니다.');
     }
   },
+  async getFavoriteProducts() {
+    const { data } = await api.get(`${BASE_URL}`);
+    return data;
+  },
 };
 
 export default favorite;

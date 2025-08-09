@@ -30,12 +30,10 @@
     >
       <div class="no-results-text">
         <span class="sad-icon">😔</span>
-        <span v-if="isKbOnly">
-          현재 KB국민은행 상품을 불러올 수 없습니다.
-        </span>
-        <span v-else>
-          {{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.
-        </span>
+        <span v-if="isKbOnly">현재 KB국민은행 상품을 불러올 수 없습니다.</span>
+        <span v-else
+          >{{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.</span
+        >
       </div>
     </div>
 
@@ -46,7 +44,6 @@
         <div v-if="isKbOnly">KB국민은행 상품을 찾고 있습니다...</div>
         <div v-else>맞춤 상품을 찾고 있습니다...</div>
       </div>
-
       <div
         v-for="(product, index) in topProducts"
         :key="product.depositProductId || product.productName || index"
@@ -57,7 +54,6 @@
       >
         <!-- 랭킹 배지 -->
         <div class="rank-badge">{{ index + 1 }}</div>
-
         <!-- 즐겨찾기 버튼을 오른쪽 상단으로 이동 -->
         <div class="favorite-button-container">
           <FavoriteToggle

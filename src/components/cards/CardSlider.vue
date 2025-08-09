@@ -10,21 +10,15 @@
         @touchend="handleTouchEnd"
         @mousemove="handleMouseMove"
         @mouseup="handleMouseUp"
-        @mouseleave="handleMouseUp"
-      >
+        @mouseleave="handleMouseUp">
         <!-- 등록된 카드들 -->
-        <div
-          v-for="(card, index) in cards"
-          :key="card.holdingId"
-          class="slide-item"
-        >
+        <div v-for="(card, index) in cards" :key="card.holdingId" class="slide-item">
           <CardSlide
             :card="card"
             :hasTransactions="hasTransactionsForCard(card)"
             @cardClick="handleCardClick"
             @registerTransactions="handleRegisterTransactions"
-            @updateTransactions="handleUpdateTransactions"
-          />
+            @updateTransactions="handleUpdateTransactions" />
         </div>
 
         <!-- 마지막 슬라이드: 카드 등록/업데이트 -->
@@ -33,8 +27,7 @@
             :has-cards="cards.length > 0"
             :show-kb-recommendation="true"
             @register="$emit('register')"
-            @update="$emit('update')"
-          />
+            @update="$emit('update')" />
         </div>
       </div>
     </div>
@@ -47,17 +40,16 @@
           :key="index"
           class="indicator"
           :class="{ active: index === currentIndex }"
-          @click="goToSlide(index)"
-        ></span>
+          @click="goToSlide(index)"></span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
-import CardSlide from "./CardSlide.vue";
-import ActionCardSlide from "./ActionCardSlide.vue";
+import { ref, computed, watch, onMounted } from 'vue';
+import CardSlide from './CardSlide.vue';
+import ActionCardSlide from './ActionCardSlide.vue';
 
 const props = defineProps({
   cards: {
@@ -71,12 +63,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits([
-  "register",
-  "update",
-  "cardChange",
-  "cardClick",
-  "registerTransactions",
-  "updateTransactions",
+  'register',
+  'update',
+  'cardChange',
+  'cardClick',
+  'registerTransactions',
+  'updateTransactions',
 ]);
 
 const currentIndex = ref(0);
@@ -121,7 +113,7 @@ const goToSlide = (index) => {
 // 카드 변경 이벤트 전송
 const emitCardChange = () => {
   if (currentCard.value) {
-    emit("cardChange", currentCard.value);
+    emit('cardChange', currentCard.value);
   }
 };
 
@@ -132,8 +124,8 @@ const handleMouseDown = (event) => {
   startX.value = event.clientX;
   startY.value = event.clientY;
   initialTransform.value = currentIndex.value * 100;
-  document.addEventListener("mousemove", handleMouseMove);
-  document.addEventListener("mouseup", handleMouseUp);
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', handleMouseUp);
   event.preventDefault();
 };
 
@@ -165,8 +157,8 @@ const handleMouseUp = () => {
   }
 
   isDragging.value = false;
-  document.removeEventListener("mousemove", handleMouseMove);
-  document.removeEventListener("mouseup", handleMouseUp);
+  document.removeEventListener('mousemove', handleMouseMove);
+  document.removeEventListener('mouseup', handleMouseUp);
 };
 
 const handleTouchStart = (event) => {
@@ -210,34 +202,31 @@ const handleTouchEnd = () => {
 // 카드별 거래내역 존재 여부 확인
 const hasTransactionsForCard = (card) => {
   const cardKey = card.holdingId || card.cardId;
-  return (
-    props.cardTransactions[cardKey] &&
-    props.cardTransactions[cardKey].length > 0
-  );
+  return props.cardTransactions[cardKey] && props.cardTransactions[cardKey].length > 0;
 };
 
 // 카드 클릭 핸들러 (제거 - 이제 버튼으로만 처리)
 const handleCardClick = (card) => {
   // 드래그 중이 아닐 때만 클릭 이벤트 처리
   if (!isDragging.value) {
-    emit("cardClick", card);
+    emit('cardClick', card);
   }
 };
 
 // 거래내역 등록 핸들러
 const handleRegisterTransactions = (card) => {
-  emit("registerTransactions", card);
+  emit('registerTransactions', card);
 };
 
 // 거래내역 업데이트 핸들러
 const handleUpdateTransactions = (card) => {
-  emit("updateTransactions", card);
+  emit('updateTransactions', card);
 };
 
 // 컴포넌트 마운트 시 첫 번째 카드 자동 선택
 onMounted(() => {
   if (props.cards.length > 0) {
-    emit("cardChange", props.cards[0]);
+    emit('cardChange', props.cards[0]);
   }
 });
 
@@ -246,7 +235,7 @@ watch(
   () => props.cards,
   (newCards) => {
     if (newCards.length > 0 && currentIndex.value === 0) {
-      emit("cardChange", newCards[0]);
+      emit('cardChange', newCards[0]);
     }
   },
   { immediate: true }
