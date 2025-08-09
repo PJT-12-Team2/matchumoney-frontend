@@ -1,13 +1,11 @@
 import apiClient from './index';
+const BASE_URL = `/favorite`;
 
 const favorite = {
   async addFavorite(productId, productType) {
     console.log('즐겨찾기 추가 요청:', { productId, productType });
 
     const numericProductId = Number(productId);
-    if (Number.isNaN(numericProductId)) {
-      throw new Error('유효하지 않은 상품 ID입니다.');
-    }
 
     try {
       const res = await apiClient.post(
@@ -73,7 +71,7 @@ const favorite = {
     }
   },
   async getFavoriteProducts() {
-    const { data } = await api.get(`${BASE_URL}`);
+    const { data } = await apiClient.get(`${BASE_URL}`);
     return data;
   },
 };
