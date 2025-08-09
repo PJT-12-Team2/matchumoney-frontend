@@ -1,7 +1,10 @@
 <template>
   <div class="product-section">
-    <!-- 🆕 KB국민은행 전용 메시지 (계좌가 없을 때) -->
-    <div v-if="isKbOnly && hasSearched && !loading && products.length > 0" class="kb-only-message slide-up fade-in">
+    <!-- KB국민은행 전용 메시지 (계좌가 없을 때) -->
+    <div
+      v-if="isKbOnly && hasSearched && !loading && products.length > 0"
+      class="kb-only-message slide-up fade-in"
+    >
       <div class="kb-only-text">
         <span class="bank-icon">🏦</span>
         {{ customerName }}님을 위한 KB국민은행 추천 상품을 보여드립니다!
@@ -11,58 +14,93 @@
     <!-- 추천 메시지 (계좌가 있을 때) -->
     <div
       v-else-if="!isKbOnly && hasSearched && !loading && products.length > 0"
-      class="recommendation-message slide-up fade-in">
+      class="recommendation-message slide-up fade-in"
+    >
       <div class="recommendation-text">
         <span class="recommendation-icon">💰</span>
-        {{ customerName }}님의 {{ balance }} 잔액으로 가입 가능한 {{ products.length }}개 상품을 찾았어요!
+        {{ customerName }}님의 {{ balance }} 잔액으로 가입 가능한
+        {{ products.length }}개 상품을 찾았어요!
       </div>
     </div>
 
     <!-- 검색 결과가 없을 때 메시지 -->
-    <div v-if="hasSearched && !loading && products.length === 0" class="no-results-message slide-up fade-in">
+    <div
+      v-if="hasSearched && !loading && products.length === 0"
+      class="no-results-message slide-up fade-in"
+    >
       <div class="no-results-text">
         <span class="sad-icon">😔</span>
         <span v-if="isKbOnly">현재 KB국민은행 상품을 불러올 수 없습니다.</span>
-        <span v-else>{{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.</span>
+        <span v-else
+          >{{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.</span
+        >
       </div>
     </div>
 
-    <!-- 상품 리스트 (검색 후에만 표시) -->
+    <!-- 상품 리스트 -->
     <section class="products-section" v-if="hasSearched">
       <div v-if="loading" class="loading">
         <div class="spinner"></div>
         <div v-if="isKbOnly">KB국민은행 상품을 찾고 있습니다...</div>
         <div v-else>맞춤 상품을 찾고 있습니다...</div>
       </div>
+      <div
+        v-for="(product, index) in topProducts"
+        :key="product.depositProductId || product.productName || index"
+        class="recommendation-item"
+        :class="{ 'top-recommendation': index === 0 }"
+        @click="navigateToDetail(product)"
+        :style="{ animationDelay: `${index * 0.1}s` }"
+      >
+        <!-- 랭킹 배지 -->
+        <div class="rank-badge">{{ index + 1 }}</div>
+        <!-- 즐겨찾기 버튼을 오른쪽 상단으로 이동 -->
+        <div class="favorite-button-container">
+          <FavoriteToggle
+            :productId="product.depositProductId"
+            :productType="ProductType.DEPOSIT"
+            :modelValue="Boolean(product.favorite)"
+            @update:modelValue="(value) => handleFavoriteToggle(product, value)"
+          />
+        </div>
 
-      <div v-else-if="products.length > 0" class="product-list fade-in">
-        <div
-          v-for="(product, index) in products"
-          :key="product.id || index"
-          class="product-card"
-          @click="$emit('productSelect', product)"
-          :style="{ animationDelay: `${index * 0.1}s` }">
-          <div class="product-card-horizontal">
-            <!-- 왼쪽: 로고 -->
-            <div class="bank-logo-container">
-              <img :src="getBankLogo(product.bankName)" alt="은행 로고" />
+        <div class="product-card-horizontal">
+          <!-- 왼쪽: 로고 -->
+          <div class="bank-logo-container">
+            <img :src="getBankLogo(product.bankName)" alt="은행 로고" />
+            <div class="likes_compare">
+              <span
+                class="reaction-button"
+                @click.stop="handleLikeClick(product)"
+                :class="{ active: product.liked || false }"
+              >
+                {{ product.liked ? '❤️' : '🤍' }} {{ product.likeCount || 0 }}
+              </span>
+              <CompareButton
+                :productId="product.depositProductId"
+                :productType="ProductType.DEPOSIT"
+              />
             </div>
+          </div>
 
-            <!-- 가운데: 은행명 + 상품명 -->
-            <div class="product-name-block">
-              <div class="bank-name-bold">{{ product.bankName }}</div>
-              <div class="product-name-bold">{{ product.productName }}</div>
-            </div>
+          <!-- 가운데: 은행명 + 상품명 -->
+          <div class="product-name-block">
+            <div class="product-name-bold">{{ product.productName }}</div>
+            <div class="bank-name-bold">{{ product.bankName }}</div>
 
-            <!-- 오른쪽: 금리 및 기타 정보 -->
-            <div class="product-info-block">
-              <div class="rate-line">
-                <span class="label-bold">최고 금리 :</span>
+            <div class="rate-info">
+              <div class="term">{{ product.maxSaveTrm }}개월</div>
+              <div class="rate-values">
+                <span class="label-bold">최고 금리:</span>
                 <span class="highlight-rate">{{ product.maxIntrRate2 }}%</span>
+                <span class="base-rate"
+                  >/ 기준 금리: {{ product.maxIntrRate }}%</span
+                >
               </div>
-              <div class="rate-line">기준 금리 : {{ product.maxIntrRate }}%</div>
-              <div class="rate-line">최소 가입 금액 : {{ product.minAmount }}</div>
-              <div class="rate-line">기준 기간 : {{ product.maxSaveTrm }}개월</div>
+            </div>
+
+            <div class="rate-line">
+              최소 가입 금액 : {{ product.minAmount }}
             </div>
           </div>
         </div>
@@ -72,7 +110,14 @@
 </template>
 
 <script setup>
-// defineProps와 defineEmits는 Vue 3.3+에서 자동으로 사용 가능한 컴파일러 매크로입니다
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
+import { ProductType } from '@/constants/productTypes';
+import CompareButton from '@/components/common/CompareButton.vue';
+import api from '@/api';
+
+const router = useRouter();
 
 // Props
 const props = defineProps({
@@ -96,7 +141,6 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  // 🆕 KB국민은행 전용 모드인지 여부
   isKbOnly: {
     type: Boolean,
     default: false,
@@ -104,43 +148,155 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['productSelect']);
+const emit = defineEmits(['productSelect', 'favoriteChanged']);
+
+// 🆕 사용자 ID 가져오기
+const getUserId = () => {
+  try {
+    const userId = sessionStorage.getItem('userId');
+    return userId ? Number(userId) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// 🆕 좋아요 클릭 처리
+const handleLikeClick = (product) => {
+  const userId = getUserId();
+
+  if (!userId) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+      router.push('/login');
+    }
+    return;
+  }
+
+  toggleLike(product);
+};
+
+// 🆕 좋아요 토글 기능
+const toggleLike = async (product) => {
+  const productId = product.depositProductId;
+  const currentLiked = product.liked || false;
+
+  try {
+    const likePromise = currentLiked
+      ? api.delete(`/deposit-products/${productId}/likes`)
+      : api.post(`/deposit-products/${productId}/likes`);
+
+    const response = await likePromise;
+
+    // 상품 객체 업데이트
+    product.liked = response.data.liked;
+    product.likeCount = response.data.likeCount;
+
+    console.log('좋아요 상태 업데이트:', {
+      productId,
+      liked: product.liked,
+      likeCount: product.likeCount,
+    });
+  } catch (error) {
+    console.error('좋아요 처리 중 오류:', error);
+  }
+};
+
+// 즐겨찾기 토글 처리
+const handleFavoriteToggle = (product, value) => {
+  // 상품 객체의 즐겨찾기 상태 업데이트
+  product.favorite = !!value;
+
+  emit('favoriteChanged', product.depositProductId, value);
+};
+
+// 즐겨찾기 변경 이벤트 처리 (하위 호환성)
+const handleFavoriteChanged = (productId, isStarred) => {
+  console.log('즐겨찾기 변경 감지:', { productId, isStarred });
+  emit('favoriteChanged', productId, isStarred);
+};
+
+// 상세페이지 이동 함수
+const navigateToDetail = (product) => {
+  if (product.depositProductId) {
+    router.push(`/detail/deposit/${product.depositProductId}`);
+  }
+};
+
+// 상위 5개 상품만 표시하는 computed
+const topProducts = computed(() => {
+  return props.products.slice(0, 5);
+});
 
 // 은행 로고 가져오기 함수
 const getBankLogo = (bankName) => {
-  const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
-  const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
+  const busanLogo = new URL(
+    '@/assets/bank-Logos/BK_BUSAN_Profile.png',
+    import.meta.url
+  ).href;
+  const hanaLogo = new URL(
+    '@/assets/bank-Logos/BK_HANA_Profile.png',
+    import.meta.url
+  ).href;
 
   const logoMap = {
-    // 주요 시중은행
-    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
+      .href,
     하나은행: hanaLogo,
-    농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
-    신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
-    우리은행: new URL('@/assets/bank-Logos/BK_Woori_Profile.png', import.meta.url).href,
-
-    // 특수은행
-    중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
-    한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
-    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
-
-    // 지방은행
+    농협은행주식회사: new URL(
+      '@/assets/bank-Logos/BK_NH_Profile.png',
+      import.meta.url
+    ).href,
+    신한은행: new URL(
+      '@/assets/bank-Logos/BK_Shinhan_Profile.png',
+      import.meta.url
+    ).href,
+    우리은행: new URL(
+      '@/assets/bank-Logos/BK_Woori_Profile.png',
+      import.meta.url
+    ).href,
+    중소기업은행: new URL(
+      '@/assets/bank-Logos/BK_IBK_Profile.png',
+      import.meta.url
+    ).href,
+    한국산업은행: new URL(
+      '@/assets/bank-Logos/BK_KDB_Profile.png',
+      import.meta.url
+    ).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url)
+      .href,
     경남은행: busanLogo,
     부산은행: busanLogo,
-    광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
-    전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
-    제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
-    아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
-
-    // 외국계은행
-    한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
-
-    // 인터넷은행
-    '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
-    '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
-    '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
-
-    // 주식회사 명칭 포함
+    광주은행: new URL(
+      '@/assets/bank-Logos/BK_KWANGJU_Profile.png',
+      import.meta.url
+    ).href,
+    전북은행: new URL(
+      '@/assets/bank-Logos/BK_JEONBUK_Profile.png',
+      import.meta.url
+    ).href,
+    제주은행: new URL(
+      '@/assets/bank-Logos/BK_JEJU_Profile.png',
+      import.meta.url
+    ).href,
+    아이엠뱅크: new URL(
+      '@/assets/bank-Logos/BK_DAEGU_Profile.png',
+      import.meta.url
+    ).href,
+    한국스탠다드차타드은행: new URL(
+      '@/assets/bank-Logos/BK_SC_Profile.png',
+      import.meta.url
+    ).href,
+    '주식회사 카카오뱅크': new URL(
+      '@/assets/bank-Logos/BK_KAKAO_Profile.png',
+      import.meta.url
+    ).href,
+    '주식회사 케이뱅크': new URL(
+      '@/assets/bank-Logos/BK_K_Profile.png',
+      import.meta.url
+    ).href,
+    '토스뱅크 주식회사': new URL(
+      '@/assets/bank-Logos/BK_TOSS_Profile.png',
+      import.meta.url
+    ).href,
     '주식회사 하나은행': hanaLogo,
   };
 
@@ -149,7 +305,6 @@ const getBankLogo = (bankName) => {
 </script>
 
 <style scoped>
-/* ===== 🆕 KB국민은행 전용 메시지 ===== */
 .kb-only-message {
   background: var(--color-warning-light);
   padding: 16px 20px;
@@ -174,7 +329,6 @@ const getBankLogo = (bankName) => {
   font-size: 18px;
 }
 
-/* ===== 검색 결과 없음 메시지 ===== */
 .no-results-message {
   background: var(--color-error-light);
   padding: 16px 20px;
@@ -199,7 +353,6 @@ const getBankLogo = (bankName) => {
   font-size: 18px;
 }
 
-/* ===== 추천 메시지 ===== */
 .recommendation-message {
   background: var(--color-info-light);
   padding: 16px 20px;
@@ -222,7 +375,6 @@ const getBankLogo = (bankName) => {
   font-size: 16px;
 }
 
-/* ===== 상품 리스트 ===== */
 .products-section h3 {
   font-size: 16px;
   font-weight: 700;
@@ -236,23 +388,58 @@ const getBankLogo = (bankName) => {
   gap: 15px;
 }
 
-.product-card {
-  background: var(--color-light);
-  border-radius: 16px;
-  padding: 20px;
+.recommendation-item {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+  background: var(--bg-card, var(--color-light));
+  min-height: 110px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  box-shadow: var(--shadow-md);
+  margin-bottom: 1rem;
 }
 
-.product-card:hover {
+.recommendation-item:hover {
+  border-color: var(--color-accent);
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--color-accent);
+}
+.top-recommendation {
+  border-color: var(--color-warning, #ffd700);
+  background: linear-gradient(
+    135deg,
+    var(--color-warning-light, rgba(255, 215, 0, 0.15)) 0%,
+    var(--bg-card, var(--color-light)) 100%
+  );
 }
 
-/* ===== 상품 카드 내부 레이아웃 ===== */
+.rank-badge {
+  position: absolute;
+  top: calc(-1 * var(--spacing-sm, 8px));
+  left: calc(-1 * var(--spacing-sm, 8px));
+  width: 32px;
+  height: 32px;
+  background: var(--color-accent);
+  color: var(--color-white, white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm, 14px);
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--bg-card, var(--color-light));
+}
+
+.top-recommendation .rank-badge {
+  background: var(--color-warning, #ffd700);
+  color: var(--color-white);
+}
+
 .product-card-horizontal {
   display: flex;
   align-items: center;
@@ -263,20 +450,28 @@ const getBankLogo = (bankName) => {
 .bank-logo-container {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 5rem;
-  height: 5rem;
+  flex-direction: column; /* 자식들을 세로 방향으로 배치 */
+  align-items: center; /* 가로 가운데 정렬 */
+  gap: 0.5rem; /* 로고와 버튼 그룹 간격 */
+  width: 12rem;
+  height: auto;
 }
 
 .bank-logo-container img {
-  width: 100%;
-  height: 100%;
+  width: 5rem;
+  height: 5rem;
   object-fit: contain;
   border-radius: 50%;
   background: var(--color-white);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-light);
+}
+
+.likes_compare {
+  display: flex; /* 좋아요 + 버튼 가로 배치 */
+  align-items: center;
+  gap: 0.3rem; /* 좋아요와 버튼 사이 간격 */
+  font-size: 0.9rem;
 }
 
 .product-name-block {
@@ -287,15 +482,6 @@ const getBankLogo = (bankName) => {
   justify-content: center;
 }
 
-.product-info-block {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-/* ===== 상품 텍스트 스타일 ===== */
 .bank-name-bold {
   font-size: 14px;
   font-weight: 700;
@@ -316,18 +502,12 @@ const getBankLogo = (bankName) => {
   margin-bottom: 2px;
 }
 
-.label-bold {
-  font-weight: bold;
-  color: var(--text-primary);
-}
-
 .highlight-rate {
   font-size: 18px;
   color: var(--color-accent);
   font-weight: bold;
 }
 
-/* ===== 로딩 애니메이션 ===== */
 .loading {
   text-align: center;
   padding: 40px;
@@ -344,6 +524,78 @@ const getBankLogo = (bankName) => {
   margin: 0 auto 15px;
 }
 
+.star-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.rate-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm); /* 항목 사이 간격 */
+  font-size: var(--font-size-sm);
+}
+
+.term {
+  font-weight: 500;
+  color: #0077cc; /* 파란색 텍스트 */
+  background-color: #e0f4ff; /* 하늘색 배경 */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
+.rate-values {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap; /* 필요시 줄바꿈 허용 */
+}
+
+.label-bold {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.highlight-rate {
+  font-weight: bold;
+  color: var(--color-accent);
+}
+
+.base-rate {
+  color: var(--text-secondary);
+}
+.favorite-button-container {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+.reaction-button {
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.reaction-button:hover {
+  background-color: #e0e0e0;
+}
+
+.reaction-button.active {
+  background-color: #ffe6e6;
+  color: red;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -353,7 +605,6 @@ const getBankLogo = (bankName) => {
   }
 }
 
-/* ===== 페이드 애니메이션 ===== */
 .fade-in {
   animation: fadeIn 0.5s ease-in;
 }
@@ -384,7 +635,6 @@ const getBankLogo = (bankName) => {
   }
 }
 
-/* ===== 반응형 디자인 ===== */
 @media (max-width: 393px) {
   .bank-logo-container {
     width: 4rem;
@@ -403,12 +653,8 @@ const getBankLogo = (bankName) => {
 
 @media (min-width: 1200px) {
   .product-list {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
-  }
-
-  .product-card {
-    padding: 18px;
   }
 }
 </style>

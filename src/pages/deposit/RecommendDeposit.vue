@@ -40,6 +40,7 @@
           :balance="getBalance()"
           :is-kb-only="isKBOnlyMode"
           @product-select="selectProduct"
+          @favorite-changed="handleFavoriteChanged"
         />
       </template>
     </main>
@@ -53,7 +54,6 @@ import { useAuthStore } from '@/stores/auth';
 import depositApi from '@/api/deposit';
 import AccountSlider from './AccountSlider.vue';
 import ProductList from './ProductList.vue';
-import SavingMyProductSlider from '@/components/savings/SavingMyProductSlider.vue';
 
 // 로그인 페이지로 리다이렉트
 const redirectToLogin = () => {
@@ -94,7 +94,7 @@ const parseJwt = (token) => {
   }
 };
 
-// 토큰에서 userId 추출 (디버깅 강화)
+// 토큰에서 userId 추출
 const getUserIdFromToken = () => {
   try {
     const token =
@@ -105,26 +105,20 @@ const getUserIdFromToken = () => {
 
     if (token) {
       const payload = parseJwt(token);
-
-      // userId 필드 확인
-      const userId = payload?.userId;
-
-      return userId;
+      return payload?.userId;
     }
   } catch (error) {
     // 에러 처리는 silent로
   }
-
   return null;
 };
 
-// effectiveUserId를 토큰에서 가져오도록 수정 (null/undefined 체크 강화)
+// effectiveUserId 계산
 const effectiveUserId = computed(() => {
   const propUserId = props.userId;
   const storeUserId = authStore.userId;
   const tokenUserId = getUserIdFromToken();
 
-  // null, undefined, 'undefined' 문자열 모두 필터링
   const isValidValue = (value) => {
     return (
       value !== null &&
@@ -136,64 +130,17 @@ const effectiveUserId = computed(() => {
 
   let result = null;
   if (isValidValue(propUserId)) {
-    result = String(propUserId); // 문자열로 변환
+    result = String(propUserId);
   } else if (isValidValue(storeUserId)) {
-    result = String(storeUserId); // 문자열로 변환
+    result = String(storeUserId);
   } else if (isValidValue(tokenUserId)) {
-    result = String(tokenUserId); // 문자열로 변환
+    result = String(tokenUserId);
   }
 
   return result;
 });
 
-// 사용자 정보 표시용 (디버깅 강화)
-const userDisplayInfo = computed(() => {
-  const tokenUserId = getUserIdFromToken();
-
-  // localStorage 안전하게 접근
-  const getLocalStorageItem = (key) => {
-    try {
-      return typeof window !== 'undefined' ? localStorage.getItem(key) : null;
-    } catch (error) {
-      console.warn(`localStorage 접근 실패: ${key}`, error);
-      return null;
-    }
-  };
-
-  // 안전한 값 추출 (null/undefined/'undefined' 문자열 필터링)
-  const isValidValue = (value) => {
-    return (
-      value !== null &&
-      value !== undefined &&
-      value !== 'undefined' &&
-      value !== ''
-    );
-  };
-
-  const userId = isValidValue(authStore.userId)
-    ? authStore.userId
-    : isValidValue(tokenUserId)
-    ? tokenUserId
-    : isValidValue(getLocalStorageItem('userId'))
-    ? getLocalStorageItem('userId')
-    : '없음';
-
-  const nickname = isValidValue(authStore.nickname)
-    ? authStore.nickname
-    : isValidValue(getLocalStorageItem('nickname'))
-    ? getLocalStorageItem('nickname')
-    : '게스트';
-
-  const result = {
-    userId: String(userId), // 문자열로 변환
-    nickname: String(nickname), // 문자열로 변환
-    hasToken: !!authStore.accessToken,
-  };
-
-  return result;
-});
-
-// 로그인 상태 확인 (토큰 기반으로 수정)
+// 로그인 상태 확인
 const isLoggedIn = computed(() => {
   return !!(authStore.accessToken && effectiveUserId.value);
 });
@@ -207,7 +154,7 @@ const currentUser = computed(() => {
   };
 });
 
-// Computed
+// 현재 계좌 정보
 const currentAccount = computed(() => {
   return accounts.value[currentSlide.value] || accounts.value[0];
 });
@@ -217,7 +164,46 @@ const isKBOnlyMode = computed(() => {
   return accounts.value.length === 0;
 });
 
-// 고객명 가져오기 (계좌가 없을 때도 처리)
+// 🆕 즐겨찾기 변경 핸들러 (간소화됨)
+const handleFavoriteChanged = (productId, isStarred) => {
+  console.log('🎯 RecommendDeposit에서 즐겨찾기 변경 감지:', {
+    productId,
+    isStarred,
+  });
+
+  // 현재 products 배열에서 해당 상품의 isFavorite 상태 업데이트
+  const updatedProducts = products.value.map((product) => {
+    if (Number(product.depositProductId) === Number(productId)) {
+      return {
+        ...product,
+        isFavorite: isStarred,
+      };
+    }
+    return product;
+  });
+
+  products.value = updatedProducts;
+
+  // 캐시도 업데이트
+  Object.keys(searchCache.value).forEach((cacheKey) => {
+    const cachedData = searchCache.value[cacheKey];
+    if (cachedData && cachedData.products) {
+      cachedData.products = cachedData.products.map((product) => {
+        if (Number(product.depositProductId) === Number(productId)) {
+          return {
+            ...product,
+            isFavorite: isStarred,
+          };
+        }
+        return product;
+      });
+    }
+  });
+
+  console.log('✅ RecommendDeposit 즐겨찾기 상태 업데이트 완료');
+};
+
+// 고객명 가져오기
 const getCustomerName = () => {
   if (accounts.value.length > 0) {
     return (
@@ -227,7 +213,7 @@ const getCustomerName = () => {
   return currentUser.value?.nickname || '고객';
 };
 
-// 잔액 가져오기 (계좌가 없을 때는 빈 문자열)
+// 잔액 가져오기
 const getBalance = () => {
   if (accounts.value.length > 0) {
     return currentAccount.value?.formattedBalance || '';
@@ -235,56 +221,14 @@ const getBalance = () => {
   return '';
 };
 
-// 계좌 정보 가져오기
-const fetchAccounts = async () => {
-  if (!effectiveUserId.value) {
-    accountsLoading.value = false;
-    return;
-  }
-
-  accountsLoading.value = true;
-  error.value = null;
-
-  try {
-    const data = await depositApi.getUserAccounts(effectiveUserId.value);
-    accounts.value = data;
-
-    // 계좌가 있는 경우: 첫 번째 계좌로 슬라이드 초기화하고 상품 검색
-    if (data.length > 0) {
-      currentSlide.value = 0;
-      await searchProducts();
-    } else {
-      // 계좌가 없는 경우: KB국민은행 상품 표시
-      await searchKBProducts();
-    }
-  } catch (err) {
-    // 404 오류 (계좌 없음)
-    if (err.message && err.message.includes('404')) {
-      accounts.value = [];
-      await searchKBProducts();
-    } else if (err.message && err.message.includes('500')) {
-      accounts.value = [];
-      error.value = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-    } else {
-      // 네트워크 오류 등의 경우 에러 메시지 표시
-      accounts.value = [];
-      error.value =
-        '계좌 정보를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.';
-    }
-  } finally {
-    accountsLoading.value = false;
-  }
-};
-
-// KB국민은행 상품 검색
+// KB국민은행 상품 검색 (비로그인용 API 사용)
 const searchKBProducts = async () => {
   loading.value = true;
 
   try {
     const kbProducts = await depositApi.getKBProducts();
-
     hasSearched.value = true;
-    products.value = kbProducts;
+    products.value = kbProducts; // 즐겨찾기 정보 없음 (isFavorite: false)
   } catch (error) {
     hasSearched.value = true;
     products.value = [];
@@ -293,59 +237,12 @@ const searchKBProducts = async () => {
   }
 };
 
-// 계좌 새로고침
-const refreshAccounts = async () => {
-  hasSearched.value = false;
-  products.value = [];
-  searchCache.value = {};
-
-  await fetchAccounts();
-};
-
-// 계좌 연결 성공 핸들러
-const handleConnectSuccess = () => {
-  refreshAccounts();
-};
-
-// 슬라이드 변경 핸들러 (자동 검색 포함)
-const handleSlideChange = async (index) => {
-  currentSlide.value = index;
-
-  // 캐시된 결과가 있으면 로드, 없으면 새로 검색
-  const currentAccountData = currentAccount.value;
-  if (!currentAccountData) return;
-
-  const accountKey = currentAccountData.accountNo || currentSlide.value;
-  const cachedData = searchCache.value[accountKey];
-
-  if (cachedData) {
-    hasSearched.value = true;
-    products.value = cachedData.products;
-  } else {
-    await searchProducts();
-  }
-};
-
-// 검색 결과 캐시 저장
-const saveCachedResults = (accountData, searchResults) => {
-  const accountKey = accountData.accountNo || currentSlide.value;
-  searchCache.value[accountKey] = {
-    products: [...searchResults],
-    timestamp: Date.now(),
-    accountInfo: {
-      accountNo: accountData.accountNo,
-      balance: accountData.formattedBalance,
-    },
-  };
-};
-
 // 상품 검색
 const searchProducts = async () => {
   if (!effectiveUserId.value) {
     return;
   }
 
-  // 계좌가 없는 경우 KB국민은행 상품 표시
   if (accounts.value.length === 0) {
     await searchKBProducts();
     return;
@@ -355,10 +252,7 @@ const searchProducts = async () => {
 
   try {
     const currentAccountData = currentAccount.value;
-
-    if (!currentAccountData) {
-      return;
-    }
+    if (!currentAccountData) return;
 
     // 캐시 확인
     const accountKey = currentAccountData.accountNo || currentSlide.value;
@@ -366,7 +260,7 @@ const searchProducts = async () => {
 
     if (cachedData) {
       hasSearched.value = true;
-      products.value = cachedData.products;
+      products.value = cachedData.products; // 이미 즐겨찾기 정보 포함됨
       loading.value = false;
       return;
     }
@@ -384,17 +278,18 @@ const searchProducts = async () => {
     const data = await depositApi.getProductsByBalance(requestData);
 
     hasSearched.value = true;
-    products.value = data;
+    products.value = data; // 백엔드에서 즐겨찾기 정보 포함해서 반환
 
     // 캐시에 저장
     saveCachedResults(currentAccountData, data);
   } catch (error) {
-    // 500 오류인 경우 대안으로 모든 상품 조회
     if (error.message && error.message.includes('500')) {
       try {
-        const allProducts = await depositApi.getAllProducts();
+        // 🔄 백엔드의 즐겨찾기 포함 API 사용
+        const allProducts =
+          await depositApi.getAllDepositProductsWithFavorites();
         hasSearched.value = true;
-        products.value = allProducts;
+        products.value = allProducts; // 이미 즐겨찾기 정보가 포함되어 있음
       } catch (fallbackError) {
         hasSearched.value = true;
         products.value = [];
@@ -405,6 +300,87 @@ const searchProducts = async () => {
     }
   } finally {
     loading.value = false;
+  }
+};
+
+// 계좌 정보 가져오기
+const fetchAccounts = async () => {
+  if (!effectiveUserId.value) {
+    accountsLoading.value = false;
+    return;
+  }
+
+  accountsLoading.value = true;
+  error.value = null;
+
+  try {
+    const data = await depositApi.getUserAccounts(effectiveUserId.value);
+    accounts.value = data;
+
+    if (data.length > 0) {
+      currentSlide.value = 0;
+      await searchProducts();
+    } else {
+      await searchKBProducts();
+    }
+  } catch (err) {
+    if (err.message && err.message.includes('404')) {
+      accounts.value = [];
+      await searchKBProducts();
+    } else if (err.message && err.message.includes('500')) {
+      accounts.value = [];
+      error.value = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    } else {
+      accounts.value = [];
+      error.value =
+        '계좌 정보를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.';
+    }
+  } finally {
+    accountsLoading.value = false;
+  }
+};
+
+// 검색 결과 캐시 저장
+const saveCachedResults = (accountData, searchResults) => {
+  const accountKey = accountData.accountNo || currentSlide.value;
+  searchCache.value[accountKey] = {
+    products: [...searchResults],
+    timestamp: Date.now(),
+    accountInfo: {
+      accountNo: accountData.accountNo,
+      balance: accountData.formattedBalance,
+    },
+  };
+};
+
+// 계좌 새로고침
+const refreshAccounts = async () => {
+  hasSearched.value = false;
+  products.value = [];
+  searchCache.value = {};
+  await fetchAccounts();
+};
+
+// 계좌 연결 성공 핸들러
+const handleConnectSuccess = () => {
+  refreshAccounts();
+};
+
+// 슬라이드 변경 핸들러
+const handleSlideChange = async (index) => {
+  currentSlide.value = index;
+
+  const currentAccountData = currentAccount.value;
+  if (!currentAccountData) return;
+
+  const accountKey = currentAccountData.accountNo || currentSlide.value;
+  const cachedData = searchCache.value[accountKey];
+
+  if (cachedData) {
+    hasSearched.value = true;
+    products.value = cachedData.products; // 이미 즐겨찾기 정보 포함됨
+  } else {
+    await searchProducts();
   }
 };
 
@@ -440,7 +416,6 @@ watch(
 
 // 라이프사이클
 onMounted(async () => {
-  // 토큰이 제대로 로드될 때까지 잠시 대기
   await new Promise((resolve) => setTimeout(resolve, 200));
 
   if (isLoggedIn.value && effectiveUserId.value) {
