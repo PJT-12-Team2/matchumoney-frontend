@@ -9,19 +9,35 @@
         <!-- 페르소나 섹션 -->
         <div class="menu-section">
           <h6 class="section-title">페르소나</h6>
-          <RouterLink to="/persona/start" class="menu-item">
+          <RouterLink
+            to="/persona/start"
+            class="menu-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">👤</span>
             <span>페르소나 시작</span>
           </RouterLink>
-          <RouterLink to="/persona/deposits" class="menu-item sub-item">
+          <RouterLink
+            to="/persona/deposits"
+            class="menu-item sub-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">💰</span>
             <span>예금</span>
           </RouterLink>
-          <RouterLink to="/persona/savings" class="menu-item sub-item">
+          <RouterLink
+            to="/persona/savings"
+            class="menu-item sub-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">🏦</span>
             <span>적금</span>
           </RouterLink>
-          <RouterLink to="/persona/cards" class="menu-item sub-item">
+          <RouterLink
+            to="/persona/cards"
+            class="menu-item sub-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">💳</span>
             <span>카드</span>
           </RouterLink>
@@ -33,6 +49,7 @@
           <RouterLink
             to="/deposits/recommendations/history"
             class="menu-item sub-item"
+            @click="$emit('close')"
           >
             <span class="menu-icon">💰</span>
             <span>예금</span>
@@ -40,11 +57,16 @@
           <RouterLink
             to="/savings/recommendations/history"
             class="menu-item sub-item"
+            @click="$emit('close')"
           >
             <span class="menu-icon">🏦</span>
             <span>적금</span>
           </RouterLink>
-          <RouterLink to="/mydata/cards" class="menu-item sub-item">
+          <RouterLink
+            to="/mydata/cards"
+            class="menu-item sub-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">💳</span>
             <span>카드</span>
           </RouterLink>
@@ -57,7 +79,11 @@
             <span class="menu-icon">⚖️</span>
             <span>상품비교</span>
           </RouterLink> -->
-          <RouterLink to="/compare" class="menu-item sub-item">
+          <RouterLink
+            to="/compare"
+            class="menu-item sub-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">💰</span>
             <span>상품비교</span>
           </RouterLink>
@@ -94,7 +120,11 @@
             <span class="menu-icon">📚</span>
             <span>교육</span>
           </RouterLink> -->
-          <RouterLink to="/education/quiz" class="menu-item sub-item">
+          <RouterLink
+            to="/education/quiz"
+            class="menu-item sub-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">❓</span>
             <span>퀴즈</span>
           </RouterLink>
@@ -106,11 +136,15 @@
 
         <!-- 기타 메뉴 -->
         <div class="menu-section">
-          <RouterLink to="/notifications" class="menu-item">
+          <RouterLink
+            to="/notifications"
+            class="menu-item"
+            @click="$emit('close')"
+          >
             <span class="menu-icon">🔔</span>
             <span>알림</span>
           </RouterLink>
-          <RouterLink to="/mypage" class="menu-item">
+          <RouterLink to="/mypage" class="menu-item" @click="$emit('close')">
             <span class="menu-icon">👤</span>
             <span>마이페이지</span>
           </RouterLink>
