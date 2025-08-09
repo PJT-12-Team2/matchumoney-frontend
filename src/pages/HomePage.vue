@@ -59,12 +59,14 @@
                 <div class="hero-image">
                   <div class="hero-main-icon">
                     <div class="icon-bg">
-                      <img
-                        src="@/assets/persona_together.png"
-                        alt="페르소나 이미지"
-                        class="persona-together-image"
-                        loading="lazy"
-                      />
+                      <video
+                        src="@/assets/character_images/character_main_video.mp4"
+                        class="hero-video"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                      ></video>
                     </div>
                   </div>
                 </div>
@@ -538,6 +540,20 @@ onUnmounted(() => {
 }
 .content {
   margin: 0 !important;
+}
+</style>
+<style scoped>
+/* Enlarged Hero Video */
+.hero-video {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  object-fit: contain;
+  background-color: #def2e9; /* extracted color from uploaded image */
+  border-radius: 20px;
+  display: block;
+  margin: 0 auto;
+  animation: float 3s ease-in-out infinite;
 }
 </style>
 <style scoped>

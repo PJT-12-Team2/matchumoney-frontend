@@ -122,9 +122,28 @@
             <div class="product-card-row" @click="selectProduct(product)">
               <!-- 왼쪽(로고) -->
               <div class="bank-logo-container">
-                <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
-                <div class="card-compare-button">
-                  <CompareButton :productId="product.id" productType="DEPOSIT" />
+                <img
+                  :src="getBankLogo(product.bankInitial)"
+                  alt="은행 로고"
+                  class="bank-logo-round"
+                />
+                <div class="card-compare-button" @click.stop>
+                  <LikeToggle
+                    :productId="product.id"
+                    productType="deposit-products"
+                    :initialLiked="isLiked"
+                    :initialCount="likeCount"
+                    @update="
+                      ({ liked, count }) => {
+                        isLiked = liked;
+                        likeCount = count;
+                      }
+                    "
+                  />
+                  <CompareButton
+                    :productId="product.id"
+                    productType="DEPOSIT"
+                  />
                 </div>
               </div>
               <!-- 오른쪽(정보) -->
@@ -178,6 +197,7 @@ const modules = [Pagination];
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
 
 const showTermDropdown = ref(false);
 const isMobile = ref(false);

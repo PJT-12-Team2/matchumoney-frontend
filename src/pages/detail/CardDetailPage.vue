@@ -1,16 +1,26 @@
 <template>
   <div class="container" v-if="cardData">
     <div class="saving-detail-page">
+      <section class="persona-banner-section">
+        <div class="info-banner">
+          <p class="badge">
+            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾은
+            상품
+          </p>
+        </div>
+      </section>
+      <br />
       <section class="card-header-wrapper">
         <section class="card-header">
+          <div class="fav-floating">
+            <FavoriteToggle
+              class="favorite-icon"
+              v-model="isFavorite"
+              :productId="cardData.cardProductId"
+              :productType="productType"
+            />
+          </div>
           <div class="card-image-wrapper">
-            <div class="favorite-wrapper">
-              <FavoriteToggle
-                v-model="isFavorite"
-                :productId="cardData.cardProductId"
-                :productType="productType"
-              />
-            </div>
             <img
               :src="cardData.cardImageUrl"
               alt="카드 이미지"
@@ -29,11 +39,16 @@
                   }
                 "
               />
-              <button class="compare-button">➕ 비교함 담기</button>
+              <CompareButton
+                :productId="cardData.cardProductId"
+                :productType="productType"
+              />
             </div>
           </div>
           <div class="card-info">
-            <h2 class="card-title">{{ cardData.name }}</h2>
+            <div class="title-row">
+              <h2 class="card-title">{{ cardData.name }}</h2>
+            </div>
             <p class="subtitle">{{ cardData.issuer }}({{ cardData.type }})</p>
             <p class="card-meta">
               전월 실적:
@@ -59,21 +74,19 @@
             </ul>
             <div class="button-group">
               <button class="go-to-card" @click="goToCardSite">
-                카드사 바로가기
+                신청하러 바로가기
               </button>
-              <button class="compare-link">비교함 바로가기</button>
+              <button
+                class="compare-link full-width"
+                @click="
+                  router.push({ path: '/compare', query: { type: 'CARD' } })
+                "
+              >
+                비교함 바로가기
+              </button>
             </div>
           </div>
         </section>
-      </section>
-
-      <section class="persona-banner-section">
-        <div class="info-banner">
-          <p class="badge">
-            <span class="highlight">{{ personaName }}</span> 유형이 많이 찾는
-            상품
-          </p>
-        </div>
       </section>
 
       <section class="interest-section">
@@ -161,6 +174,7 @@ import api from '@/api';
 import LikeToggle from '@/components/common/LikeToggle.vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import { ProductType } from '@/constants/productTypes';
+import CompareButton from '@/components/common/CompareButton.vue';
 
 const productType = ProductType.CARD;
 
@@ -465,7 +479,6 @@ function goToCardSite() {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-
 .favorite-icon {
   position: absolute;
   top: 20px;
@@ -478,7 +491,6 @@ function goToCardSite() {
 .favorite-icon:hover {
   transform: scale(1.2);
 }
-
 
 /* 금리 안내 스타일 */
 .interest-section {
@@ -915,5 +927,34 @@ function goToCardSite() {
   background-color: #ffe6e6;
   color: red;
 }
+/* 추가 */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.favorite-inline {
+  position: static !important;
+  transform: none;
+}
+/* card-header를 기준 컨테이너로 */
+.card-header {
+  position: relative; /* ⭐ 중요 */
+}
 
+/* 우상단에 고정 */
+.fav-floating {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* (선택) 내부가 absolute로 구현된 토글일 때 강제 정적화 */
+:deep(.favorite-icon),
+:deep(.favorite-toggle) {
+  position: static !important;
+}
 </style>
