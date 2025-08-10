@@ -940,6 +940,7 @@ const selectProduct = (product) => {
   font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 0.2rem;
+  text-align: left;
 }
 .rate-line {
   font-size: var(--font-size-sm);
