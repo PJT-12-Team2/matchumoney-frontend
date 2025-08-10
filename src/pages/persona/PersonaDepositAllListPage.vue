@@ -164,7 +164,7 @@
                   alt="은행 로고"
                   class="bank-logo-round"
                 />
-                <div class="card-compare-button" @click.stop>
+                <div class="deposit-compare-button" @click.stop>
                   <LikeToggle
                     :productId="product.id"
                     productType="deposit-products"
@@ -1022,7 +1022,7 @@ const selectProduct = (product) => {
     gap: var(--spacing-lg);
   }
   .bank-logo-container {
-    width: 5.6rem;
+    width: 6rem;
     height: 2rem;
   }
   .bank-logo-round {
@@ -1063,6 +1063,12 @@ const selectProduct = (product) => {
     flex-direction: column;
     align-items: center;
     margin-bottom: var(--spacing-lg);
+  }
+
+  .deposit-compare-button > *:first-child {
+    transform: scale(0.7); /* 전체 크기 80%로 축소 */
+    transform-origin: center; /* 축소 기준 중앙 */
+    margin-right: -1rem;
   }
 }
 
@@ -1179,7 +1185,17 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.card-compare-button {
+.deposit-compare-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.deposit-compare-button > * {
+  white-space: nowrap;
 }
 </style>
