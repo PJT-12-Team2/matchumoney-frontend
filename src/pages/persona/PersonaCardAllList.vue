@@ -43,8 +43,8 @@
                 }}
               </div>
               <div>
-                <span class="label">연회비 정보:</span>
-                {{ card.annualFee || '정보 없음' }}
+                <span class="label">연회비:</span>
+                {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
               </div>
               <!-- 안전하게 조건 체크 -->
               <div
@@ -98,8 +98,8 @@
                 }}
               </div>
               <div>
-                <span class="label">연회비 정보:</span>
-                {{ card.annualFee || '정보 없음' }}
+                <span class="label">연회비:</span>
+                {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
               </div>
               <!-- 안전하게 조건 체크 -->
               <div
@@ -242,8 +242,8 @@
                   }}
                 </div>
                 <div>
-                  <span class="label">연회비 정보:</span>
-                  {{ product.annualFee || '정보 없음' }}
+                  <span class="label">연회비:</span>
+                  {{ product.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
                 </div>
 
                 <!-- ⭐ 혜택 태그 추가 -->
