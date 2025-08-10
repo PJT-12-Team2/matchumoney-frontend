@@ -225,13 +225,13 @@
                 <div class="bank-name-bold">{{ product.bank }}</div>
 
                 <div class="rate-line">
-                  <span class="label-bold">최고 금리 :</span>
+                  <span class="label-bold">최고 금리 : </span>
                   <span class="highlight-rate">{{
                     getRateWithTerm(product, 'max')
                   }}</span>
                 </div>
                 <div class="rate-line">
-                  <span class="label-bold">최저 금리 :</span>
+                  <span class="label-bold">최저 금리 : </span>
                   <span>{{ getRateWithTerm(product, 'base') }}</span>
                 </div>
                 <div class="rate-line no-wrap">
@@ -997,6 +997,7 @@ const getMinAmountWithTerm = (product) => {
   font-weight: 800;
   color: var(--text-primary);
   /* margin-bottom: 0.2rem; */
+  text-align: left;
 }
 
 .rate-line {
