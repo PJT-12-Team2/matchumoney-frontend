@@ -871,8 +871,8 @@ const getMinAmountWithTerm = (product) => {
 }
 
 .bank-logo-option {
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1077,6 +1077,11 @@ const getMinAmountWithTerm = (product) => {
   .bank-logo-round {
     width: 5.6rem;
     height: 5.6rem;
+  }
+
+  .bank-logo-img {
+    width: 7rem;
+    height: 7rem;
   }
 }
 </style>
