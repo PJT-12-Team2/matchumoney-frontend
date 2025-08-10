@@ -25,11 +25,11 @@
             <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>
-                <strong>최고 금리:</strong>
+                <strong>최고 금리: </strong>
                 {{ deposit.maxRate }}
               </span>
               <span>
-                <strong>최저 금리:</strong>
+                <strong>최저 금리: </strong>
                 {{ deposit.baseRate }}
               </span>
             </div>
@@ -60,11 +60,11 @@
             <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>
-                <strong>최고 금리:</strong>
+                <strong>최고 금리: </strong>
                 {{ deposit.maxRate }}
               </span>
               <span>
-                <strong>최저 금리:</strong>
+                <strong>최저 금리: </strong>
                 {{ deposit.baseRate }}
               </span>
             </div>
@@ -188,13 +188,13 @@
                 <div class="product-name-bold">{{ product.name }}</div>
                 <div class="bank-name-bold">{{ product.bank }}</div>
                 <div class="rate-line">
-                  <span class="label-bold">최고 금리 :</span>
+                  <span class="label-bold">최고 금리 : </span>
                   <span class="highlight-rate">{{
                     getRateWithTerm(product, 'max')
                   }}</span>
                 </div>
                 <div class="rate-line">
-                  <span class="label-bold">최저 금리 :</span>
+                  <span class="label-bold">최저 금리 : </span>
                   <span>{{ getRateWithTerm(product, 'base') }}</span>
                 </div>
                 <div class="rate-line">
