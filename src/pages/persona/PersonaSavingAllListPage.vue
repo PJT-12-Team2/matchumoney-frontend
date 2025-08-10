@@ -43,7 +43,7 @@
         <Swiper
           v-else
           :modules="modules"
-          :slides-per-view="1.2"
+          :slides-per-view="1"
           :space-between="16"
           :pagination="{ clickable: true }"
           class="carousel-swiper"
