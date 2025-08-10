@@ -463,6 +463,8 @@ const carouselDeposits = computed(() => {
 
 onMounted(async () => {
   let personaCode = null;
+  loading.value = true;
+
   const token = localStorage.getItem('accessToken');
   const authConfig = token
     ? { headers: { Authorization: `Bearer ${token}` } }
@@ -505,12 +507,6 @@ onMounted(async () => {
   }
 
   try {
-    // 전체 적금 리스트
-    const allRes = await api.post('/deposit/search', {
-      korCoNm: '',
-      maxLimit: null,
-      authConfig,
-    });
     const fullList = listRes.data.map((item) => ({
       id: item.depositProductId,
       name: item.finPrdtNm,
@@ -528,6 +524,8 @@ onMounted(async () => {
     allProducts.value = fullList;
   } catch (err) {
     console.error('❌ 전체 상품 불러오기 실패:', err);
+  } finally {
+    loading.value = false;
   }
 });
 
