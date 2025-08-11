@@ -167,7 +167,6 @@ function isRateBest(period, index) {
 .comparison-container {
   padding: var(--spacing-md);
   border-radius: var(--spacing-md);
-  background: var(--color-light);
 }
 
 .card-header-row {

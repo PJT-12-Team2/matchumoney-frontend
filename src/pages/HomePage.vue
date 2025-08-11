@@ -60,7 +60,7 @@
                   <div class="hero-main-icon">
                     <div class="icon-bg">
                       <video
-                        src="@/assets/character_images/character_main_video.mp4"
+                        src="@/assets/character_images/together_animals.mp4"
                         class="hero-video"
                         autoplay
                         muted
@@ -691,7 +691,7 @@ onUnmounted(() => {
 
 /* 슬라이드 배경색 */
 .hero-section {
-  background: linear-gradient(135deg, #eef6f0 0%, #d9ece1 100%);
+  background-color: #E5FBF6;
   /* 세이지+민트 느낌 → 메인에 어울리는 부드러운 신뢰감 */
 }
 

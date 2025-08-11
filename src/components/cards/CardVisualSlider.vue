@@ -1,6 +1,7 @@
 <template>
   <div class="card-visual-slider">
     <div class="slider-container">
+      <!-- ...상단 동일 -->
       <div
         class="slider-wrapper"
         :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
@@ -10,24 +11,33 @@
         @touchend="handleTouchEnd"
         @mousemove="handleMouseMove"
         @mouseup="handleMouseUp"
-        @mouseleave="handleMouseUp">
-        <!-- 카드 시각 정보만 보여주는 섹션 -->
-        <div v-for="(card, index) in filteredCards" :key="card.holdingId || index" class="slide-item">
+        @mouseleave="handleMouseUp"
+      >
+        <div
+          v-for="(card, index) in filteredCards"
+          :key="card.holdingId || index"
+          class="slide-item"
+        >
           <img :src="card.imageUrl" alt="카드 이미지" class="card-image" />
-          <div class="card-name">{{ card.cardName }}</div>
         </div>
       </div>
+
     </div>
 
-    <!-- 슬라이더 컨트롤 -->
+    <!-- 슬라이더 캡션 + 컨트롤 -->
     <div class="slider-controls">
+      <div class="slider-caption" v-if="activeName">
+        <span class="issuer" v-if="activeIssuer">{{ activeIssuer }}</span>
+        <span class="name">{{ activeName }}</span>
+      </div>
       <div class="slider-indicators">
         <span
           v-for="(_, index) in filteredCards.length"
           :key="index"
           class="indicator"
           :class="{ active: index === currentIndex }"
-          @click="goToSlide(index)"></span>
+          @click="goToSlide(index)"
+        ></span>
       </div>
     </div>
   </div>
@@ -37,15 +47,31 @@
 import { ref, computed } from 'vue';
 
 const props = defineProps({
-  cards: {
-    type: Array,
-    default: () => [],
-  },
+  cards: { type: Array, default: () => [] },
 });
 
-const filteredCards = computed(() => props.cards.filter((card) => !card.isActionCard));
+const filteredCards = computed(() =>
+  props.cards.filter((card) => !card.isActionCard)
+);
 
 const currentIndex = ref(0);
+
+// ▼ 추가: 현재 카드, 카드사/카드명, 좌/우 점 개수
+const activeCard = computed(
+  () => filteredCards.value[currentIndex.value] || {}
+);
+const activeIssuer = computed(() => "KB국민카드");
+const activeName = computed(
+  () => activeCard.value.cardName ?? activeCard.value.name ?? ''
+);
+
+const totalCount = computed(() => filteredCards.value.length);
+const leftDots = computed(() =>
+  Math.max(0, Math.min(currentIndex.value, totalCount.value))
+);
+const rightDots = computed(() =>
+  Math.max(0, totalCount.value - currentIndex.value - 1)
+);
 
 const nextSlide = () => {
   if (currentIndex.value < filteredCards.value.length - 1) {
@@ -187,14 +213,38 @@ const handleTouchEnd = () => {
 
 .slider-controls {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: var(--spacing-lg);
+  gap: 0.3rem;                 /* 캡션과 점 간격 */
+  margin-top: var(--spacing-sm);/* 상단 여백 축소 */
   padding: 0 var(--spacing-sm);
+}
+
+.slider-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  text-align: center;
+}
+.slider-caption .issuer {
+  color: var(--color-secondary-90);
+  font-weight: 400;
+}
+.slider-caption .name {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1.2rem;
 }
 .slider-indicators {
   display: flex;
   gap: var(--spacing-sm);
+  margin-top: 1rem;
 }
 .indicator {
   width: 8px;
@@ -213,4 +263,5 @@ const handleTouchEnd = () => {
 .indicator.active:hover {
   background: var(--color-dark);
 }
+
 </style>
