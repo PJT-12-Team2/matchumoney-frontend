@@ -43,8 +43,8 @@
                 }}
               </div>
               <div>
-                <span class="label">연회비 정보:</span>
-                {{ card.annualFee || '정보 없음' }}
+                <span class="label">연회비:</span>
+                {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
               </div>
               <!-- 안전하게 조건 체크 -->
               <div
@@ -98,8 +98,8 @@
                 }}
               </div>
               <div>
-                <span class="label">연회비 정보:</span>
-                {{ card.annualFee || '정보 없음' }}
+                <span class="label">연회비:</span>
+                {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
               </div>
               <!-- 안전하게 조건 체크 -->
               <div
@@ -242,8 +242,8 @@
                   }}
                 </div>
                 <div>
-                  <span class="label">연회비 정보:</span>
-                  {{ product.annualFee || '정보 없음' }}
+                  <span class="label">연회비:</span>
+                  {{ product.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
                 </div>
 
                 <!-- ⭐ 혜택 태그 추가 -->
@@ -672,17 +672,42 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
   .benefit-grid {
-    display: flex;
-    overflow-x: auto;
-    padding: var(--spacing-sm);
-    gap: var(--spacing-md);
-    scroll-snap-type: x mandatory;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    overflow: visible; /* 기존 overflow-x 제거 효과 */
+    scroll-snap-type: none; /* 스냅 제거 */
+    padding: 0 var(--spacing-sm);
   }
+
   .benefit-button {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-    min-width: 6rem;
+    width: 100%;
+    min-height: 4.8rem;
+    aspect-ratio: 1 / 1;
+    padding: 0.5rem;
+    border-radius: 12px;
+    /* 기존 flex 스크롤 흔적 무력화 */
+    flex: initial;
+    scroll-snap-align: unset;
   }
+
+  .benefit-button .emoji {
+    font-size: 1.6rem;
+    margin-bottom: 0.3rem;
+  }
+
+  /* 라벨: 2줄까지 깔끔히 보이게 */
+  .benefit-button span:last-child {
+    font-size: 0.92rem;
+    line-height: 1.25;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 최대 2줄 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: keep-all;
+  }
+
   .carousel-card-list {
     justify-content: center;
     overflow-x: hidden;
@@ -690,6 +715,31 @@ onMounted(() => {
   .carousel-card {
     width: 220px;
     height: 320px;
+  }
+  .card-compare-button {
+    display: flex;
+    align-items: center;
+  }
+
+  /* LikeToggle 전체 크기 살짝 축소 */
+  .card-compare-button > *:first-child {
+    transform: scale(0.85);
+    transform-origin: left center;
+  }
+
+  /* LikeToggle 내부(하트+숫자) 간격/패딩 보정 */
+  .card-compare-button :deep(.like-chip) {
+    padding: 0.35rem 0.7rem; /* 칩 자체를 살짝 줄임 */
+    border-radius: 999px;
+    line-height: 1;
+  }
+  .card-compare-button :deep(.like-icon) {
+    margin-right: 0.3rem; /* 하트 ↔ 숫자 간격 */
+    width: 1rem; /* 아이콘이 img/svg면 적용됨 */
+    height: 1rem;
+  }
+  .card-compare-button :deep(.like-count) {
+    font-size: 0.95rem; /* 숫자 조금만 축소 */
   }
 }
 </style>
@@ -793,7 +843,7 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
 }
 .card-left-section {
   display: flex;

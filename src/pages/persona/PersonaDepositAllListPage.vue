@@ -25,11 +25,11 @@
             <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>
-                <strong>최고 금리:</strong>
+                <strong>최고 금리: </strong>
                 {{ deposit.maxRate }}
               </span>
               <span>
-                <strong>최저 금리:</strong>
+                <strong>최저 금리: </strong>
                 {{ deposit.baseRate }}
               </span>
             </div>
@@ -40,7 +40,7 @@
         <Swiper
           v-else
           :modules="modules"
-          :slides-per-view="1.2"
+          :slides-per-view="1"
           :space-between="16"
           :pagination="{ clickable: true }"
           class="carousel-swiper"
@@ -60,11 +60,11 @@
             <div class="bank-name-bold">{{ deposit.bankName }}</div>
             <div class="carousel-deposit-rates-inline">
               <span>
-                <strong>최고 금리:</strong>
+                <strong>최고 금리: </strong>
                 {{ deposit.maxRate }}
               </span>
               <span>
-                <strong>최저 금리:</strong>
+                <strong>최저 금리: </strong>
                 {{ deposit.baseRate }}
               </span>
             </div>
@@ -164,7 +164,7 @@
                   alt="은행 로고"
                   class="bank-logo-round"
                 />
-                <div class="card-compare-button" @click.stop>
+                <div class="deposit-compare-button" @click.stop>
                   <LikeToggle
                     :productId="product.id"
                     productType="deposit-products"
@@ -188,13 +188,13 @@
                 <div class="product-name-bold">{{ product.name }}</div>
                 <div class="bank-name-bold">{{ product.bank }}</div>
                 <div class="rate-line">
-                  <span class="label-bold">최고 금리 :</span>
+                  <span class="label-bold">최고 금리 : </span>
                   <span class="highlight-rate">{{
                     getRateWithTerm(product, 'max')
                   }}</span>
                 </div>
                 <div class="rate-line">
-                  <span class="label-bold">최저 금리 :</span>
+                  <span class="label-bold">최저 금리 : </span>
                   <span>{{ getRateWithTerm(product, 'base') }}</span>
                 </div>
                 <div class="rate-line">
@@ -463,6 +463,8 @@ const carouselDeposits = computed(() => {
 
 onMounted(async () => {
   let personaCode = null;
+  loading.value = true;
+
   const token = localStorage.getItem('accessToken');
   const authConfig = token
     ? { headers: { Authorization: `Bearer ${token}` } }
@@ -505,12 +507,6 @@ onMounted(async () => {
   }
 
   try {
-    // 전체 적금 리스트
-    const allRes = await api.post('/deposit/search', {
-      korCoNm: '',
-      maxLimit: null,
-      authConfig,
-    });
     const fullList = listRes.data.map((item) => ({
       id: item.depositProductId,
       name: item.finPrdtNm,
@@ -528,6 +524,8 @@ onMounted(async () => {
     allProducts.value = fullList;
   } catch (err) {
     console.error('❌ 전체 상품 불러오기 실패:', err);
+  } finally {
+    loading.value = false;
   }
 });
 
@@ -942,6 +940,7 @@ const selectProduct = (product) => {
   font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 0.2rem;
+  text-align: left;
 }
 .rate-line {
   font-size: var(--font-size-sm);
@@ -1023,7 +1022,7 @@ const selectProduct = (product) => {
     gap: var(--spacing-lg);
   }
   .bank-logo-container {
-    width: 5.6rem;
+    width: 6rem;
     height: 2rem;
   }
   .bank-logo-round {
@@ -1064,6 +1063,12 @@ const selectProduct = (product) => {
     flex-direction: column;
     align-items: center;
     margin-bottom: var(--spacing-lg);
+  }
+
+  .deposit-compare-button > *:first-child {
+    transform: scale(0.7); /* 전체 크기 80%로 축소 */
+    transform-origin: center; /* 축소 기준 중앙 */
+    margin-right: -1rem;
   }
 }
 
@@ -1180,7 +1185,17 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.card-compare-button {
+.deposit-compare-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.deposit-compare-button > * {
+  white-space: nowrap;
 }
 </style>
