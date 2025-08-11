@@ -58,7 +58,7 @@
                   : '없음'
               }}</strong>
               &nbsp;|&nbsp; 연회비:
-              <strong>{{ cardData.annualFee || '정보 없음' }}</strong>
+              <strong>{{ displayAnnualFee }}</strong>
             </p>
             <div class="benefit-hashtags">
               <span
@@ -203,6 +203,25 @@ const personaName = computed(() => {
   return personaNameMap[cardData.value?.personaId] || '기타';
 });
 
+const displayAnnualFee = computed(() => {
+  const raw = cardData.value?.annualFee;
+  if (!raw) return '정보 없음';
+  return raw
+    // 1) remove the whole token like "[나]" or "[나 ]"
+    .replace(/\[나\s*\]/g, '')
+    // 2) drop square brackets but keep their inner content (e.g., [15,000] -> 15,000)
+    .replace(/\[|\]/g, '')
+    // 3) normalize slashes
+    .replace(/\s*\/\s*/g, ' / ')
+    // 4) remove spaces *inside* numbers after commas, e.g., 15, 000 -> 15,000
+    .replace(/,\s+(?=\d)/g, ',')
+    // 5) for commas NOT followed by a digit, ensure a single space after
+    .replace(/,(?!\d)\s*/g, ', ')
+    // 6) collapse duplicate spaces
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+});
+
 function formatValue(value) {
   const num = parseFloat(value);
   return num >= 100 ? `${num.toLocaleString()}원` : `${num}%`;
@@ -265,8 +284,8 @@ function goToCardSite() {
   }
 }
 </script>
-
 <style scoped>
+
 .benefit-table {
   width: 100%;
   border-collapse: collapse;
@@ -309,6 +328,7 @@ function goToCardSite() {
   gap: 40px;
 }
 
+/* Wrap image + reactions in a vertical flexbox with fixed spacing */
 .card-image-wrapper {
   display: flex;
   flex-direction: column;
@@ -449,11 +469,13 @@ function goToCardSite() {
   text-decoration: underline;
 }
 
+/* Reserve space below the image so reaction buttons don't shift */
 .reaction-group {
   margin-top: 10px;
+  min-height: 40px; /* ensures consistent button block height */
   display: flex;
-  gap: 10px;
   justify-content: center;
+  gap: 8px;
 }
 
 .reaction-button,
@@ -956,5 +978,73 @@ function goToCardSite() {
 :deep(.favorite-icon),
 :deep(.favorite-toggle) {
   position: static !important;
+}
+
+/* --- Responsive stack for card header on small screens --- */
+@media (max-width: 768px) {
+  /* Stack image and info vertically */
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+    /* Center the title row only on small screens */
+    .title-row {
+    justify-content: center;
+  }
+  /* Center the image block and remove right margin used on desktop */
+  .card-image-wrapper {
+    margin-right: 0;
+    align-items: center;
+  }
+
+  /* Make image a bit larger but within viewport */
+  .card-image {
+    width: 220px;
+    max-width: 60vw;
+  }
+
+  /* Ensure info takes full width below the image */
+  .card-info {
+    width: 100%;
+  }
+
+  /* Center key texts for a tighter vertical layout */
+  .title-row,
+  .subtitle,
+  .card-meta,
+  .benefit-hashtags {
+    text-align: center;
+  }
+
+  /* Keep hashtags nicely centered/wrapping */
+  .benefit-hashtags {
+    display: block;
+  }
+
+  /* Keep reaction buttons centered under the image */
+  .reaction-group {
+    justify-content: center;
+  }
+
+  /* Buttons stay side-by-side on mobile */
+  .button-group {
+    flex-direction: row;
+  }
+  .button-group > .go-to-card,
+  .button-group > .compare-link {
+    width: auto; /* ensure horizontal layout without forcing full width */
+  }
+
+  /* Slightly tighter padding on mobile */
+  .card-header-wrapper {
+    padding: 10px;
+  }
+
+  /* Keep favorite toggle within safe padding in the top-right */
+  .fav-floating {
+    top: 10px;
+    right: 10px;
+  }
 }
 </style>

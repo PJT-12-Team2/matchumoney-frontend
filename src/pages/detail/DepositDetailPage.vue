@@ -673,8 +673,6 @@ function goToCardSite() {
   font-size: 14px;
   color: #444;
 }
-</style>
-<style scoped>
 .benefit-block {
   border-top: 1px solid #e0e0e0;
   padding-top: 16px;
@@ -822,5 +820,58 @@ function goToCardSite() {
 .reaction-button.active {
   background-color: #ffe6e6;
   color: red;
+}
+/* --- Responsive stack for card header on small screens (Deposit) --- */
+@media (max-width: 768px) {
+  /* Stack image and info vertically */
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 20px; /* a bit tighter on mobile */
+  }
+
+  /* Image block centered; remove desktop spacing assumptions */
+  .card-image-wrapper {
+    margin-right: 0;
+    align-items: center;
+  }
+
+  .card-image {
+    width: 220px;
+    max-width: 60vw;
+  }
+
+  /* Info takes full width below image */
+  .card-info {
+    width: 100%;
+  }
+
+  /* Center key texts */
+  .subtitle,
+  .card-meta {
+    text-align: center;
+  }
+
+  /* Keep reaction buttons centered under image */
+  .reaction-group {
+    justify-content: center;
+  }
+
+  /* Keep action buttons side-by-side on mobile */
+  .button-group {
+    flex-direction: row;
+  }
+  .button-group > .go-to-card,
+  .button-group > .compare-link {
+    width: auto; /* override desktop full-width */
+    flex: 1 1 0; /* share space evenly */
+  }
+  .card-title{
+    text-align: center;
+  }
+  .card-benefits{
+    text-align: center;
+  }
 }
 </style>
