@@ -43,7 +43,7 @@
         <Swiper
           v-else
           :modules="modules"
-          :slides-per-view="1.2"
+          :slides-per-view="1"
           :space-between="16"
           :pagination="{ clickable: true }"
           class="carousel-swiper"
@@ -225,13 +225,13 @@
                 <div class="bank-name-bold">{{ product.bank }}</div>
 
                 <div class="rate-line">
-                  <span class="label-bold">최고 금리 :</span>
+                  <span class="label-bold">최고 금리 : </span>
                   <span class="highlight-rate">{{
                     getRateWithTerm(product, 'max')
                   }}</span>
                 </div>
                 <div class="rate-line">
-                  <span class="label-bold">최저 금리 :</span>
+                  <span class="label-bold">최저 금리 : </span>
                   <span>{{ getRateWithTerm(product, 'base') }}</span>
                 </div>
                 <div class="rate-line no-wrap">
@@ -871,8 +871,8 @@ const getMinAmountWithTerm = (product) => {
 }
 
 .bank-logo-option {
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -997,6 +997,7 @@ const getMinAmountWithTerm = (product) => {
   font-weight: 800;
   color: var(--text-primary);
   /* margin-bottom: 0.2rem; */
+  text-align: left;
 }
 
 .rate-line {
@@ -1066,7 +1067,7 @@ const getMinAmountWithTerm = (product) => {
   }
 
   .bank-logo-container {
-    width: 5.6rem;
+    width: 6rem;
     height: 4rem;
     flex-shrink: 0;
     display: flex;
@@ -1076,6 +1077,11 @@ const getMinAmountWithTerm = (product) => {
   .bank-logo-round {
     width: 5.6rem;
     height: 5.6rem;
+  }
+
+  .bank-logo-img {
+    width: 7rem;
+    height: 7rem;
   }
 }
 </style>
@@ -1125,6 +1131,12 @@ const getMinAmountWithTerm = (product) => {
 
   .term-dropdown-wrapper {
     display: flex;
+  }
+
+  .saving-compare-button > *:first-child {
+    transform: scale(0.7); /* 전체 크기 80%로 축소 */
+    transform-origin: center; /* 축소 기준 중앙 */
+    margin-right: -1rem;
   }
 }
 
@@ -1212,7 +1224,17 @@ text-align: center;
   margin-bottom: 0.5rem;
 }
 .saving-compare-button {
+  display: flex; /* 가로 배치 */
+  flex-direction: row;
+  align-items: center; /* 수직 중앙 */
+  justify-content: center; /* 수평 중앙 */
   margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.saving-compare-button > * {
+  white-space: nowrap; /* 버튼 안 텍스트 줄바꿈 방지 */
 }
 
 /* 무한 스크롤 로딩 스피너 */
