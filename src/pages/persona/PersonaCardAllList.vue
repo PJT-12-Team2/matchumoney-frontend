@@ -1,7 +1,7 @@
 <template>
   <div class="card-product-search">
     <main class="main-content">
-      <!-- 🔷 페르소나 추천 캐러셀 -->
+      <!-- 페르소나 추천 캐러셀 -->
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
         <h2 class="persona-carousel-title">
@@ -46,7 +46,6 @@
                 <span class="label">연회비:</span>
                 {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
               </div>
-              <!-- 안전하게 조건 체크 -->
               <div
                 v-if="card.options && card.options.length > 0"
                 class="benefit-hashtags"
@@ -101,7 +100,6 @@
                 <span class="label">연회비:</span>
                 {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
               </div>
-              <!-- 안전하게 조건 체크 -->
               <div
                 v-if="card.options && card.options.length > 0"
                 class="benefit-hashtags"
@@ -122,7 +120,7 @@
       <hr />
       <br />
 
-      <!-- 🔷 직접 검색 필터 영역 -->
+      <!-- 직접 검색 필터 영역 -->
       <h1 class="page-title">직접 찾아보는 카드</h1>
       <section class="filter-selection-section">
         <h3 class="filter-label">카드 종류 선택</h3>
@@ -168,8 +166,8 @@
         </div>
       </section>
 
-      <!-- 🔷 직접 검색 결과 리스트 -->
-      <section class="search-results" v-if="showSearchResults">
+      <!-- 직접 검색 결과 리스트 -->
+      <section class="search-results">
         <h2 class="results-title">검색한 카드 상품</h2>
 
         <div v-if="loading" class="loading-state">
@@ -185,7 +183,7 @@
 
         <div v-else class="search-results-grid">
           <div
-            v-for="product in visibleSearchResults"
+            v-for="product in searchResults"
             :key="product.id"
             class="product-card"
             @click="selectProduct(product)"
@@ -197,7 +195,7 @@
                 productType="CARD"
               />
             </div>
-            <div class="product-content" @click="selectProduct(product)">
+            <div class="product-content">
               <div class="card-left-section">
                 <img
                   :src="
@@ -245,8 +243,7 @@
                   <span class="label">연회비:</span>
                   {{ product.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
                 </div>
-
-                <!-- ⭐ 혜택 태그 추가 -->
+                <!-- 혜택 태그 -->
                 <div
                   v-if="product.options && product.options.length > 0"
                   class="benefit-hashtags"
@@ -266,19 +263,17 @@
       </section>
     </main>
   </div>
-  <div v-if="isLoadingMore" class="infinite-spinner-wrapper">
-    <div class="infinite-spinner-block">
+  <div class="infinite-spinner-wrapper">
+    <div class="infinite-spinner-block" v-show="isLoadingMore">
       <div class="infinite-spinner"></div>
       <div class="infinite-spinner-text">상품을 불러오는 중입니다...</div>
     </div>
   </div>
 </template>
 
-<!--
-  name: 'CardSearchPage'
--->
+<!-- name: 'CardSearchPage' -->
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import api from '@/api';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
@@ -289,23 +284,18 @@ import CompareButton from '@/components/common/CompareButton.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
 
 const modules = [Pagination];
-const visibleCount = ref(6); // 한 번에 보여줄 카드 수
-const isLoadingMore = ref(false);
+const pageSize = 6; // 서버 요청 크기
+const isLoadingMore = ref(false); // 하단 로딩 스피너
+const nextCursor = ref(null); // 다음 페이지 커서 (문자열 or null)
+const hasNext = ref(true); // 다음 페이지 존재 여부
 
-const onScroll = () => {
-  if (isLoadingMore.value) return;
-  if (searchResults.value.length <= visibleCount.value) return;
-
+const onScroll = async () => {
+  if (isLoadingMore.value || !hasNext.value) return;
   const scrollY = window.scrollY || window.pageYOffset;
-  const viewportHeight = window.innerHeight;
-  const fullHeight = document.documentElement.scrollHeight;
-
-  if (scrollY + viewportHeight >= fullHeight - 200) {
-    isLoadingMore.value = true;
-    setTimeout(() => {
-      visibleCount.value += 6;
-      isLoadingMore.value = false;
-    }, 700);
+  const viewport = window.innerHeight;
+  const full = document.documentElement.scrollHeight;
+  if (scrollY + viewport >= full - 200) {
+    await loadMore();
   }
 };
 
@@ -317,18 +307,18 @@ onMounted(() => {
   window.addEventListener('resize', handleResize);
 });
 
-// 📦 로딩 및 검색 결과 표시 상태
+// 로딩 및 검색 결과 표시 상태
 const loading = ref(false);
-const showSearchResults = ref(true); // Always show the search results section
+const showSearchResults = ref(true);
 
-// 📦 필터 상태 정의
+// 필터 상태 정의
 const filters = ref({
   creditCard: true,
   debitCard: true,
   selectedBenefits: [],
 });
 
-// 📦 혜택 카테고리 정의
+// 혜택 카테고리 정의
 const benefitCategories = ref([
   { id: '모든가맹점', name: '모든가맹점', emoji: '🏢' },
   { id: '교통', name: '교통', emoji: '🚗' },
@@ -356,11 +346,11 @@ const benefitCategories = ref([
   { id: '비즈니스', name: '비즈니스', emoji: '💼' },
 ]);
 
-// 📦 추천 캐러셀 카드 및 페르소나명
+// 추천 캐러셀 카드 및 페르소나명
 const carouselCards = ref([]);
 const userPersonaType = ref('');
 
-// 📦 추천 카드 불러오기
+// 추천 카드 불러오기
 const fetchRecommendedCards = async () => {
   try {
     const token = localStorage.getItem('accessToken');
@@ -370,14 +360,7 @@ const fetchRecommendedCards = async () => {
       },
     };
 
-    // 1. 사용자 personaId 가져오기
-    const personaIdRes = await api.get(
-      '/cards/recommendations/user/persona-id',
-      config
-    );
-    const personaCode = personaIdRes.data.personaId;
-
-    // 2. 사용자 페르소나 카드 추천 가져오기
+    // 사용자 페르소나 카드 추천 가져오기
     const recommendationRes = await api.get(
       '/cards/recommendations/user/recommendation',
       config
@@ -403,68 +386,111 @@ const fetchRecommendedCards = async () => {
   }
 };
 
-// 📦 카드 검색 결과
+// 카드 검색 결과
 const searchResults = ref([]);
 
-// 📦 카드 검색 API 호출
+// 서버에서 커서 기반 페이지 가져오는 함수
+const fetchPage = async (cursor) => {
+  const token = localStorage.getItem('accessToken');
+
+  const body = {
+    creditCard: filters.value.creditCard,
+    debitCard: filters.value.debitCard,
+    selectedBenefits: filters.value.selectedBenefits
+      .map((id) => benefitCategories.value.find((b) => b.id === id)?.name)
+      .filter(Boolean),
+  };
+
+  const qs = new URLSearchParams();
+  if (cursor) qs.set('cursor', cursor);
+  qs.set('size', String(pageSize));
+
+  const res = await api.post(`/persona/infinite?${qs.toString()}`, body, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  const data = res.data || {};
+  const items = (data.items || []).map((item) => ({
+    id: item.cardProductId ?? item.id ?? item.cardId,
+    name: item.name ?? item.cardName,
+    issuer: item.issuer,
+    preMonthMoney: item.preMonthMoney ?? null,
+    annualFee: item.annualFee ?? null,
+    imageUrl: item.cardImageUrl ?? item.imageUrl ?? '',
+    options: item.options ?? [],
+    isStarred: item.isStarred ?? false,
+    isLiked: item.isLiked ?? false,
+    likeCount: item.likeCount ?? 0,
+  }));
+
+  searchResults.value.push(...items);
+  hasNext.value = !!data.hasNext;
+  nextCursor.value = data.nextCursor ?? null;
+};
+
+// 최초 검색(초기화 + 첫 페이지 로드)
 const searchProducts = async () => {
   loading.value = true;
   showSearchResults.value = true;
+  searchResults.value = [];
+  nextCursor.value = null;
+  hasNext.value = true;
   try {
-    const response = await api.post('/persona/cardsearch', {
-      creditCard: filters.value.creditCard,
-      debitCard: filters.value.debitCard,
-      selectedBenefits: filters.value.selectedBenefits
-        .map((id) => benefitCategories.value.find((b) => b.id === id)?.name)
-        .filter(Boolean),
-    });
-
-    // ✅ 정규화
-    searchResults.value = (response.data || []).map((item) => ({
-      id: item.cardProductId ?? item.id ?? item.cardId, // 라우팅/좋아요에 쓰는 PK
-      name: item.name ?? item.cardName,
-      issuer: item.issuer,
-      preMonthMoney: item.preMonthMoney ?? null,
-      annualFee: item.annualFee ?? null,
-      imageUrl: item.cardImageUrl ?? item.imageUrl ?? '',
-      options: item.options ?? [],
-      // 즐겨찾기/좋아요 기본값 (백엔드가 주면 덮어씀)
-      isStarred: item.isStarred ?? false,
-      isLiked: item.isLiked ?? false,
-      likeCount: item.likeCount ?? 0,
-    }));
-  } catch (error) {
-    console.error('카드 검색 오류:', error);
-    searchResults.value = [];
+    await fetchPage(null);
+  } catch (e) {
+    console.error('카드 검색 오류:', e);
   } finally {
     loading.value = false;
+  }
+};
+
+const MIN_SPINNER_MS = 1400;
+// 더 불러오기(스크롤 트리거)
+const loadMore = async () => {
+  if (!hasNext.value || isLoadingMore.value) return;
+  isLoadingMore.value = true;
+  const started = performance.now();
+  try {
+    await fetchPage(nextCursor.value);
+  } catch (err) {
+    const status = err?.response?.status;
+    if (status === 404) hasNext.value = false; // 더 이상 없음
+    if (status === 401 || status === 403 || status === 500) {
+      hasNext.value = false; // 반복 호출 방지
+      console.error('infinite error', status, err?.response?.data);
+    }
+  } finally {
+    const elapsed = performance.now() - started;
+    const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
+    setTimeout(() => {
+      isLoadingMore.value = false;
+    }, remain);
   }
 };
 
 onMounted(() => {
   window.addEventListener('scroll', onScroll);
 });
+
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll);
+  window.removeEventListener('resize', handleResize);
 });
 
-const visibleSearchResults = computed(() =>
-  searchResults.value.slice(0, visibleCount.value)
-);
-// 📦 혜택 토글 함수
+// 혜택 토글 함수
 const toggleBenefit = (id) => {
   const index = filters.value.selectedBenefits.indexOf(id);
   if (index === -1) filters.value.selectedBenefits.push(id);
   else filters.value.selectedBenefits.splice(index, 1);
-  searchProducts(); // trigger filter
+  searchProducts();
 };
 
-// 📦 카드 선택 동작
+// 카드 선택 동작
 const selectProduct = (product) => {
   window.location.href = `/detail/card/${product.id}`;
 };
 
-// 📦 은행 로고 가져오기 (for compatibility)
+// 은행 로고 가져오기
 const getBankLogo = (initial) => {
   const logos = {
     shinhan:
@@ -484,7 +510,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 🔷 Layout 및 전체 구조 */
+/* Layout 및 전체 구조 */
 .card-product-search {
   font-family: 'Noto Sans', sans-serif;
   background: var(--color-white);
@@ -502,7 +528,7 @@ onMounted(() => {
   text-align: center;
 }
 
-/* 🔷 페르소나 추천 캐러셀 스타일 */
+/* 페르소나 추천 캐러셀 스타일 */
 .persona-carousel-title {
   font-size: var(--font-size-xl);
   margin-bottom: var(--spacing-lg);
@@ -568,7 +594,7 @@ onMounted(() => {
   color: #333;
 }
 
-/* 🔷 필터 영역 스타일 */
+/* 필터 영역 스타일 */
 .filter-selection-section {
   background: #f9fafc;
   border: 1px solid #e0e0e0;
@@ -638,7 +664,7 @@ onMounted(() => {
   margin-bottom: 0.4rem;
 }
 
-/* 🔷 검색 결과 카드 스타일 */
+/* 검색 결과 카드 스타일 */
 .search-results-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -666,7 +692,7 @@ onMounted(() => {
   text-align: left;
 }
 
-/* 🔷 반응형 (모바일) 스타일 */
+/* 반응형 (모바일) 스타일 */
 @media (max-width: 768px) {
   .search-results-grid {
     grid-template-columns: 1fr;
@@ -762,7 +788,6 @@ onMounted(() => {
   transform: translateY(-0.3125rem);
 }
 
-/* --- Product Content 2-column layout --- */
 .product-content {
   display: grid;
   grid-template-columns: 120px 1fr;
@@ -791,7 +816,7 @@ onMounted(() => {
 .product-info > h4 {
   line-height: 1.6;
 }
-/* 🔷 Empty state 스타일 */
+/* Empty state 스타일 */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -885,6 +910,6 @@ onMounted(() => {
 }
 .infinite-spinner-text {
   font-size: 0.95rem;
-  color: var(—text-secondary);
+  color: var(—-text-secondary);
 }
 </style>
