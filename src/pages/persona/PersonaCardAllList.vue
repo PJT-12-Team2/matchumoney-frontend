@@ -910,6 +910,6 @@ onMounted(() => {
 }
 .infinite-spinner-text {
   font-size: 0.95rem;
-  color: var(—-text-secondary);
+  color: var(--text-secondary);
 }
 </style>
