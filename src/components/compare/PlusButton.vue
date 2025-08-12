@@ -5,6 +5,8 @@
     </div>
     <div class="add-text">{{ props.typeKo }}을 선택해주세요.</div>
   </div>
+
+  <!-- 부모는 mount/unmount만 담당 -->
   <SearchPopup
     v-if="showPopup"
     @close="showPopup = false"
@@ -12,15 +14,15 @@
     :typeKo="props.typeKo"
   />
 </template>
+
 <script setup>
 import { defineProps, ref } from 'vue';
 import SearchPopup from './SearchPopup.vue';
-const props = defineProps({
-  type: String,
-  typeKo: String,
-});
+
+const props = defineProps({ type: String, typeKo: String });
 const showPopup = ref(false);
 </script>
+
 <style scoped>
 .add-box {
   display: flex;
@@ -31,12 +33,11 @@ const showPopup = ref(false);
   font-size: var(--spacing-md);
   cursor: pointer;
 }
-
 .add-symbol {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--color-white);
+  background: var(--color-white);
   margin: var(--spacing-lg);
   width: 8rem;
   height: 8rem;
@@ -46,7 +47,7 @@ const showPopup = ref(false);
   transition: 0.2s ease-in-out;
 }
 .add-symbol:hover {
-  background-color: var(--color-accent);
+  background: var(--color-accent);
   color: var(--color-white);
 }
 </style>

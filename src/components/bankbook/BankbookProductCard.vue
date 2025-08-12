@@ -15,11 +15,11 @@
     <div class="rank-badge">{{ props.index + 1 }}</div>
     <div class="product-card__logo-box">
       <img
-        :src="saving.company_image"
+        :src="saving.companyImage"
         loading="lazy"
         alt="logo"
         class="product-card__logo"
-        v-if="saving.company_image"
+        v-if="saving.companyImage"
       />
       <img
         src="../../assets/Logo_dis.png"
