@@ -74,30 +74,6 @@
             </div>
           </div>
         </section>
-        <!-- 
-        <section class="slide features-section">
-          <div class="container">
-            <div class="section-header text-center">
-              <h2 class="section-title">왜 맞추머니인가요?</h2>
-              <p class="section-subtitle">개인화된 금융 서비스의 새로운 기준</p>
-            </div>
-            <div class="features-grid grid" :class="getGridClass('features')">
-              <div
-                v-for="feature in features"
-                :key="feature.id"
-                class="feature-item"
-              >
-                <div class="card feature-card">
-                  <div class="feature-icon">
-                    <i :class="feature.icon"></i>
-                  </div>
-                  <h5 class="feature-title">{{ feature.title }}</h5>
-                  <p class="feature-description">{{ feature.description }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section> -->
 
         <section class="slide persona-section">
           <div class="container">
@@ -691,28 +667,23 @@ onUnmounted(() => {
 
 /* 슬라이드 배경색 */
 .hero-section {
-  background-color: #E5FBF6;
-  /* 세이지+민트 느낌 → 메인에 어울리는 부드러운 신뢰감 */
+  background-color: #e5fbf6;
 }
 
 .features-section {
   background: linear-gradient(135deg, #faf5e8 0%, #f1e8d7 100%);
-  /* 크림+샌드 → 초록과 잘 어울리는 따뜻한 중립톤 */
 }
 
 .persona-section {
   background: linear-gradient(135deg, #f2f6f3 0%, #e1ece7 100%);
-  /* 연한 실버그린 → 감성적이면서 초록기 은은 */
 }
 
 .products-section {
   background: linear-gradient(135deg, #f7f4ef 0%, #e7ddd1 100%);
-  /* 베이지 브라운톤 → 고급 & 차분한 금융 섹션 느낌 */
 }
 
 .mydata-section {
   background: linear-gradient(135deg, #e2f0ed 0%, #c9e3db 100%);
-  /* 민트와 세이지 사이 → 테크 + 초록 감성의 균형 */
 }
 
 /* 컨테이너 및 그리드 스타일 */
@@ -1013,7 +984,7 @@ onUnmounted(() => {
 .persona-grid {
   display: grid;
   grid-template-columns: repeat(4, 180px);
-  gap: 1.5rem;
+  gap: 0.75rem;
   justify-content: center; /* 가운데 정렬 */
 }
 
@@ -1022,7 +993,7 @@ onUnmounted(() => {
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  padding: 1rem !important;
+  padding: 0.5rem !important;
 }
 
 .persona-card:hover {
@@ -1052,6 +1023,7 @@ onUnmounted(() => {
 .persona-trait {
   font-size: clamp(0.65rem, 1.2vw, 0.8rem); /* 작게 조절 */
   color: #6b7280;
+  margin-bottom: 0.1rem;
 }
 
 /* Product Cards */
@@ -1128,7 +1100,7 @@ onUnmounted(() => {
 /* MyData Section */
 .mydata-content-wrapper {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 3fr 2fr;
   gap: 3rem;
   align-items: center;
 }
@@ -1375,12 +1347,13 @@ onUnmounted(() => {
   .slide {
     height: auto;
     min-height: auto;
-    padding: 2rem 0;
+    padding: 2.5rem 0; /* 패딩 줄임 */
   }
+
   .hero-content-wrapper,
   .mydata-content-wrapper {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem; /* gap 줄임 */
     text-align: center;
   }
 
@@ -1410,10 +1383,61 @@ onUnmounted(() => {
 
   .persona-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
 
   .products-grid {
     grid-template-columns: 1fr;
+    gap: 1rem; /* gap 줄임 */
+  }
+
+  /* 모바일 product-card 최적화 */
+  .product-card {
+    display: flex;
+    align-items: center;
+    width: 90%;
+    align-items: center;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .product-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-icon-container {
+    flex-shrink: 0;
+  }
+
+  .product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 텍스트 묶음 가운데 */
+  }
+
+  .product-description {
+    margin-bottom: 1rem; /* 마진 줄임 */
+    font-size: 0.875rem; /* 폰트 사이즈 줄임 */
+    line-height: 1.4; /* 라인 높이 줄임 */
+  }
+
+  /* benefit-item 가로 배치 */
+  .product-benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .benefit-item {
+    margin-bottom: 0;
+    font-size: 0.75rem; /* 폰트 사이즈 줄임 */
+  }
+
+  .benefit-item i {
+    font-size: 0.75rem;
   }
 
   .floating-cards {
@@ -1427,14 +1451,21 @@ onUnmounted(() => {
   }
 
   .slide-indicators {
-    bottom: 10px;
-    gap: 0.5rem;
-    padding: 0 1rem;
+    flex-wrap: nowrap !important; /* 🔹 강제로 한 줄 */
+    overflow-x: auto; /* 넘치면 가로 스크롤 */
+    white-space: nowrap; /* 줄바꿈 방지 */
+    justify-content: flex-start; /* 왼쪽부터 배치 */
+    bottom: 8px;
+  }
+
+  .slide-indicators::-webkit-scrollbar {
+    display: none; /* 모바일에서 스크롤바 숨김 */
   }
 
   .indicator {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
+    flex: 0 0 auto; /* 줄바꿈 방지 */
+    padding: 0.3rem 0.6rem; /* 크기 줄임 */
+    font-size: 0.7rem; /* 글자 크기 줄임 */
   }
 
   .slide-navigation {
@@ -1474,8 +1505,12 @@ onUnmounted(() => {
     flex-direction: column;
     align-items: center;
   }
-}
 
+  /* 섹션 헤더 최적화 */
+  .section-header {
+    margin-bottom: 1.5rem; /* 마진 줄임 */
+  }
+}
 /* Small Mobile Responsive (< 480px) */
 @media (max-width: 480px) {
   /* 🔹 공통 레이아웃 */
@@ -1532,7 +1567,7 @@ onUnmounted(() => {
   }
 
   .product-header {
-    flex-direction: column;
+    /* flex-direction: column; */
     text-align: center;
   }
 
