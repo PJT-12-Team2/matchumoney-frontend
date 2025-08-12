@@ -68,14 +68,14 @@
           <div class="answers-container">
             <button
               @click="selectAnswer(true)"
-              :disabled="selectedAnswer !== null || isSubmitting"
+              :disabled="answerSubmitted || isSubmitting"
               :class="['answer-btn', getButtonClass(true)]"
             >
               ⭕ 참 (O)
             </button>
             <button
               @click="selectAnswer(false)"
-              :disabled="selectedAnswer !== null || isSubmitting"
+              :disabled="answerSubmitted || isSubmitting"
               :class="['answer-btn', getButtonClass(false)]"
             >
               ❌ 거짓 (X)
@@ -161,12 +161,6 @@
         </div>
       </div>
 
-      <!-- XP Animation Overlay -->
-      <div v-if="showXPAnimation" class="xp-animation-overlay">
-        <div class="xp-animation">
-          <div class="xp-burst">+{{ earnedXP }} XP</div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -183,7 +177,6 @@ const answerSubmitted = ref(false);
 const isSubmitting = ref(false);
 const quizResult = ref(null);
 const showResult = ref(false);
-const showXPAnimation = ref(false);
 
 // 통계 데이터
 const stats = ref({
@@ -289,7 +282,7 @@ const resetQuizState = () => {
 };
 
 const selectAnswer = (answer) => {
-  if (selectedAnswer.value !== null || isSubmitting.value) return;
+  if (answerSubmitted.value || isSubmitting.value) return;
   selectedAnswer.value = answer;
 };
 
@@ -316,8 +309,6 @@ const submitAnswer = async () => {
         stats.value.totalXP += earnedXP.value;
         stats.value.streak++;
 
-        // XP 애니메이션 표시
-        await showXPEarnedAnimation();
       } else {
         stats.value.wrong++;
         stats.value.streak = 0;
@@ -340,15 +331,6 @@ const submitAnswer = async () => {
   }
 };
 
-const showXPEarnedAnimation = () => {
-  return new Promise((resolve) => {
-    showXPAnimation.value = true;
-    setTimeout(() => {
-      showXPAnimation.value = false;
-      resolve();
-    }, 2000);
-  });
-};
 
 const finishQuiz = () => {
   showResult.value = true;
@@ -885,42 +867,6 @@ onMounted(async () => {
   box-shadow: var(--shadow-lg);
 }
 
-/* XP Animation Overlay */
-.xp-animation-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.xp-burst {
-  font-size: var(--font-size-4xl);
-  font-weight: 700;
-  color: var(--color-accent);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  animation: xpBurst 2s ease-out;
-}
-
-@keyframes xpBurst {
-  0% {
-    transform: scale(0) translateY(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2) translateY(-20px);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) translateY(-40px);
-    opacity: 0;
-  }
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {
