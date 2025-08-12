@@ -40,7 +40,7 @@
                     <RouterLink
                       :to="
                         authStore.isLoggedIn
-                          ? '/persona/result/turtle'
+                          ? `/persona/result/${personaSlug || 'turtle'}`
                           : '/login'
                       "
                     >
@@ -266,10 +266,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth'; // auth store 추가
+import { useAuthStore } from '@/stores/auth';
+import userApi from '@/api/user'; // 추가
 
 const router = useRouter();
 const authStore = useAuthStore(); // auth store 사용
+const myPageInfo = ref({ persona: {} });
 
 // 반응형 상태
 const windowWidth = ref(window.innerWidth);
@@ -295,7 +297,37 @@ const slides = ref([
   { name: '마이데이터', icon: '📊' },
 ]);
 
-// 기존 데이터
+const PERSONA_SLUG_MAP = {
+  고양이: 'cat',
+  개미: 'ant',
+  토끼: 'rabbit',
+  거북이: 'turtle',
+  펭귄: 'penguin',
+  부엉이: 'owl',
+  호랑이: 'tiger',
+  다람쥐: 'squirrel',
+};
+
+function mapPersonaSlugFromName(nameKo) {
+  if (!nameKo) return '';
+  return PERSONA_SLUG_MAP[nameKo.trim()] || '';
+}
+
+function extractSlugFromImage(url) {
+  if (!url) return '';
+  const file = (url.split('/').pop() || '').toLowerCase();
+  return file.replace(/\.[^.]+$/, ''); // "cat.png" → "cat"
+}
+
+const personaSlug = computed(() => {
+  const nameKo = myPageInfo.value?.persona?.nameKo || '';
+  let slug = mapPersonaSlugFromName(nameKo);
+  if (!slug) {
+    slug = extractSlugFromImage(myPageInfo.value?.persona?.imageUrl || '');
+  }
+  return slug || '';
+});
+
 const features = ref([
   {
     id: 1,
@@ -483,12 +515,16 @@ const buttonText = computed(() => {
   return authStore.isLoggedIn ? '나의 페르소나 보기' : '금융 상품 추천 시작';
 });
 
-// RouterLink가 라우팅을 처리하므로 로깅용으로만 사용
 const startPersonaTest = () => {
   if (authStore.isLoggedIn) {
-    console.log('✅ 로그인된 사용자 - 결과 페이지로 이동');
+    const slug = personaSlug.value;
+    if (slug) {
+      router.push(`/persona/result/${slug}`);
+    } else {
+      router.push('/persona/result');
+    }
   } else {
-    console.log('⚠️ 비로그인 사용자 - 로그인 페이지로 이동');
+    router.push('/login');
   }
 };
 
@@ -499,16 +535,37 @@ const handleResize = () => {
 
 // 라이프사이클
 onMounted(() => {
-  console.log('맞추머니 메인 페이지 로드됨');
   startAutoPlay();
   window.addEventListener('resize', handleResize);
+
+  // 로그인된 사용자의 페르소나 정보 조회
+  if (authStore.isLoggedIn) {
+    fetchMyPageInfo();
+  }
 });
+
+const fetchMyPageInfo = async () => {
+  try {
+    const response = await userApi.getMyPage();
+    const data = response.result;
+
+    if (data?.persona) {
+      myPageInfo.value.persona = {
+        nameKo: data.persona.nameKo || '',
+        imageUrl: data.persona.imageUrl || '',
+      };
+    }
+  } catch (error) {
+    console.error('페르소나 정보 조회 실패:', error);
+  }
+};
 
 onUnmounted(() => {
   stopAutoPlay();
   window.removeEventListener('resize', handleResize);
 });
 </script>
+
 <style>
 .default-layout {
   padding: 0 !important;
