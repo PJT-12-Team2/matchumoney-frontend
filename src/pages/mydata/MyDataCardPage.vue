@@ -728,10 +728,10 @@ const userId = computed(() => authStore.getUserId());
 
 // 카드 목록 조회
 const fetchCards = async () => {
+  // 로그인하지 않은 사용자의 경우 카드 목록을 빈 배열로 설정
   if (!userId.value) {
-    console.error('사용자 ID가 없습니다. 로그인이 필요합니다.');
-    alert('로그인이 필요합니다.');
-    router.push('/login');
+    console.log('🔓 로그인하지 않은 사용자 - KB카드 추천만 표시');
+    cards.value = [];
     return;
   }
 
