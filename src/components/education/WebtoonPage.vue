@@ -1,9 +1,11 @@
 <template>
   <!-- 웹툰 Section -->
   <section class="webtoon-section">
-    <div class="section-header">
-      <h2>금융교육 웹툰</h2>
-      <p class="webtoon-subtitle">썸네일을 클릭하면 웹툰을 읽을 수 있어요!</p>
+    <div class="page-description">
+      <h1 class="page-title">웹툰으로 배우는 금융 교육</h1>
+      <p class="page-subtitle">
+        다양하고 재미있는 웹툰으로 <br />어려운 금융 지식을 쉽게 배워보세요
+      </p>
     </div>
     <!-- 로딩 상태 -->
     <div v-if="loading" class="loading">
@@ -139,49 +141,45 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 웹툰 섹션 스타일 */
+.page-description {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  background: var(--color-light);
+  padding: var(--spacing-md);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.page-title {
+  font-size: var(--font-size-4xl);
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
 .webtoon-section {
   width: 80%;
-  margin: 1.5rem auto 3rem; /* ← 좌우 auto로 가운데 정렬 */
+  margin: var(--spacing-lg) auto var(--spacing-2xl);
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.2rem;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.section-header h2 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.webtoon-subtitle {
-  font-size: 1rem;
-  color: #7f8c8d;
-  margin: 0;
-}
-
-/* 로딩 스타일 */
 .loading {
   text-align: center;
-  padding: 50px;
+  padding: var(--spacing-3xl);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #aacd96;
+  border: 4px solid var(--color-gray-200);
+  border-top: 4px solid var(--color-secondary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+  margin: 0 auto var(--spacing-lg);
 }
 
 @keyframes spin {
@@ -193,40 +191,37 @@ onUnmounted(() => {
   }
 }
 
-/* 에러 스타일 */
 .error {
   text-align: center;
-  padding: 50px;
-  color: #e74c3c;
+  padding: var(--spacing-3xl);
+  color: var(--color-error);
 }
 
 .retry-btn {
-  background: #aacd96;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-white);
   border: none;
-  padding: 10px 20px;
+  padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: 8px;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: var(--spacing-sm);
   transition: background 0.3s ease;
 }
 
 .retry-btn:hover {
-  background: #9bc07c;
+  background: var(--color-accent);
 }
 
-/* 웹툰 그리드 */
 .webtoon-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 25px;
-  /* padding: 5rem; */
+  gap: var(--spacing-xl);
 }
 
 .webtoon-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -234,7 +229,7 @@ onUnmounted(() => {
 
 .webtoon-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .webtoon-image-container {
@@ -260,14 +255,14 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--color-overlay-dark);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   opacity: 0;
   transition: opacity 0.3s ease;
-  color: white;
+  color: var(--color-white);
 }
 
 .webtoon-card:hover .webtoon-overlay {
@@ -275,50 +270,44 @@ onUnmounted(() => {
 }
 
 .play-icon {
-  font-size: 3rem;
-  margin-bottom: 10px;
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-sm);
 }
 
 .overlay-text {
-  font-size: 1.2rem;
+  font-size: var(--font-size-lg);
   font-weight: bold;
 }
 
 .webtoon-info {
-  padding: 20px;
+  padding: var(--spacing-lg);
 }
 
 .webtoon-card-title {
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   font-weight: bold;
-  color: #2c3e50;
-  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
   line-height: 1.4;
 }
 
-.webtoon-id {
-  font-size: 0.8rem;
-  color: #7f8c8d;
-}
-
-/* 모달 스타일 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--color-overlay-dark);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1001; /* video overlay보다 위에 */
+  z-index: 1001;
   backdrop-filter: blur(5px);
-  padding: 20px;
+  padding: var(--spacing-lg);
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg-card);
   border-radius: 20px;
   width: 100%;
   max-width: 600px;
@@ -326,31 +315,31 @@ onUnmounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-modal);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 25px;
-  border-bottom: 1px solid #eee;
-  background: #f8f9fa;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-content);
 }
 
 .modal-title {
   margin: 0;
-  font-size: 1.3rem;
-  color: #2c3e50;
+  font-size: var(--font-size-xl);
+  color: var(--text-primary);
   font-weight: bold;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: var(--font-size-2xl);
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -361,8 +350,8 @@ onUnmounted(() => {
 }
 
 .close-btn:hover {
-  background: #e74c3c;
-  color: white;
+  background: var(--color-error);
+  color: var(--color-white);
 }
 
 .modal-body {
@@ -370,8 +359,8 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
   text-align: center;
-  padding: 20px;
-  max-height: calc(90vh - 160px); /* 헤더와 푸터 높이 제외 */
+  padding: var(--spacing-lg);
+  max-height: calc(90vh - 160px);
 }
 
 .webtoon-full-image {
@@ -379,41 +368,40 @@ onUnmounted(() => {
   height: auto;
   min-height: 100%;
   border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   display: block;
 }
 
 .modal-footer {
-  padding: 20px 25px;
-  border-top: 1px solid #eee;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-top: 1px solid var(--border-light);
   text-align: center;
-  background: #f8f9fa;
+  background: var(--bg-content);
 }
 
 .modal-close-btn {
-  background: #aacd96;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-white);
   border: none;
-  padding: 12px 30px;
+  padding: var(--spacing-sm) var(--spacing-xl);
   border-radius: 25px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   transition: background 0.2s ease;
 }
 
 .modal-close-btn:hover {
-  background: #9bc07c;
+  background: var(--color-accent);
 }
 
-/* 반응형 디자인 */
 @media (max-width: 768px) {
   .webtoon-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
+    gap: var(--spacing-lg);
   }
 
   .modal-overlay {
-    padding: 10px;
+    padding: var(--spacing-sm);
   }
 
   .modal-content {
@@ -429,7 +417,7 @@ onUnmounted(() => {
 @media (max-width: 480px) {
   .webtoon-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: var(--spacing-md);
   }
 
   .webtoon-image-container {
@@ -437,7 +425,7 @@ onUnmounted(() => {
   }
 
   .modal-overlay {
-    padding: 5px;
+    padding: var(--spacing-xs);
   }
 
   .modal-content {
@@ -446,7 +434,7 @@ onUnmounted(() => {
 
   .modal-body {
     max-height: calc(98vh - 160px);
-    padding: 10px;
+    padding: var(--spacing-sm);
   }
 }
 </style>

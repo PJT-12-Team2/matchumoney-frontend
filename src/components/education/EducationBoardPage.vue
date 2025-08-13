@@ -515,10 +515,11 @@ function useBreakpoint() {
 
 <style scoped>
 .education-video-page {
-  padding: 2rem 1.5rem;
+  padding: var(--spacing-xl) var(--spacing-lg);
   max-width: 80%;
   margin: 0 auto;
 }
+
 .education-video-page.no-scroll {
   overflow: hidden;
 }
@@ -526,15 +527,12 @@ function useBreakpoint() {
 .page-description {
   position: relative;
   text-align: center;
-  margin-bottom: 4rem;
-  background: linear-gradient(135deg, #aacd96 0%, #8bb06a 100%);
-  padding: 0.5rem 0.5rem;
+  margin-bottom: var(--spacing-3xl);
+  background: var(--gradient-accent);
+  padding: var(--spacing-2xl) var(--spacing-lg);
   border-radius: 24px;
   overflow: hidden;
-  margin-bottom: 3rem;
-  padding: 1rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-lg);
 }
 
 .page-description::before {
@@ -554,14 +552,14 @@ function useBreakpoint() {
 }
 
 .title-wrapper {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
 .page-title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-3xl);
   font-weight: bold;
-  margin-bottom: 1rem;
-  color: white;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-white);
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -570,154 +568,15 @@ function useBreakpoint() {
 .title-emoji {
   display: inline-block;
   animation: bounce 2s ease-in-out infinite;
-  margin-right: 0.5rem;
+  margin-right: var(--spacing-sm);
 }
 
 .page-subtitle {
   color: rgba(255, 255, 255, 0.95);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-lg);
   line-height: 1.8;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.video-section {
-  margin-bottom: 3rem;
-}
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.2rem;
-  font-weight: bold;
-}
-.more-btn {
-  background: #aacd96;
-  color: #fff;
-  border: 0;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.more-btn:hover {
-  background: #9bc07c;
-}
-
-.card-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 1.2rem;
-}
-.card {
-  padding: 0;
-  background: #fff;
-  border-radius: 0.4rem;
-  box-shadow: var(--shadow-card);
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform 0.2s ease;
-}
-.card:hover {
-  transform: translateY(-4px);
-}
-
-@media (min-width: 640px) {
-  .card {
-    width: calc(50% - 0.6rem);
-  }
-} /* tablet 2열 */
-@media (min-width: 1024px) {
-  .card {
-    width: calc(25% - 0.9rem);
-  }
-} /* desktop 4열 */
-
-.thumb {
-  width: 100%;
-  display: block;
-  background: #000;
-}
-.thumb-16x9 {
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-}
-.thumb-3x4 {
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  background: #eee;
-}
-
-.video-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-.play-badge {
-  font-size: 2rem;
-}
-
-.card-title {
-  padding: 0.6rem 0.8rem 0.8rem;
-  font-weight: 600;
-  font-size: 14px;
-
-  /* ▼ 2줄 말줄임 */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2; /* 2줄로 제한 */
-  line-clamp: 2; /* 최신 브라우저용(지원 안 되면 무시) */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: normal;
-
-  /* 한글 가독성 & 긴 영문 토큰 처리 */
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-
-  /* 줄간격 기준 높이(선택) */
-  line-height: 1.4;
-  max-height: calc(1.4em * 2.4);
-}
-
-/* 오버레이 */
-.video-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(2px);
-  padding: 2rem;
-}
-.player-wrap {
-  width: min(1200px, 92vw);
-  aspect-ratio: 16/9;
-  background: #000;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-.player-iframe,
-.player-image {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 12px;
-  object-fit: contain;
-  background: #000;
-}
-.close-button {
-  position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
-  font-size: 2rem;
-  background: none;
-  color: #fff;
-  border: none;
-  cursor: pointer;
 }
 
 .subtitle-highlight {
@@ -736,16 +595,16 @@ function useBreakpoint() {
 .feature-badges {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
   flex-wrap: wrap;
 }
 
 .badge {
   background: rgba(255, 255, 255, 0.15);
-  color: white;
-  padding: 0.5rem 1rem;
+  color: var(--color-white);
+  padding: var(--spacing-sm) var(--spacing-md);
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -768,7 +627,7 @@ function useBreakpoint() {
 
 .floating-icon {
   position: absolute;
-  font-size: 2rem;
+  font-size: var(--font-size-3xl);
   animation: float 6s ease-in-out infinite;
   opacity: 0.3;
 }
@@ -797,100 +656,217 @@ function useBreakpoint() {
   animation-delay: 4.5s;
 }
 
-/* 웹툰 섹션 스타일 */
+.video-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
 .section-header {
   display: grid;
-  grid-template-columns: 1fr auto; /* 왼쪽: 제목/부제, 오른쪽: 버튼 */
-  grid-template-rows: auto auto; /* 1행: 제목, 2행: 부제 */
-  column-gap: 1rem;
-  row-gap: 0.5rem;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--spacing-md);
+  row-gap: var(--spacing-sm);
   align-items: center;
+  margin-bottom: var(--spacing-lg);
+  font-weight: bold;
 }
 
 .section-header h3 {
   grid-column: 1;
   grid-row: 1;
   margin: 0;
+  font-size: var(--font-size-2xl);
+  color: var(--color-dark);
 }
 
 .section-header .webtoon-subtitle {
   grid-column: 1;
   grid-row: 2;
   margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
 }
 
 .webtoon-section .section-header .more-btn {
-  grid-column: 2; /* 오른쪽 열 */
-  grid-row: 1; /* 제목과 같은 행(상단 오른쪽) */
+  grid-column: 2;
+  grid-row: 1;
   align-self: start;
 }
 
-.webtoon-subtitle {
-  font-size: 1rem;
-  color: #7f8c8d;
-  margin: 0;
+.more-btn {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  border: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-/* 로딩 스타일 */
+.more-btn:hover {
+  background: var(--color-accent);
+}
+
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md) var(--spacing-lg);
+}
+
+.card {
+  padding: 0;
+  background: var(--bg-card);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+@media (min-width: 640px) {
+  .card {
+    width: calc(50% - var(--spacing-sm));
+  }
+}
+
+@media (min-width: 1024px) {
+  .card {
+    width: calc(25% - var(--spacing-md));
+  }
+}
+
+.thumb {
+  width: 100%;
+  display: block;
+  background: var(--color-black);
+}
+
+.thumb-16x9 {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.video-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+}
+
+.play-badge {
+  font-size: var(--font-size-3xl);
+}
+
+.card-title {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  max-height: calc(1.4em * 2.4);
+}
+
+.video-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-overlay-dark);
+  backdrop-filter: blur(2px);
+  padding: var(--spacing-xl);
+}
+
+.player-wrap {
+  width: min(1200px, 92vw);
+  aspect-ratio: 16/9;
+  background: var(--color-black);
+  border-radius: 12px;
+  box-shadow: var(--shadow-modal);
+}
+
+.player-iframe,
+.player-image {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 12px;
+  object-fit: contain;
+  background: var(--color-black);
+}
+
+.close-button {
+  position: fixed;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  font-size: var(--font-size-3xl);
+  background: none;
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+}
+
 .loading {
   text-align: center;
-  padding: 50px;
+  padding: var(--spacing-3xl);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #aacd96;
+  border: 4px solid var(--color-gray-200);
+  border-top: 4px solid var(--color-secondary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+  margin: 0 auto var(--spacing-lg);
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* 에러 스타일 */
 .error {
   text-align: center;
-  padding: 50px;
-  color: #e74c3c;
+  padding: var(--spacing-3xl);
+  color: var(--color-error);
 }
 
 .retry-btn {
-  background: #aacd96;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-white);
   border: none;
-  padding: 10px 20px;
+  padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: 8px;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: var(--spacing-sm);
   transition: background 0.3s ease;
 }
 
 .retry-btn:hover {
-  background: #9bc07c;
+  background: var(--color-accent);
 }
 
-/* 웹툰 그리드 */
 .webtoon-grid {
   display: grid;
-  /* grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); */
   grid-template-columns: repeat(4, 1fr);
-  gap: 25px;
-  padding: 20px 0;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-lg) 0;
 }
 
 .webtoon-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -898,7 +874,7 @@ function useBreakpoint() {
 
 .webtoon-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .webtoon-image-container {
@@ -924,14 +900,14 @@ function useBreakpoint() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--color-overlay-dark);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   opacity: 0;
   transition: opacity 0.3s ease;
-  color: white;
+  color: var(--color-white);
 }
 
 .webtoon-card:hover .webtoon-overlay {
@@ -939,50 +915,44 @@ function useBreakpoint() {
 }
 
 .play-icon {
-  font-size: 3rem;
-  margin-bottom: 10px;
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-sm);
 }
 
 .overlay-text {
-  font-size: 1.2rem;
+  font-size: var(--font-size-lg);
   font-weight: bold;
 }
 
 .webtoon-info {
-  padding: 20px;
+  padding: var(--spacing-lg);
 }
 
 .webtoon-card-title {
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   font-weight: bold;
-  color: #2c3e50;
-  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
   line-height: 1.4;
 }
 
-.webtoon-id {
-  font-size: 0.8rem;
-  color: #7f8c8d;
-}
-
-/* 모달 스타일 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--color-overlay-dark);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1001; /* video overlay보다 위에 */
+  z-index: 1001;
   backdrop-filter: blur(5px);
-  padding: 20px;
+  padding: var(--spacing-lg);
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg-card);
   border-radius: 20px;
   width: 100%;
   max-width: 600px;
@@ -990,31 +960,31 @@ function useBreakpoint() {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-modal);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 25px;
-  border-bottom: 1px solid #eee;
-  background: #f8f9fa;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-content);
 }
 
 .modal-title {
   margin: 0;
-  font-size: 1.3rem;
-  color: #2c3e50;
+  font-size: var(--font-size-xl);
+  color: var(--text-primary);
   font-weight: bold;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: var(--font-size-2xl);
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -1025,8 +995,8 @@ function useBreakpoint() {
 }
 
 .close-btn:hover {
-  background: #e74c3c;
-  color: white;
+  background: var(--color-error);
+  color: var(--color-white);
 }
 
 .modal-body {
@@ -1034,8 +1004,8 @@ function useBreakpoint() {
   overflow-y: auto;
   overflow-x: hidden;
   text-align: center;
-  padding: 20px;
-  max-height: calc(90vh - 160px); /* 헤더와 푸터 높이 제외 */
+  padding: var(--spacing-lg);
+  max-height: calc(90vh - 160px);
 }
 
 .webtoon-full-image {
@@ -1043,32 +1013,32 @@ function useBreakpoint() {
   height: auto;
   min-height: 100%;
   border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   display: block;
 }
 
 .modal-footer {
-  padding: 20px 25px;
-  border-top: 1px solid #eee;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-top: 1px solid var(--border-light);
   text-align: center;
-  background: #f8f9fa;
+  background: var(--bg-content);
 }
 
 .modal-close-btn {
-  background: #aacd96;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-white);
   border: none;
-  padding: 12px 30px;
+  padding: var(--spacing-sm) var(--spacing-xl);
   border-radius: 25px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   transition: background 0.2s ease;
 }
 
 .modal-close-btn:hover {
-  background: #9bc07c;
+  background: var(--color-accent);
 }
-/* 애니메이션 */
+
 @keyframes bounce {
   0%,
   20%,
@@ -1085,16 +1055,12 @@ function useBreakpoint() {
   }
 }
 
-@keyframes shimmer {
+@keyframes spin {
   0% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    transform: rotate(0deg);
   }
   100% {
-    opacity: 0.5;
+    transform: rotate(360deg);
   }
 }
 
@@ -1111,15 +1077,14 @@ function useBreakpoint() {
   }
 }
 
-/* 반응형 디자인 */
 @media (max-width: 768px) {
   .webtoon-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
+    gap: var(--spacing-lg);
   }
 
   .modal-overlay {
-    padding: 10px;
+    padding: var(--spacing-sm);
   }
 
   .modal-content {
@@ -1130,38 +1095,38 @@ function useBreakpoint() {
   .modal-body {
     max-height: calc(95vh - 160px);
   }
-}
-.page-description {
-  padding: 2.25rem 1.25rem;
-  margin-bottom: 3rem;
-}
 
-.page-title {
-  font-size: 2.2rem;
-}
+  .page-description {
+    padding: var(--spacing-2xl) var(--spacing-md);
+  }
 
-.page-subtitle {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-}
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
 
-.feature-badges {
-  gap: 0.7rem;
-}
+  .page-subtitle {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-sm);
+  }
 
-.badge {
-  font-size: 0.8rem;
-  padding: 0.4rem 0.8rem;
-}
+  .feature-badges {
+    gap: var(--spacing-sm);
+  }
 
-.floating-icon {
-  font-size: 1.5rem;
+  .badge {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .floating-icon {
+    font-size: var(--font-size-2xl);
+  }
 }
 
 @media (max-width: 480px) {
   .webtoon-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: var(--spacing-md);
   }
 
   .webtoon-image-container {
@@ -1169,7 +1134,7 @@ function useBreakpoint() {
   }
 
   .modal-overlay {
-    padding: 5px;
+    padding: var(--spacing-xs);
   }
 
   .modal-content {
@@ -1178,25 +1143,26 @@ function useBreakpoint() {
 
   .modal-body {
     max-height: calc(98vh - 160px);
-    padding: 10px;
+    padding: var(--spacing-sm);
   }
+
   .page-description {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl) var(--spacing-md);
   }
 
   .page-title {
-    font-size: 1.8rem;
+    font-size: var(--font-size-xl);
     line-height: 1.3;
   }
 
   .page-subtitle {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
   }
 
   .feature-badges {
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-sm);
   }
 }
 </style>
