@@ -165,7 +165,7 @@
                   </div>
                   <div>
                     <span class="label">연회비 정보:</span>
-                    {{ card.annualFee || '정보 없음' }}
+                    {{ (card.annualFee ? card.annualFee.replace(/\[([^\]]+)\]/g, '$1') : '정보 없음') }}
                   </div>
                   <div v-if="card.options && card.options.length > 0" class="benefit-hashtags">
                     <span v-for="(option, index) in card.options.slice(0, 3)" :key="index" class="hashtag">

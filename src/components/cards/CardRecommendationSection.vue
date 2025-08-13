@@ -152,7 +152,7 @@
                   {{ card.cardType }}
                 </span>
                 <span class="annual-fee">{{
-                  card.annualFee || '연회비 정보 없음'
+                  (card.annualFee ? card.annualFee.replace(/\[([^\]]+)\]/g, '$1') : '연회비 정보 없음')
                 }}</span>
               </div>
 

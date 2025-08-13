@@ -18,7 +18,7 @@
     <div class="card-details">
       <div class="detail-row">
         <span class="detail-label">연회비</span>
-        <span class="detail-value">{{ card.annualFee || '정보 없음' }}</span>
+        <span class="detail-value">{{ (card.annualFee ? card.annualFee.replace(/\[([^\]]+)\]/g, '$1') : '정보 없음') }}</span>
       </div>
       <div class="detail-row" v-if="card.preMonthMoney">
         <span class="detail-label">전월 실적</span>
