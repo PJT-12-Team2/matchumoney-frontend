@@ -711,7 +711,8 @@ function useBreakpoint() {
 .card-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-md) var(--spacing-lg);
+  gap: var(--spacing-md) var(--spacing-sm);
+  justify-content: space-between;
 }
 
 .card {
