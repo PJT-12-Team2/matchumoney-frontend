@@ -863,7 +863,16 @@ const handleCardSync = async (syncData) => {
 
 // 카드 슬라이더에서 카드 변경 시 거래내역 및 카드 혜택 조회
 const handleCardChange = async (card) => {
-  // console.log("🔄 카드 변경:", card.cardName);
+  // console.log("🔄 카드 변경:", card?.cardName);
+  
+  // 카드가 null인 경우 (마지막 슬라이드 - ActionCardSlide) 상태 초기화
+  if (!card) {
+    syncedTransactions.value = [];
+    selectedSyncedCard.value = null;
+    currentCardBenefits.value = null;
+    return;
+  }
+  
   await Promise.all([
     loadExistingTransactions(card),
     loadCurrentCardBenefits(card),

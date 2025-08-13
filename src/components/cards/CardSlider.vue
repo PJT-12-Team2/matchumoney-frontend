@@ -112,9 +112,7 @@ const goToSlide = (index) => {
 
 // 카드 변경 이벤트 전송
 const emitCardChange = () => {
-  if (currentCard.value) {
-    emit('cardChange', currentCard.value);
-  }
+  emit('cardChange', currentCard.value);
 };
 
 // 드래그/스와이프 핸들러들
