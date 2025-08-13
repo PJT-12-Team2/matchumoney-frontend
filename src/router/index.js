@@ -32,6 +32,7 @@ import SavingDetailPage from '@/pages/detail/SavingDetailPage.vue';
 import EducationBoardPage from '@/components/education/EducationBoardPage.vue';
 import QuizPage from '@/components/education/QuizPage.vue';
 import WebtoonPage from '@/components/education/WebtoonPage.vue';
+import VideoPage from '@/components/education/EducationVideoBoardPage.vue';
 
 import ComparePage from '@/pages/compare/ComparePage.vue';
 /* 결과 페이지 (동적 import) */
@@ -168,7 +169,8 @@ const routes = [
     path: '/education',
     children: [
       { path: 'quiz', name: 'quiz', component: QuizPage },
-      { path: 'video', name: 'video', component: EducationBoardPage },
+      { path: 'contents', name: 'contents', component: EducationBoardPage },
+      { path: 'video', name: 'video', component: VideoPage },
       {
         path: 'video/shorts/:shortsId',
         name: 'ShortsDetail',
