@@ -36,11 +36,72 @@
             />
           </div>
 
+          <!-- 개인정보 활용 동의 섹션 -->
+          <div class="consent-section">
+            <div class="consent-header" @click="toggleConsentDetails">
+              <h4>개인정보 수집 및 이용 동의</h4>
+              <button type="button" class="toggle-btn" :class="{ expanded: isConsentExpanded }">
+                <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
+            
+            <transition name="slide-down">
+              <div class="consent-content" v-if="isConsentExpanded">
+              <div class="consent-item">
+                <h5>수집하는 개인정보 항목</h5>
+                <ul>
+                  <li>카드 거래내역 정보</li>
+                  <li>카드 기본 정보 (카드명, 카드번호 마스킹, 발급사)</li>
+                  <li>결제 및 이용 패턴 데이터</li>
+                </ul>
+              </div>
+
+              <div class="consent-item">
+                <h5>개인정보 수집 및 이용 목적</h5>
+                <ul>
+                  <li>맞춤형 카드 추천 서비스 제공</li>
+                  <li>소비 패턴 분석 및 통계 제공</li>
+                  <li>카드 혜택 비교 및 분석</li>
+                </ul>
+              </div>
+
+              <div class="consent-item">
+                <h5>개인정보 보유 및 이용 기간</h5>
+                <p>서비스 이용 기간 동안 보관하며, 회원 탈퇴 시 즉시 파기됩니다.</p>
+              </div>
+
+              <div class="consent-item important">
+                <h5>중요 안내사항</h5>
+                <ul>
+                  <li><strong>카드 ID 및 비밀번호는 저장되지 않습니다</strong></li>
+                  <li>일회성 인증을 통해 데이터를 가져온 후 즉시 삭제됩니다</li>
+                  <li>거래내역 및 카드 정보만 분석 목적으로 저장됩니다</li>
+                  <li>제3자에게 개인정보를 제공하지 않습니다</li>
+                </ul>
+              </div>
+              </div>
+            </transition>
+          </div>
+
+          <!-- 동의 체크박스 - 항상 표시 -->
+          <div class="consent-checkbox">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                v-model="isConsentAgreed"
+                class="checkbox-input"
+              />
+              <span class="checkbox-text">
+                위 개인정보 수집 및 이용에 동의합니다. (필수)
+              </span>
+            </label>
+          </div>
+
           <div class="form-actions">
             <BaseButton variant="secondary" @click="closeModal" type="button">
               취소
             </BaseButton>
-            <BaseButton variant="primary" type="submit" :disabled="isLoading">
+            <BaseButton variant="primary" type="submit" :disabled="isLoading || !isConsentAgreed">
               {{ isLoading ? "연결 중..." : "연결하기" }}
             </BaseButton>
           </div>
@@ -64,6 +125,8 @@ const props = defineProps({
 const emit = defineEmits(["close", "sync"]);
 
 const isLoading = ref(false);
+const isConsentAgreed = ref(false);
+const isConsentExpanded = ref(false);
 const formData = reactive({
   cardId: "",
   cardPw: "",
@@ -72,7 +135,13 @@ const formData = reactive({
 const closeModal = () => {
   formData.cardId = "";
   formData.cardPw = "";
+  isConsentAgreed.value = false;
+  isConsentExpanded.value = false;
   emit("close");
+};
+
+const toggleConsentDetails = () => {
+  isConsentExpanded.value = !isConsentExpanded.value;
 };
 
 const handleSync = async () => {
@@ -261,11 +330,184 @@ const handleSync = async () => {
   cursor: not-allowed;
 }
 
+/* 개인정보 동의 섹션 스타일 */
+.consent-section {
+  margin: var(--spacing-lg) 0;
+  border: 1px solid var(--border-light);
+  border-radius: var(--spacing-sm);
+  background: var(--color-light);
+}
+
+.consent-header {
+  background: var(--color-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--spacing-sm);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.consent-header:hover {
+  background: var(--color-primary-light, #e8f4fd);
+}
+
+.consent-header h4 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-dark);
+  flex: 1;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: var(--color-dark);
+}
+
+.toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.toggle-btn i {
+  font-size: var(--font-size-base);
+  transition: transform 0.3s ease;
+}
+
+.toggle-btn.expanded i {
+  transform: rotate(180deg);
+}
+
+.consent-content {
+  padding: var(--spacing-lg);
+  max-height: 300px;
+  overflow-y: auto;
+  text-align: left;
+  border-top: 1px solid var(--border-light);
+  border-radius: 0 0 var(--spacing-sm) var(--spacing-sm);
+  background: var(--color-white);
+}
+
+/* 슬라이드 애니메이션 */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-down-enter-to,
+.slide-down-leave-from {
+  max-height: 300px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.consent-item {
+  margin-bottom: var(--spacing-md);
+}
+
+.consent-item:last-child {
+  margin-bottom: 0;
+}
+
+.consent-item h5 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.consent-item ul {
+  margin: 0;
+  padding-left: var(--spacing-lg);
+  list-style-type: disc;
+}
+
+.consent-item ul li {
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.consent-item p {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.consent-item.important {
+  background: var(--color-warning-light);
+  padding: var(--spacing-md);
+  border-radius: var(--spacing-sm);
+  border-left: 4px solid var(--color-warning);
+}
+
+.consent-item.important h5 {
+  color: var(--color-warning-dark);
+}
+
+.consent-item.important ul li {
+  color: var(--color-warning-dark);
+}
+
+.consent-checkbox {
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-light);
+  border-radius: var(--spacing-sm);
+  background: var(--color-white);
+  margin-top: var(--spacing-sm);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checkbox-text {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-dark);
+}
+
 @media (max-width: 640px) {
   .modal-content {
-    width: 80%;
-    max-width: 400px;
+    width: 90%;
+    max-width: 450px;
     padding: var(--spacing-lg) var(--spacing-md);
+    max-height: 90vh;
+    overflow-y: auto;
   }
   .modal-header {
     margin-bottom: var(--spacing-md);
@@ -273,6 +515,24 @@ const handleSync = async () => {
   .form-actions {
     flex-direction: column;
     gap: var(--spacing-md);
+  }
+  
+  .consent-content {
+    max-height: 200px;
+    padding: var(--spacing-md);
+  }
+  
+  .consent-item h5 {
+    font-size: var(--font-size-sm);
+  }
+  
+  .consent-item ul li,
+  .consent-item p {
+    font-size: var(--font-size-xs);
+  }
+  
+  .checkbox-text {
+    font-size: var(--font-size-xs);
   }
 }
 </style>
