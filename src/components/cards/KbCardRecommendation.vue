@@ -49,7 +49,11 @@
       <!-- 페이징 컨트롤 -->
       <div v-if="totalPages > 1" class="pagination-container">
         <div class="pagination-info">
-          <span>{{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, totalCount) }} / {{ totalCount }}개</span>
+          <span
+            >{{ (currentPage - 1) * itemsPerPage + 1 }} -
+            {{ Math.min(currentPage * itemsPerPage, totalCount) }} /
+            {{ totalCount }}개</span
+          >
         </div>
         <div class="pagination-controls">
           <BaseButton
@@ -61,7 +65,7 @@
           >
             <i class="bi bi-chevron-left"></i>
           </BaseButton>
-          
+
           <div class="page-numbers">
             <BaseButton
               v-for="page in visiblePages"
@@ -97,11 +101,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import cardsApi from "@/api/cards.js";
-import BaseButton from "@/components/base/BaseButton.vue";
-import BaseSpinner from "@/components/base/BaseSpinner.vue";
-import KbCardItem from "./KbCardItem.vue";
+import { ref, onMounted, computed } from 'vue';
+import cardsApi from '@/api/cards.js';
+import BaseButton from '@/components/base/BaseButton.vue';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
+import KbCardItem from './KbCardItem.vue';
 
 // 반응형 데이터
 const isLoading = ref(false);
@@ -112,7 +116,9 @@ const currentPage = ref(1);
 const itemsPerPage = ref(8); // 페이지당 8개씩 표시
 
 // computed
-const totalPages = computed(() => Math.ceil(totalCount.value / itemsPerPage.value));
+const totalPages = computed(() =>
+  Math.ceil(totalCount.value / itemsPerPage.value)
+);
 
 const paginatedCards = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
@@ -125,7 +131,7 @@ const visiblePages = computed(() => {
   const maxVisible = 5;
   const total = totalPages.value;
   const current = currentPage.value;
-  
+
   if (total <= maxVisible) {
     for (let i = 1; i <= total; i++) {
       pages.push(i);
@@ -133,18 +139,18 @@ const visiblePages = computed(() => {
   } else {
     let start = Math.max(1, current - 2);
     let end = Math.min(total, current + 2);
-    
+
     if (current <= 3) {
       end = Math.min(total, 5);
     } else if (current >= total - 2) {
       start = Math.max(1, total - 4);
     }
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
   }
-  
+
   return pages;
 });
 
@@ -155,12 +161,12 @@ const loadKbRecommendations = async () => {
     error.value = null;
 
     const response = await cardsApi.getKbCardRecommendations();
-    console.log("KB카드 추천 전체 응답:", response);
+    console.log('KB카드 추천 전체 응답:', response);
 
     // 응답 구조 확인 및 처리
     if (response && response.success !== false) {
       // 백엔드 응답이 SuccessResponse 형태인 경우
-      if (response.data && typeof response.data === "object") {
+      if (response.data && typeof response.data === 'object') {
         kbCards.value = response.data.kbCards || [];
         totalCount.value = response.data.totalCount || 0;
       }
@@ -171,20 +177,20 @@ const loadKbRecommendations = async () => {
       }
       // 다른 구조인 경우 빈 배열로 처리
       else {
-        console.warn("예상과 다른 응답 구조:", response);
+        console.warn('예상과 다른 응답 구조:', response);
         kbCards.value = [];
         totalCount.value = 0;
       }
     } else {
-      throw new Error(response?.message || "추천 데이터를 불러올 수 없습니다.");
+      throw new Error(response?.message || '추천 데이터를 불러올 수 없습니다.');
     }
   } catch (err) {
-    console.error("KB카드 추천 로드 실패:", err);
-    console.error("오류 상세:", err.response?.data || err.message);
+    console.error('KB카드 추천 로드 실패:', err);
+    console.error('오류 상세:', err.response?.data || err.message);
     error.value =
       err.response?.data?.message ||
       err.message ||
-      "KB카드 추천을 불러오는 중 오류가 발생했습니다.";
+      'KB카드 추천을 불러오는 중 오류가 발생했습니다.';
   } finally {
     isLoading.value = false;
   }
@@ -203,9 +209,9 @@ const handleCardApply = (card) => {
   const applyUrl = card.requestPcUrl || card.requestMobileUrl;
 
   if (applyUrl) {
-    window.open(applyUrl, "_blank");
+    window.open(applyUrl, '_blank');
   } else {
-    alert("죄송합니다. 현재 온라인 신청이 불가능합니다.");
+    alert('죄송합니다. 현재 온라인 신청이 불가능합니다.');
   }
 };
 
