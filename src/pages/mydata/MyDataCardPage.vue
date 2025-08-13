@@ -4,12 +4,32 @@
       <h2 class="page-title">마이데이터 기반 카드 추천</h2>
 
       <!-- 카드 연동 버튼 -->
-      <div class="sync-section" v-if="!cards.length && !isLoading">
-        <div class="sync-info">
-          <p>CODEF를 통해 KB카드 정보를 연동하세요</p>
-          <BaseButton variant="primary" @click="showSyncModal = true">
-            카드 연동하기
-          </BaseButton>
+      <div
+        class="sync-section"
+        v-if="!cards.length && !isLoading"
+        @click="showSyncModal = true"
+      >
+        <div class="icon-container">
+          <div class="card-sync-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="sync-card-icon"
+            >
+              <path
+                d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+              />
+              <path d="M6 10h2v2H6zm3 0h5v2H9z" />
+            </svg>
+          </div>
+        </div>
+        <div class="sync-content">
+          <div class="sync-title">내 카드 정보 불러오기</div>
+          <div class="sync-info">
+            CODEF를 통해 카드 정보를 연동하여<br />
+            맞춤 추천을 받아보세요!
+          </div>
         </div>
       </div>
 
@@ -1645,14 +1665,57 @@ onMounted(() => {
   margin-bottom: var(--spacing-2xl);
 }
 
-/* 연동 섹션 - main.css card 클래스 사용 */
+/* 연동 섹션 - SavingReloadCard 스타일 적용 */
 .sync-section {
-  text-align: center;
-  padding: var(--spacing-2xl) var(--spacing-lg);
-  background: var(--color-light);
-  border-radius: 16px;
+  background-color: var(--color-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--spacing-lg);
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
   margin-bottom: var(--spacing-2xl);
-  border: 1px solid var(--border-light);
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24%;
+  max-width: 200px;
+  max-height: 100px;
+}
+
+.card-sync-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sync-card-icon {
+  width: 60px;
+  height: 60px;
+  color: var(--color-dark);
+}
+
+.sync-content {
+  flex: 1;
+  text-align: center;
+}
+
+.sync-title {
+  font-weight: bold;
+  font-size: var(--font-size-2xl);
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.sync-info {
+  font-size: var(--font-size-base);
+  color: var(--color-title);
+  line-height: 1.5;
 }
 
 /* 카드 슬라이더 */
@@ -1924,7 +1987,6 @@ onMounted(() => {
   box-shadow: var(--shadow-lg);
   background: var(--color-dark);
 }
-
 
 /* 거래내역 콘텐츠 전체 */
 .transactions-content {
@@ -2657,8 +2719,37 @@ onMounted(() => {
   }
 
   .sync-section {
-    padding: var(--spacing-xl) var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-md);
     margin-bottom: var(--spacing-xl);
+    /* 반응형에서도 가로 배치 유지 */
+    flex-direction: row;
+    gap: var(--spacing-sm);
+  }
+
+  .icon-container {
+    width: 20%;
+    max-width: 70px;
+    max-height: 50px;
+    flex-shrink: 0; /* 아이콘 크기 고정 */
+  }
+
+  .sync-card-icon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .sync-content {
+    flex: 1;
+    min-width: 0; /* 텍스트 overflow 방지 */
+  }
+
+  .sync-title {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .sync-info {
+    font-size: var(--font-size-sm);
   }
 
   .card-slider {
@@ -2835,7 +2926,6 @@ onMounted(() => {
     max-width: 300px;
     margin: 0 auto;
   }
-
 
   /* 탭 버튼 모바일 스타일 */
   .tab-buttons {
