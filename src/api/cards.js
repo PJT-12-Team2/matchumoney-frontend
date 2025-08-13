@@ -127,4 +127,12 @@ export default {
     console.log("✅ KB국민카드 추천 응답:", data);
     return data;
   },
+
+  // connectedId 기반 거래내역 업데이트 (모달창 없이 바로 실행)
+  async refreshTransactionsByConnectedId(userId) {
+    console.log("🔄 connectedId 기반 거래내역 업데이트 요청:", userId);
+    const { data } = await api.put(`${BASE_URL}/transactions/refresh/${userId}`);
+    console.log("✅ 거래내역 업데이트 완료:", data);
+    return data;
+  },
 };

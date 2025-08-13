@@ -883,11 +883,52 @@ const handleRegisterTransactions = (card) => {
   showTransactionModal.value = true;
 };
 
-// 거래내역 업데이트 핸들러
-const handleUpdateTransactions = (card) => {
+// 거래내역 업데이트 핸들러 (모달창 없이 바로 실행)
+const handleUpdateTransactions = async (card) => {
   console.log('🔄 거래내역 업데이트:', card.cardName);
-  selectedCard.value = card;
-  showTransactionModal.value = true;
+  
+  if (!userId.value) {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    isLoadingTransactions.value = true;
+    
+    console.log('🔄 connectedId 기반 거래내역 업데이트 시작:', userId.value);
+    const response = await cardsApi.refreshTransactionsByConnectedId(userId.value);
+    
+    console.log('✅ 거래내역 업데이트 완료:', response);
+    
+    // 업데이트 완료 후 현재 카드의 거래내역 다시 로드
+    await loadExistingTransactions(card);
+    
+    alert(`${response.message || '거래내역이 업데이트되었습니다.'}`);
+    
+  } catch (error) {
+    console.error('❌ 거래내역 업데이트 실패:', error);
+    
+    if (error.response?.status === 401) {
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      authStore.logout();
+      router.push('/login');
+    } else if (error.response?.status === 400) {
+      alert('connectedId가 없거나 카드 정보가 올바르지 않습니다. 카드를 다시 등록해주세요.');
+    } else if (error.response?.status === 404) {
+      alert('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.');
+    } else if (error.response?.status === 500) {
+      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } else {
+      alert(
+        `거래내역 업데이트에 실패했습니다: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  } finally {
+    isLoadingTransactions.value = false;
+  }
 };
 
 // 날짜 포맷팅 함수
@@ -1461,10 +1502,51 @@ const exportTransactions = () => {
   alert('거래내역을 내보냅니다.');
 };
 
-const syncTransactions = () => {
-  // 거래내역 새로고침 로직
-  if (selectedSyncedCard.value) {
-    loadExistingTransactions(selectedSyncedCard.value);
+const syncTransactions = async () => {
+  // connectedId 기반 거래내역 업데이트 (모달창 없이 바로 실행)
+  if (!userId.value) {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    isLoadingTransactions.value = true;
+    
+    console.log('🔄 거래내역 업데이트 시작:', userId.value);
+    const response = await cardsApi.refreshTransactionsByConnectedId(userId.value);
+    
+    console.log('✅ 거래내역 업데이트 완료:', response);
+    
+    // 업데이트 완료 후 기존 거래내역 다시 로드
+    if (selectedSyncedCard.value) {
+      await loadExistingTransactions(selectedSyncedCard.value);
+    }
+    
+    alert(`${response.message || '거래내역이 업데이트되었습니다.'}`);
+    
+  } catch (error) {
+    console.error('❌ 거래내역 업데이트 실패:', error);
+    
+    if (error.response?.status === 401) {
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      authStore.logout();
+      router.push('/login');
+    } else if (error.response?.status === 400) {
+      alert('connectedId가 없거나 카드 정보가 올바르지 않습니다. 카드를 다시 등록해주세요.');
+    } else if (error.response?.status === 404) {
+      alert('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.');
+    } else if (error.response?.status === 500) {
+      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } else {
+      alert(
+        `거래내역 업데이트에 실패했습니다: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  } finally {
+    isLoadingTransactions.value = false;
   }
 };
 
