@@ -1,4 +1,4 @@
-import api from "@/api";
+import api from '@/api';
 
 const BASE_URL = `user`;
 
@@ -13,6 +13,11 @@ export default {
     const { data } = await api.get(`${BASE_URL}/mypage`);
     return data;
   },
+  // 상위 퍼센트 조회
+  async getTopPercent() {
+    const { data } = await api.get(`${BASE_URL}/mypage/top-percent`);
+    return data;
+  },
   // 회원 정보 수정
   async updateUserInfo(updateDto) {
     const { data } = await api.patch(`${BASE_URL}/update`, updateDto);
@@ -20,7 +25,10 @@ export default {
   },
   // 비밀번호 수정
   async updatePassword(passwordDto) {
-    const { data } = await api.patch(`${BASE_URL}/update/password`, passwordDto);
+    const { data } = await api.patch(
+      `${BASE_URL}/update/password`,
+      passwordDto
+    );
     return data;
   },
 };
