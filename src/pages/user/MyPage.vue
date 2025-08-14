@@ -30,6 +30,9 @@
                   user?.nickname ?? '정보 없음'
                 }}</span>
                 <span class="level-title">님</span>
+                <span :class="['top-percent-badge', topPercentClass]">
+                  상위 {{ topPercent }}%
+                </span>
               </h2>
               <ul class="user-meta-horizontal">
                 <li v-if="user?.gender">{{ user.gender }}</li>
@@ -280,6 +283,19 @@ const authStore = useAuthStore();
 const cards = ref([]);
 const showSyncModal = ref(false);
 const isLoading = ref(false);
+
+// 상위 퍼센트
+const topPercent = ref(null);
+const topPercentClass = computed(() => {
+  const percent = Number(topPercent.value);
+  if (!Number.isFinite(percent)) return 'badge-normal';
+
+  if (percent <= 1) return 'badge-top'; // TOP: ≤ 1%
+  if (percent <= 10) return 'badge-high'; // 상위권: ≤ 10%
+  if (percent >= 90) return 'badge-sprout'; // 새싹: ≥ 90%
+  return 'badge-normal'; // 보통
+});
+
 const userMeta = computed(() => {
   const parts = [];
   if (user.value.birth) parts.push(user.value.birth);
@@ -566,6 +582,10 @@ onMounted(async () => {
     favoriteCards.value = data.favoriteCards;
 
     updateProducts();
+
+    const r = await userApi.getTopPercent();
+    // console.log(r);
+    topPercent.value = r?.result ?? null;
   } catch (error) {
     console.error('❌ 마이페이지 정보 조회 실패', error);
   }
@@ -576,11 +596,27 @@ function updateProducts() {
   let items = [];
 
   // 공통 필드 추출 유틸
-  const pickBank = (obj) => obj.bankName ?? obj.company ?? obj.bank_name ?? obj.kor_co_nm ?? '';
-  const pickName = (obj) => obj.productName ?? obj.product_name ?? obj.title ?? obj.fin_prdt_nm ?? '';
-  const pickPeriod = (obj) => obj.maxSaveTrm ?? obj.save_trm ?? obj.period ?? obj.sugPeriod ?? obj.maxTerm ?? obj.saveTrm ?? '';
-  const pickMaxRate2 = (obj) => obj.maxIntrRate2 ?? obj.max_rate2 ?? obj.maxRate ?? '';
-  const pickMaxRate1 = (obj) => obj.maxIntrRate ?? obj.max_rate ?? obj.basicRate ?? obj.base_rate ?? obj.baseRate ?? '';
+  const pickBank = (obj) =>
+    obj.bankName ?? obj.company ?? obj.bank_name ?? obj.kor_co_nm ?? '';
+  const pickName = (obj) =>
+    obj.productName ?? obj.product_name ?? obj.title ?? obj.fin_prdt_nm ?? '';
+  const pickPeriod = (obj) =>
+    obj.maxSaveTrm ??
+    obj.save_trm ??
+    obj.period ??
+    obj.sugPeriod ??
+    obj.maxTerm ??
+    obj.saveTrm ??
+    '';
+  const pickMaxRate2 = (obj) =>
+    obj.maxIntrRate2 ?? obj.max_rate2 ?? obj.maxRate ?? '';
+  const pickMaxRate1 = (obj) =>
+    obj.maxIntrRate ??
+    obj.max_rate ??
+    obj.basicRate ??
+    obj.base_rate ??
+    obj.baseRate ??
+    '';
 
   if (selectedTab.value === '적금') {
     items = favoriteSavings.value.map((raw) => ({
@@ -590,7 +626,8 @@ function updateProducts() {
       maxSaveTrm: pickPeriod(raw),
       maxIntrRate: pickMaxRate1(raw),
       maxIntrRate2: pickMaxRate2(raw),
-      savingId: raw.savingId ?? raw.saving_product_id ?? raw.savingProductId ?? raw.id,
+      savingId:
+        raw.savingId ?? raw.saving_product_id ?? raw.savingProductId ?? raw.id,
     }));
   } else if (selectedTab.value === '예금') {
     items = favoriteDeposits.value.map((raw) => ({
@@ -616,7 +653,11 @@ function updateProducts() {
   // 3개 고정 노출
   if (items.length < REQUIRED) {
     const fillCount = Math.max(0, REQUIRED - items.length);
-    const fallback = { isFallback: true, type: selectedTab.value, productName: '즐겨찾기 없음' };
+    const fallback = {
+      isFallback: true,
+      type: selectedTab.value,
+      productName: '즐겨찾기 없음',
+    };
     items = [...items, ...Array(fillCount).fill(fallback)];
   } else if (items.length > REQUIRED) {
     items = items.slice(0, REQUIRED);
@@ -1638,6 +1679,65 @@ onMounted(() => {
 .hcard.empty {
   justify-content: center;
   color: var(--color-secondary-70);
+}
+
+.top-percent-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.3s ease;
+  animation: badgeGlow 2s ease-in-out infinite alternate;
+  margin-left: 0.5rem;
+  vertical-align: text-top;
+  position: relative;
+  top: -0.18em;
+}
+
+.badge-top {
+  background: linear-gradient(135deg, #ffd36b 0%, #f3c65a 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
+}
+.badge-high {
+  background: linear-gradient(135deg, #deb887 0%, #cd853f 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
+}
+.badge-normal {
+  background: linear-gradient(135deg, #ade1c1 0%, #54b99e 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
+}
+.badge-sprout {
+  background: linear-gradient(135deg, #bae3af 0%, #c1dfc4 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
+}
+
+.badge-top::before {
+  content: '👑';
+}
+.badge-high::before {
+  content: '🏆';
+}
+.badge-normal::before {
+  content: '💡';
+}
+.badge-sprout::before {
+  content: '🌱';
+}
+
+@keyframes badgeGlow {
+  from {
+    transform: scale(1) translateY(0px);
+  }
+  to {
+    transform: scale(1.02) translateY(-1px);
+  }
 }
 
 @media (max-width: 1024px) {

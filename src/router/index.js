@@ -31,12 +31,10 @@ import SavingDetailPage from '@/pages/detail/SavingDetailPage.vue';
 
 import EducationBoardPage from '@/components/education/EducationBoardPage.vue';
 import QuizPage from '@/components/education/QuizPage.vue';
+import WebtoonPage from '@/components/education/WebtoonPage.vue';
+import VideoPage from '@/components/education/EducationVideoBoardPage.vue';
 
 import ComparePage from '@/pages/compare/ComparePage.vue';
-
-import FinancialQuiz from '@/pages/quiz/FinancialQuiz.vue';
-import QuizEntry from '@/pages/quiz/QuizEntry.vue';
-import DailyQuiz from '@/pages/quiz/DailyQuiz.vue';
 /* 결과 페이지 (동적 import) */
 const ResultPage = () => import('@/pages/persona/PersonaResultPage.vue');
 
@@ -170,8 +168,9 @@ const routes = [
   {
     path: '/education',
     children: [
-      { path: 'quiz', name: 'quiz', component: QuizEntry },
-      { path: 'video', name: 'video', component: EducationBoardPage },
+      { path: 'quiz', name: 'quiz', component: QuizPage },
+      { path: 'contents', name: 'contents', component: EducationBoardPage },
+      { path: 'video', name: 'video', component: VideoPage },
       {
         path: 'video/shorts/:shortsId',
         name: 'ShortsDetail',
@@ -184,15 +183,7 @@ const routes = [
         component: () => import('@/components/education/VideoDetailPage.vue'),
         props: true,
       },
-    ],
-  },
-  {
-    path: '/quiz',
-    children: [
-      { path: '', name: 'QuizHome', component: QuizEntry },
-      { path: 'daily', name: 'DailyQuiz', component: DailyQuiz },
-      { path: 'financial', name: 'FinancialQuiz', component: FinancialQuiz },
-      { path: 'entry', name: 'QuizEntry', component: QuizEntry },
+      { path: 'webtoon', name: 'webtoon', component: WebtoonPage },
     ],
   },
   {
