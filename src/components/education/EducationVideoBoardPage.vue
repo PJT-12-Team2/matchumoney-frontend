@@ -468,7 +468,7 @@ function extractYoutubeId(url) {
 }
 .page-description {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   background: #f3f6f9;
   padding: 1rem;
   border-radius: 16px;
@@ -477,7 +477,6 @@ function extractYoutubeId(url) {
 .page-title {
   font-size: var(--font-size-xl);
   font-weight: bold;
-  margin-bottom: 1rem;
   color: #222;
 }
 .page-subtitle {
