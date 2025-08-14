@@ -4,7 +4,7 @@
     <div class="favorite-toggle" @click.stop="handleFavoriteToggle">
       <i
         :class="[
-          card.isStarred ? 'fas fa-star' : 'far fa-star',
+          card.isStarred ? 'fas fa-star starred' : 'far fa-star unstarred',
           'favorite-icon',
         ]"
         title="즐겨찾기"
@@ -105,6 +105,8 @@ import { defineProps, defineEmits, ref } from 'vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
+import favorite from '@/api/favorite.js';
+import { ProductType } from '@/constants/productTypes';
 
 const props = defineProps({
   card: {
@@ -247,15 +249,39 @@ const truncateText = (text, maxLength) => {
 };
 
 // 즐겨찾기 토글
-const handleFavoriteToggle = () => {
-  console.log('즐겨찾기 토글:', props.card.name);
-  // TODO: 즐겨찾기 API 호출
+const handleFavoriteToggle = async () => {
+  const currentState = props.card.isStarred;
+  const newState = !currentState;
+
+  // 낙관적 UI 업데이트
+  props.card.isStarred = newState;
+
+  try {
+    const cardId = props.card.cardProductId || props.card.id;
+    if (newState) {
+      await favorite.addFavorite(String(cardId), ProductType.CARD);
+    } else {
+      await favorite.deleteFavorite(String(cardId), ProductType.CARD);
+    }
+    console.log(
+      `카드 ${props.card.name} 즐겨찾기 ${newState ? '추가' : '제거'} 완료`
+    );
+  } catch (error) {
+    console.error('즐겨찾기 토글 실패:', error);
+
+    // 409 에러(이미 추가/삭제됨)가 아닌 경우에만 롤백
+    if (!(error.response?.status === 409)) {
+      props.card.isStarred = currentState;
+    }
+  }
 };
 
 // 좋아요 업데이트
 const handleLikeUpdate = (payload) => {
+  // payload: { isLiked: boolean, likeCount: number }
+  props.card.isLiked = payload.isLiked;
+  props.card.likeCount = payload.likeCount;
   console.log('좋아요 업데이트:', payload);
-  // TODO: 좋아요 상태 업데이트
 };
 
 // 카드 클릭 처리
@@ -293,17 +319,23 @@ const handleApply = () => {
 
 .favorite-toggle {
   position: absolute;
-  top: 50%;
-  right: var(--spacing-sm);
-  transform: translateY(-50%);
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
   z-index: 10;
   cursor: pointer;
 }
 
 .favorite-toggle .favorite-icon {
-  color: #ffbb00;
   font-size: var(--font-size-xl);
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.favorite-toggle .favorite-icon.starred {
+  color: #ffbb00;
+}
+
+.favorite-toggle .favorite-icon.unstarred {
+  color: #ffbb00;
 }
 
 .favorite-toggle:hover .favorite-icon {
@@ -372,6 +404,9 @@ const handleApply = () => {
 
 .like-compare-row {
   display: flex;
+  gap: var(--spacing-xs);
+  justify-content: center;
+  align-items: center;
 }
 
 .compare-container {
@@ -507,42 +542,50 @@ const handleApply = () => {
   transform: translateX(4px);
 }
 
-/* ===== 태블릿 스타일 (769px - 1024px) ===== */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .kb-card-list-item {
-    gap: var(--spacing-lg);
-    padding: var(--spacing-lg);
-    min-height: 120px;
+@media (max-width: 1024px) {
+  .card-name {
+    font-size: var(--font-size-2xl);
   }
-
-  .card-image-container {
-    width: 120px;
-    height: 76px;
+  .card-issuer {
+    font-size: var(--font-size-base);
   }
-
-  .card-image-container.vertical-image .card-image {
-    height: 70px;
+  .card-info {
+    font-size: var(--font-size-base);
   }
+  .card-action {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  .apply-button {
+    font-size: var(--font-size-sm);
+  }
+}
 
-  .card-image-container.horizontal-image .card-image {
-    width: 100px;
+@media (max-width: 640px) {
+  .like-compare-row {
+    display: flex;
+    gap: var(--spacing-xs);
+    justify-content: center;
   }
 
   .card-name {
     font-size: var(--font-size-lg);
   }
-}
 
-/* ===== 모바일 스타일 (481px - 768px) ===== */
-@media (max-width: 768px) {
-  .favorite-toggle {
-    top: var(--spacing-xs);
-    right: var(--spacing-xs);
-    transform: none;
+  .kb-card-list-item {
+    gap: var(--spacing-sm);
   }
 
-  .favorite-toggle:hover {
-    transform: none !important;
+  .card-info {
+    font-size: var(--font-size-sm);
+  }
+
+  .card-image-section {
+    justify-content: center;
+  }
+
+  .favorite-toggle {
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
   }
 
   .favorite-toggle:hover .favorite-icon {
@@ -552,7 +595,7 @@ const handleApply = () => {
   .kb-card-list-item {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-sm);
     padding: var(--spacing-lg);
     min-height: auto;
     border-radius: 16px;
@@ -564,6 +607,7 @@ const handleApply = () => {
     justify-content: flex-start;
     padding-top: 0;
     gap: var(--spacing-md);
+    font-size: var(--font-size-sm);
   }
 
   .card-image-container {
@@ -602,51 +646,10 @@ const handleApply = () => {
   .card-action {
     text-align: center;
     margin-top: var(--spacing-xs);
+    padding: calc(var(--spacing-xs) * 0.8) var(--spacing-sm);
   }
-}
-
-/* ===== 작은 모바일 스타일 (최대 480px) ===== */
-@media (max-width: 480px) {
-  .kb-card-list-item {
-    padding: var(--spacing-md);
-    gap: var(--spacing-md);
-    border-radius: 12px;
-  }
-
-  .card-info {
-    gap: var(--spacing-sm);
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .card-image-container {
-    width: 100%;
-    max-width: 160px;
-    height: 64px;
-    align-self: center;
-  }
-
-  .card-image-container.horizontal-image .card-image {
-    width: 120px;
-    height: auto;
-  }
-
-  .card-image-container.vertical-image .card-image {
-    height: 58px;
-    width: auto;
-  }
-
-  .card-details {
-    width: 100%;
-    text-align: center;
-  }
-
-  .card-name {
-    font-size: var(--font-size-base);
-  }
-
-  .card-action {
-    text-align: center;
+  .apply-button {
+    font-size: var(--font-size-xs);
   }
 }
 </style>
