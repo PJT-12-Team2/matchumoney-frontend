@@ -19,7 +19,7 @@
             }}</span>
           </div>
         </div>
-        <div class="visual-label">{{ card.cardName || "카드명 없음" }}</div>
+        <div class="visual-label">{{ card.cardName || '카드명 없음' }}</div>
       </div>
 
       <!-- 오른쪽: 카드 정보 -->
@@ -34,7 +34,7 @@
           <div class="info-row">
             <span class="info-label">상태</span>
             <span class="info-badge" :class="getStatusClass(card.cardState)">
-              {{ card.cardState || "알 수 없음" }}
+              {{ card.cardState || '알 수 없음' }}
             </span>
           </div>
           <div class="info-row">
@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed } from 'vue';
 
 const props = defineProps({
   card: {
@@ -86,48 +86,48 @@ const props = defineProps({
 });
 
 const emit = defineEmits([
-  "cardClick",
-  "registerTransactions",
-  "updateTransactions",
+  'cardClick',
+  'registerTransactions',
+  'updateTransactions',
 ]);
 
-const isMatched = computed(() => props.card.matchStatus === "MATCHED");
+const isMatched = computed(() => props.card.matchStatus === 'MATCHED');
 const matchingStatusClass = computed(() =>
-  isMatched.value ? "matched" : "unmatched"
+  isMatched.value ? 'matched' : 'unmatched'
 );
 const matchingText = computed(() =>
-  isMatched.value ? "매칭완료" : "매칭필요"
+  isMatched.value ? '매칭완료' : '매칭필요'
 );
 
 const cardGradient = computed(() => {
-  const cardName = props.card.cardName?.toLowerCase() || "";
-  if (cardName.includes("신한"))
-    return "linear-gradient(120deg,#355c7d 0%,#6c5b7b 100%)";
-  if (cardName.includes("kb") || cardName.includes("국민"))
-    return "linear-gradient(120deg,#ffd452 0%,#544a7d 100%)";
-  if (cardName.includes("하나"))
-    return "linear-gradient(120deg,#11998e 0%,#38ef7d 100%)";
-  if (cardName.includes("우리"))
-    return "linear-gradient(120deg,#43cea2 0%,#185a9d 100%)";
-  if (cardName.includes("삼성"))
-    return "linear-gradient(120deg,#fa709a 0%,#fee140 100%)";
-  return "linear-gradient(120deg,#8ec5fc 0%,#e0c3fc 100%)";
+  const cardName = props.card.cardName?.toLowerCase() || '';
+  if (cardName.includes('신한'))
+    return 'linear-gradient(120deg,#355c7d 0%,#6c5b7b 100%)';
+  if (cardName.includes('kb') || cardName.includes('국민'))
+    return 'linear-gradient(120deg,#ffd452 0%,#544a7d 100%)';
+  if (cardName.includes('하나'))
+    return 'linear-gradient(120deg,#11998e 0%,#38ef7d 100%)';
+  if (cardName.includes('우리'))
+    return 'linear-gradient(120deg,#43cea2 0%,#185a9d 100%)';
+  if (cardName.includes('삼성'))
+    return 'linear-gradient(120deg,#fa709a 0%,#fee140 100%)';
+  return 'linear-gradient(120deg,#8ec5fc 0%,#e0c3fc 100%)';
 });
 
 const getCardBrand = (cardName) => {
-  if (!cardName) return "CARD";
+  if (!cardName) return 'CARD';
   const name = cardName.toLowerCase();
-  if (name.includes("신한")) return "SHINHAN";
-  if (name.includes("kb") || name.includes("국민")) return "KB";
-  if (name.includes("하나")) return "HANA";
-  if (name.includes("우리")) return "WOORI";
-  if (name.includes("삼성")) return "SAMSUNG";
-  return "CARD";
+  if (name.includes('신한')) return 'SHINHAN';
+  if (name.includes('kb') || name.includes('국민')) return 'KB';
+  if (name.includes('하나')) return 'HANA';
+  if (name.includes('우리')) return 'WOORI';
+  if (name.includes('삼성')) return 'SAMSUNG';
+  return 'CARD';
 };
 
 const formatCardNumber = (cardNo) => {
-  if (!cardNo) return "**** **** **** ****";
-  if (cardNo.includes("*")) {
+  if (!cardNo) return '**** **** **** ****';
+  if (cardNo.includes('*')) {
     const match = cardNo.match(/^(\d{6})(\*+)(\d{4})$/);
     if (match) {
       const [, first6, stars, last4] = match;
@@ -136,33 +136,33 @@ const formatCardNumber = (cardNo) => {
     return cardNo;
   }
   return (
-    cardNo.replace(/^(\d{4})(\d{4})(\d{4})(\d{4})$/, "$1 **** **** $4") ||
+    cardNo.replace(/^(\d{4})(\d{4})(\d{4})(\d{4})$/, '$1 **** **** $4') ||
     `**** **** **** ${cardNo.slice(-4)}`
   );
 };
 
 const getStatusClass = (status) => {
-  if (!status) return "status-normal";
+  if (!status) return 'status-normal';
   const lower = status.toLowerCase();
-  if (lower.includes("정상")) return "status-normal";
-  if (lower.includes("정지") || lower.includes("일시정지"))
-    return "status-blocked";
-  if (lower.includes("해지") || lower.includes("폐지")) return "status-closed";
-  return "status-normal";
+  if (lower.includes('정상')) return 'status-normal';
+  if (lower.includes('정지') || lower.includes('일시정지'))
+    return 'status-blocked';
+  if (lower.includes('해지') || lower.includes('폐지')) return 'status-closed';
+  return 'status-normal';
 };
 
 const handleCardClick = (event) => {
   // 드래그가 진행 중이면 클릭 이벤트 무시
   event.stopPropagation();
-  emit("cardClick", props.card);
+  emit('cardClick', props.card);
 };
 
 const handleRegisterTransactions = () => {
-  emit("registerTransactions", props.card);
+  emit('registerTransactions', props.card);
 };
 
 const handleUpdateTransactions = () => {
-  emit("updateTransactions", props.card);
+  emit('updateTransactions', props.card);
 };
 </script>
 
@@ -243,7 +243,7 @@ const handleUpdateTransactions = () => {
   margin-bottom: var(--spacing-lg);
 }
 .brand {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   font-weight: 700;
   letter-spacing: 2px;
   position: absolute;
@@ -254,7 +254,7 @@ const handleUpdateTransactions = () => {
 }
 .card-no {
   font-size: var(--font-size-lg);
-  font-family: "Roboto Mono", monospace;
+  font-family: 'Roboto Mono', monospace;
   letter-spacing: 2.5px;
   color: var(--color-white);
   font-weight: 500;
@@ -398,7 +398,7 @@ const handleUpdateTransactions = () => {
     margin-bottom: var(--spacing-sm);
   }
   .brand {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     right: var(--spacing-sm);
     top: var(--spacing-sm);
   }
@@ -410,10 +410,14 @@ const handleUpdateTransactions = () => {
     font-size: var(--font-size-base);
     margin-top: var(--spacing-xs);
   }
-  .info-label,
-  .info-value,
+  .info-label {
+    font-size: var(--font-size-base);
+  }
+  .info-value {
+    font-size: var(--font-size-lg);
+  }
   .info-badge {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
   }
   .card-info-section {
     gap: var(--spacing-md);
@@ -421,7 +425,7 @@ const handleUpdateTransactions = () => {
   }
   .action-btn {
     padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
   }
 }
 
@@ -446,13 +450,13 @@ const handleUpdateTransactions = () => {
 
   .card-visual {
     width: 100%;
-    max-width: 300px;
-    height: 180px;
-    min-height: 140px;
+    max-width: 240px;
+    height: 144px;
+    min-height: 112px;
   }
 
   .brand {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     right: var(--spacing-md);
     top: var(--spacing-md);
   }
@@ -492,12 +496,14 @@ const handleUpdateTransactions = () => {
 
   .info-label {
     min-width: 80px;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
   }
 
-  .info-value,
+  .info-value {
+    font-size: var(--font-size-lg);
+  }
   .info-badge {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
   }
 
   .transaction-actions {
@@ -523,28 +529,30 @@ const handleUpdateTransactions = () => {
   }
 
   .card-visual {
-    max-width: 280px;
-    height: 160px;
-    min-height: 120px;
+    max-width: 224px;
+    height: 138px;
+    min-height: 96px;
   }
 
   .visual-label {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-lg);
   }
 
   .info-label {
     min-width: 70px;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
   }
 
-  .info-value,
+  .info-value {
+    font-size: var(--font-size-lg);
+  }
   .info-badge {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
   }
 
   .action-btn {
     padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     min-width: 120px;
   }
 }

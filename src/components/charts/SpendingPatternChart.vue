@@ -462,7 +462,7 @@ canvas {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--font-size-base);
 }
 
 .legend-color {
@@ -574,7 +574,7 @@ canvas {
   }
 
   .legend-item {
-    font-size: 12px;
+    font-size: var(--font-size-base);
   }
 }
 
@@ -610,7 +610,7 @@ canvas {
   }
 
   .legend-item {
-    font-size: 10px;
+    font-size: var(--font-size-base);
     gap: 6px;
   }
 
@@ -650,7 +650,7 @@ canvas {
   }
 
   .legend-item {
-    font-size: 9px;
+    font-size: var(--font-size-base);
     gap: 5px;
   }
 

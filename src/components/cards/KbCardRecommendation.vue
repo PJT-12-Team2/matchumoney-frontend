@@ -238,7 +238,7 @@ onUnmounted(() => {
 
 .header-text p {
   color: rgba(255, 255, 255, 0.9);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   margin: 0;
   font-weight: 500;
 }
@@ -342,11 +342,11 @@ onUnmounted(() => {
   }
 
   .header-text h3 {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
   }
 
   .header-text p {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
   }
 
   .recommendation-header {

@@ -430,7 +430,7 @@ const handleApply = () => {
 }
 
 .card-issuer {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--text-secondary);
   margin: 0 0 var(--spacing-sm) 0;
 }
@@ -473,7 +473,7 @@ const handleApply = () => {
 }
 
 .annual-fee {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--text-muted);
 }
 
@@ -485,19 +485,19 @@ const handleApply = () => {
 }
 
 .condition-label {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .condition-amount {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .card-description {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   line-height: 1.4;
   color: var(--color-text-secondary);
 }
@@ -525,7 +525,7 @@ const handleApply = () => {
   background: none;
   border: none;
   color: var(--color-success-dark);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   font-weight: 700;
   padding: 0;
   cursor: pointer;
@@ -550,7 +550,7 @@ const handleApply = () => {
     font-size: var(--font-size-base);
   }
   .card-info {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-lg);
   }
   .card-action {
     padding: var(--spacing-xs) var(--spacing-sm);
@@ -576,7 +576,7 @@ const handleApply = () => {
   }
 
   .card-info {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-lg);
   }
 
   .card-image-section {
@@ -631,12 +631,29 @@ const handleApply = () => {
   }
 
   .card-name {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-sm);
   }
 
   .card-issuer {
+    font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-sm);
+  }
+
+  .annual-fee {
+    font-size: var(--font-size-lg);
+  }
+
+  .condition-label {
+    font-size: var(--font-size-lg);
+  }
+
+  .condition-amount {
+    font-size: var(--font-size-lg);
+  }
+
+  .card-description {
+    font-size: var(--font-size-lg);
   }
 
   .card-specs {
@@ -649,7 +666,7 @@ const handleApply = () => {
     padding: calc(var(--spacing-xs) * 0.8) var(--spacing-sm);
   }
   .apply-button {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-lg);
   }
 }
 </style>

@@ -664,7 +664,7 @@ watch(
 }
 
 .card-issuer {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--text-secondary);
   margin: 0 0 var(--spacing-sm) 0;
 }
@@ -697,7 +697,7 @@ watch(
 }
 
 .annual-fee {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--text-muted);
 }
 
@@ -719,7 +719,7 @@ watch(
 }
 
 .card-details .benefit-amount .label {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--color-success-dark);
   margin-right: var(--spacing-xs);
 }
@@ -799,7 +799,7 @@ watch(
     padding: var(--spacing-xs) var(--spacing-sm);
   }
   .card-details .benefit-amount .label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
   }
   .card-details .benefit-amount .amount {
     font-size: var(--font-size-sm);
@@ -814,6 +814,14 @@ watch(
   }
 
   .card-name {
+    font-size: var(--font-size-xl);
+  }
+
+  .card-issuer {
+    font-size: var(--font-size-lg);
+  }
+
+  .annual-fee {
     font-size: var(--font-size-lg);
   }
 
@@ -822,7 +830,7 @@ watch(
   }
 
   .card-info {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-lg);
   }
 
   .card-image-section {
@@ -959,10 +967,10 @@ watch(
     margin-top: calc(var(--spacing-xs) * 0.8);
   }
   .card-details .benefit-amount .label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-lg);
   }
   .card-details .benefit-amount .amount {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xl);
   }
 
   .btn-apply {
