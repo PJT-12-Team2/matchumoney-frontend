@@ -1,27 +1,27 @@
 <template>
-  <div class="push-toggle">
-    <div class="info-row">
-      <span class="label">웹 푸시</span>
-      <span class="status" :class="{ on: subscribed, off: !subscribed }">
-        {{ statusText }}
-      </span>
-    </div>
-
-    <div class="action-row">
-      <button class="btn btn-primary" :disabled="!envReady || loading || subscribed" @click="subscribe">
-        {{ loading && !subscribed ? '설정 중...' : '알림 받기' }}
-      </button>
-
-      <button
-        class="btn btn-outline-secondary ms-2"
-        :disabled="!envReady || loading || !subscribed"
-        @click="unsubscribe">
-        {{ loading && subscribed ? '해제 중...' : '알림 해제' }}
-      </button>
+  <div>
+    <div class="push-toggle">
+      <div class="left">
+        <span class="label">푸시 알림</span>
+      </div>
+      <div class="right">
+        <button
+          :class="['btn btn-outline-accent', { selected: subscribed }]"
+          :disabled="!envReady || loading || subscribed"
+          @click="subscribe">
+          {{ loading && !subscribed ? 'ON' : 'ON' }}
+        </button>
+        <button
+          :class="['btn btn-outline-secondary ms-2', { selected: !subscribed && envReady && permission !== 'denied' }]"
+          :disabled="!envReady || loading || !subscribed"
+          @click="unsubscribe">
+          {{ loading && subscribed ? 'OFF' : 'OFF' }}
+        </button>
+      </div>
     </div>
 
     <p v-if="!envReady" class="hint">
-      이 브라우저/프로토콜에서는 웹 푸시가 지원되지 않습니다. (localhost 또는 HTTPS 필요)
+      이 브라우저/프로토콜에서는 푸시 알림이 지원되지 않습니다. (localhost 또는 HTTPS 필요)
     </p>
     <p v-else-if="permission === 'denied'" class="hint">
       알림 권한이 차단되어 있습니다. 브라우저 설정에서 권한을 허용해 주세요.
@@ -46,6 +46,12 @@ const statusText = computed(() => {
   if (!envReady.value) return '미지원';
   if (permission.value === 'denied') return '권한 차단';
   return subscribed.value ? '구독 중' : '미구독';
+});
+
+const badgeClass = computed(() => {
+  if (!envReady.value) return 'badge-error';
+  if (permission.value === 'denied') return 'badge-warning';
+  return subscribed.value ? 'badge-success' : 'badge-accent';
 });
 
 onMounted(async () => {
@@ -150,32 +156,81 @@ async function unsubscribe() {
 
 <style scoped>
 .push-toggle {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  background: #fff;
-}
-.info-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+}
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+.right {
+  display: flex;
+  align-items: center;
 }
 .label {
+  color: var(--text-primary);
+}
+
+/* Badges (use app palette) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
-.status {
-  font-size: 0.9rem;
+.badge-success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
 }
-.status.on {
-  color: #198754;
+.badge-warning {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
 }
-.status.off {
-  color: #6c757d;
+.badge-error {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
 }
+.badge-accent {
+  background-color: var(--color-accent-20);
+  color: var(--color-dark);
+}
+
+/* Button variant to match brand accent */
+.btn-outline-accent {
+  background-color: transparent;
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+}
+.btn-outline-accent:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-outline-accent:hover:not(:disabled) {
+  background-color: var(--color-accent);
+  color: var(--color-white);
+}
+
+.btn.selected {
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
+}
+.btn-outline-secondary.selected {
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+  border-color: var(--color-secondary);
+}
+
 .hint {
-  margin-top: 0.75rem;
-  font-size: 0.85rem;
-  color: #6c757d;
+  margin-top: var(--spacing-sm);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 </style>
