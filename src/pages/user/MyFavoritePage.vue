@@ -85,59 +85,60 @@
           </div>
 
           <div v-else-if="currentTab === 'saving'" class="card-search-results-grid">
-            <div
-              v-for="saving in filteredFavorites"
-              :key="saving.savingId"
-              class="product-card"
-              @click="goToSavingDetail(saving.savingId)">
-              <div class="favorite-top-right">
-                <FavoriteToggle
-                  @click.stop
-                  v-model="saving.isStarred"
-                  :productId="saving.savingId"
-                  :productType="'SAVING'" />
+            <div v-for="saving in filteredFavorites" :key="saving.savingId" class="product-card">
+              <div class="card-favorite-button" @click.stop>
+                <FavoriteToggle v-model="saving.isStarred" :productId="saving.savingId" productType="SAVING" />
               </div>
-              <div class="product-card-horizontal">
+              <div class="product-card-row" @click="selectProduct(saving)">
                 <div class="bank-logo-container">
                   <img :src="getBankLogo(saving.bankName)" alt="은행 로고" class="bank-logo-round" />
-                </div>
-                <div class="product-name-block">
-                  <div class="bank-name-bold">{{ saving.bankName }}</div>
-                  <div class="product-name-bold">{{ saving.savingName }}</div>
-                </div>
-                <div class="product-info-block">
-                  <div class="rate-line no-wrap">
-                    <span class="label-bold">최고 금리 :&nbsp;</span>
-                    <span class="highlight-rate">{{ saving.maxRate }}</span>
+                  <div class="compare-button" @click.stop>
+                    <LikeToggle
+                      :productId="saving.savingId"
+                      productType="saving-products"
+                      :initialLiked="saving.isLiked"
+                      :initialCount="saving.likeCount"
+                      @update="
+                        ({ liked, count }) => {
+                          saving.isLiked = liked;
+                          saving.likeCount = count;
+                        }
+                      " />
+                    <CompareButton :productId="saving.savingId" productType="SAVING" />
                   </div>
-                  <div class="rate-line no-wrap">
-                    최저 금리 :
-                    {{ saving.basicRate }}
+                </div>
+
+                <div class="product-info-column">
+                  <div class="product-name-bold">{{ saving.savingName }}</div>
+                  <div class="bank-name-bold">{{ saving.bankName }}</div>
+                  <div class="rate-line">
+                    <span class="label-bold">최고 금리 :</span>
+                    <span class="highlight-rate">{{ getRateWithTerm(saving, 'max') }}</span>
+                  </div>
+                  <div class="rate-line">
+                    <span class="label-bold">최저 금리 :</span>
+                    <span>{{ getRateWithTerm(saving, 'base') }}</span>
                   </div>
                   <div class="rate-line no-wrap">
                     매월 최대 금액 :
-                    {{ saving.maxLimit }}
+                    {{ saving.maxLimit === '999999999' ? '한도 없음' : formatCurrency(saving.maxLimit) }}
                   </div>
-                  <div class="rate-line no-wrap">
+                  <div class="rate-line">
                     기준 기간 :
-                    {{ saving.term ? saving.term + '개월' : '정보 없음' }}
+                    {{
+                      filters.term !== '전체'
+                        ? filters.term + '개월'
+                        : (() => {
+                            const best = saving.savingOptions?.reduce((prev, curr) => {
+                              const prevRate = prev?.intrRate2 ?? 0;
+                              const currRate = curr?.intrRate2 ?? 0;
+                              return currRate > prevRate ? curr : prev;
+                            }, null);
+                            return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+                          })()
+                    }}
                   </div>
                 </div>
-              </div>
-              <div class="product-action-row">
-                <LikeToggle
-                  :productId="saving.savingId"
-                  productType="saving-products"
-                  :initialLiked="saving.isLiked"
-                  :initialCount="saving.likeCount"
-                  @update="
-                    ({ liked, count }) => {
-                      saving.isLiked = liked;
-                      saving.likeCount = count;
-                    }
-                  "
-                  @click.stop />
-                <CompareButton :productId="saving.savingId" :productType="'SAVING'" @click.stop />
               </div>
             </div>
           </div>
@@ -344,6 +345,46 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+const formatCurrency = (val) => {
+  return (
+    new Intl.NumberFormat('ko-KR', {
+      maximumFractionDigits: 0,
+    }).format(val) + '원'
+  );
+};
+
+const getRateWithTerm = (saving, type) => {
+  if (!saving.savingOptions || saving.savingOptions.length === 0) return '-%';
+
+  const selectedTerm = filters.value?.term;
+
+  if (selectedTerm === '전체') {
+    const sorted = [...saving.savingOptions].sort((a, b) => {
+      const valA = type === 'base' ? a.intrRate : a.intrRate2;
+      const valB = type === 'base' ? b.intrRate : b.intrRate2;
+      return valB - valA;
+    });
+    const best = sorted[0];
+    if (!best) return '-%';
+    const val = type === 'base' ? best.intrRate : best.intrRate2;
+    return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%';
+  }
+
+  const match = saving.savingOptions.find((opt) => opt.saveTrm === selectedTerm);
+  if (!match) return '-%';
+  const value = type === 'base' ? match.intrRate : match.intrRate2;
+  return typeof value === 'number' ? `${value.toFixed(2)}%` : '-%';
+};
+
+const filters = ref({
+  term: '12',
+  amount: null,
+});
+filters.value.bank = null;
+
+const selectProduct = (product) => {
+  window.location.href = `/detail/deposit/${product.id}`;
+};
 </script>
 
 <style scoped>
@@ -383,23 +424,29 @@ onMounted(async () => {
 }
 
 .product-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  background: var(--color-light);
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--bg-content);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
-  box-shadow: var(--shadow-card);
+  height: 18rem;
+  display: flex;
+  flex-direction: column;
+  /* flex-direction: row; */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
-
 .product-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   border-color: var(--color-accent);
+}
+.product-card-horizontal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
 }
 
 .product-content {
@@ -420,15 +467,6 @@ onMounted(async () => {
   color: #333;
 }
 
-.product-card-horizontal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-lg);
-  margin-top: auto;
-  margin-bottom: auto;
-}
-
 .bank-logo-container {
   flex-shrink: 0;
   display: flex;
@@ -436,11 +474,12 @@ onMounted(async () => {
   justify-content: center;
   width: 5rem;
   height: 5rem;
+  flex-direction: column;
 }
 
 .bank-logo-round {
-  width: 5rem;
-  height: 5rem;
+  width: 6rem;
+  height: 6rem;
   border-radius: 50%;
   object-fit: contain;
   background: var(--color-white);
@@ -457,17 +496,25 @@ onMounted(async () => {
 }
 
 .bank-name-bold {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 700;
-  color: #1e2b4e;
-  margin-bottom: 0.1rem;
+  color: #1e2b4e; /* strong navy blue */
+  margin-bottom: 0.5rem;
+}
+
+.product-info-column {
+  display: flex;
+  flex-direction: column;
+  /* gap: 0.25rem; */
+  align-items: flex-start;
 }
 
 .product-name-bold {
   font-size: var(--font-size-lg);
   font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 0.2rem;
+  /* margin-bottom: 0.2rem; */
+  text-align: left;
 }
 
 .product-info-block {
@@ -481,7 +528,7 @@ onMounted(async () => {
 .rate-line {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin-bottom: 0.1rem;
+  /* margin-bottom: 0.1rem; */
 }
 
 .label-bold {
@@ -493,6 +540,7 @@ onMounted(async () => {
   font-size: 18px;
   color: #609966;
   font-weight: bold;
+  margin-right: 0.4rem;
 }
 
 .no-wrap {
@@ -578,7 +626,7 @@ onMounted(async () => {
   gap: var(--spacing-md);
 }
 
-.card-search-results-grid .product-card {
+/* .card-search-results-grid .product-card {
   background: var(--bg-content);
   border-radius: var(--spacing-xl);
   padding: var(--spacing-xl);
@@ -611,6 +659,20 @@ onMounted(async () => {
   object-fit: contain;
   border-radius: 12px;
   flex-shrink: 0;
+} */
+
+.compare-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.compare-button > * {
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -647,11 +709,20 @@ onMounted(async () => {
   margin-top: 0.5rem;
 }
 
-.favorite-top-right {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 10;
+.card-favorite-button {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-card-row {
+  width: 80%;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
 .tab-btn {
