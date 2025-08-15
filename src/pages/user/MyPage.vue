@@ -543,8 +543,17 @@ const favoriteDeposits = ref([]);
 const favoriteCards = ref([]);
 const products = ref([]);
 const myPageInfo = ref({ persona: {} });
+
 const personaImageUrl = ref('');
 const profileImageUrl = ref('');
+
+function getCharacterFolderByLevel(lv) {
+  // 기본: 2레벨 등 대부분은 기존 폴더 사용
+  if (lv === 1) return 'level1_character_images';
+  if (lv === 3) return 'level3_character_images';
+  if (lv === 4) return 'level4_character_images';
+  return 'character_images';
+}
 
 onMounted(async () => {
   try {
@@ -560,19 +569,20 @@ onMounted(async () => {
       data.gender ?? data.genderCode ?? data.sex ?? data.gender_type ?? ''
     );
 
-    // Updated logic for extracting filename and generating image URL
+    // Updated: choose character image folder by level (1,3,4 use special folders; otherwise default)
     const rawImagePath = data.persona?.imageUrl;
     const fileName = rawImagePath?.split('/').pop();
+    const folder = getCharacterFolderByLevel(level.value);
     const imageUrl = fileName
-      ? new URL(`../../assets/character_images/${fileName}`, import.meta.url)
-          .href
+      ? new URL(`../../assets/${folder}/${fileName}`, import.meta.url).href
       : '';
     personaImageUrl.value = imageUrl;
 
     // Set profile image URL (social login / local)
     profileImageUrl.value =
-      data.profileImageUrl ?? data.profile_image_url ?? '';
-
+      data.profileImageUrl ??
+      data.profile_image_url ??
+      new URL('@/assets/user.png', import.meta.url).href;
     myPageInfo.value.persona = {
       quote: data.persona?.quote ?? '',
       nameKo: data.persona?.nameKo ?? '',

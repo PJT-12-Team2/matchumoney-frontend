@@ -6,10 +6,30 @@
         <!-- 프로필 이미지 + 버튼 -->
         <div class="profile-row">
           <div class="profile-img">
-            <span class="user-icon">👤</span>
+            <img
+              v-if="previewUrl || profileImageUrl"
+              :src="previewUrl || profileImageUrl"
+              alt="프로필 이미지"
+              class="profile-photo"
+            />
+            <span v-else class="user-icon">👤</span>
           </div>
           <div class="button-center">
-            <BaseButton class="mr-2" variant="primary">업로드</BaseButton>
+            <input
+              ref="fileInputRef"
+              type="file"
+              accept="image/*"
+              class="hidden-file"
+              @change="onFileChange"
+            />
+            <BaseButton
+              class="mr-2"
+              variant="primary"
+              @click="triggerFilePicker"
+              :disabled="uploading"
+            >
+              {{ uploading ? '업로드 중...' : '업로드' }}
+            </BaseButton>
           </div>
         </div>
 
@@ -63,19 +83,9 @@
 
         <!-- 정보 수정 버튼 -->
         <div class="mt-4">
-          <RouterLink to="/myinfo" custom v-slot="{ navigate }">
-            <BaseButton
-              variant="primary"
-              :fullWidth="true"
-              @click="
-                async () => {
-                  await submitForm();
-                  navigate();
-                }
-              ">
-              수정
-            </BaseButton>
-          </RouterLink>
+          <BaseButton variant="primary" :fullWidth="true" @click="submitForm">
+            수정
+          </BaseButton>
         </div>
       </template>
     </BaseCardGrey>
@@ -83,20 +93,109 @@
 </template>
 
 <script setup>
-import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
-import BaseInput from "@/components/base/BaseInput.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import "@/assets/main.css";
-import { ref, computed, onMounted } from "vue";
-import userApi from "@/api/user";
-import { useRouter } from "vue-router";
+import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
+import BaseInput from '@/components/base/BaseInput.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import '@/assets/main.css';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import userApi from '@/api/user';
+import { useRouter } from 'vue-router';
 const router = useRouter();
 
-const nickname = ref("");
-const gender = ref("");
-const year = ref("");
-const month = ref("");
-const day = ref("");
+const fileInputRef = ref(null);
+const selectedFile = ref(null);
+const previewUrl = ref('');
+const uploading = ref(false);
+const profileImageUrl = ref('');
+
+const triggerFilePicker = () => {
+  fileInputRef.value && fileInputRef.value.click();
+};
+
+const onFileChange = async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  // 간단한 유효성 검사 (선택 사항)
+  if (!file.type.startsWith('image/')) {
+    alert('이미지 파일만 업로드할 수 있습니다.');
+    return;
+  }
+  // 5MB 제한 (필요시 조정)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('이미지 용량은 5MB 이하만 허용됩니다.');
+    return;
+  }
+
+  selectedFile.value = file;
+  // 미리보기
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
+  previewUrl.value = URL.createObjectURL(file);
+
+  try {
+    uploading.value = true;
+
+    // 1) 업로드 API가 있는 경우: 파일을 업로드하고, 응답의 URL만 DB에 저장
+    if (typeof userApi.uploadProfileImage === 'function') {
+      const res = await userApi.uploadProfileImage(file);
+      profileImageUrl.value = res?.result?.url || res?.url || '';
+      if (!profileImageUrl.value) {
+        alert(
+          '이미지 업로드 응답에 URL이 없습니다. 백엔드 응답(JSON)에 url 필드를 추가해주세요.'
+        );
+      }
+    } else {
+      // 2) 더 이상 base64(data URL)로 저장하지 않습니다. (DB 길이 문제 방지)
+      alert(
+        '백엔드에 이미지 업로드 API가 필요합니다. (예: POST /api/files/profile -> { url })\n데이터 URL 저장은 허용하지 않아요.'
+      );
+      profileImageUrl.value = '';
+    }
+  } catch (err) {
+    console.error('프로필 이미지 처리 실패:', err);
+    alert('프로필 이미지 처리에 실패했습니다.');
+  } finally {
+    uploading.value = false;
+  }
+};
+
+// 이미지 리사이즈 후 data URL 생성(용량 절감용)
+function resizeImageToDataUrl(file, maxSize = 512, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        const scale = Math.min(maxSize / width, maxSize / height, 1);
+        const w = Math.round(width * scale);
+        const h = Math.round(height * scale);
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          const mime = 'image/jpeg';
+          const dataUrl = canvas.toDataURL(mime, quality);
+          resolve(dataUrl);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const nickname = ref('');
+const gender = ref('');
+const year = ref('');
+const month = ref('');
+const day = ref('');
 
 const years = computed(() => {
   const currentYear = new Date().getFullYear();
@@ -115,36 +214,46 @@ onMounted(async () => {
     nickname.value = res.result.nickname;
     gender.value = res.result.gender;
     if (res.result.birthDate) {
-      const [yyyy, mm, dd] = res.result.birthDate.split("-");
+      const [yyyy, mm, dd] = res.result.birthDate.split('-');
       year.value = Number(yyyy);
       month.value = Number(mm);
       day.value = Number(dd);
     }
+    profileImageUrl.value = res.result.profileImageUrl || '';
   } catch (err) {
-    console.error("유저 정보 불러오기 실패:", err);
+    console.error('유저 정보 불러오기 실패:', err);
+  }
+});
+
+onUnmounted(() => {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value);
   }
 });
 
 const submitForm = async () => {
   const birthDate =
     year.value && month.value && day.value
-      ? `${year.value}-${String(month.value).padStart(2, "0")}-${String(day.value).padStart(2, "0")}`
+      ? `${year.value}-${String(month.value).padStart(2, '0')}-${String(
+          day.value
+        ).padStart(2, '0')}`
       : null;
 
   const updateDto = {
     nickname: nickname.value,
     gender: gender.value,
     birthDate: birthDate,
+    profileImageUrl: profileImageUrl.value,
   };
 
   try {
     const res = await userApi.updateUserInfo(updateDto);
     // console.log("회원정보 수정 성공:", res);
-    alert("회원정보가 성공적으로 수정되었습니다.");
-    router.push("/myinfo");
+    alert('회원정보가 성공적으로 수정되었습니다.');
+    router.push('/myinfo');
   } catch (err) {
     // console.error("회원정보 수정 실패:", err);
-    alert("회원정보 수정에 실패했습니다.");
+    alert('회원정보 수정에 실패했습니다.');
   }
 };
 </script>
@@ -193,6 +302,15 @@ const submitForm = async () => {
   justify-content: center;
   align-items: center;
   font-size: 50px;
+}
+.profile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.hidden-file {
+  display: none;
 }
 
 /* 버튼은 중앙 정렬 */

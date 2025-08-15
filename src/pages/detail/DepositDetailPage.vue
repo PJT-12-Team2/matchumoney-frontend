@@ -505,7 +505,6 @@ function goToCardSite() {
   color: #2e7d32;
   font-weight: 900;
   font-size: 18px;
-  text-decoration: underline;
 }
 
 .reaction-group {
@@ -838,7 +837,8 @@ function goToCardSite() {
   }
 
   .card-image {
-    width: 220px;
+    padding-top: 50px;
+    width: 130px;
     max-width: 60vw;
   }
 

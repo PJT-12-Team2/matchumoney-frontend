@@ -15,11 +15,11 @@
           <div class="quiz-reward">+10 XP</div>
         </div>
 
-        <div class="quiz-card general-quiz" @click="goToGeneralQuiz">
-          <div class="quiz-icon">🧠</div>
-          <h2>일반 퀴즈</h2>
-          <p>다양한 금융 문제를 연속으로 풀어보세요</p>
-          <div class="quiz-reward">연속 도전</div>
+        <div class="quiz-card general-quiz" @click="goToFortune">
+          <div class="quiz-icon">🔮</div>
+          <h2>운세 보기</h2>
+          <p>오늘의 운세를 확인해보세요</p>
+          <div class="quiz-reward">오늘의 운세</div>
         </div>
       </div>
     </div>
@@ -33,9 +33,12 @@ const goToDailyQuiz = () => {
   router.push('/quiz/daily');
 };
 
-const goToGeneralQuiz = () => {
-  router.push('/quiz/financial');
+const goToFortune = () => {
+  router.push('/fortune');
 };
+// const goToGeneralQuiz = () => {
+//   router.push('/quiz/financial');
+// };
 </script>
 
 <style scoped>
