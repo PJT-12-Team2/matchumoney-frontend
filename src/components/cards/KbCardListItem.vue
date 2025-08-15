@@ -62,9 +62,9 @@
           >
             {{ formatCardType(card.type || card.cardType) }}
           </span>
-          <span class="annual-fee"
-            >연회비 : {{ formatAnnualFee(card.annualFee) }}</span
-          >
+          <span class="annual-fee" v-html="
+            formatAnnualFeeWithLineBreak(card.annualFee)
+          "></span>
         </div>
 
         <!-- 전월실적 정보 -->
@@ -102,6 +102,7 @@
 
 <script setup>
 import { defineProps, defineEmits, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import BaseButton from '@/components/base/BaseButton.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
@@ -120,6 +121,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['apply', 'click']);
+
+// Router
+const router = useRouter();
 
 // 반응형 데이터
 const imageLoaded = ref(false);
@@ -217,6 +221,24 @@ const formatAnnualFee = (fee) => {
   return feeStr || '정보 없음';
 };
 
+// 연회비 포맷팅 with 줄바꿈
+const formatAnnualFeeWithLineBreak = (fee) => {
+  if (!fee || fee === '0' || fee === '무료') {
+    return '무료';
+  }
+
+  // 원본 데이터를 그대로 사용하되 특수문자 처리
+  let feeStr = fee
+    .toString()
+    .trim()
+    .replace(/\[([^\]]+)\]/g, '$1') // 대괄호 제거하되 내용은 유지
+    .replace(/\{([^}]+)\}/g, '$1') // 중괄호 제거하되 내용은 유지
+    .replace(/\|\s*/g, '') // 파이프 문자와 뒤따르는 공백 제거
+    .replace(/\//g, '<br>'); // '/' 를 줄바꿈으로 변경
+
+  return feeStr || '정보 없음';
+};
+
 // 통화 포맷팅
 const formatCurrency = (amount) => {
   if (!amount || amount === 0) return '없음';
@@ -286,7 +308,13 @@ const handleLikeUpdate = (payload) => {
 
 // 카드 클릭 처리
 const handleCardClick = () => {
-  emit('click', props.card);
+  // 카드 상세 페이지로 이동
+  const cardId = props.card.cardProductId || props.card.id;
+  if (cardId) {
+    router.push(`/detail/card/${cardId}`);
+  } else {
+    emit('click', props.card);
+  }
 };
 
 // 신청 버튼 클릭 처리
@@ -326,7 +354,7 @@ const handleApply = () => {
 }
 
 .favorite-toggle .favorite-icon {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   transition: all 0.2s ease;
 }
 
@@ -436,20 +464,19 @@ const handleApply = () => {
 }
 
 .card-specs {
-  display: block;
+  display: flex;
+  align-items: flex-start;
   gap: var(--spacing-sm);
-  align-items: center;
-  flex-wrap: wrap;
   margin-bottom: var(--spacing-sm);
 }
 
 .card-type {
   display: inline-block;
   padding: var(--spacing-xs) var(--spacing-sm);
-  margin-right: var(--spacing-sm);
   border-radius: 6px;
   font-size: var(--font-size-xs);
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .type-credit {
@@ -475,6 +502,8 @@ const handleApply = () => {
 .annual-fee {
   font-size: var(--font-size-base);
   color: var(--text-muted);
+  line-height: 1.4;
+  flex: 1;
 }
 
 .pre-month-condition {

@@ -151,11 +151,9 @@
                 >
                   {{ card.cardType }}
                 </span>
-                <span class="annual-fee">{{
-                  card.annualFee
-                    ? card.annualFee.replace(/\[([^\]]+)\]/g, '$1')
-                    : '연회비 정보 없음'
-                }}</span>
+                <span class="annual-fee" v-html="
+                  formatAnnualFeeWithLineBreak(card.annualFee)
+                "></span>
               </div>
 
               <!-- 예상 혜택 정보 - 연회비 아래로 이동 -->
@@ -314,6 +312,24 @@ const getCardTypeClass = (cardType) => {
     'type-credit': cardType === '신용',
     'type-debit': cardType === '체크',
   };
+};
+
+// 연회비 포맷팅 with 줄바꿈
+const formatAnnualFeeWithLineBreak = (fee) => {
+  if (!fee || fee === '0' || fee === '무료') {
+    return '무료';
+  }
+
+  // 원본 데이터를 그대로 사용하되 특수문자 처리
+  let feeStr = fee
+    .toString()
+    .trim()
+    .replace(/\[([^\]]+)\]/g, '$1') // 대괄호 제거하되 내용은 유지
+    .replace(/\{([^}]+)\}/g, '$1') // 중괄호 제거하되 내용은 유지
+    .replace(/\|\s*/g, '') // 파이프 문자와 뒤따르는 공백 제거
+    .replace(/\//g, '<br>'); // '/' 를 줄바꿈으로 변경
+
+  return feeStr || '연회비 정보 없음';
 };
 
 const handleImageError = (event) => {
@@ -589,7 +605,7 @@ watch(
 
 .favorite-toggle .favorite-icon {
   color: #ffbb00;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   transition: transform 0.2s ease;
 }
 
@@ -670,20 +686,19 @@ watch(
 }
 
 .card-specs {
-  display: block;
+  display: flex;
+  align-items: flex-start;
   gap: var(--spacing-sm);
-  align-items: center;
-  flex-wrap: wrap;
   margin-bottom: var(--spacing-sm);
 }
 
 .card-type {
   display: inline-block;
   padding: var(--spacing-xs) var(--spacing-sm);
-  margin-right: var(--spacing-sm);
   border-radius: 6px;
   font-size: var(--font-size-xs);
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .type-credit {
@@ -699,6 +714,8 @@ watch(
 .annual-fee {
   font-size: var(--font-size-base);
   color: var(--text-muted);
+  line-height: 1.4;
+  flex: 1;
 }
 
 /* 예상 혜택 정보 - card-details 안으로 이동 */
