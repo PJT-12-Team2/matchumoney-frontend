@@ -18,8 +18,8 @@
     >
       <div class="recommendation-text">
         <span class="recommendation-icon">💰</span>
-        {{ customerName }}님의 {{ balance }} 잔액으로 가입 가능한
-        {{ products.length }}개 상품을 찾았어요!
+        {{ customerName }}님의 {{ balance }} 잔액으로 가입 가능한 상품을
+        찾았어요!
       </div>
     </div>
 

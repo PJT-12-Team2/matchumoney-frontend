@@ -16,13 +16,14 @@
 
 <style scoped>
 .base-card {
+  border: solid 0.1px lightgray;
   border-radius: 20px;
-  background-color: var(--color-light);
+  background-color: FFF;
   box-shadow: var(--shadow-card);
 }
 
 .title {
+  font-size: var(--font-size-lg);
   color: var(--color-title);
-  font-weight: bold;
 }
 </style>

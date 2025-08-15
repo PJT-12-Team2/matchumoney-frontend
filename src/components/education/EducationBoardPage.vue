@@ -1,214 +1,230 @@
 <template>
-  <div class="education-video-page">
+  <div class="education-video-page" :class="{ 'no-scroll': isOverlayOpen }">
     <div class="page-description">
-      <h1 class="page-title">쉽고 재미있는 금융 교육 콘텐츠</h1>
-      <p class="page-subtitle">
-        짧은 영상부터 실생활에 유용한 금융 강의까지!<br />
-        누구나 이해할 수 있는 금융 콘텐츠를 만나보세요.
-      </p>
+      <div class="hero-content">
+        <div class="title-wrapper">
+          <h1 class="page-title">
+            <span class="title-emoji">🎓</span>
+            쉽고 재미있는 금융 교육 콘텐츠
+          </h1>
+        </div>
+        <p class="page-subtitle">
+          <span class="subtitle-highlight">금융 교육 영상</span>부터
+          <span class="subtitle-highlight">웹툰으로 배우는 금융</span
+          >까지!<br />
+          <span class="subtitle-accent">💡 누구나 이해할 수 있는</span>
+          금융 콘텐츠를 만나보세요.
+        </p>
+        <div class="feature-badges">
+          <span class="badge">📹 쉬운 영상</span>
+          <span class="badge">📚 웹툰</span>
+          <span class="badge">💰 실용적</span>
+          <span class="badge">🎯 무료</span>
+        </div>
+      </div>
+      <div class="hero-decoration">
+        <div class="floating-icon floating-icon-1">💸</div>
+        <div class="floating-icon floating-icon-2">📊</div>
+        <div class="floating-icon floating-icon-3">💡</div>
+        <div class="floating-icon floating-icon-4">🎯</div>
+      </div>
     </div>
-    <!-- 전체 영상 Section -->
+
+    <!-- 섹션: 교육 영상 (프리뷰 + 더보기 라우팅) -->
     <section class="video-section">
       <div class="section-header">
-        <h2>금융 교육 영상</h2>
-        <button
-          v-if="fulls.length > maxVisibleFulls"
-          @click="goToVideoDetail"
-          class="more-btn"
-        >
-          더보기
-        </button>
+        <h3>📹 교육 영상</h3>
+        <p class="webtoon-subtitle">
+          썸네일을 클릭하면 영상을 시청할 수 있어요!
+        </p>
+        <RouterLink to="/education/video">
+          <button class="more-btn">더보기</button>
+        </RouterLink>
       </div>
-      <div class="video-grid full">
+
+      <div class="card-grid">
         <div
-          v-for="(video, index) in visibleFulls"
-          :key="video.id"
-          class="video-card"
+          v-for="(m, i) in visibleVideos"
+          :key="m.id ?? i"
+          class="card"
+          @click="openOverlay(m)"
         >
-          <div class="thumbnail" v-if="!video.playing" @click="play(video)">
-            <img :src="getThumbnailUrl(video.youtubeId)" />
-            <div class="overlay-play">▶</div>
-            <div class="video-title">{{ video.title }}</div>
-          </div>
-          <iframe
-            v-if="video.playing"
-            class="video-iframe"
-            :src="getEmbedUrl(video.youtubeId)"
-            allowfullscreen
-            frameborder="0"
+          <!-- 유튜브 썸네일 / 비디오 플레이 아이콘 / 이미지 프리뷰 -->
+          <img
+            v-if="m.type === 'youtube'"
+            :src="`https://img.youtube.com/vi/${extractYoutubeId(
+              m.link
+            )}/hqdefault.jpg`"
+            :alt="m.title || '영상 썸네일'"
+            class="thumb thumb-16x9"
+            loading="lazy"
           />
+          <div
+            v-else-if="m.type === 'video'"
+            class="thumb thumb-16x9 video-fallback"
+          >
+            <span class="play-badge" aria-hidden>▶</span>
+          </div>
+          <img
+            v-else-if="m.type === 'image'"
+            :src="m.url"
+            :alt="m.title || '이미지'"
+            class="thumb thumb-16x9"
+            loading="lazy"
+          />
+          <div v-else class="thumb thumb-16x9 blank">파일 열기</div>
+          <div class="card-title" :title="m.title">{{ m.title }}</div>
         </div>
       </div>
     </section>
 
-    <!-- Shorts 영상 Section -->
-    <section class="video-section">
+    <!-- 웹툰 Section 추가 -->
+    <section class="webtoon-section">
       <div class="section-header">
-        <h2>Shorts 영상</h2>
-        <button
-          v-if="shorts.length > maxVisibleShorts"
-          @click="goToShortDetail"
-          class="more-btn"
-        >
-          더보기
-        </button>
+        <h3>📚 금융교육 웹툰</h3>
+        <p class="webtoon-subtitle">썸네일을 클릭하면 웹툰을 읽을 수 있어요!</p>
+        <button @click="goToWebtoonPage" class="more-btn">더보기</button>
       </div>
-      <div class="video-grid">
+
+      <!-- 로딩 상태 -->
+      <div v-if="loading" class="loading">
+        <div class="spinner"></div>
+        <p>웹툰을 불러오는 중...</p>
+      </div>
+
+      <!-- 에러 상태 -->
+      <div v-else-if="error" class="error">
+        <p>❌ 웹툰을 불러오는데 실패했습니다.</p>
+        <button @click="fetchWebtoons" class="retry-btn">다시 시도</button>
+      </div>
+
+      <!-- 웹툰 목록 -->
+      <div v-else class="webtoon-grid">
         <div
-          v-for="(video, index) in visibleShorts"
-          :key="video.id"
-          class="video-card short"
+          v-for="webtoon in webtoons"
+          :key="webtoon.id"
+          class="webtoon-card"
+          @click="openModal(webtoon)"
         >
-          <div class="thumbnail" v-if="!video.playing" @click="play(video)">
-            <img :src="getThumbnailUrl(video.youtubeId)" />
-            <div class="overlay-play">▶</div>
-            <div class="video-title">{{ video.title }}</div>
+          <div class="webtoon-image-container">
+            <img
+              :src="webtoon.fileDownUrl"
+              :alt="webtoon.title"
+              class="webtoon-image"
+              @error="handleImageError"
+            />
+            <div class="webtoon-overlay">
+              <span class="play-icon">📖</span>
+              <span class="overlay-text">웹툰 읽기</span>
+            </div>
           </div>
-          <iframe
-            v-if="video.playing"
-            class="video-iframe"
-            :src="getEmbedUrl(video.youtubeId)"
-            allowfullscreen
-            frameborder="0"
-          />
+          <div class="webtoon-info">
+            <h3 class="webtoon-card-title">{{ webtoon.title }}</h3>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Video Overlay (Full screen) -->
     <div
-      v-if="currentPlaying && currentPlaying.playing"
+      v-if="isOverlayOpen"
       class="video-overlay"
       @click.self="closeOverlay"
+      role="dialog"
+      aria-modal="true"
     >
-      <iframe
-        :class="[
-          currentPlaying.short
-            ? 'short-video-iframe-full'
-            : 'video-iframe-full',
-        ]"
-        :src="getEmbedUrl(currentPlaying.youtubeId)"
-        allowfullscreen
-        frameborder="0"
-      />
-      <button class="close-button" @click="closeOverlay">✕</button>
+      <div class="player-wrap">
+        <iframe
+          v-if="current?.type === 'youtube'"
+          class="player-iframe"
+          :src="getEmbedUrl(extractYoutubeId(current.link))"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          frameborder="0"
+          referrerpolicy="strict-origin-when-cross-origin"
+          :title="current.title || '교육 영상 플레이어'"
+        />
+        <video
+          v-else-if="current?.type === 'video'"
+          class="player-iframe"
+          :src="current.url"
+          controls
+          autoplay
+          playsinline
+          :title="current.title || '교육 영상 플레이어'"
+        ></video>
+        <img
+          v-else-if="current?.type === 'image'"
+          :src="current.url"
+          :alt="current.title || '이미지'"
+          class="player-image"
+        />
+        <a
+          v-else
+          :href="current?.url"
+          target="_blank"
+          rel="noopener"
+          class="player-link"
+          >파일 열기</a
+        >
+      </div>
+      <button class="close-button" @click="closeOverlay" aria-label="닫기">
+        ✕
+      </button>
+    </div>
+
+    <!-- 웹툰 모달 -->
+    <div v-if="selectedWebtoon" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <!-- 모달 헤더 -->
+        <div class="modal-header">
+          <h3 class="modal-title">{{ selectedWebtoon.title }}</h3>
+          <button @click="closeModal" class="close-btn">✕</button>
+        </div>
+
+        <!-- 웹툰 이미지 -->
+        <div class="modal-body">
+          <img
+            :src="selectedWebtoon.secondImageUrl"
+            :alt="selectedWebtoon.title"
+            class="webtoon-full-image"
+            @error="handleModalImageError"
+          />
+        </div>
+
+        <!-- 모달 푸터 -->
+        <div class="modal-footer">
+          <button @click="closeModal" class="modal-close-btn">닫기</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter, RouterLink } from 'vue-router';
+import axios from 'axios';
+import eduAPI from '@/api/edu';
 
-const shorts = reactive([
-  {
-    id: 1,
-    youtubeId: 'k28Z5KZ28n8',
-    title: '금융문맹 제일 많은 20대! 경제공부 이렇게 하세요 🔥',
-    playing: false,
-    short: true,
-  },
-  {
-    id: 2,
-    youtubeId: 'nHIWBkG4qWg',
-    title: '🙃?? :경제금융교육? 그게 돈이 됩니까?',
-    playing: false,
-    short: true,
-  },
-  {
-    id: 3,
-    youtubeId: 'pTe2QHUOJB0',
-    title: '경제교육 이렇게 시작하세요',
-    playing: false,
-    short: true,
-  },
-  {
-    id: 4,
-    youtubeId: 'Q2bBwCKyF_w',
-    title: '모르면 손해보는 한국은행 경제금융 교육',
-    playing: false,
-    short: true,
-  },
-  {
-    id: 5,
-    youtubeId: 'jUW7td3Jmfc',
-    title: '[59초 맛보기] 교실에서 벌어지는 진짜 경제금융 교육 💒',
-    playing: false,
-    short: true,
-  },
-  {
-    id: 14,
-    youtubeId: 'uelHwf8o7_U',
-    title: '금융사기 예방법',
-    playing: false,
-    short: true,
-  },
-]);
-
-const fulls = reactive([
-  {
-    id: 11,
-    youtubeId: 'uYLuGAwmOMY',
-    title: '이보다 더 쉽게 설명할 순 없다! 은행에서 돈이 돌아가는 원리💸',
-    playing: false,
-    short: false,
-  },
-  {
-    id: 12,
-    youtubeId: '-HU3QTHUoXk',
-    title:
-      '[자본주의 하이라이트📌] 이보다 더 쉬울 수 없다! 꼭 알아야 하는 자본주의 시대의 돈의 흐름과 소비',
-    playing: false,
-    short: false,
-  },
-  {
-    id: 13,
-    youtubeId: 'rPcHmHUXEIc',
-    title: '투자와 투기 사이',
-    playing: false,
-    short: false,
-  },
-  {
-    id: 14,
-    youtubeId: 'uyqVCnWSGDw',
-    title: '인플레이션이 오면 누가 이득일까 | 이제는 알아야 할 돈의 흐름',
-    playing: false,
-    short: false,
-  },
-  {
-    id: 15,
-    youtubeId: 'LsoLEjrDogU',
-    title: '사회초년생 금융가이드',
-    playing: false,
-    short: false,
-  },
-  {
-    id: 14,
-    youtubeId: 'uelHwf8o7_U',
-    title: '금융사기 예방법',
-    playing: false,
-    short: false,
-  },
-]);
-
-const showMoreShorts = ref(false);
-const showMoreFulls = ref(false);
-const maxVisibleShorts = 5;
-const maxVisibleFulls = 4;
-
-const visibleShorts = computed(() =>
-  showMoreShorts.value ? shorts : shorts.slice(0, maxVisibleShorts)
-);
-const visibleFulls = computed(() =>
-  showMoreFulls.value ? fulls : fulls.slice(0, maxVisibleFulls)
-);
+// 웹툰 관련 데이터
+const webtoons = ref([]);
+const selectedWebtoon = ref(null);
+const loading = ref(false);
+const error = ref(false);
 
 function getThumbnailUrl(id) {
   return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 }
 
 function getEmbedUrl(id) {
-  return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+  const p = new URLSearchParams({
+    autoplay: '1', // 자동 재생
+    rel: '0', // 관련 동영상 숨김
+    modestbranding: '1', // 유튜브 로고 최소화
+    playsinline: '1', // 모바일에서 인라인 재생
+  });
+  return `https://www.youtube.com/embed/${id}?${p.toString()}`;
 }
 
 // Overlay logic
@@ -223,176 +239,931 @@ function play(video) {
   video.playing = true;
 }
 
+// function closeOverlay() {
+//   if (currentPlaying.value) {
+//     currentPlaying.value.playing = false;
+//     currentPlaying.value = null;
+//   }
+// }
+
+const router = useRouter();
+
+/* -------------------- 데이터 -------------------- */
+const videos = ref([]); // { id, title, url, link, type }
+const toons = ref([]); // { id, title, thumbUrl, url, link, ... }
+
+/* -------------------- 오버레이 -------------------- */
+const isOverlayOpen = ref(false);
+const current = ref(null);
+
+/* -------------------- 브레이크포인트별 프리뷰 개수 -------------------- */
+const bp = useBreakpoint(); // 'mobile' | 'tablet' | 'desktop'
+const PREVIEW_VIDEO = { mobile: 2, tablet: 4, desktop: 4 };
+const PREVIEW_TOON = { mobile: 4, tablet: 6, desktop: 8 };
+
+const visibleVideos = computed(() =>
+  videos.value.slice(0, PREVIEW_VIDEO[bp.value])
+);
+const visibleToons = computed(() =>
+  toons.value.slice(0, PREVIEW_TOON[bp.value])
+);
+
+/* -------------------- 초기 로드 -------------------- */
+onMounted(async () => {
+  await loadVideos();
+  await loadToons();
+  window.addEventListener('keydown', onKeyDown);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeyDown);
+});
+
+async function loadVideos() {
+  const raw = await eduAPI.getMovieList(0, 4);
+  videos.value = await normalizeVideos(raw);
+}
+async function loadToons() {
+  // API 네이밍은 환경에 맞게 교체 (예: eduAPI.getWebtoonList)
+  const raw = await (eduAPI.getWebtoonList?.() ?? Promise.resolve([]));
+  toons.value = raw.map((w) => ({
+    id: w.id,
+    title: w.title,
+    thumbUrl: w.thumbUrl || w.coverUrl || w.url,
+    url: w.url,
+    link: w.link,
+  }));
+}
+
+/* -------------------- 비디오 판별/정규화 -------------------- */
+const headCache = new Map();
+
+async function normalizeVideos(raw) {
+  const arr = raw.map((r) => {
+    const link = r.link || r.xtrnlContentsUrl || '';
+    const url = r.url || r.fileDownUrl || '';
+    const type = link ? 'youtube' : guessByExt(url);
+    return { id: r.id, title: r.title, url, link, type };
+  });
+  // 확장자 모호하면 HEAD로 보강
+  await refineUnknownByHead(arr);
+  return arr;
+}
+
+function guessByExt(u) {
+  const url = String(u || '')
+    .split('?')[0]
+    .toLowerCase();
+  if (!url) return 'unknown';
+  if (/\.(mp4|webm|ogg|ogv|mov|m4v|avi|mkv)$/.test(url)) return 'video';
+  if (/\.(png|jpe?g|gif|webp|bmp|svg)$/.test(url)) return 'image';
+  if (/\.(mp3|wav|m4a|aac|flac|oga)$/.test(url)) return 'audio';
+  if (/\.(pdf)$/.test(url)) return 'pdf';
+  return 'unknown';
+}
+
+async function refineUnknownByHead(list, concurrency = 6) {
+  const targets = list.filter((i) => !i.link && i.type === 'unknown' && i.url);
+  const queue = [...targets];
+  const worker = async () => {
+    while (queue.length) {
+      const it = queue.shift();
+      if (headCache.has(it.url)) {
+        it.type = headCache.get(it.url);
+        continue;
+      }
+      try {
+        const res = await fetch(it.url, { method: 'HEAD', mode: 'cors' });
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        let t = 'unknown';
+        if (ct.startsWith('video/')) t = 'video';
+        else if (ct.startsWith('image/')) t = 'image';
+        else if (ct.startsWith('audio/')) t = 'audio';
+        else if (ct === 'application/pdf') t = 'pdf';
+        it.type = t;
+        headCache.set(it.url, t);
+      } catch {
+        /* CORS/네트워크 실패 → 유지 */
+      }
+    }
+  };
+  await Promise.allSettled(Array.from({ length: concurrency }, worker));
+}
+
+/* -------------------- 오버레이 동작 -------------------- */
+function openOverlay(item) {
+  // 영상/이미지 외 파일은 새 탭
+  if (!['youtube', 'video', 'image'].includes(item.type)) {
+    window.open(item.url, '_blank', 'noopener');
+    return;
+  }
+  current.value = item;
+  isOverlayOpen.value = true;
+  document.documentElement.style.overflow = 'hidden';
+}
 function closeOverlay() {
+  // 오버레이 닫기
+  isOverlayOpen.value = false;
+
+  // 재생 중인 영상 멈추기
   if (currentPlaying.value) {
     currentPlaying.value.playing = false;
     currentPlaying.value = null;
   }
+
+  // 딜레이 후 상태 초기화
+  setTimeout(() => {
+    current.value = null;
+    document.documentElement.style.overflow = '';
+  }, 150);
 }
 
-const router = useRouter();
-
-function goToShortDetail() {
-  router.push('/education/shorts');
+function onKeyDown(e) {
+  if (e.key === 'Escape' && isOverlayOpen.value) closeOverlay();
 }
 
-function goToVideoDetail() {
+/* -------------------- 라우팅 -------------------- */
+function goToVideoMore() {
   router.push('/education/videos');
+}
+
+// 웹툰 관련 함수들
+async function fetchWebtoons() {
+  loading.value = true;
+  error.value = false;
+
+  try {
+    const response = await axios.get('http://localhost:8080/api/webtoon/top4');
+    webtoons.value = response.data;
+    console.log('웹툰 데이터:', webtoons.value);
+  } catch (err) {
+    console.error('웹툰 조회 실패:', err);
+    error.value = true;
+  } finally {
+    loading.value = false;
+  }
+}
+
+function openModal(webtoon) {
+  selectedWebtoon.value = webtoon;
+  document.body.style.overflow = 'hidden'; // 스크롤 방지
+}
+
+function closeModal() {
+  selectedWebtoon.value = null;
+  document.body.style.overflow = 'auto'; // 스크롤 복원
+}
+
+function handleImageError(event) {
+  event.target.src =
+    'https://via.placeholder.com/300x400/cccccc/666666?text=이미지+없음';
+}
+
+function handleModalImageError(event) {
+  event.target.src =
+    'https://via.placeholder.com/600x800/cccccc/666666?text=웹툰+이미지+없음';
+}
+
+// ESC 키로 모달 닫기
+onMounted(() => {
+  fetchWebtoons();
+
+  const handleEsc = (event) => {
+    if (event.key === 'Escape' && selectedWebtoon.value) {
+      closeModal();
+    }
+  };
+
+  document.addEventListener('keydown', handleEsc);
+
+  // 컴포넌트 해제시 이벤트 리스너 제거
+  return () => {
+    document.removeEventListener('keydown', handleEsc);
+  };
+});
+function goToWebtoonPage() {
+  router.push('/education/webtoon');
+}
+
+onMounted(() => {
+  // ESC 키로 오버레이 닫기
+  const handleEsc = (event) => {
+    if (event.key === 'Escape' && currentPlaying.value) {
+      closeOverlay();
+    }
+  };
+
+  document.addEventListener('keydown', handleEsc);
+
+  // 컴포넌트 해제시 이벤트 리스너 제거
+  return () => {
+    document.removeEventListener('keydown', handleEsc);
+  };
+});
+
+function goToWebtoonMore() {
+  router.push('/education/webtoons');
+}
+function goToWebtoonDetail(w) {
+  // 상세 페이지가 있다면 id 기반 라우팅
+  router.push({ path: '/education/webtoons/detail', query: { id: w.id } });
+}
+
+/* -------------------- 유튜브 헬퍼 -------------------- */
+// function getEmbedUrl(id) {
+//   const p = new URLSearchParams({
+//     autoplay: '1',
+//     rel: '0',
+//     modestbranding: '1',
+//     playsinline: '1',
+//   });
+//   return `https://www.youtube.com/embed/${id}?${p.toString()}`;
+// }
+function extractYoutubeId(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url, window.location.origin);
+    const v = u.searchParams.get('v');
+    if (v) return v;
+    const m1 = u.pathname.match(/^\/(?:shorts\/)?([a-zA-Z0-9_-]{6,})/);
+    if (m1) return m1[1];
+    const m2 = u.pathname.match(/embed\/([a-zA-Z0-9_-]{6,})/);
+    if (m2) return m2[1];
+    return '';
+  } catch {
+    const m = String(url).match(
+      /(?:v=|be\/|shorts\/|embed\/)([a-zA-Z0-9_-]{6,})/
+    );
+    return m ? m[1] : '';
+  }
+}
+
+/* -------------------- Breakpoint -------------------- */
+function useBreakpoint() {
+  const cur = ref('desktop');
+  const handler = () => {
+    const w = window.innerWidth;
+    cur.value = w < 640 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop';
+  };
+  onMounted(() => {
+    handler();
+    window.addEventListener('resize', handler, { passive: true });
+  });
+  onBeforeUnmount(() => window.removeEventListener('resize', handler));
+  return cur;
 }
 </script>
 
 <style scoped>
 .education-video-page {
-  padding: 2rem 1.5rem;
+  padding: var(--spacing-xl) var(--spacing-lg);
   max-width: 80%;
   margin: 0 auto;
 }
-.video-section {
-  margin-bottom: 3rem;
-}
-.video-section h2 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin-bottom: 1.2rem;
-  color: #2c3e50;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.video-grid {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-.video-grid.full {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-}
-.video-card {
-  width: 18%;
-  position: relative;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease;
-}
-.video-card:not(.short) {
-  width: 23%;
-}
-.video-card:not(.short) .video-iframe {
-  height: 220px;
-}
-.video-card:hover {
-  transform: translateY(-4px);
-}
-.thumbnail {
-  position: relative;
-  cursor: pointer;
-}
-.thumbnail img {
-  width: 100%;
-  border-radius: 12px;
-}
-.overlay-play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.8rem;
-  color: white;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  padding: 0.3rem 0.5rem;
-}
-.video-title {
-  font-weight: 600;
-  margin-top: 0.4rem;
-  font-size: 14px;
-  text-align: center;
-  white-space: nowrap;
+
+.education-video-page.no-scroll {
   overflow: hidden;
-  text-overflow: ellipsis;
 }
-.video-iframe {
-  height: 200px;
+
+.page-description {
+  position: relative;
+  text-align: center;
+  margin-bottom: var(--spacing-3xl);
+  background: var(--gradient-accent);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.page-description::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="90" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.title-wrapper {
+  margin-bottom: var(--spacing-sm);
+}
+
+.page-title {
+  font-size: var(--font-size-3xl);
+  font-weight: bold;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-white);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.title-emoji {
+  display: inline-block;
+  animation: bounce 2s ease-in-out infinite;
+  margin-right: var(--spacing-sm);
+}
+
+.page-subtitle {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: var(--font-size-lg);
+  line-height: 1.8;
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.subtitle-highlight {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
   border-radius: 12px;
-  width: 100%;
-}
-.more-btn {
-  margin-top: 1.5rem;
-  background: #aacd96;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+.subtitle-accent {
+  font-weight: 700;
+  color: #ffe066;
+}
+
+.feature-badges {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.hero-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.floating-icon {
+  position: absolute;
+  font-size: var(--font-size-3xl);
+  animation: float 6s ease-in-out infinite;
+  opacity: 0.3;
+}
+
+.floating-icon-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.floating-icon-2 {
+  top: 70%;
+  right: 15%;
+  animation-delay: 1.5s;
+}
+
+.floating-icon-3 {
+  top: 30%;
+  right: 20%;
+  animation-delay: 3s;
+}
+
+.floating-icon-4 {
+  bottom: 20%;
+  left: 20%;
+  animation-delay: 4.5s;
+}
+
+.video-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.section-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--spacing-md);
+  row-gap: var(--spacing-sm);
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  font-weight: bold;
+}
+
+.section-header h3 {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  color: var(--color-dark);
+}
+
+.section-header .webtoon-subtitle {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+}
+
+.webtoon-section .section-header .more-btn {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+
+.more-btn {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  border: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .more-btn:hover {
-  background: #9bc07c;
+  background: var(--color-accent);
 }
+
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md) var(--spacing-sm);
+  justify-content: space-between;
+}
+
+.card {
+  padding: 0;
+  background: var(--bg-card);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+@media (min-width: 640px) {
+  .card {
+    width: calc(50% - var(--spacing-sm));
+  }
+}
+
+@media (min-width: 1024px) {
+  .card {
+    width: calc(25% - var(--spacing-md));
+  }
+}
+
+.thumb {
+  width: 100%;
+  display: block;
+  background: var(--color-black);
+}
+
+.thumb-16x9 {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.video-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+}
+
+.play-badge {
+  font-size: var(--font-size-3xl);
+}
+
+.card-title {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  max-height: calc(1.4em * 2.4);
+}
+
 .video-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-overlay-dark);
+  backdrop-filter: blur(2px);
+  padding: var(--spacing-xl);
 }
-.video-iframe-full {
-  width: 80%;
-  height: 80%;
+
+.player-wrap {
+  width: min(1200px, 92vw);
+  aspect-ratio: 16/9;
+  background: var(--color-black);
   border-radius: 12px;
+  box-shadow: var(--shadow-modal);
 }
+
+.player-iframe,
+.player-image {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 12px;
+  object-fit: contain;
+  background: var(--color-black);
+}
+
 .close-button {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  font-size: 2rem;
+  position: fixed;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  font-size: var(--font-size-3xl);
   background: none;
-  color: white;
+  color: var(--color-white);
   border: none;
   cursor: pointer;
 }
-.page-description {
+
+.loading {
   text-align: center;
-  margin-bottom: 3rem;
-  background-color: #f3f6f9;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: var(--spacing-3xl);
 }
-.page-title {
-  font-size: 2.4rem;
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-gray-200);
+  border-top: 4px solid var(--color-secondary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--spacing-lg);
+}
+
+.error {
+  text-align: center;
+  padding: var(--spacing-3xl);
+  color: var(--color-error);
+}
+
+.retry-btn {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: var(--spacing-sm);
+  transition: background 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: var(--color-accent);
+}
+
+.webtoon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xl);
+  padding: var(--spacing-lg) 0;
+}
+
+.webtoon-card {
+  background: var(--bg-card);
+  border-radius: 15px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.webtoon-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+
+.webtoon-image-container {
+  position: relative;
+  overflow: hidden;
+  height: 300px;
+}
+
+.webtoon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.webtoon-card:hover .webtoon-image {
+  transform: scale(1.05);
+}
+
+.webtoon-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-overlay-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: var(--color-white);
+}
+
+.webtoon-card:hover .webtoon-overlay {
+  opacity: 1;
+}
+
+.play-icon {
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.overlay-text {
+  font-size: var(--font-size-lg);
   font-weight: bold;
-  margin-bottom: 1rem;
-  color: #222;
 }
-.page-subtitle {
-  font-size: 1.1rem;
-  color: #555;
-  line-height: 1.8;
+
+.webtoon-info {
+  padding: var(--spacing-lg);
 }
-.section-header {
+
+.webtoon-card-title {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: 1.4;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-overlay-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  backdrop-filter: blur(5px);
+  padding: var(--spacing-lg);
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-modal);
+}
+
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.2rem;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-content);
 }
-.video-card.short .thumbnail img {
-  aspect-ratio: 9/16;
-  object-fit: cover;
+
+.modal-title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  color: var(--text-primary);
+  font-weight: bold;
 }
-.short-video-iframe-full {
-  width: 400px;
-  height: 700px;
-  border-radius: 12px;
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: var(--font-size-2xl);
+  cursor: pointer;
+  color: var(--text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  text-align: center;
+  padding: var(--spacing-lg);
+  max-height: calc(90vh - 160px);
+}
+
+.webtoon-full-image {
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  display: block;
+}
+
+.modal-footer {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+  background: var(--bg-content);
+}
+
+.modal-close-btn {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: background 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: var(--color-accent);
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+  66% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .webtoon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+  }
+
+  .modal-overlay {
+    padding: var(--spacing-sm);
+  }
+
+  .modal-content {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+
+  .modal-body {
+    max-height: calc(95vh - 160px);
+  }
+
+  .page-description {
+    padding: var(--spacing-2xl) var(--spacing-md);
+  }
+
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .page-subtitle {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .feature-badges {
+    gap: var(--spacing-sm);
+  }
+
+  .badge {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .floating-icon {
+    font-size: var(--font-size-2xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .webtoon-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .webtoon-image-container {
+    height: 250px;
+  }
+
+  .modal-overlay {
+    padding: var(--spacing-xs);
+  }
+
+  .modal-content {
+    max-height: 98vh;
+  }
+
+  .modal-body {
+    max-height: calc(98vh - 160px);
+    padding: var(--spacing-sm);
+  }
+
+  .page-description {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+
+  .page-title {
+    font-size: var(--font-size-xl);
+    line-height: 1.3;
+  }
+
+  .page-subtitle {
+    font-size: var(--font-size-base);
+  }
+
+  .feature-badges {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
 }
 </style>

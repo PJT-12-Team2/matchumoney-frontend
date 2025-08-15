@@ -143,7 +143,7 @@
               >
                 <div class="answer-button-content">
                   <span class="answer-emoji">⭕</span>
-                  <span>맞습니다 (O)</span>
+                  <span>맞습니다</span>
                 </div>
               </button>
               <button
@@ -155,7 +155,7 @@
               >
                 <div class="answer-button-content">
                   <span class="answer-emoji">❌</span>
-                  <span>틀렸습니다 (X)</span>
+                  <span>틀렸습니다</span>
                 </div>
               </button>
             </div>
@@ -670,6 +670,39 @@ onMounted(async () => {
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
   flex-wrap: wrap;
+}
+
+.badge {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.badge-primary {
+  background-color: var(--color-primary);
+  color: var(--color-dark);
+  border-color: var(--color-primary);
+}
+
+.badge-secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-dark);
+  border-color: var(--color-secondary);
+}
+
+.badge-accent {
+  background-color: var(--color-accent);
+  color: var(--color-dark);
+  border-color: var(--color-accent);
+}
+
+.badge:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .question-text {
