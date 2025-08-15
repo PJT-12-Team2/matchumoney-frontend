@@ -60,6 +60,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import cardsApi from '@/api/cards.js';
+import favoriteApi from '@/api/favorite.js';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseSpinner from '@/components/base/BaseSpinner.vue';
 import KbCardListItem from './KbCardListItem.vue';
@@ -70,8 +71,12 @@ const isLoadingMore = ref(false);
 const error = ref(null);
 const kbCards = ref([]);
 const hasNext = ref(true);
-const nextCursor = ref(null);
+const currentPage = ref(0);
 const pageSize = 6; // 6개씩 로드
+
+// 즐겨찾기 상태 캐시 (한 번만 조회)
+const favoriteListCache = ref([]);
+const isFavoriteLoaded = ref(false);
 
 // 스크롤 이벤트 핸들러
 const onScroll = async () => {
@@ -91,44 +96,89 @@ const loadKbRecommendations = async () => {
     error.value = null;
     kbCards.value = [];
     hasNext.value = true;
-    nextCursor.value = null;
+    currentPage.value = 0;
 
-    const response = await cardsApi.getKbCardRecommendations();
-    console.log('KB카드 추천 전체 응답:', response);
+    const response = await cardsApi.getKbCardRecommendations(0, pageSize);
 
     // 응답 구조 확인 및 처리
     if (response && response.success !== false) {
-      let allCards = [];
+      let cards = [];
+      let responseHasNext = false;
 
       // 백엔드 응답이 SuccessResponse 형태인 경우
       if (response.data && typeof response.data === 'object') {
-        allCards = response.data.kbCards || [];
+        cards = response.data.kbCards || [];
+        responseHasNext = response.data.hasNext || false;
       }
       // 직접 데이터가 오는 경우
       else if (response.kbCards) {
-        allCards = response.kbCards || [];
+        cards = response.kbCards || [];
+        responseHasNext = response.hasNext || false;
       }
       // 다른 구조인 경우 빈 배열로 처리
       else {
-        console.warn('예상과 다른 응답 구조:', response);
-        allCards = [];
+        cards = [];
+        responseHasNext = false;
       }
-
-      // 처음 6개만 표시
-      kbCards.value = allCards.slice(0, pageSize);
-
-      // 더 많은 데이터가 있는지 확인
-      hasNext.value = allCards.length > pageSize;
-      if (hasNext.value) {
-        // 나머지 데이터를 nextCursor에 임시 저장
-        nextCursor.value = allCards.slice(pageSize);
+      
+      // 좋아요/즐겨찾기 상태 조회 (캐시 사용)
+      if (!isFavoriteLoaded.value) {
+        try {
+          const favoriteResponse = await favoriteApi.getFavorites();
+          
+          // 응답 구조 확인 - cardList 사용
+          if (Array.isArray(favoriteResponse)) {
+            favoriteListCache.value = favoriteResponse;
+          } else if (favoriteResponse?.cardList && Array.isArray(favoriteResponse.cardList)) {
+            favoriteListCache.value = favoriteResponse.cardList;
+          } else if (favoriteResponse?.data?.cardList && Array.isArray(favoriteResponse.data.cardList)) {
+            favoriteListCache.value = favoriteResponse.data.cardList;
+          } else if (favoriteResponse?.data && Array.isArray(favoriteResponse.data)) {
+            favoriteListCache.value = favoriteResponse.data;
+          }
+          
+          isFavoriteLoaded.value = true;
+        } catch (error) {
+          // 즐겨찾기 조회 실패해도 계속 진행
+        }
       }
+      
+      // 각 카드의 좋아요/즐겨찾기 상태 확인 및 설정
+      cards.forEach((card) => {
+        // 백엔드에서 이미 좋아요/즐겨찾기 상태를 포함해서 보내주므로 사용
+        // 만약 값이 없다면 캐시에서 확인
+        if (card.is_liked === undefined || card.is_favorited === undefined) {
+          const cardId = card.cardProductId || card.id || card.cardId;
+          
+          // 캐시에서 즐겨찾기 상태 확인
+          const isFavorite = favoriteListCache.value.some(fav => {
+            const matchByProductType = fav.productType === 'CARD' || fav.productType === 'card-products';
+            const matchById = String(fav.productId) === String(cardId) || 
+                             String(fav.cardProductId) === String(cardId) ||
+                             String(fav.cardId) === String(cardId);
+            
+            return matchByProductType && matchById;
+          });
+          
+          // 기본값 설정
+          if (card.is_liked === undefined) card.is_liked = false;
+          if (card.like_count === undefined) card.like_count = 0;
+          if (card.is_favorited === undefined) card.is_favorited = isFavorite;
+        }
+        
+        // 기존 필드명으로 매핑 (하위 호환성)
+        card.isLiked = card.is_liked;
+        card.likeCount = card.like_count;
+        card.isStarred = card.is_favorited;
+      });
+      
+      kbCards.value = cards;
+      hasNext.value = responseHasNext;
+      
     } else {
       throw new Error(response?.message || '추천 데이터를 불러올 수 없습니다.');
     }
   } catch (err) {
-    console.error('KB카드 추천 로드 실패:', err);
-    console.error('오류 상세:', err.response?.data || err.message);
     error.value =
       err.response?.data?.message ||
       err.message ||
@@ -140,23 +190,66 @@ const loadKbRecommendations = async () => {
 
 // 더 많은 카드 로드
 const loadMore = async () => {
-  if (!hasNext.value || isLoadingMore.value || !nextCursor.value) return;
+  if (!hasNext.value || isLoadingMore.value) return;
 
   isLoadingMore.value = true;
 
   try {
-    // 다음 6개 카드 가져오기
-    const nextBatch = nextCursor.value.slice(0, pageSize);
-    const remainingCards = nextCursor.value.slice(pageSize);
+    // 다음 페이지 로드
+    const nextPage = currentPage.value + 1;
+    const response = await cardsApi.getKbCardRecommendations(nextPage, pageSize);
 
-    // 기존 카드에 추가
-    kbCards.value.push(...nextBatch);
+    if (response && response.success !== false) {
+      let newCards = [];
+      let responseHasNext = false;
 
-    // 더 많은 데이터가 있는지 확인
-    hasNext.value = remainingCards.length > 0;
-    nextCursor.value = remainingCards.length > 0 ? remainingCards : null;
+      // 백엔드 응답이 SuccessResponse 형태인 경우
+      if (response.data && typeof response.data === 'object') {
+        newCards = response.data.kbCards || [];
+        responseHasNext = response.data.hasNext || false;
+      }
+      // 직접 데이터가 오는 경우
+      else if (response.kbCards) {
+        newCards = response.kbCards || [];
+        responseHasNext = response.hasNext || false;
+      }
+      
+      // 추가로 로드된 카드들의 상태 설정
+      newCards.forEach((card) => {
+        // 백엔드에서 이미 좋아요/즐겨찾기 상태를 포함해서 보내주므로 사용
+        // 만약 값이 없다면 캐시에서 확인
+        if (card.is_liked === undefined || card.is_favorited === undefined) {
+          const cardId = card.cardProductId || card.id || card.cardId;
+          
+          // 캐시에서 즐겨찾기 상태 확인
+          const isFavorite = favoriteListCache.value.some(fav => {
+            const matchByProductType = fav.productType === 'CARD' || fav.productType === 'card-products';
+            const matchById = String(fav.productId) === String(cardId) || 
+                             String(fav.cardProductId) === String(cardId) ||
+                             String(fav.cardId) === String(cardId);
+            
+            return matchByProductType && matchById;
+          });
+          
+          // 기본값 설정
+          if (card.is_liked === undefined) card.is_liked = false;
+          if (card.like_count === undefined) card.like_count = 0;
+          if (card.is_favorited === undefined) card.is_favorited = isFavorite;
+        }
+        
+        // 기존 필드명으로 매핑 (하위 호환성)
+        card.isLiked = card.is_liked;
+        card.likeCount = card.like_count;
+        card.isStarred = card.is_favorited;
+      });
+
+      // 기존 카드에 추가
+      kbCards.value.push(...newCards);
+      hasNext.value = responseHasNext;
+      currentPage.value = nextPage;
+    }
   } catch (err) {
-    console.error('더 많은 카드 로드 실패:', err);
+    console.error('더 많은 카드 로딩 실패:', err);
   } finally {
     // 최소 1초간 로딩 표시
     setTimeout(() => {
@@ -179,7 +272,6 @@ const handleCardApply = (card) => {
 
 // 카드 클릭 처리
 const handleCardClick = (card) => {
-  console.log('카드 클릭:', card.name);
   // TODO: 카드 상세 페이지로 이동
 };
 

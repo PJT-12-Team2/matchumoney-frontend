@@ -511,37 +511,20 @@
                   </div>
                 </div>
 
-                <!-- 페이지네이션 -->
-                <div class="pagination" v-if="getTotalPages() > 1">
-                  <button
-                    @click="changePage(currentPage - 1)"
-                    :disabled="currentPage <= 1"
-                    class="page-btn"
-                  >
-                    <i class="bi bi-chevron-left"></i>
-                  </button>
-                  <span class="page-info">
-                    {{ currentPage }} / {{ getTotalPages() }}
-                  </span>
-                  <button
-                    @click="changePage(currentPage + 1)"
-                    :disabled="currentPage >= getTotalPages()"
-                    class="page-btn"
-                  >
-                    <i class="bi bi-chevron-right"></i>
-                  </button>
+                <!-- 무한 스크롤 로딩 -->
+                <div v-if="isLoadingMore" class="infinite-loading">
+                  <BaseSpinner size="md" color="accent" />
+                  <p>더 많은 거래내역을 불러오는 중...</p>
                 </div>
 
-                <!-- 액션 버튼 -->
-                <div class="transaction-actions">
-                  <BaseButton variant="outline" @click="exportTransactions">
-                    <i class="bi bi-download"></i>
-                    거래내역 내보내기
-                  </BaseButton>
-                  <BaseButton variant="outline" @click="syncTransactions">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    새로고침
-                  </BaseButton>
+                <!-- 모든 데이터 로드 완료 -->
+                <div
+                  v-else-if="
+                    !hasMoreTransactions && displayedTransactions.length > 0
+                  "
+                  class="load-complete"
+                >
+                  <p>모든 거래내역을 불러왔습니다.</p>
                 </div>
               </div>
             </div>
@@ -653,7 +636,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import DefaultLayout from '@/components/layouts/DefaultLayout.vue';
@@ -738,8 +721,13 @@ const statisticsMonthFilter = ref('');
 const categoryFilter = ref('');
 const amountFilter = ref('');
 const sortBy = ref('date');
-const currentPage = ref(1);
-const itemsPerPage = 10;
+// 무한 스크롤을 위한 변수들
+const displayedTransactions = ref([]);
+const currentPage = ref(0); // 0부터 시작하도록 변경
+const itemsPerPage = 10; // 백엔드와 동일한 기본값
+const isLoadingMore = ref(false);
+const hasMoreTransactions = ref(true);
+const totalTransactionCount = ref(0);
 
 const userId = computed(() => authStore.getUserId());
 
@@ -1525,16 +1513,117 @@ const getFilteredAverage = () => {
   return filtered.length > 0 ? Math.round(total / filtered.length) : 0;
 };
 
-const getPaginatedTransactions = () => {
-  const filtered = getAllFilteredTransactions(); // 거래내역 탭에서는 전체 데이터 사용
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filtered.slice(start, end);
+// 무한 스크롤용 - 표시할 거래내역 초기화 (필터 적용 시)
+const initializeDisplayedTransactions = () => {
+  // 필터가 적용된 경우에만 클라이언트 사이드 필터링 수행
+  const hasFilters =
+    searchQuery.value ||
+    monthFilter.value ||
+    categoryFilter.value ||
+    amountFilter.value;
+
+  if (hasFilters) {
+    // 필터가 있으면 클라이언트 사이드 필터링
+    const filtered = getAllFilteredTransactions();
+    const initialLoad = filtered.slice(0, itemsPerPage);
+    displayedTransactions.value = initialLoad;
+    currentPage.value = 0;
+    hasMoreTransactions.value = filtered.length > itemsPerPage;
+  } else {
+    // 필터가 없으면 기본 무한 스크롤 상태로 복원
+    displayedTransactions.value = [...syncedTransactions.value];
+    currentPage.value =
+      Math.floor(syncedTransactions.value.length / itemsPerPage) - 1;
+    // 백엔드에서 받은 hasMoreTransactions 상태 유지
+  }
 };
 
-const getTotalPages = () => {
-  return Math.ceil(getAllFilteredTransactions().length / itemsPerPage); // 거래내역 탭에서는 전체 데이터 사용
+// 무한 스크롤용 - 더 많은 거래내역 로드 (실제 API 호출 또는 클라이언트 필터링)
+const loadMoreTransactions = async () => {
+  if (isLoadingMore.value || !hasMoreTransactions.value) return;
+
+  isLoadingMore.value = true;
+
+  try {
+    const hasFilters =
+      searchQuery.value ||
+      monthFilter.value ||
+      categoryFilter.value ||
+      amountFilter.value;
+
+    if (hasFilters) {
+      // 필터가 적용된 경우: 클라이언트 사이드 페이징
+      setTimeout(() => {
+        const filtered = getAllFilteredTransactions();
+        const nextPage = currentPage.value + 1;
+        const start = nextPage * itemsPerPage;
+        const end = start + itemsPerPage;
+        const newTransactions = filtered.slice(start, end);
+
+        displayedTransactions.value.push(...newTransactions);
+        currentPage.value = nextPage;
+        hasMoreTransactions.value = end < filtered.length;
+        isLoadingMore.value = false;
+      }, 500);
+    } else {
+      // 필터가 없는 경우: 백엔드 API 호출
+      if (!selectedSyncedCard.value || !userId.value) {
+        isLoadingMore.value = false;
+        return;
+      }
+
+      const nextPage = currentPage.value + 1;
+
+      console.log(
+        `🔍 ${selectedSyncedCard.value.cardName} 카드의 ${
+          nextPage + 1
+        }페이지 거래내역을 로드합니다...`
+      );
+
+      const response = await cardsApi.getStoredCardTransactions(
+        selectedSyncedCard.value.holdingId,
+        userId.value,
+        nextPage,
+        itemsPerPage
+      );
+
+      if (response.data && response.data.transactions) {
+        const paginatedData = response.data;
+
+        // 새로운 거래내역 추가
+        syncedTransactions.value.push(...paginatedData.transactions);
+        displayedTransactions.value.push(...paginatedData.transactions);
+
+        // 페이징 상태 업데이트
+        currentPage.value = nextPage;
+        hasMoreTransactions.value = paginatedData.hasNext || false;
+
+        console.log(
+          `💡 ${
+            paginatedData.transactions.length
+          }건의 추가 거래내역을 로드했습니다. (페이지: ${nextPage + 1})`
+        );
+      } else {
+        hasMoreTransactions.value = false;
+      }
+
+      // 최소 1초간 로딩 표시
+      setTimeout(() => {
+        isLoadingMore.value = false;
+      }, 1000);
+    }
+  } catch (error) {
+    console.error('❌ 추가 거래내역 로드 실패:', error);
+    hasMoreTransactions.value = false;
+    isLoadingMore.value = false;
+  }
 };
+
+const getPaginatedTransactions = () => {
+  return displayedTransactions.value;
+};
+
+// getTotalPages 함수는 더 이상 필요하지 않음 (무한 스크롤 사용)
 
 // 거래내역 탭용 - 전체 데이터 기준 통계
 const getAllTransactionCount = () => {
@@ -1555,14 +1644,10 @@ const getAllFilteredAverage = () => {
 
 const changeSortOrder = (newSortBy) => {
   sortBy.value = newSortBy;
-  currentPage.value = 1;
+  initializeDisplayedTransactions();
 };
 
-const changePage = (newPage) => {
-  if (newPage >= 1 && newPage <= getTotalPages()) {
-    currentPage.value = newPage;
-  }
-};
+// changePage 함수는 더 이상 필요하지 않음 (무한 스크롤 사용)
 
 const formatTime = (dateString) => {
   if (!dateString) return '';
@@ -1641,8 +1726,45 @@ const getCurrentCardBenefit = () => {
   return 0;
 };
 
+// 스크롤 이벤트 핸들러
+const handleScroll = () => {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+
+  // 스크롤이 페이지 끝에서 100px 전에 도달하면 더 로드
+  if (scrollTop + windowHeight >= documentHeight - 100) {
+    loadMoreTransactions();
+  }
+};
+
+// 필터 변경 시 거래내역 초기화
+watch(
+  [searchQuery, monthFilter, categoryFilter, amountFilter],
+  () => {
+    initializeDisplayedTransactions();
+  },
+  { deep: true }
+);
+
+// 거래내역 데이터가 변경될 때마다 초기화
+watch(
+  syncedTransactions,
+  () => {
+    initializeDisplayedTransactions();
+  },
+  { deep: true }
+);
+
 onMounted(() => {
   fetchCards();
+  // 스크롤 이벤트 리스너 추가
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  // 스크롤 이벤트 리스너 제거
+  window.removeEventListener('scroll', handleScroll);
 });
 </script>
 
@@ -1934,20 +2056,11 @@ onMounted(() => {
 }
 
 .stat-item {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95),
-    rgba(248, 250, 252, 0.9)
-  );
+  background-color: var(--color-white);
   border-radius: 16px;
   padding: var(--spacing-lg);
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.stat-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
 }
 
 .stat-icon {
@@ -2498,12 +2611,13 @@ onMounted(() => {
 }
 
 .filter-select {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--border-light);
   border-radius: 6px;
   font-size: var(--font-size-sm);
   background: var(--bg-light);
   min-width: 120px;
+  height: 32px;
 }
 
 .filter-select:focus {
@@ -2908,6 +3022,7 @@ onMounted(() => {
     align-items: center;
     text-align: left;
     padding: var(--spacing-md);
+    background-color: var(--color-white);
     border-radius: 12px;
   }
 
@@ -2997,9 +3112,10 @@ onMounted(() => {
 
   .filter-select {
     flex: 1;
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-size: var(--font-size-lg);
-    min-height: 48px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+    height: 38px;
+    min-height: auto;
   }
 
   .stats-grid {
@@ -3024,6 +3140,35 @@ onMounted(() => {
   .transaction-actions {
     flex-direction: column;
   }
+}
+
+/* 무한 스크롤 스타일 */
+.infinite-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+}
+
+.infinite-loading p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.load-complete {
+  text-align: center;
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  border-top: 1px solid var(--border-light);
+}
+
+.load-complete p {
+  margin: 0;
 }
 
 /* 태블릿용 미디어 쿼리 */

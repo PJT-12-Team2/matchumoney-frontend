@@ -78,18 +78,19 @@
             >{{ formatCurrency(card.preMonthMoney) }}원</span
           >
         </div>
-
         <!-- 신청 버튼 -->
-        <div class="card-action">
-          <BaseButton
-            variant="primary"
-            size="sm"
-            @click.stop="handleApply"
-            class="apply-button"
-          >
-            <i class="bi bi-arrow-right apply-icon"></i>
-            신청하기
-          </BaseButton>
+        <div class="card-action-container">
+          <div class="card-action">
+            <BaseButton
+              variant="primary"
+              size="sm"
+              @click.stop="handleApply"
+              class="apply-button"
+            >
+              <i class="bi bi-arrow-right apply-icon"></i>
+              신청하기
+            </BaseButton>
+          </div>
         </div>
 
         <!-- 카드 설명/혜택 -->
@@ -327,7 +328,7 @@ const handleApply = () => {
 <style scoped>
 .kb-card-list-item {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: var(--spacing-lg);
   padding: var(--spacing-lg);
   border: 1px solid var(--border-light);
@@ -338,12 +339,13 @@ const handleApply = () => {
   min-height: 110px;
   cursor: pointer;
   margin-bottom: var(--spacing-md);
-  border-color: var(--color-accent);
+  border-color: var(--color-primary);
 }
 
 .kb-card-list-item:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-accent);
 }
 
 .favorite-toggle {
@@ -532,11 +534,16 @@ const handleApply = () => {
   margin: 0;
 }
 
+.card-action-container {
+  display: flex;
+  justify-content: start;
+  margin-top: var(--spacing-xs);
+}
+
 .card-action {
   display: inline-block;
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 12px;
-  margin-top: var(--spacing-xs);
   background: var(--color-success-light);
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
@@ -629,7 +636,7 @@ const handleApply = () => {
 
   .card-info {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
     justify-content: flex-start;
     padding-top: 0;
     gap: var(--spacing-md);

@@ -547,7 +547,7 @@ watch(
 
 .recommendation-item {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: var(--spacing-lg);
   padding: var(--spacing-lg);
   border: 1px solid var(--border-light);
@@ -616,7 +616,7 @@ watch(
 
 .card-info {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-lg);
   flex: 1;
   min-width: 0;
@@ -912,7 +912,7 @@ watch(
 
   .card-info {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
     justify-content: flex-start;
     padding-top: 0;
     gap: var(--spacing-md);
