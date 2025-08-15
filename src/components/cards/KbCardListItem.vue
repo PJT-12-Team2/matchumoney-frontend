@@ -62,9 +62,10 @@
           >
             {{ formatCardType(card.type || card.cardType) }}
           </span>
-          <span class="annual-fee" v-html="
-            formatAnnualFeeWithLineBreak(card.annualFee)
-          "></span>
+          <span
+            class="annual-fee"
+            v-html="formatAnnualFeeWithLineBreak(card.annualFee)"
+          ></span>
         </div>
 
         <!-- 전월실적 정보 -->
@@ -337,10 +338,10 @@ const handleApply = () => {
   min-height: 110px;
   cursor: pointer;
   margin-bottom: var(--spacing-md);
+  border-color: var(--color-accent);
 }
 
 .kb-card-list-item:hover {
-  border-color: var(--color-accent);
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
@@ -358,11 +359,7 @@ const handleApply = () => {
   transition: all 0.2s ease;
 }
 
-.favorite-toggle .favorite-icon.starred {
-  color: #ffbb00;
-}
-
-.favorite-toggle .favorite-icon.unstarred {
+.favorite-toggle .favorite-icon {
   color: #ffbb00;
 }
 

@@ -1,64 +1,59 @@
 <template>
-  <div class="kb-card-recommendation">
-    <div class="recommendation-header">
-      <div class="header-content">
-        <img
-          src="@/assets/bankLogo_images/kb.png"
-          alt="KB국민카드"
-          class="kb-logo"
-        />
-        <div class="header-text">
-          <h3>KB국민카드 추천</h3>
-          <p>신청 가능한 KB국민카드를 확인해보세요</p>
-        </div>
-      </div>
+  <!-- 로딩 상태 -->
+  <div v-if="isLoading" class="loading-container">
+    <BaseSpinner size="md" color="accent" />
+    <p>KB국민카드 추천을 불러오는 중...</p>
+  </div>
+
+  <!-- 에러 상태 -->
+  <div v-else-if="error" class="error-container">
+    <i class="bi bi-exclamation-triangle error-icon"></i>
+    <p>KB국민카드 추천을 불러올 수 없습니다.</p>
+    <BaseButton
+      variant="outline"
+      size="sm"
+      @click="loadKbRecommendations"
+      class="retry-button"
+    >
+      다시 시도
+    </BaseButton>
+  </div>
+
+  <!-- 추천 설명 -->
+  <div
+    v-if="!isLoading && !error && kbCards.length > 0"
+    class="recommendation-description"
+  >
+    <p>
+      개인 맞춤형 KB국민카드를 추천드립니다. <br class="mobile-break" />각
+      카드의 특징과 혜택을 비교해보세요.
+    </p>
+  </div>
+
+  <!-- 추천 카드 목록 -->
+  <div v-if="kbCards.length > 0" class="cards-container">
+    <div class="cards-list">
+      <KbCardListItem
+        v-for="(card, index) in kbCards"
+        :key="card.cardProductId"
+        :card="card"
+        :index="index"
+        @apply="handleCardApply"
+        @click="handleCardClick"
+      />
     </div>
 
-    <!-- 로딩 상태 -->
-    <div v-if="isLoading" class="loading-container">
+    <!-- 무한스크롤 로딩 -->
+    <div v-if="isLoadingMore" class="infinite-loading">
       <BaseSpinner size="md" color="accent" />
-      <p>KB국민카드 추천을 불러오는 중...</p>
+      <p>더 많은 카드를 불러오는 중...</p>
     </div>
+  </div>
 
-    <!-- 에러 상태 -->
-    <div v-else-if="error" class="error-container">
-      <i class="bi bi-exclamation-triangle error-icon"></i>
-      <p>KB국민카드 추천을 불러올 수 없습니다.</p>
-      <BaseButton
-        variant="outline"
-        size="sm"
-        @click="loadKbRecommendations"
-        class="retry-button"
-      >
-        다시 시도
-      </BaseButton>
-    </div>
-
-    <!-- 추천 카드 목록 -->
-    <div v-else-if="kbCards.length > 0" class="cards-container">
-      <div class="cards-list">
-        <KbCardListItem
-          v-for="(card, index) in kbCards"
-          :key="card.cardProductId"
-          :card="card"
-          :index="index"
-          @apply="handleCardApply"
-          @click="handleCardClick"
-        />
-      </div>
-
-      <!-- 무한스크롤 로딩 -->
-      <div v-if="isLoadingMore" class="infinite-loading">
-        <BaseSpinner size="md" color="accent" />
-        <p>더 많은 카드를 불러오는 중...</p>
-      </div>
-    </div>
-
-    <!-- 추천 카드가 없는 경우 -->
-    <div v-else class="no-cards-container">
-      <i class="bi bi-card-list no-cards-icon"></i>
-      <p>현재 추천할 수 있는 KB국민카드가 없습니다.</p>
-    </div>
+  <!-- 추천 카드가 없는 경우 -->
+  <div v-else class="no-cards-container">
+    <i class="bi bi-card-list no-cards-icon"></i>
+    <p>현재 추천할 수 있는 KB국민카드가 없습니다.</p>
   </div>
 </template>
 
@@ -209,7 +204,7 @@ onUnmounted(() => {
 }
 
 .recommendation-header {
-  background: var(--color-dark);
+  background: var(--color-primary);
   padding: var(--spacing-lg);
 }
 
@@ -269,8 +264,24 @@ onUnmounted(() => {
   margin-top: var(--spacing-md);
 }
 
-.cards-container {
-  padding: var(--spacing-lg);
+.recommendation-description {
+  color: var(--color-accent);
+  font-weight: bold;
+  background: var(--color-primary);
+  padding: 26px 20px;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--color-accent);
+  text-align: center;
+}
+
+.recommendation-description p {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.mobile-break {
+  display: none;
 }
 
 .cards-list {
@@ -355,6 +366,10 @@ onUnmounted(() => {
 
   .cards-container {
     padding: var(--spacing-sm);
+  }
+
+  .mobile-break {
+    display: inline;
   }
 
   .loading-container,

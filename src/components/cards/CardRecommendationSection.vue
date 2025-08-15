@@ -151,9 +151,10 @@
                 >
                   {{ card.cardType }}
                 </span>
-                <span class="annual-fee" v-html="
-                  formatAnnualFeeWithLineBreak(card.annualFee)
-                "></span>
+                <span
+                  class="annual-fee"
+                  v-html="formatAnnualFeeWithLineBreak(card.annualFee)"
+                ></span>
               </div>
 
               <!-- 예상 혜택 정보 - 연회비 아래로 이동 -->
@@ -441,7 +442,7 @@ watch(
 }
 
 .section-subtitle {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--text-secondary);
   margin: 0;
 }
@@ -496,7 +497,7 @@ watch(
 }
 
 .benefit-summary .label {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--text-secondary);
 }
 
@@ -529,7 +530,7 @@ watch(
 }
 
 .improvement-label {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
 }
 
 .improvement-amount {
@@ -696,7 +697,7 @@ watch(
   display: inline-block;
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 6px;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -789,7 +790,7 @@ watch(
 }
 
 .summary-text {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--text-muted);
   margin: 0;
   font-style: italic;
@@ -873,15 +874,14 @@ watch(
   }
 
   .section-header {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
   }
 
   .section-header h3 {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-2xl);
   }
 
   .benefit-summary {
-    flex-direction: column;
     gap: var(--spacing-md);
     padding: var(--spacing-lg);
     border-radius: 12px;
@@ -893,7 +893,6 @@ watch(
   }
 
   .arrow {
-    transform: rotate(90deg);
     align-self: center;
   }
 

@@ -610,10 +610,7 @@
                 v-if="cards.length > 0"
                 variant="primary"
                 class="cta-button"
-                @click="
-                  showTransactionModal = true;
-                  selectedCard = cards[0];
-                "
+                @click="handleKbLogin"
               >
                 <i class="bi bi-arrow-right-circle"></i>
                 거래내역 연동하고 추천받기
@@ -1034,6 +1031,12 @@ const getAmountClass = (amount) => {
 // 탭 변경 처리
 const changeTab = (tabName) => {
   activeTab.value = tabName;
+};
+
+// KB카드 로그인 처리
+const handleKbLogin = () => {
+  // KB카드 동기화 모달창 표시
+  showSyncModal.value = true;
 };
 
 // 카드 추천 섹션에서 거래내역 동기화 요청 처리
@@ -1889,6 +1892,10 @@ onMounted(() => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--color-dark);
+}
+.guide-badge i {
+  color: var(--color-dark);
 }
 
 .guide-title {
@@ -1927,13 +1934,15 @@ onMounted(() => {
 }
 
 .stat-item {
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.9)
+  );
   border-radius: 16px;
   padding: var(--spacing-lg);
   text-align: center;
-  box-shadow: var(--shadow-md);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid var(--color-accent-20);
 }
 
 .stat-item:hover {
@@ -1942,13 +1951,14 @@ onMounted(() => {
 }
 
 .stat-icon {
-  font-size: 2rem;
+  font-size: var(--font-size-lg);
   color: var(--color-accent);
   margin-bottom: var(--spacing-sm);
 }
 
 .stat-content {
   display: flex;
+  text-align: left;
   flex-direction: column;
   gap: var(--spacing-xs);
 }
@@ -2134,15 +2144,16 @@ onMounted(() => {
 
 .summary-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .summary-header h3 {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--text-primary);
@@ -2152,18 +2163,18 @@ onMounted(() => {
 .analysis-period {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   background: var(--bg-light);
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 6px;
 }
 
 .quick-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xs);
 }
 
 .stat-item {
@@ -2186,7 +2197,7 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -2275,7 +2286,7 @@ onMounted(() => {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xs);
 }
 
 .summary-item {
@@ -2288,7 +2299,7 @@ onMounted(() => {
 }
 
 .summary-icon {
-  font-size: 32px;
+  font-size: var(--font-size-2xl);
 }
 
 .summary-data {
@@ -2511,7 +2522,7 @@ onMounted(() => {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
+  gap: var(--spacing-xs);
 }
 
 .stat-card {
@@ -2774,7 +2785,7 @@ onMounted(() => {
   }
 
   .section-header h3 {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
   }
 
   .transactions-section {
@@ -2916,7 +2927,7 @@ onMounted(() => {
   }
 
   .stat-label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
   }
 
   .cta-button {
@@ -2969,12 +2980,26 @@ onMounted(() => {
     min-width: auto;
   }
 
+  .search-input {
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) 44px;
+    font-size: var(--font-size-lg);
+    min-height: 48px;
+  }
+
+  .search-box i {
+    left: var(--spacing-lg);
+    font-size: var(--font-size-lg);
+  }
+
   .filter-buttons {
     justify-content: stretch;
   }
 
   .filter-select {
     flex: 1;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-lg);
+    min-height: 48px;
   }
 
   .stats-grid {
