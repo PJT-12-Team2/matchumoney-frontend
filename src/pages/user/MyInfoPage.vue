@@ -42,6 +42,7 @@
           <span class="value"></span>
           <span class="arrow">></span>
         </router-link>
+        <PushToggle />
         <button class="info-item clickable" @click="handleLogout">
           <span class="label text-dark">로그아웃</span>
           <span class="value text-secondary"></span>
@@ -59,13 +60,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import userApi from "@/api/user";
+import { ref, onMounted, computed } from 'vue';
+import userApi from '@/api/user';
+import PushToggle from '@/components/common/PushToggle.vue';
 
 const user = ref(null);
 
 const formattedBirthDate = computed(() => {
-  if (!user.value?.birthDate) return "";
+  if (!user.value?.birthDate) return '';
   const date = new Date(user.value.birthDate);
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 });
@@ -75,13 +77,13 @@ onMounted(async () => {
     const res = await userApi.getMyInfo();
     user.value = res.result;
   } catch (err) {
-    console.error("내 정보 조회 실패", err);
+    console.error('내 정보 조회 실패', err);
   }
 });
 
 function handleLogout() {
   // Assuming logout logic is handled elsewhere or needs to be added
-  window.location.href = "/login";
+  window.location.href = '/login';
 }
 
 function handleDeleteAccount() {
