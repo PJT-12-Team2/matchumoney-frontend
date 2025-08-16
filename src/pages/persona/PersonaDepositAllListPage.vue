@@ -970,6 +970,20 @@ const selectProduct = (product) => {
   margin-top: var(--spacing-sm);
 }
 
+.deposit-compare-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.deposit-compare-button > * {
+  white-space: nowrap;
+}
+
 /* 🔷 반응형 (모바일) 스타일 */
 @media (max-width: 768px) {
   .carousel-swiper {
@@ -1061,9 +1075,14 @@ const selectProduct = (product) => {
   }
 
   .deposit-compare-button > *:first-child {
-    transform: scale(0.7); /* 전체 크기 80%로 축소 */
-    transform-origin: center; /* 축소 기준 중앙 */
+    transform: scale(0.7);
+    transform-origin: center;
     margin-right: -1rem;
+  }
+  .deposit-compare-button > *:last-child {
+    transform: scale(0.8);
+    transform-origin: center;
+    margin-right: 0 !important;
   }
 
   .bank-label {
@@ -1092,6 +1111,15 @@ const selectProduct = (product) => {
   .bank-logo-round {
     width: 5.2rem;
     height: 5.2rem;
+  }
+  .deposit-compare-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+    flex-wrap: nowrap;
+    gap: 0.1rem;
   }
 }
 
@@ -1199,19 +1227,5 @@ body {
   z-index: 2;
   width: auto;
   display: block;
-}
-
-.deposit-compare-button {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.5rem;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-}
-
-.deposit-compare-button > * {
-  white-space: nowrap;
 }
 </style>
