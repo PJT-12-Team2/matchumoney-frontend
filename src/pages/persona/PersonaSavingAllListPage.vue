@@ -1016,6 +1016,15 @@ const getMinAmountWithTerm = (product) => {
   margin-right: 0.4rem;
 }
 
+.carousel-saving-rates-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-sm);
+}
+
 @media (max-width: 768px) {
   .search-results-grid {
     grid-template-columns: 1fr;
@@ -1089,6 +1098,28 @@ const getMinAmountWithTerm = (product) => {
     color: var(--text-primary);
     font-weight: 600;
     padding-top: 0.6rem;
+  }
+
+  .carousel-saving-rates-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+  }
+
+  .bank-name-bold {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: #1e2b4e; /* strong navy blue */
+    margin-bottom: 0.5rem;
+  }
+
+  .rate-line {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    /* margin-bottom: 0.1rem; */
   }
 }
 </style>
@@ -1164,14 +1195,7 @@ font-size: var(--font-size-base);
 color: var(--text-secondary);
 text-align: center;
 } */
-.carousel-saving-rates-inline {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin-top: var(--spacing-sm);
-}
+
 /* 🔷 Empty state 스타일 */
 .empty-state {
   display: flex;
