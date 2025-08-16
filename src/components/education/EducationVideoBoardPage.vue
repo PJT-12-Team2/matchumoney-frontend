@@ -6,41 +6,106 @@
         핵심만 빠르게 이해하고 <br />지금 당장 써먹는 금융 지식을 배우세요.
       </p>
     </div>
+    <div class="filter-bar">
+      <label class="series-toggle">
+        <input type="checkbox" v-model="groupBySeries" />
+        <span>유사 시리즈 묶어서 보기</span>
+      </label>
+      <select
+        v-model="selectedSeries"
+        :disabled="!groupBySeries"
+        class="series-select"
+      >
+        <option v-for="opt in seriesOptions" :key="opt" :value="opt">
+          {{ opt === 'ALL' ? '전체 시리즈' : opt }}
+        </option>
+      </select>
+    </div>
     <div ref="scrollRoot" :class="{ 'no-scroll': isOverlayOpen }">
       <section class="video-section">
-        <div class="card-grid">
-          <div
-            v-for="(m, i) in videos"
-            :key="m.id ?? i"
-            class="card"
-            @click="openOverlay(m)"
-          >
-            <img
-              v-if="m.type === 'youtube'"
-              :src="`https://img.youtube.com/vi/${extractYoutubeId(
-                m.link
-              )}/hqdefault.jpg`"
-              :alt="m.title || '영상 썸네일'"
-              class="thumb thumb-16x9"
-              loading="lazy"
-            />
+        <!-- 일반 모드: 평소처럼 카드 나열 -->
+        <template v-if="!groupBySeries">
+          <div class="card-grid">
             <div
-              v-else-if="m.type === 'video'"
-              class="thumb thumb-16x9 video-fallback"
+              v-for="(m, i) in videos"
+              :key="m.id ?? i"
+              class="card"
+              @click="openOverlay(m)"
             >
-              <span class="play-badge">▶</span>
+              <img
+                v-if="m.type === 'youtube'"
+                :src="`https://img.youtube.com/vi/${extractYoutubeId(
+                  m.link
+                )}/hqdefault.jpg`"
+                :alt="m.title || '영상 썸네일'"
+                class="thumb thumb-16x9"
+                loading="lazy"
+              />
+              <div
+                v-else-if="m.type === 'video'"
+                class="thumb thumb-16x9 video-fallback"
+              >
+                <span class="play-badge">▶</span>
+              </div>
+              <img
+                v-else-if="m.type === 'image'"
+                :src="m.url"
+                :alt="m.title || '이미지'"
+                class="thumb thumb-16x9"
+                loading="lazy"
+              />
+              <div v-else class="thumb thumb-16x9 blank">파일 열기</div>
+              <div class="card-title" :title="m.title">{{ m.title }}</div>
             </div>
-            <img
-              v-else-if="m.type === 'image'"
-              :src="m.url"
-              :alt="m.title || '이미지'"
-              class="thumb thumb-16x9"
-              loading="lazy"
-            />
-            <div v-else class="thumb thumb-16x9 blank">파일 열기</div>
-            <div class="card-title" :title="m.title">{{ m.title }}</div>
           </div>
-        </div>
+        </template>
+
+        <!-- 시리즈 그룹 모드: [여이주TV] 등 시리즈별 섹션 묶음 -->
+        <template v-else>
+          <div
+            v-for="([seriesKey, items], gi) in seriesGroupEntries"
+            :key="seriesKey + '_' + gi"
+            class="series-section"
+          >
+            <div class="series-header">
+              <h3 class="series-title">{{ seriesKey }}</h3>
+              <span class="series-count">{{ items.length }}개</span>
+            </div>
+            <div class="card-grid">
+              <div
+                v-for="(m, i) in items"
+                :key="m.id ?? seriesKey + '_' + i"
+                class="card"
+                @click="openOverlay(m)"
+              >
+                <img
+                  v-if="m.type === 'youtube'"
+                  :src="`https://img.youtube.com/vi/${extractYoutubeId(
+                    m.link
+                  )}/hqdefault.jpg`"
+                  :alt="m.title || '영상 썸네일'"
+                  class="thumb thumb-16x9"
+                  loading="lazy"
+                />
+                <div
+                  v-else-if="m.type === 'video'"
+                  class="thumb thumb-16x9 video-fallback"
+                >
+                  <span class="play-badge">▶</span>
+                </div>
+                <img
+                  v-else-if="m.type === 'image'"
+                  :src="m.url"
+                  :alt="m.title || '이미지'"
+                  class="thumb thumb-16x9"
+                  loading="lazy"
+                />
+                <div v-else class="thumb thumb-16x9 blank">파일 열기</div>
+                <div class="card-title" :title="m.title">{{ m.title }}</div>
+              </div>
+            </div>
+          </div>
+        </template>
 
         <div ref="sentinel" class="infinite-sentinel"></div>
         <div v-if="loading" class="infinite-loading">로딩 중…</div>
@@ -98,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, computed } from 'vue';
 import eduAPI from '@/api/edu';
 
 const videos = ref([]);
@@ -114,6 +179,52 @@ const seenIds = new Set();
 
 const isOverlayOpen = ref(false);
 const current = ref(null);
+
+/* ── 시리즈(여이주TV 등) 그룹 모드 ───────────────────── */
+const groupBySeries = ref(false);
+const selectedSeries = ref('ALL');
+
+// 제목에서 [시리즈명] 패턴 감지 → 예: [여이주TV] #01, [여이주TV]#12
+function extractSeriesKeyFromTitle(title) {
+  const t = String(title || '').trim();
+  // 1) [시리즈] #12 / [시리즈]12 / [시리즈]
+  let m = t.match(/^\s*\[([^\]]+)\]\s*(?:#?\s*\d+)?/);
+  if (m && m[1]) return m[1].trim();
+  // 2) 여이주TV #01 같은 케이스(대괄호 없는 경우)
+  m = t.match(/^\s*([가-힣A-Za-z0-9]+TV)\s*#?\s*\d+/i);
+  if (m && m[1]) return m[1].trim();
+  return null; // 시리즈 키 없음
+}
+
+// 시리즈 그룹 구성 { key: VideoItem[] }
+const seriesGroups = computed(() => {
+  const map = new Map();
+  for (const it of videos.value) {
+    const key = extractSeriesKeyFromTitle(it.title);
+    if (!key) continue;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(it);
+  }
+  // 각 그룹 안을 최신순으로 보이도록(원본 순서 유지 원하면 제거)
+  for (const [k, arr] of map) {
+    map.set(k, [...arr]);
+  }
+  return map;
+});
+
+// 드롭다운 옵션: ALL + 시리즈명들(가나다/알파벳 순)
+const seriesOptions = computed(() => {
+  const keys = Array.from(seriesGroups.value.keys());
+  keys.sort((a, b) => a.localeCompare(b));
+  return ['ALL', ...keys];
+});
+
+// 선택된 시리즈만 보여줄 엔트리 (기본: 전체)
+const seriesGroupEntries = computed(() => {
+  const entries = Array.from(seriesGroups.value.entries());
+  if (selectedSeries.value === 'ALL') return entries;
+  return entries.filter(([key]) => key === selectedSeries.value);
+});
 
 onMounted(async () => {
   await loadMore();
@@ -491,5 +602,47 @@ function extractYoutubeId(url) {
 }
 .education-video-page.no-scroll {
   overflow: hidden;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+.series-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  font-size: 14px;
+  color: #333;
+}
+.series-select {
+  height: 36px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+  color: #111;
+}
+.series-section {
+  margin-bottom: 28px;
+}
+.series-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 6px 2px 10px;
+}
+.series-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #222;
+  margin: 0;
+}
+.series-count {
+  font-size: 12px;
+  color: #666;
 }
 </style>

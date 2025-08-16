@@ -1,7 +1,7 @@
 <template>
   <button
     class="compare-button"
-    :class="{ remove: isAlreadyCompared }"
+    :class="{ added: isAlreadyCompared }"
     @pointerdown.stop
     @click.stop.prevent="onCompareClick"
   >
@@ -90,25 +90,40 @@ onUnmounted(clearAutoHide); // ✅ 컴포넌트 파기 시 정리
 
 <style scoped>
 .compare-button {
-  font-size: 0.8rem;
-  color: var(--color-accent);
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
   font-weight: 600;
+  color: #333;
   cursor: pointer;
-  background: none;
-  border: 0;
-  padding: 0.2rem 0.1rem;
-  border-radius: 0.4rem;
-  transition: transform 0.2s;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* 아이콘/텍스트 간격 대비 */
+  outline: none;
 }
 .compare-button:hover {
-  transform: scale(1.05);
+  background-color: #e0e0e0;
+  transform: translateY(-1px);
 }
-.compare-button.remove {
-  color: red;
+.compare-button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+.compare-button.added {
+  background-color: #e6f0ff;
+  color: #007bff;
+}
+.compare-button.added:hover {
+  background-color: #d0e5ff;
 }
 @media (max-width: 1024px) {
   .compare-button {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-md);
+    padding: 6px 10px; /* responsive padding like like button */
+    margin: 0px -11px 0px 0px;
+    padding: 4px 8px;
   }
 }
 </style>
