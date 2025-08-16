@@ -1167,6 +1167,20 @@ const getMinAmountWithTerm = (product) => {
   font-weight: bold;
 }
 
+.saving-compare-button {
+  display: flex; /* 가로 배치 */
+  flex-direction: row;
+  align-items: center; /* 수직 중앙 */
+  justify-content: center; /* 수평 중앙 */
+  margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.2rem;
+}
+
+.saving-compare-button > * {
+  white-space: nowrap; /* 버튼 안 텍스트 줄바꿈 방지 */
+}
+
 @media (max-width: 768px) {
   .term-selector {
     display: none;
@@ -1177,9 +1191,14 @@ const getMinAmountWithTerm = (product) => {
   }
 
   .saving-compare-button > *:first-child {
-    transform: scale(0.7); /* 전체 크기 80%로 축소 */
-    transform-origin: center; /* 축소 기준 중앙 */
+    transform: scale(0.7);
+    transform-origin: center;
     margin-right: -1rem;
+  }
+  .saving-compare-button > *:last-child {
+    transform: scale(0.8);
+    transform-origin: center;
+    margin-right: 0 !important;
   }
 }
 
@@ -1258,19 +1277,6 @@ text-align: center;
   right: 1.6rem;
   margin: 0;
   z-index: 2;
-}
-.saving-compare-button {
-  display: flex; /* 가로 배치 */
-  flex-direction: row;
-  align-items: center; /* 수직 중앙 */
-  justify-content: center; /* 수평 중앙 */
-  margin-top: 0.5rem;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-}
-
-.saving-compare-button > * {
-  white-space: nowrap; /* 버튼 안 텍스트 줄바꿈 방지 */
 }
 
 /* 무한 스크롤 로딩 스피너 */
