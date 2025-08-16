@@ -678,7 +678,6 @@ const selectProduct = (product) => {
   font-size: 1.3rem;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 0.5rem;
 }
 .persona-carousel-section {
   display: flex;
@@ -863,15 +862,12 @@ const selectProduct = (product) => {
   box-shadow: var(--shadow-card);
 } */
 .product-card {
+  position: relative;
   background: var(--bg-content);
   border-radius: var(--spacing-xl);
   padding: var(--spacing-xl);
-  cursor: pointer;
-  transition: all 0.3s ease;
   height: 18rem;
   display: flex;
-  flex-direction: column;
-  /* flex-direction: row; */
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -893,10 +889,9 @@ const selectProduct = (product) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 5rem;
-  height: 5rem;
+  width: 6.2rem;
+  height: 6.2rem;
   flex-direction: column;
-  /* gap: 0.5rem; */
 }
 .bank-logo-round {
   width: 6rem;
@@ -925,7 +920,7 @@ const selectProduct = (product) => {
 }
 .bank-name-bold {
   font-size: var(--font-size-base);
-  font-weight: 700;
+  font-weight: 600;
   color: #1e2b4e; /* strong navy blue */
   margin-bottom: 0.1rem;
 }
@@ -933,7 +928,6 @@ const selectProduct = (product) => {
   font-size: var(--font-size-lg);
   font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 0.2rem;
   text-align: left;
 }
 .rate-line {
@@ -966,6 +960,16 @@ const selectProduct = (product) => {
   margin-bottom: 0.5rem;
 }
 
+/* 🔷 페르소나 추천 캐러셀 금리 인라인 스타일 */
+.carousel-deposit-rates-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-sm);
+}
+
 /* 🔷 반응형 (모바일) 스타일 */
 @media (max-width: 768px) {
   .carousel-swiper {
@@ -991,13 +995,12 @@ const selectProduct = (product) => {
     font-size: 1.3rem;
     font-weight: 700;
     text-align: center;
-    margin-bottom: 0.5rem;
   }
   .carousel-deposit-rates-inline {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--text-secondary);
     margin-top: var(--spacing-sm);
   }
@@ -1006,9 +1009,6 @@ const selectProduct = (product) => {
   }
   .bank-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .carousel-deposit-benefit {
-    font-size: var(--font-size-sm);
   }
   .product-card-horizontal {
     flex-direction: row;
@@ -1039,10 +1039,11 @@ const selectProduct = (product) => {
     font-size: var(--font-size-lg);
   }
   .bank-name-bold {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
+    padding-bottom: 0.5rem;
   }
   .rate-line {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
   }
 
   .highlight-rate {
@@ -1064,6 +1065,34 @@ const selectProduct = (product) => {
     transform-origin: center; /* 축소 기준 중앙 */
     margin-right: -1rem;
   }
+
+  .bank-label {
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding-top: 0.6rem;
+  }
+
+  .bank-logo-option {
+    margin-bottom: 1.2rem;
+  }
+  .product-card {
+    height: auto;
+    padding-top: calc(var(--spacing-xl) + 0.6rem);
+  }
+  .product-card-row {
+    width: 88%;
+    gap: 1.2rem;
+    min-height: 6.5rem;
+  }
+  .bank-logo-container {
+    width: 5.6rem;
+    height: 5.6rem;
+  }
+  .bank-logo-round {
+    width: 5.2rem;
+    height: 5.2rem;
+  }
 }
 
 /* Swiper custom pagination bullets for persona carousel */
@@ -1083,16 +1112,6 @@ const selectProduct = (product) => {
 
 :deep(.swiper-pagination-bullet-active) {
   background: #007bff;
-}
-
-/* 🔷 페르소나 추천 캐러셀 금리 인라인 스타일 */
-.carousel-deposit-rates-inline {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin-top: var(--spacing-sm);
 }
 
 /* 🔷 Empty state 스타일 */
@@ -1159,24 +1178,27 @@ body {
 
 .product-card-row {
   width: 80%;
-  justify-content: flex-start;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 2rem;
+  min-height: 8rem;
+  padding: 2rem 0;
 }
 
 .product-info-column {
   display: flex;
   flex-direction: column;
-  /* gap: 0.25rem; */
   align-items: flex-start;
 }
 .card-favorite-button {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  position: absolute;
+  top: 1.8rem;
+  right: 1.6rem;
+  margin: 0;
+  z-index: 2;
+  width: auto;
+  display: block;
 }
 
 .deposit-compare-button {
