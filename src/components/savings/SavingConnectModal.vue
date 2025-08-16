@@ -9,7 +9,10 @@
         <form @submit.prevent="submit">
           <h2 class="modal-title">내 예/적금 연결하기</h2>
           <p class="modal-subtitle">은행 로그인 정보를 입력해 주세요</p>
-
+          <div class="input-group">
+            <label for="userId">은행<span class="required">*</span></label>
+            <BankSelect />
+          </div>
           <div class="input-group">
             <label for="userId">아이디<span class="required">*</span></label>
             <input
@@ -75,7 +78,7 @@
 
 <script setup>
 import { ref, computed, watchEffect, defineProps, defineEmits } from 'vue';
-
+import BankSelect from './BankSelect.vue';
 const props = defineProps({
   visible: Boolean,
   loading: Boolean,

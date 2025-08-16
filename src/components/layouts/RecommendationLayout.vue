@@ -50,10 +50,12 @@ const props = defineProps({
 .recommendation-highlight {
   color: var(--color-accent);
   font-weight: bold;
-  background: var(--color-info-light);
-  padding: 16px 20px;
+  padding: 1rem 1.4rem;
   border-radius: 1rem;
   margin-bottom: 1rem;
-  border-left: 4px solid var(--color-accent);
+  background-color: rgb(255, 255, 255);
+  border: 0.1rem solid var(--color-light);
+  border-left: 0.4rem solid var(--color-accent);
+  box-shadow: var(--shadow-card);
 }
 </style>
