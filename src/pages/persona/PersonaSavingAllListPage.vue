@@ -443,7 +443,8 @@ const carouselSavings = computed(() => {
     id: d.savingId,
     name: d.savingName,
     bankName: d.bankName,
-    image: d.companyImage,
+    image:
+      getBankLogo(getBankInitial(d.bankName || '')) || d.companyImage || '',
     maxLimit: d.maxLimit,
     maxRate: `${d.maxRate.toFixed(2)}%`,
     baseRate: `${d.basicRate.toFixed(2)}%`,
