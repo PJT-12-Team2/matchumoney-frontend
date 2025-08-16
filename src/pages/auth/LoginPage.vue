@@ -67,15 +67,15 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
-import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
-import BaseInput from "@/components/base/BaseInput.vue";
-import authApi from "@/api/auth"; // ✅ 새로 추가된 import
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
+import BaseInput from '@/components/base/BaseInput.vue';
+import authApi from '@/api/auth'; // ✅ 새로 추가된 import
 
-const email = ref("");
-const password = ref("");
+const email = ref('');
+const password = ref('');
 const keepLogin = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
@@ -83,46 +83,48 @@ const router = useRouter();
 const handleLogin = async () => {
   // 입력값 검증
   if (!email.value || !password.value) {
-    alert("이메일과 비밀번호를 입력해주세요.");
+    alert('이메일과 비밀번호를 입력해주세요.');
     return;
   }
 
   try {
-    console.log("🔐 로그인 시도:", { email: email.value });
+    console.log('🔐 로그인 시도:', { email: email.value });
     const response = await authApi.login({
       email: email.value,
       password: password.value,
     });
 
-    console.log("✅ 로그인 응답:", response);
+    console.log('✅ 로그인 응답:', response);
     const tokenDto = response.result;
 
     if (!tokenDto || !tokenDto.accessToken) {
-      throw new Error("토큰이 응답에 포함되지 않았습니다.");
+      throw new Error('토큰이 응답에 포함되지 않았습니다.');
     }
 
     authStore.setAuth(tokenDto);
-    console.log("💾 토큰 저장 완료:", {
-      accessToken: tokenDto.accessToken.substring(0, 20) + "...",
+    console.log('💾 토큰 저장 완료:', {
+      accessToken: tokenDto.accessToken.substring(0, 20) + '...',
       userId: tokenDto.userId,
       nickname: tokenDto.nickname,
     });
 
-    alert(`${tokenDto.nickname}님 환영합니다!`);
+    alert(
+      `${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`
+    );
     if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
-      router.push("/persona/start");
+      router.push('/persona/start');
     } else {
-      router.push("/");
+      router.push('/');
     }
   } catch (err) {
-    console.error("❌ 로그인 실패:", err);
+    console.error('❌ 로그인 실패:', err);
 
     if (err.response?.status === 401) {
-      alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+      alert('이메일 또는 비밀번호가 올바르지 않습니다.');
     } else if (err.response?.status === 403) {
-      alert("접근이 거부되었습니다. 계정 상태를 확인해주세요.");
+      alert('접근이 거부되었습니다. 계정 상태를 확인해주세요.');
     } else if (err.response?.status >= 500) {
-      alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } else {
       alert(
         `로그인에 실패했습니다: ${err.response?.data?.message || err.message}`
@@ -246,7 +248,7 @@ const handleKakaoLogin = () => {
 }
 .sns-divider::before,
 .sns-divider::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   width: 40%;
