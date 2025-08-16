@@ -227,7 +227,7 @@
               </div>
               <div class="product-info">
                 <h4>{{ product.name || product.cardName }}</h4>
-                <div>
+                <div class="issuer">
                   {{ product.issuer || '카드사 미정' }}
                 </div>
                 <div>
@@ -767,6 +767,9 @@ onMounted(() => {
   .card-compare-button :deep(.like-count) {
     font-size: 0.95rem; /* 숫자 조금만 축소 */
   }
+  .card-compare-button :deep(button) {
+    font-size: 0.9rem;
+  }
 }
 </style>
 <style scoped>
@@ -795,6 +798,7 @@ onMounted(() => {
   gap: 1.5rem;
   width: 100%;
   height: 100%;
+  padding-bottom: 1.6rem;
 }
 
 .product-content img {
@@ -877,7 +881,15 @@ onMounted(() => {
 }
 
 .card-compare-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   margin-top: 0.5rem;
+}
+.card-compare-button > * {
+  flex: 0 0 auto;
 }
 .infinite-spinner-wrapper {
   grid-column: 1 / -1;
@@ -911,5 +923,9 @@ onMounted(() => {
 .infinite-spinner-text {
   font-size: 0.95rem;
   color: var(--text-secondary);
+}
+
+.issuer {
+  padding-bottom: 0.6rem;
 }
 </style>
