@@ -228,7 +228,6 @@
               <div class="product-info">
                 <h4>{{ product.name || product.cardName }}</h4>
                 <div>
-                  <span class="label">카드사:</span>
                   {{ product.issuer || '카드사 미정' }}
                 </div>
                 <div>
@@ -682,7 +681,8 @@ onMounted(() => {
 }
 .highlight {
   font-size: var(--font-size-2xl);
-  text-decoration: underline;
+  color: #2e7d32;
+  font-weight: 900;
 }
 .filter-label {
   font-size: var(--font-size-lg);
