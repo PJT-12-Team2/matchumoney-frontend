@@ -758,7 +758,7 @@ const getMinAmountWithTerm = (product) => {
 }
 
 .carousel-saving-image {
-  width: 60%;
+  width: 7rem;
   border-radius: var(--spacing-sm);
   padding-bottom: 2rem;
 }
@@ -777,7 +777,8 @@ const getMinAmountWithTerm = (product) => {
 
 .highlight {
   font-size: var(--font-size-2xl);
-  text-decoration: underline;
+  color: #2e7d32;
+  font-weight: 900;
 }
 
 .filter-selection-section {
@@ -1035,6 +1036,12 @@ const getMinAmountWithTerm = (product) => {
   }
   .carousel-saving-benefit {
     font-size: var(--font-size-sm);
+  }
+
+  .carousel-saving-image {
+    width: 8rem;
+    border-radius: var(--spacing-sm);
+    padding-bottom: 2rem;
   }
 
   /* --- ProductCard 모바일: 3단 가로 배치 --- */

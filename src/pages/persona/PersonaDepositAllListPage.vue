@@ -650,13 +650,6 @@ const selectProduct = (product) => {
   margin-bottom: var(--spacing-lg);
   text-align: center;
 }
-/* .carousel-deposit-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
-} */
 .carousel-swiper {
   width: 100%;
   padding-bottom: 1rem;
@@ -677,7 +670,7 @@ const selectProduct = (product) => {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 .carousel-deposit-image {
-  width: 60%;
+  width: 7rem;
   border-radius: var(--spacing-sm);
   padding-bottom: 2rem;
 }
@@ -697,7 +690,8 @@ const selectProduct = (product) => {
 }
 .highlight {
   font-size: var(--font-size-2xl);
-  text-decoration: underline;
+  color: #2e7d32;
+  font-weight: 900;
 }
 
 /* 🔷 필터 영역 스타일 */
@@ -989,7 +983,7 @@ const selectProduct = (product) => {
     background-color: white;
   }
   .carousel-deposit-image {
-    width: 60%;
+    width: 8rem;
     border-radius: var(--spacing-sm);
     padding-bottom: 2rem;
   }
