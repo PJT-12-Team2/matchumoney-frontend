@@ -91,7 +91,12 @@
         <div class="section-block" v-for="period in allPeriods" :key="period">
           <div class="section-title">금리 ({{ period }}개월)</div>
           <div class="section-values">
-            <div v-for="(p, idx) in products" :key="idx">
+            <!-- ▼ 셀 전체에 하이라이트 적용 -->
+            <div
+              v-for="(p, idx) in products"
+              :key="idx"
+              :class="{ 'rate-high-cell': isRateBest(period, idx) }"
+            >
               <div>
                 기본:
                 {{
@@ -114,7 +119,7 @@
                       ?.maxRate.toFixed(2) ?? '-'
                   }}
                 </span>
-                <span v-if="isRateBest(period, idx)">👑</span>
+                <!-- <span v-if="isRateBest(period, idx)">👑</span> -->
               </div>
             </div>
           </div>
@@ -249,6 +254,7 @@ function isRateBest(period, index) {
   background-color: var(--color-dark-20);
   transform: translateX(-50%);
 }
+
 .card-header {
   padding: var(--spacing-md);
   display: flex;
@@ -270,14 +276,11 @@ function isRateBest(period, index) {
   overflow: auto;
   white-space: nowrap;
   font-weight: 600;
-
-  /* 스크롤바 스타일 제거 */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-
 .product-name::-webkit-scrollbar {
-  display: none; /* WebKit (Chrome, Safari) */
+  display: none;
 }
 
 .product-sub {
@@ -330,16 +333,54 @@ function isRateBest(period, index) {
 
 .section-values > div {
   padding: 1rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 .section-values > .benefit {
   height: 100%;
 }
+
 .rate-base {
   color: var(--color-title);
 }
+/* ▼ 최고 금리 강조 텍스트 */
+
+/* ▼ 최고 금리 보유 셀 전체 하이라이트 */
+.rate-high-cell {
+  position: relative;
+  border-radius: var(--spacing-xs);
+  overflow: hidden;
+}
+
+/* 밝고 화사한 골드 배경 */
+.rate-high-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 243, 107, 0.5) 0%,
+    /* 더 밝은 레몬 골드 */ rgba(255, 252, 230, 0.5) 20%,
+    /* 거의 흰색에 가까운 크림 */ rgba(255, 227, 71, 0.5) 40%,
+    /* 채도 높은 골드 */ rgba(255, 252, 230, 0.5) 60%,
+    /* 크림 하이라이트 */ rgba(255, 243, 107, 0.5) 80% /* 더 밝은 레몬 골드 */
+  );
+
+  background-size: 200% 200%;
+  animation: goldShimmer 3s linear infinite;
+  z-index: 0;
+}
+
+/* 텍스트 강조도 좀 더 강하게 */
 .rate-high {
   color: var(--color-accent);
+  font-size: var(--font-size-lg);
   font-weight: bold;
+  text-shadow: 0 2px 2px rgba(255, 255, 255, 0.85);
+}
+
+.rate-high-cell > * {
+  position: relative;
+  z-index: 2;
 }
 
 .product-box {
@@ -390,7 +431,6 @@ function isRateBest(period, index) {
 }
 .please > .title {
   font-size: var(--font-size-xl);
-
   font-weight: bold;
 }
 .please > .content {
