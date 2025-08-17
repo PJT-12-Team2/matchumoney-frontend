@@ -3,17 +3,23 @@
     <div class="hero">
       <div class="hero-inner">
         <div class="orb" aria-hidden="true"></div>
-        <h1 class="title">🔮 오늘의 운세</h1>
+        <h1 class="title">
+          <i class="fa-solid fa-coins" aria-hidden="true"></i> 오늘의 금전운
+        </h1>
         <p class="subtitle">
-          생년월일·태어난 시간·성별을 입력하면 맞추머니가 오늘의 흐름을 가볍고
-          즐겁게 알려줘요.
+          생년월일·태어난 시간·성별을 입력하면 맞추머니가 오늘의 금전 흐름을
+          가볍고 즐겁게 알려줘요.
         </p>
       </div>
     </div>
 
     <div class="content">
-      <!-- 입력 카드 -->
-      <form class="card form-card" @submit.prevent="handleSubmit" novalidate>
+      <!-- 1) 입력 카드 -->
+      <form
+        class="card form-card equal-card"
+        @submit.prevent="handleSubmit"
+        novalidate
+      >
         <div class="grid">
           <div class="field">
             <label for="name">이름 (선택)</label>
@@ -87,25 +93,33 @@
             </p>
           </div>
         </div>
-
         <div class="actions">
-          <button class="btn primary" type="submit" :disabled="isLoading">
-            <span v-if="!isLoading">오늘의 운세 보기</span>
+          <button
+            class="btn primary"
+            type="submit"
+            :disabled="loadingReport || loadingTasks"
+          >
+            <span v-if="!loadingReport && !loadingTasks">금전운 보기</span>
             <span v-else class="spinner small"></span>
           </button>
           <button
             class="btn ghost"
             type="button"
             @click="resetForm"
-            :disabled="isLoading"
+            :disabled="loadingReport || loadingTasks"
           >
             초기화
           </button>
         </div>
       </form>
 
-      <!-- 결과 카드 -->
-      <div v-if="resultText || isLoading" class="card result-card">
+      <!-- ▶ connector 1: 입력 → 리포트 -->
+      <div class="connector" :class="{ active: step >= 2 }">
+        <i class="fa-solid fa-arrow-right"></i>
+      </div>
+
+      <!-- 2) 금전운 리포트 카드 -->
+      <div class="card result-card equal-card" v-if="step >= 2">
         <div class="result-header">
           <img
             class="bot-avatar"
@@ -114,24 +128,49 @@
           />
           <div class="meta">
             <div class="name">맞추머니 챗봇</div>
-            <div class="desc">오늘의 운세 리포트</div>
+            <div class="desc">금전운 리포트</div>
           </div>
         </div>
-
         <div class="result-body">
-          <div v-if="isLoading" class="loading-wrap">
+          <div v-if="loadingReport" class="loading-wrap">
             <div class="spinner"></div>
-            <p>운세를 살펴보고 있어요…</p>
+            <p>금전운을 분석하고 있어요…</p>
           </div>
-
           <div v-else class="bubble" v-html="formatted(resultText)"></div>
         </div>
-
-        <div class="result-actions" v-if="!isLoading && resultText">
+        <div class="result-actions" v-if="!loadingReport && resultText">
           <button class="btn secondary tiny" @click="copyToClipboard">
             복사하기
           </button>
           <button class="btn tiny" @click="seeAgain">다시 보기</button>
+        </div>
+      </div>
+
+      <!-- ▶ connector 2: 리포트 → 투두 -->
+      <div class="connector" :class="{ active: step >= 3 }">
+        <i class="fa-solid fa-arrow-right"></i>
+      </div>
+
+      <!-- 3) 오늘 하면 좋은 일 카드 -->
+      <div class="card todo-card equal-card" v-if="step >= 3">
+        <div class="todo-header">
+          <div class="todo-title">
+            <i class="fa-solid fa-list-check" aria-hidden="true"></i> 오늘 하면
+            좋은 일 3가지
+          </div>
+          <div class="todo-sub">금전운을 바탕으로 한 실천 가이드</div>
+        </div>
+        <div class="todo-body">
+          <div v-if="loadingTasks" class="loading-wrap">
+            <div class="spinner"></div>
+            <p>실천 가이드를 정리하는 중…</p>
+          </div>
+          <ol v-else class="todo-list">
+            <li v-for="(t, i) in tasks" :key="i" class="todo-item">
+              <span class="check" aria-hidden="true"></span>
+              <span class="todo-text">{{ t }}</span>
+            </li>
+          </ol>
         </div>
       </div>
     </div>
@@ -139,8 +178,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
+
+// Ensure Font Awesome CSS is available (fallback injector)
+onMounted(() => {
+  const id = 'fa-cdn-stylesheet';
+  if (!document.getElementById(id)) {
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href =
+      'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+    link.crossOrigin = 'anonymous';
+    link.referrerPolicy = 'no-referrer';
+    document.head.appendChild(link);
+  }
+});
 
 const form = ref({
   name: '',
@@ -151,8 +205,11 @@ const form = ref({
 });
 
 const touched = ref({ birthDate: false, gender: false });
-const isLoading = ref(false);
+const step = ref(1); // 1=입력, 2=리포트, 3=투두
+const loadingReport = ref(false);
+const loadingTasks = ref(false);
 const resultText = ref('');
+const tasks = ref([]);
 
 const resetForm = () => {
   form.value = {
@@ -164,7 +221,21 @@ const resetForm = () => {
   };
   touched.value = { birthDate: false, gender: false };
   resultText.value = '';
+  tasks.value = [];
+  step.value = 1;
+  loadingReport.value = false;
+  loadingTasks.value = false;
 };
+
+const systemPrompt = `너는 친절한 '금전운' 도우미야. 과장/불안 조장 없이 오늘의 "돈의 흐름"을 명확하게 설명해.
+반드시 아래 두 블록을 이 순서로 출력해. 인사말·호칭(예: 안녕하세요, ~님)·도입 멘트는 절대 쓰지 말고 곧바로 내용만 작성해:
+<REPORT>
+오늘의 금전운 리포트를 연속 서술로 작성해. 서론-핵심-마무리 구조로 3~6문장. 투자/지출/현금흐름 관점에서 구체적인 맥락을 주고, 단정 대신 조심스러운 표현을 사용. 존댓말. 불릿/번호 목록 금지.
+</REPORT>
+<ACTIONS>
+- 오늘 하면 좋은 일 3가지 (한 줄씩, 동사로 시작, 구체적으로)
+</ACTIONS>
+규칙: 미신을 사실처럼 단정하지 말고 심리적·실천적 조언 위주. 한국어.`;
 
 const handleSubmit = async () => {
   touched.value.birthDate = true;
@@ -173,7 +244,6 @@ const handleSubmit = async () => {
 
   const { name, birthDate, birthTime, timeUnknown, gender } = form.value;
   const prettyTime = timeUnknown || !birthTime ? '모름' : birthTime;
-
   const userLine = [
     name ? `이름: ${name}` : null,
     `생년월일: ${birthDate}`,
@@ -183,23 +253,94 @@ const handleSubmit = async () => {
     .filter(Boolean)
     .join(' | ');
 
-  const systemPrompt = `너는 친절한 운세 도우미야. 과장/불안 조장 없이 가볍고 즐겁게 오늘의 흐름을 알려줘. 형식은 다음을 지켜줘:\n1) \u26a1 총평 (한 문장)\n2) \uD83D\uDD25 포인트 3가지 (번호목록)\n3) \uD83D\uDCDD 조언 (짧은 한 문장)\n- 미신을 사실처럼 단정하지 말고, 심리적/실천적 조언 위주로.\n- 존댓말, 6줄 내.`;
-
-  const message = `다음 사용자의 오늘  운세를 간단히 요약해줘.\n${userLine}`;
+  const message = `다음 사용자의 오늘 금전운을 위 형식에 맞춰 작성해줘.\n${userLine}`;
 
   try {
-    isLoading.value = true;
+    // 1) 입력 → 리포트
+    step.value = 2;
+    loadingReport.value = true;
     resultText.value = '';
-    const res = await axios.post('/api/chatbot', { message, systemPrompt });
+    tasks.value = [];
+
+    const token = sessionStorage.getItem('accessToken');
+    const res = await axios.post(
+      '/api/chatbot',
+      { message, systemPrompt },
+      token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+    );
+    const raw = (res?.data?.reply || '').trim();
+    const { report, actions } = extractSections(raw);
     resultText.value =
-      (res?.data?.reply || '').trim() ||
-      '운세를 가져오지 못했어요. 잠시 후 다시 시도해 주세요.';
+      report || '운세를 가져오지 못했어요. 잠시 후 다시 시도해 주세요.';
+
+    // 2) 리포트 완료 → 투두
+    loadingReport.value = false;
+    step.value = 3;
+    loadingTasks.value = true;
+    tasks.value = actions.length ? actions.slice(0, 3) : [];
+
+    setTimeout(() => {
+      loadingTasks.value = false;
+    }, 450);
   } catch (e) {
     console.error(e);
     resultText.value = '서버 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
-  } finally {
-    isLoading.value = false;
+    loadingReport.value = false;
+    loadingTasks.value = false;
   }
+};
+
+const extractSections = (text) => {
+  const out = { report: '', actions: [] };
+  if (!text) return out;
+
+  // Normalize
+  let t = String(text).replace(/^\uFEFF/, '').trim();
+
+  // Prefer explicit sections
+  const reportMatch = t.match(/<REPORT>[\s\S]*?<\/REPORT>/i);
+  const actionsMatch = t.match(/<ACTIONS>[\s\S]*?<\/ACTIONS>/i);
+  if (reportMatch) {
+    out.report = reportMatch[0].replace(/<\/?REPORT>/gi, '').trim();
+  }
+  if (actionsMatch) {
+    const body = actionsMatch[0].replace(/<\/?ACTIONS>/gi, '').trim();
+    out.actions = body
+      .split(/\r?\n/)
+      .map((s) => s.replace(/^[-•\d).\s]+/, '').trim())
+      .filter(Boolean);
+  }
+
+  // Fallbacks when markers are missing
+  if (!out.report) {
+    // Drop common greetings / salutations on the first lines
+    t = t
+      .replace(/^안녕하세요[^\n]*\n+/gi, '')
+      .replace(/^.*?님[^\n]*\n+/gi, '');
+
+    // Use the first meaningful paragraph (not too short and not a greeting)
+    const paras = t.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+    const firstIdx = paras.findIndex(
+      (p) => p.length > 30 && !/^안녕하세요/i.test(p) && !/안내해\s*드리겠습니다|안내해드리겠습니다/.test(p)
+    );
+    const chosen = firstIdx >= 0 ? paras[firstIdx] : paras[0] || t;
+    out.report = chosen.trim();
+  }
+
+  if (!out.actions.length) {
+    // Try to collect bullet/numbered lines
+    const candidates = t
+      .split(/\r?\n/)
+      .filter((s) => /^\s*[-•\d).]/.test(s))
+      .map((s) => s.replace(/^\s*[-•\d).\s]+/, '').trim())
+      .filter(Boolean);
+    out.actions = candidates.length >= 3 ? candidates.slice(0, 3) : [
+      '지출 계획 점검하기',
+      '중요 거래는 문서 재확인하기',
+      '불필요한 소비 줄이고 예산 기록하기',
+    ];
+  }
+  return out;
 };
 
 const formatted = (text) => {
@@ -278,13 +419,51 @@ const seeAgain = () => {
 }
 
 .content {
-  max-width: 960px;
-  margin: 18px auto 48px;
-  padding: 0 16px;
+  width: min(1600px, 100%);
+  margin: 18px auto 64px;
+  padding: 0 24px;
   display: grid;
-  gap: 16px;
-  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+  grid-template-columns: 1fr 48px 1fr 48px 1fr; /* card, arrow, card, arrow, card */
+  align-items: stretch;
 }
+/* ✅ Tablet/Desktop-narrow: 세로 재배치 */
+@media (max-width: 1280px) {
+  .content {
+    grid-template-columns: 1fr; /* 세로 스택 */
+    gap: 18px;
+    padding: 0 16px;
+  }
+  .connector {
+    display: none;
+  }
+  .equal-card {
+    min-height: 620px;
+  }
+}
+.connector {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  color: var(--text-secondary, #6b7280);
+  font-size: 22px;
+  opacity: 0.5;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.connector.active {
+  opacity: 1;
+}
+.equal-card {
+  height: 100%; /* grid row 높이에 맞춰 동일 높이로 */
+  min-height: 0; /* 과도한 빈 공간 제거 */
+  display: flex;
+  flex-direction: column;
+}
+.form-card {
+  padding: 20px;
+}
+
 @media (max-width: 980px) {
   .content {
     grid-template-columns: 1fr;
@@ -298,13 +477,10 @@ const seeAgain = () => {
   box-shadow: 0 10px 26px rgba(16, 24, 40, 0.06);
 }
 
-.form-card {
-  padding: 20px;
-}
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 20px;
+  grid-template-columns: 1fr; /* 모든 해상도에서 단일 컬럼 입력 */
+  gap: 16px 0;
 }
 @media (max-width: 640px) {
   .grid {
@@ -505,5 +681,51 @@ const seeAgain = () => {
   gap: 8px;
   justify-content: flex-end;
   padding-top: 8px;
+}
+
+/* 오늘 하면 좋은 일 카드 */
+.todo-card {
+  padding: 18px;
+}
+.todo-header {
+  border-bottom: 1px solid var(--border-light, #e5e7eb);
+  padding-bottom: 10px;
+  margin-bottom: 6px;
+}
+.todo-title {
+  font-weight: 900;
+}
+.todo-sub {
+  font-size: 12px;
+  color: var(--text-secondary, #6b7280);
+}
+.todo-body {
+  padding: 12px 2px;
+}
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.todo-item {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e6f0ff;
+  border-radius: 12px;
+  background: #fdfefe;
+}
+.todo-item .check {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-accent, #5b8cff);
+  border-radius: 4px;
+}
+.todo-text {
+  font-weight: 700;
 }
 </style>

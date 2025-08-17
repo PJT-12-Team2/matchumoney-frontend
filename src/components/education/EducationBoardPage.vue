@@ -4,7 +4,10 @@
       <div class="hero-content">
         <div class="title-wrapper">
           <h1 class="page-title">
-            <span class="title-emoji">🎓</span>
+            <i
+              class="fa-solid fa-graduation-cap title-icon"
+              aria-hidden="true"
+            ></i>
             쉽고 재미있는 금융 교육 콘텐츠
           </h1>
         </div>
@@ -12,33 +15,35 @@
           <span class="subtitle-highlight">금융 교육 영상</span>부터
           <span class="subtitle-highlight">웹툰으로 배우는 금융</span
           >까지!<br />
-          <span class="subtitle-accent">💡 누구나 이해할 수 있는</span>
+          <span class="subtitle-accent"
+            ><i class="fa-solid fa-lightbulb"></i> 누구나 이해할 수 있는</span
+          >
           금융 콘텐츠를 만나보세요.
         </p>
         <div class="feature-badges">
-          <span class="badge">📹 쉬운 영상</span>
-          <span class="badge">📚 웹툰</span>
-          <span class="badge">💰 실용적</span>
-          <span class="badge">🎯 무료</span>
+          <span class="badge"><i class="fa-solid fa-video"></i> 쉬운 영상</span>
+          <span class="badge"><i class="fa-solid fa-book-open"></i> 웹툰</span>
+          <span class="badge"
+            ><i class="fa-solid fa-piggy-bank"></i> 실용적</span
+          >
+          <span class="badge"
+            ><i class="fa-solid fa-circle-check"></i> 무료</span
+          >
         </div>
-      </div>
-      <div class="hero-decoration">
-        <div class="floating-icon floating-icon-1">💸</div>
-        <div class="floating-icon floating-icon-2">📊</div>
-        <div class="floating-icon floating-icon-3">💡</div>
-        <div class="floating-icon floating-icon-4">🎯</div>
       </div>
     </div>
 
     <!-- 섹션: 교육 영상 (프리뷰 + 더보기 라우팅) -->
     <section class="video-section">
       <div class="section-header">
-        <h3>📹 교육 영상</h3>
+        <h3><i class="fa-solid fa-clapperboard"></i> 교육 영상</h3>
         <p class="webtoon-subtitle">
           썸네일을 클릭하면 영상을 시청할 수 있어요!
         </p>
         <RouterLink to="/education/video">
-          <button class="more-btn">더보기</button>
+          <button class="more-btn">
+            <i class="fa-solid fa-arrow-right"></i> 더보기
+          </button>
         </RouterLink>
       </div>
 
@@ -63,7 +68,9 @@
             v-else-if="m.type === 'video'"
             class="thumb thumb-16x9 video-fallback"
           >
-            <span class="play-badge" aria-hidden>▶</span>
+            <span class="play-badge" aria-hidden
+              ><i class="fa-solid fa-play"></i
+            ></span>
           </div>
           <img
             v-else-if="m.type === 'image'"
@@ -73,6 +80,14 @@
             loading="lazy"
           />
           <div v-else class="thumb thumb-16x9 blank">파일 열기</div>
+          <div class="card-meta">
+            <span class="chip" :class="m.type">
+              <i v-if="m.type === 'youtube'" class="fa-brands fa-youtube"></i>
+              <i v-else-if="m.type === 'video'" class="fa-solid fa-film"></i>
+              <i v-else-if="m.type === 'image'" class="fa-regular fa-image"></i>
+              <i v-else class="fa-regular fa-file"></i>
+            </span>
+          </div>
           <div class="card-title" :title="m.title">{{ m.title }}</div>
         </div>
       </div>
@@ -81,9 +96,11 @@
     <!-- 웹툰 Section 추가 -->
     <section class="webtoon-section">
       <div class="section-header">
-        <h3>📚 금융교육 웹툰</h3>
+        <h3><i class="fa-solid fa-book-open"></i> 금융교육 웹툰</h3>
         <p class="webtoon-subtitle">썸네일을 클릭하면 웹툰을 읽을 수 있어요!</p>
-        <button @click="goToWebtoonPage" class="more-btn">더보기</button>
+        <button @click="goToWebtoonPage" class="more-btn">
+          <i class="fa-solid fa-arrow-right"></i> 더보기
+        </button>
       </div>
 
       <!-- 로딩 상태 -->
@@ -94,7 +111,10 @@
 
       <!-- 에러 상태 -->
       <div v-else-if="error" class="error">
-        <p>❌ 웹툰을 불러오는데 실패했습니다.</p>
+        <p>
+          <i class="fa-solid fa-circle-exclamation"></i> 웹툰을 불러오는데
+          실패했습니다.
+        </p>
         <button @click="fetchWebtoons" class="retry-btn">다시 시도</button>
       </div>
 
@@ -114,7 +134,9 @@
               @error="handleImageError"
             />
             <div class="webtoon-overlay">
-              <span class="play-icon">📖</span>
+              <span class="play-icon"
+                ><i class="fa-solid fa-book-open-reader"></i
+              ></span>
               <span class="overlay-text">웹툰 읽기</span>
             </div>
           </div>
@@ -528,22 +550,11 @@ function useBreakpoint() {
   position: relative;
   text-align: center;
   margin-bottom: var(--spacing-3xl);
-  background: var(--gradient-accent);
+  background: var(--bg-content);
   padding: var(--spacing-2xl) var(--spacing-lg);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-}
-
-.page-description::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="90" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  pointer-events: none;
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
 }
 
 .hero-content {
@@ -557,39 +568,36 @@ function useBreakpoint() {
 
 .page-title {
   font-size: var(--font-size-3xl);
-  font-weight: bold;
+  font-weight: 800;
   margin-bottom: var(--spacing-md);
-  color: var(--color-white);
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
-.title-emoji {
-  display: inline-block;
-  animation: bounce 2s ease-in-out infinite;
+.title-icon {
   margin-right: var(--spacing-sm);
+  vertical-align: -2px;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.04));
 }
 
 .page-subtitle {
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text-secondary);
   font-size: var(--font-size-lg);
   line-height: 1.8;
   margin-bottom: var(--spacing-sm);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .subtitle-highlight {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-elevated);
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 600;
-  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
 }
-
 .subtitle-accent {
   font-weight: 700;
-  color: #ffe066;
+  color: var(--color-secondary);
 }
 
 .feature-badges {
@@ -600,60 +608,22 @@ function useBreakpoint() {
 }
 
 .badge {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--color-white);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-content);
+  color: var(--text-primary);
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
   font-size: var(--font-size-sm);
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  font-weight: 700;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .badge:hover {
-  background: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
-}
-
-.hero-decoration {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.floating-icon {
-  position: absolute;
-  font-size: var(--font-size-3xl);
-  animation: float 6s ease-in-out infinite;
-  opacity: 0.3;
-}
-
-.floating-icon-1 {
-  top: 20%;
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.floating-icon-2 {
-  top: 70%;
-  right: 15%;
-  animation-delay: 1.5s;
-}
-
-.floating-icon-3 {
-  top: 30%;
-  right: 20%;
-  animation-delay: 3s;
-}
-
-.floating-icon-4 {
-  bottom: 20%;
-  left: 20%;
-  animation-delay: 4.5s;
+  box-shadow: var(--shadow-md);
 }
 
 .video-section {
@@ -665,10 +635,9 @@ function useBreakpoint() {
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   column-gap: var(--spacing-md);
-  row-gap: var(--spacing-sm);
+  row-gap: var(--spacing-xs);
   align-items: center;
   margin-bottom: var(--spacing-lg);
-  font-weight: bold;
 }
 
 .section-header h3 {
@@ -860,7 +829,7 @@ function useBreakpoint() {
 .webtoon-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-xl);
+  gap: var(--spacing-lg);
   padding: var(--spacing-lg) 0;
 }
 
@@ -916,7 +885,7 @@ function useBreakpoint() {
 }
 
 .play-icon {
-  font-size: var(--font-size-4xl);
+  font-size: var(--font-size-2xl);
   margin-bottom: var(--spacing-sm);
 }
 
@@ -1040,22 +1009,6 @@ function useBreakpoint() {
   background: var(--color-accent);
 }
 
-@keyframes bounce {
-  0%,
-  20%,
-  50%,
-  80%,
-  100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  60% {
-    transform: translateY(-5px);
-  }
-}
-
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -1065,25 +1018,7 @@ function useBreakpoint() {
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-20px) rotate(5deg);
-  }
-  66% {
-    transform: translateY(-10px) rotate(-5deg);
-  }
-}
-
 @media (max-width: 768px) {
-  .webtoon-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--spacing-lg);
-  }
-
   .modal-overlay {
     padding: var(--spacing-sm);
   }
@@ -1119,9 +1054,25 @@ function useBreakpoint() {
     padding: var(--spacing-xs) var(--spacing-sm);
   }
 
-  .floating-icon {
-    font-size: var(--font-size-2xl);
+  /* 영상 카드: 2열, 가로 스크롤 방지 */
+  .card-grid {
+    justify-content: flex-start;
+    gap: var(--spacing-md);
   }
+  .card {
+    width: calc(50% - var(--spacing-md) / 2);
+  }
+
+  /* 웹툰: 2열, 이미지 높이 축소 */
+  .webtoon-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+  }
+  .webtoon-image-container {
+    height: 220px;
+  }
+
+  /* 불필요한 플로팅 아이콘 규칙 제거 */
 }
 
 @media (max-width: 480px) {
@@ -1164,6 +1115,91 @@ function useBreakpoint() {
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-sm);
+  }
+
+  /* 영상 카드: 1열로 전환 */
+  .card {
+    width: 100%;
+  }
+  .card-grid {
+    gap: var(--spacing-sm);
+  }
+
+  /* 웹툰: 1열, 이미지 높이 더 축소 */
+  .webtoon-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+  .webtoon-image-container {
+    height: 180px;
+  }
+}
+
+/* ===== Font Awesome UI polish (Board preview) ===== */
+.section-header h3 i {
+  margin-right: 0.5rem;
+  color: var(--color-accent);
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.05));
+}
+
+/* card needs to position the badge */
+.card {
+  position: relative;
+}
+.card-meta {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 2;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-dark);
+  border: 1px solid var(--border-light);
+}
+.chip.youtube {
+  background: #fff0f0;
+  color: #cc0000;
+  border-color: #ffd6d6;
+}
+.chip.video {
+  background: #eef6ff;
+  color: #1d4ed8;
+  border-color: #dbeafe;
+}
+.chip.image {
+  background: #f0fff4;
+  color: #166534;
+  border-color: #dcfce7;
+}
+
+/* thumbnail polish */
+.thumb-16x9 {
+  border-bottom: 1px solid var(--border-light);
+}
+.play-badge {
+  font-size: 1.25rem;
+}
+
+/* more button icon spacing if icons are added later */
+.more-btn i {
+  margin-right: 0.4rem;
+}
+.badge i {
+  margin-right: 0.25rem;
+}
+
+@media (min-width: 1400px) {
+  .education-video-page {
+    max-width: 1200px;
   }
 }
 </style>

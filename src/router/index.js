@@ -178,12 +178,6 @@ const routes = [
       { path: 'contents', name: 'contents', component: EducationBoardPage },
       { path: 'video', name: 'video', component: VideoPage },
       {
-        path: 'video/shorts/:shortsId',
-        name: 'ShortsDetail',
-        component: () => import('@/components/education/ShortsDetailPage.vue'),
-        props: true,
-      },
-      {
         path: 'video/full/:videoId',
         name: 'VideoDetail',
         component: () => import('@/components/education/VideoDetailPage.vue'),

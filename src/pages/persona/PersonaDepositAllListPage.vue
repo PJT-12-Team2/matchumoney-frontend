@@ -220,14 +220,10 @@
               </div>
             </div>
           </div>
-          <div v-if="isLoadingMore" class="infinite-spinner-wrapper">
-            <div class="infinite-spinner-block">
-              <div class="infinite-spinner"></div>
-              <div class="infinite-spinner-text">
-                상품을 불러오는 중입니다...
-              </div>
-            </div>
-          </div>
+          <div v-if="isLoadingMore" class="loading-state infinite-spinner-wrapper">
+      <BaseSpinner size="md" />
+      <p>예금 상품을 불러오고 있습니다...</p>
+    </div>
         </div>
       </section>
     </main>
@@ -245,6 +241,7 @@ import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
 import api from '@/api';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
 const showTermDropdown = ref(false);
 const isMobile = ref(false);
 
@@ -1227,5 +1224,13 @@ body {
   z-index: 2;
   width: auto;
   display: block;
+}
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  text-align: center;
 }
 </style>

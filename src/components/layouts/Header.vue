@@ -213,7 +213,9 @@
             @click.native="showMenu = false"
           >
             <span class="single-left">
-              <span class="single-icon" aria-hidden="true"><i class="bi bi-person-circle"></i></span>
+              <span class="single-icon" aria-hidden="true"
+                ><i class="bi bi-person-circle"></i
+              ></span>
               <span class="single-label">마이페이지</span>
             </span>
             <span class="chevron">›</span>
@@ -291,11 +293,6 @@ const mobileMenuGroups = ref([
     iconClass: 'bi bi-person-bounding-box',
     expanded: false,
     items: [
-      {
-        label: '내 페르소나 결과',
-        to: '/persona/result',
-        iconClass: 'bi bi-graph-up',
-      },
       { label: '예금 추천', to: '/persona/deposits', iconClass: 'bi bi-bank' },
       {
         label: '적금 추천',
@@ -330,7 +327,6 @@ const mobileMenuGroups = ref([
         to: '/mydata/cards',
         iconClass: 'bi bi-receipt',
       },
-      { label: '자산 현황', to: '/mydata/assets', iconClass: 'bi bi-wallet2' },
     ],
   },
   {
@@ -354,11 +350,6 @@ const mobileMenuGroups = ref([
         to: '/compare?type=CARD',
         iconClass: 'bi bi-credit-card',
       },
-      {
-        label: '내 비교함 전체',
-        to: '/compare',
-        iconClass: 'bi bi-list-check',
-      },
     ],
   },
   {
@@ -369,22 +360,22 @@ const mobileMenuGroups = ref([
     items: [
       {
         label: '금융 퀴즈',
-        to: '/education/quiz',
+        to: '/quiz/daily',
         iconClass: 'bi bi-question-circle',
       },
       {
-        label: '교육 콘텐츠',
-        to: '/education/contents',
+        label: '재물운 보기',
+        to: '/fortune',
         iconClass: 'bi bi-collection-play',
       },
       {
         label: '금융 웹툰',
-        to: '/education/webtoons',
+        to: '/education/webtoon',
         iconClass: 'bi bi-layout-text-window-reverse',
       },
       {
         label: '금융 영상',
-        to: '/education/videos',
+        to: '/education/video',
         iconClass: 'bi bi-play-circle',
       },
     ],
