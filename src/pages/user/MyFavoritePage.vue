@@ -32,7 +32,7 @@
         <div v-else>
           <div v-if="currentTab === 'deposit'" class="search-results-grid">
             <div v-for="deposit in filteredFavorites" :key="deposit.depositId" class="product-card">
-              <div class="card-favorite-button" @click.stop>
+              <div class="favorite-button" @click.stop>
                 <FavoriteToggle v-model="deposit.isStarred" :productId="deposit.depositId" :productType="'DEPOSIT'" />
               </div>
               <div class="product-card-row" @click="selectProduct(deposit)">
@@ -86,7 +86,7 @@
 
           <div v-else-if="currentTab === 'saving'" class="search-results-grid">
             <div v-for="saving in filteredFavorites" :key="saving.savingId" class="product-card">
-              <div class="card-favorite-button" @click.stop>
+              <div class="favorite-button" @click.stop>
                 <FavoriteToggle v-model="saving.isStarred" :productId="saving.savingId" productType="SAVING" />
               </div>
               <div class="product-card-row" @click="selectProduct(saving)">
@@ -387,7 +387,7 @@ const filters = ref({
 filters.value.bank = null;
 
 const selectProduct = (product) => {
-  window.location.href = `/detail/deposit/${product.id}`;
+  window.location.href = `/detail/${product.type}/${product.id}`;
 };
 </script>
 
@@ -428,15 +428,12 @@ const selectProduct = (product) => {
 }
 
 .product-card {
+  position: relative;
   background: var(--bg-content);
   border-radius: var(--spacing-xl);
   padding: var(--spacing-xl);
-  cursor: pointer;
-  transition: all 0.3s ease;
   height: 18rem;
   display: flex;
-  flex-direction: column;
-  /* flex-direction: row; */
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -512,11 +509,10 @@ const selectProduct = (product) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 5rem;
-  height: 5rem;
+  width: 6.2rem;
+  height: 6.2rem;
   flex-direction: column;
 }
-
 .bank-logo-round {
   width: 6rem;
   height: 6rem;
@@ -755,20 +751,32 @@ const selectProduct = (product) => {
   margin-top: 0.5rem;
 }
 
+.favorite-button {
+  position: absolute;
+  top: 1.8rem;
+  right: 1.6rem;
+  margin: 0;
+  z-index: 2;
+  width: auto;
+  display: block;
+}
+
 .card-favorite-button {
   width: 100%;
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
 }
 
 .product-card-row {
   width: 80%;
-  justify-content: flex-start;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 2rem;
+  min-height: 8rem;
+  padding: 2rem 0;
 }
 
 .tab-btn {

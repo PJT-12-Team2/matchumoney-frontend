@@ -54,19 +54,6 @@
           <span v-else class="pw-link" style="opacity: 0.7; cursor: default">소셜 로그인 계정입니다</span>
         </div>
 
-        <<<<<<< HEAD
-        <router-link to="/myInfoPage/update/password" class="info-item clickable">
-          <span class="label">비밀번호 변경</span>
-          <span class="value"></span>
-          <span class="arrow">></span>
-        </router-link>
-        <PushToggle />
-        <button class="info-item clickable" @click="handleLogout">
-          <span class="label text-dark">로그아웃</span>
-          <span class="value text-secondary"></span>
-          <span class="arrow text-accent">></span>
-        </button>
-        =======
         <!-- 폼 그리드 (가로 2열, 각 행당 입력 1개) -->
         <div class="form-grid">
           <!-- 이메일 (읽기 전용) -->
@@ -74,7 +61,6 @@
             <label class="form-label">이메일</label>
             <input class="form-input" type="email" :value="user?.email || ''" readonly />
           </div>
-          >>>>>>> 66a31e1da66ef70b0ebb49b209165c537dfe0fa4
 
           <!-- 비밀번호 (변경 진입용) -->
           <div class="form-row">
