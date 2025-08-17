@@ -106,14 +106,22 @@
 
         <!-- 로그인하지 않은 사용자용 간단한 메뉴 -->
         <div v-else class="auth-links d-none d-lg-flex">
-          <RouterLink to="/login" class="auth-link-btn login-link-btn">로그인</RouterLink>
-          <RouterLink to="/signup" class="auth-link-btn signup-link-btn">회원가입</RouterLink>
+          <RouterLink to="/login" class="auth-link-btn login-link-btn"
+            >로그인</RouterLink
+          >
+          <RouterLink to="/signup" class="auth-link-btn signup-link-btn"
+            >회원가입</RouterLink
+          >
         </div>
 
         <!-- ② 알림 + 프로필 / 햄버거 -->
         <div class="header-actions">
           <!-- 🔔 알림 (로그인 시에만 표시) -->
-          <div v-if="isLoggedIn" class="notification position-relative" @click="toggleNoti">
+          <div
+            v-if="isLoggedIn"
+            class="notification position-relative"
+            @click="toggleNoti"
+          >
             <i class="bi bi-bell"></i>
             <div v-if="unreadCount" class="notification-dot"></div>
 
@@ -140,21 +148,23 @@
             </div>
           </div>
 
+          <!-- 🙍‍♂️ 프로필 + 로그아웃(데스크탑) - 로그인 시에만 표시 -->
+          <div v-if="isLoggedIn" class="profile-section d-none d-md-flex">
+            <RouterLink to="/mypage" class="profile-link">
+              <img
+                :src="profileImageSrc"
+                alt="프로필"
+                class="header-profile"
+                style="width: 2.25rem; height: 2.25rem; object-fit: cover"
+                @error="onImgError"
+              />
+            </RouterLink>
 
-          <!-- 🙍‍♂️ 프로필(데스크탑) - 로그인 시에만 표시 -->
-          <RouterLink
-            v-if="isLoggedIn"
-            to="/mypage"
-            class="profile-link d-none d-md-flex"
-          >
-            <img
-              :src="profileImageSrc"
-              alt="프로필"
-              class="header-profile"
-              style="width: 2.25rem; height: 2.25rem; object-fit: cover"
-              @error="onImgError"
-            />
-          </RouterLink>
+            <!-- 로그아웃 버튼 -->
+            <button class="logout-btn" @click="handleLogout" title="로그아웃">
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </div>
 
           <!-- 모바일: 로그인 상태에 따라 버튼/프로필 전환 -->
           <RouterLink
@@ -170,7 +180,11 @@
               @error="onImgError"
             />
           </RouterLink>
-          <RouterLink v-else to="/login" class="auth-link-btn-mobile login-link-btn-mobile d-block d-md-none">
+          <RouterLink
+            v-else
+            to="/login"
+            class="auth-link-btn-mobile login-link-btn-mobile d-block d-md-none"
+          >
             로그인
           </RouterLink>
 
@@ -193,123 +207,130 @@
         role="dialog"
         aria-modal="true"
       >
-      <div class="mobile-menu-header">
-        <span class="mobile-menu-title">전체 메뉴</span>
-        <button
-          class="mobile-menu-close"
-          @click="showMenu = false"
-          aria-label="메뉴 닫기"
-        >
-          ✕
-        </button>
-      </div>
-
-      <ul class="mobile-menu-list">
-        <!-- 로그인한 사용자용 메뉴 -->
-        <template v-if="isLoggedIn">
-          <li class="menu-group menu-single">
-            <RouterLink
-              to="/mypage"
-              class="single-link"
-              @click.native="showMenu = false"
-            >
-              <span class="single-left">
-                <span class="single-icon" aria-hidden="true"><i class="bi bi-person-circle"></i></span>
-                <span class="single-label">마이페이지</span>
-              </span>
-              <span class="chevron">›</span>
-            </RouterLink>
-          </li>
-          <li
-            v-for="(group, idx) in mobileMenuGroups"
-            :key="group.title"
-            class="menu-group"
+        <div class="mobile-menu-header">
+          <span class="mobile-menu-title">전체 메뉴</span>
+          <button
+            class="mobile-menu-close"
+            @click="showMenu = false"
+            aria-label="메뉴 닫기"
           >
-            <button
-              class="group-toggle"
-              @click="toggleGroup(idx)"
-              :aria-expanded="group.expanded.toString()"
-            >
-              <span class="group-left">
-                <span
-                  v-if="group.iconClass"
-                  class="group-icon"
-                  aria-hidden="true"
-                >
-                  <i :class="group.iconClass"></i>
+            ✕
+          </button>
+        </div>
+
+        <ul class="mobile-menu-list">
+          <!-- 로그인한 사용자용 메뉴 -->
+          <template v-if="isLoggedIn">
+            <li class="menu-group menu-single">
+              <RouterLink
+                to="/mypage"
+                class="single-link"
+                @click.native="showMenu = false"
+              >
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-person-circle"></i
+                  ></span>
+                  <span class="single-label">마이페이지</span>
                 </span>
-                <span class="group-title">{{ group.title }}</span>
-                <span v-if="group.desc" class="group-desc">{{ group.desc }}</span>
-              </span>
-              <span class="chevron" :class="{ open: group.expanded }">▾</span>
-            </button>
-
-            <transition name="accordion">
-              <ul v-show="group.expanded" class="submenu">
-                <li v-for="item in group.items" :key="item.to">
-                  <RouterLink
-                    :to="item.to"
-                    class="submenu-link"
-                    @click.native="showMenu = false"
+                <span class="chevron">›</span>
+              </RouterLink>
+            </li>
+            <li
+              v-for="(group, idx) in mobileMenuGroups"
+              :key="group.title"
+              class="menu-group"
+            >
+              <button
+                class="group-toggle"
+                @click="toggleGroup(idx)"
+                :aria-expanded="group.expanded.toString()"
+              >
+                <span class="group-left">
+                  <span
+                    v-if="group.iconClass"
+                    class="group-icon"
+                    aria-hidden="true"
                   >
-                    <span
-                      v-if="item.iconClass"
-                      class="submenu-icon"
-                      aria-hidden="true"
-                    >
-                      <i :class="item.iconClass"></i>
-                    </span>
-                    <span class="submenu-label">{{ item.label }}</span>
-                  </RouterLink>
-                </li>
-              </ul>
-            </transition>
-          </li>
-          
-          <!-- 로그아웃 버튼 -->
-          <li class="menu-group menu-single">
-            <button
-              class="single-link logout-link"
-              @click="handleLogout"
-            >
-              <span class="single-left">
-                <span class="single-icon" aria-hidden="true"><i class="bi bi-box-arrow-right"></i></span>
-                <span class="single-label">로그아웃</span>
-              </span>
-            </button>
-          </li>
-        </template>
+                    <i :class="group.iconClass"></i>
+                  </span>
+                  <span class="group-title">{{ group.title }}</span>
+                  <span v-if="group.desc" class="group-desc">{{
+                    group.desc
+                  }}</span>
+                </span>
+                <span class="chevron" :class="{ open: group.expanded }">▾</span>
+              </button>
 
-        <!-- 로그인하지 않은 사용자용 메뉴 -->
-        <template v-else>
-          <li class="menu-group menu-single">
-            <RouterLink
-              to="/login"
-              class="single-link"
-              @click.native="showMenu = false"
-            >
-              <span class="single-left">
-                <span class="single-icon" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
-                <span class="single-label">로그인</span>
-              </span>
-              <span class="chevron">›</span>
-            </RouterLink>
-          </li>
-          <li class="menu-group menu-single">
-            <RouterLink
-              to="/signup"
-              class="single-link"
-              @click.native="showMenu = false"
-            >
-              <span class="single-left">
-                <span class="single-icon" aria-hidden="true"><i class="bi bi-person-plus"></i></span>
-                <span class="single-label">회원가입</span>
-              </span>
-              <span class="chevron">›</span>
-            </RouterLink>
-          </li>
-        </template>
-      </ul>
+              <transition name="accordion">
+                <ul v-show="group.expanded" class="submenu">
+                  <li v-for="item in group.items" :key="item.to">
+                    <RouterLink
+                      :to="item.to"
+                      class="submenu-link"
+                      @click.native="showMenu = false"
+                    >
+                      <span
+                        v-if="item.iconClass"
+                        class="submenu-icon"
+                        aria-hidden="true"
+                      >
+                        <i :class="item.iconClass"></i>
+                      </span>
+                      <span class="submenu-label">{{ item.label }}</span>
+                    </RouterLink>
+                  </li>
+                </ul>
+              </transition>
+            </li>
+
+            <!-- 로그아웃 버튼 -->
+            <li class="menu-group menu-single">
+              <button class="single-link logout-link" @click="handleLogout">
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-box-arrow-right"></i
+                  ></span>
+                  <span class="single-label">로그아웃</span>
+                </span>
+              </button>
+            </li>
+          </template>
+
+          <!-- 로그인하지 않은 사용자용 메뉴 -->
+          <template v-else>
+            <li class="menu-group menu-single">
+              <RouterLink
+                to="/login"
+                class="single-link"
+                @click.native="showMenu = false"
+              >
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-box-arrow-in-right"></i
+                  ></span>
+                  <span class="single-label">로그인</span>
+                </span>
+                <span class="chevron">›</span>
+              </RouterLink>
+            </li>
+            <li class="menu-group menu-single">
+              <RouterLink
+                to="/signup"
+                class="single-link"
+                @click.native="showMenu = false"
+              >
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-person-plus"></i
+                  ></span>
+                  <span class="single-label">회원가입</span>
+                </span>
+                <span class="chevron">›</span>
+              </RouterLink>
+            </li>
+          </template>
+        </ul>
       </div>
     </transition>
   </header>
@@ -753,7 +774,7 @@ onUnmounted(() => {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 /* 알림 */
@@ -778,12 +799,49 @@ onUnmounted(() => {
   font-size: 0.85rem;
 }
 
-/* 프로필 */
+/* 프로필 섹션 */
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .profile-link {
   display: flex;
   align-items: center;
   border-radius: 50%;
   border: 1px solid var(--color-secondary-50);
+}
+
+/* 로그아웃 버튼 */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.logout-btn:hover {
+  background: var(--color-error-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-profile {
+  border-radius: 50%; /* 원형 */
 }
 
 /* 로그인/로그아웃 버튼(데스크탑) */

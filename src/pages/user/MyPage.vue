@@ -10,20 +10,30 @@
       <template #title>
         <div class="section-header">
           <span>내 정보</span>
-          <button class="link-minimal" @click="router.push('/myinfo')">내 정보 관리</button>
+          <button class="link-minimal" @click="router.push('/myinfo')">
+            내 정보 관리
+          </button>
         </div>
       </template>
       <template #content>
         <section class="user-info">
           <div class="profile-image-placeholder">
-            <img :src="profileImageUrl" alt="프로필 이미지" class="profile-image" />
+            <img
+              :src="profileImageUrl"
+              alt="프로필 이미지"
+              class="profile-image"
+            />
           </div>
           <div class="user-text">
             <div class="user-name-and-meta">
               <h1 class="user-name">
-                <span class="nickname">{{ user?.nickname ?? '정보 없음' }}</span>
+                <span class="nickname">{{
+                  user?.nickname ?? '정보 없음'
+                }}</span>
                 <span class="level-title">님</span>
-                <span :class="['top-percent-badge', topPercentClass]">상위 {{ topPercent }}%</span>
+                <span :class="['top-percent-badge', topPercentClass]"
+                  >상위 {{ topPercent }}%</span
+                >
               </h1>
               <ul class="user-meta-horizontal">
                 <li v-if="user?.gender">{{ user.gender }}</li>
@@ -37,11 +47,16 @@
                 <span class="xp-badge">Lv. {{ level }}</span>
               </div>
               <div class="xp-bar" aria-hidden="true">
-                <div class="xp-bar-fill" :style="{ width: fillPercentage }"></div>
+                <div
+                  class="xp-bar-fill"
+                  :style="{ width: fillPercentage }"
+                ></div>
               </div>
               <div class="xp-stats">
                 <span class="xp-now">{{ exp % 100 }}/100</span>
-                <span class="xp-next">다음 레벨까지 {{ 100 - (exp % 100) }}xp</span>
+                <span class="xp-next"
+                  >다음 레벨까지 {{ 100 - (exp % 100) }}xp</span
+                >
               </div>
             </div>
           </div>
@@ -54,19 +69,21 @@
         <template #title>
           <div class="section-header">
             <span>나의 카드</span>
-            <button class="link-minimal" @click="router.push('/cards/manage')">카드 편집</button>
+            <button class="link-minimal" @click="router.push('/cards/manage')">
+              카드 편집
+            </button>
           </div>
         </template>
         <template #content>
           <div class="card-slider-wrapper compact">
             <!-- 카드가 있을 때 -->
-            <CardVisualSlider 
-              v-if="cards && cards.length > 0" 
-              :cards="cards" 
+            <CardVisualSlider
+              v-if="cards && cards.length > 0"
+              :cards="cards"
               @add-card="handleCardRegistration"
             />
             <!-- 카드가 없을 때 -->
-            <CardRegistrationPrompt 
+            <CardRegistrationPrompt
               v-else
               title="내 카드 정보 불러오기"
               description="CODEF를 통해 카드 정보를 연동하여 맞춤 추천을 받아보세요!"
@@ -82,20 +99,44 @@
         <template #title>
           <div class="persona-header">
             <span>나의 페르소나</span>
-            <button class="fav-view-all-btn" @click="router.push('/persona/start')">페르소나 수정</button>
+            <button
+              class="fav-view-all-btn"
+              @click="router.push('/persona/start')"
+            >
+              페르소나 수정
+            </button>
           </div>
         </template>
         <template #content>
           <div class="persona-card">
-            <img :src="personaImageUrl" alt="페르소나 이미지" class="persona-image" />
+            <img
+              :src="personaImageUrl"
+              alt="페르소나 이미지"
+              class="persona-image"
+            />
             <h3 class="persona-name">{{ myPageInfo?.persona?.nameKo }} 유형</h3>
             <p class="persona-desc">{{ myPageInfo?.persona?.quote }}</p>
             <div class="persona-extras">
               <div class="extras-title">추천 바로가기</div>
               <div class="extras-actions">
-                <button class="extras-btn" @click="router.push(`/persona/savings`)">적금 추천</button>
-                <button class="extras-btn" @click="router.push(`/persona/deposits`)">예금 추천</button>
-                <button class="extras-btn" @click="router.push(`/persona/cards`)">카드 추천</button>
+                <button
+                  class="extras-btn"
+                  @click="router.push(`/persona/savings`)"
+                >
+                  적금 추천
+                </button>
+                <button
+                  class="extras-btn"
+                  @click="router.push(`/persona/deposits`)"
+                >
+                  예금 추천
+                </button>
+                <button
+                  class="extras-btn"
+                  @click="router.push(`/persona/cards`)"
+                >
+                  카드 추천
+                </button>
               </div>
             </div>
           </div>
@@ -109,7 +150,9 @@
         <template #title>
           <div class="section-header favbar-header">
             <span>내 즐겨찾기</span>
-            <button class="link-minimal" @click="router.push('/favorites')">전체 보기</button>
+            <button class="link-minimal" @click="router.push('/favorites')">
+              전체 보기
+            </button>
           </div>
         </template>
         <template #content>
@@ -120,38 +163,62 @@
                 :class="{ active: selectedTab === '예금' }"
                 role="tab"
                 :aria-selected="selectedTab === '예금'"
-                @click="selectedTab = '예금'">
+                @click="selectedTab = '예금'"
+              >
                 예금
               </button>
               <button
                 :class="{ active: selectedTab === '적금' }"
                 role="tab"
                 :aria-selected="selectedTab === '적금'"
-                @click="selectedTab = '적금'">
+                @click="selectedTab = '적금'"
+              >
                 적금
               </button>
               <button
                 :class="{ active: selectedTab === '카드' }"
                 role="tab"
                 :aria-selected="selectedTab === '카드'"
-                @click="selectedTab = '카드'">
+                @click="selectedTab = '카드'"
+              >
                 카드
               </button>
             </div>
             <br />
             <!-- Products under the tabs (full width) -->
             <div class="favbar-scroller" tabindex="0">
-              <div v-for="(p, i) in getProductsByTab" :key="'h-' + i" class="hcard" @click="selectProduct(p)">
+              <div
+                v-for="(p, i) in getProductsByTab"
+                :key="'h-' + i"
+                class="hcard"
+                @click="selectProduct(p)"
+              >
                 <div class="hcard-thumb" v-if="p.type !== '카드'">
-                  <img v-if="getBankLogo(p.bankName)" :src="getBankLogo(p.bankName)" alt="" />
+                  <img
+                    v-if="getBankLogo(p.bankName)"
+                    :src="getBankLogo(p.bankName)"
+                    alt=""
+                  />
                   <div v-else class="thumb-fallback">
-                    <img :src="disLogo" alt="로고 없음" class="thumb-fallback-img" />
+                    <img
+                      :src="disLogo"
+                      alt="로고 없음"
+                      class="thumb-fallback-img"
+                    />
                   </div>
                 </div>
                 <div class="hcard-thumb" v-else>
-                  <img v-if="p.productImage" :src="p.productImage" alt="카드 이미지" />
+                  <img
+                    v-if="p.productImage"
+                    :src="p.productImage"
+                    alt="카드 이미지"
+                  />
                   <div v-else class="thumb-fallback">
-                    <img :src="disLogo" alt="로고 없음" class="thumb-fallback-img" />
+                    <img
+                      :src="disLogo"
+                      alt="로고 없음"
+                      class="thumb-fallback-img"
+                    />
                   </div>
                 </div>
 
@@ -167,25 +234,35 @@
                       <div class="meta-line">
                         <template v-if="p.maxIntrRate2">
                           최고 {{ p.maxIntrRate2 }}%
-                          <template v-if="p.maxSaveTrm">/ {{ p.maxSaveTrm }}개월</template>
+                          <template v-if="p.maxSaveTrm"
+                            >/ {{ p.maxSaveTrm }}개월</template
+                          >
                         </template>
                         <template v-else-if="p.maxIntrRate">
                           최고 {{ p.maxIntrRate }}%
-                          <template v-if="p.maxSaveTrm">/ {{ p.maxSaveTrm }}개월</template>
+                          <template v-if="p.maxSaveTrm"
+                            >/ {{ p.maxSaveTrm }}개월</template
+                          >
                         </template>
                       </div>
                     </template>
                     <template v-else>
-                      <span class="chip chip--tight">{{ p.credit ? p.credit + '카드' : '카드' }}</span>
+                      <span class="chip chip--tight">{{
+                        p.credit ? p.credit + '카드' : '카드'
+                      }}</span>
                       <div v-if="p.annualFee" class="fee-inline">
                         {{ formatAnnualFee(p.annualFee) }}
                       </div>
-                      <div v-if="p.preMonthMoney">전월실적 {{ (p.preMonthMoney / 10000).toFixed(0) }}만원</div>
+                      <div v-if="p.preMonthMoney">
+                        전월실적 {{ (p.preMonthMoney / 10000).toFixed(0) }}만원
+                      </div>
                     </template>
                   </div>
                 </div>
               </div>
-              <div v-if="!getProductsByTab?.length" class="hcard empty">해당 즐겨찾기가 없습니다</div>
+              <div v-if="!getProductsByTab?.length" class="hcard empty">
+                해당 즐겨찾기가 없습니다
+              </div>
             </div>
           </div>
         </template>
@@ -194,7 +271,12 @@
 
     <!-- Quick actions -->
     <div class="actions-grid area-actions">
-      <button v-for="(a, i) in quickActions" :key="i" class="action-card" @click="handleQuickAction(a)">
+      <button
+        v-for="(a, i) in quickActions"
+        :key="i"
+        class="action-card"
+        @click="handleQuickAction(a)"
+      >
         <div class="action-icon" aria-hidden="true">
           <i v-if="a.iconClass" :class="a.iconClass"></i>
           <span v-else>{{ a.icon }}</span>
@@ -208,7 +290,11 @@
   </div>
 
   <!-- 카드 동기화 모달 -->
-  <CardSyncModal :isVisible="showSyncModal" @close="showSyncModal = false" @sync="handleCardSync" />
+  <CardSyncModal
+    :isVisible="showSyncModal"
+    @close="showSyncModal = false"
+    @sync="handleCardSync"
+  />
 </template>
 
 <script setup>
@@ -289,11 +375,17 @@ const handleCardSync = async (syncData) => {
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 400) {
-      alert('입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.');
+      alert(
+        '입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.'
+      );
     } else if (error.response?.status === 500) {
       alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } else {
-      alert(`카드 동기화에 실패했습니다: ${error.response?.data?.message || error.message}`);
+      alert(
+        `카드 동기화에 실패했습니다: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     }
   }
 };
@@ -301,7 +393,10 @@ const handleCardSync = async (syncData) => {
 // 카드 슬라이더에서 카드 변경 시 거래내역 및 카드 혜택 조회
 const handleCardChange = async (card) => {
   // console.log("🔄 카드 변경:", card.cardName);
-  await Promise.all([loadExistingTransactions(card), loadCurrentCardBenefits(card)]);
+  await Promise.all([
+    loadExistingTransactions(card),
+    loadCurrentCardBenefits(card),
+  ]);
 };
 
 // 카드 업데이트 (CardSyncModal 표시)
@@ -347,7 +442,11 @@ const fetchCards = async () => {
       console.log('💡 사용자 카드 정보가 없습니다.');
       cards.value = [];
     } else {
-      alert(`카드 목록을 불러오는데 실패했습니다: ${error.response?.data?.message || error.message}`);
+      alert(
+        `카드 목록을 불러오는데 실패했습니다: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     }
   } finally {
     isLoading.value = false;
@@ -443,7 +542,9 @@ const personaSlug = computed(() => {
   const nameKo = myPageInfo.value?.persona?.nameKo || '';
   let slug = mapPersonaSlugFromName(nameKo);
   if (!slug) {
-    slug = extractSlugFromImage(personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || '');
+    slug = extractSlugFromImage(
+      personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || ''
+    );
   }
   return slug || '';
 });
@@ -454,7 +555,9 @@ function handleQuickAction(a) {
     let slug = mapPersonaSlugFromName(nameKo);
     if (!slug) {
       // 이미지 파일명에서 추론 (예: /character_images/cat.png)
-      slug = extractSlugFromImage(personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || '');
+      slug = extractSlugFromImage(
+        personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || ''
+      );
     }
 
     if (slug) {
@@ -496,18 +599,24 @@ onMounted(async () => {
     user.value.birth = data.birth ?? data.birthDate ?? data.birthday ?? '';
     user.value.email = data.email ?? '';
     exp.value = data.exp;
-    user.value.gender = mapGender(data.gender ?? data.genderCode ?? data.sex ?? data.gender_type ?? '');
+    user.value.gender = mapGender(
+      data.gender ?? data.genderCode ?? data.sex ?? data.gender_type ?? ''
+    );
 
     // Updated: choose character image folder by level (1,3,4 use special folders; otherwise default)
     const rawImagePath = data.persona?.imageUrl;
     const fileName = rawImagePath?.split('/').pop();
     const folder = getCharacterFolderByLevel(level.value);
-    const imageUrl = fileName ? new URL(`../../assets/${folder}/${fileName}`, import.meta.url).href : '';
+    const imageUrl = fileName
+      ? new URL(`../../assets/${folder}/${fileName}`, import.meta.url).href
+      : '';
     personaImageUrl.value = imageUrl;
 
     // Set profile image URL (social login / local)
     profileImageUrl.value =
-      data.profileImageUrl ?? data.profile_image_url ?? new URL('@/assets/user.png', import.meta.url).href;
+      data.profileImageUrl ??
+      data.profile_image_url ??
+      new URL('@/assets/user.png', import.meta.url).href;
     myPageInfo.value.persona = {
       quote: data.persona?.quote ?? '',
       nameKo: data.persona?.nameKo ?? '',
@@ -533,12 +642,27 @@ function updateProducts() {
   let items = [];
 
   // 공통 필드 추출 유틸
-  const pickBank = (obj) => obj.bankName ?? obj.company ?? obj.bank_name ?? obj.kor_co_nm ?? '';
-  const pickName = (obj) => obj.productName ?? obj.product_name ?? obj.title ?? obj.fin_prdt_nm ?? '';
+  const pickBank = (obj) =>
+    obj.bankName ?? obj.company ?? obj.bank_name ?? obj.kor_co_nm ?? '';
+  const pickName = (obj) =>
+    obj.productName ?? obj.product_name ?? obj.title ?? obj.fin_prdt_nm ?? '';
   const pickPeriod = (obj) =>
-    obj.maxSaveTrm ?? obj.save_trm ?? obj.period ?? obj.sugPeriod ?? obj.maxTerm ?? obj.saveTrm ?? '';
-  const pickMaxRate2 = (obj) => obj.maxIntrRate2 ?? obj.max_rate2 ?? obj.maxRate ?? '';
-  const pickMaxRate1 = (obj) => obj.maxIntrRate ?? obj.max_rate ?? obj.basicRate ?? obj.base_rate ?? obj.baseRate ?? '';
+    obj.maxSaveTrm ??
+    obj.save_trm ??
+    obj.period ??
+    obj.sugPeriod ??
+    obj.maxTerm ??
+    obj.saveTrm ??
+    '';
+  const pickMaxRate2 = (obj) =>
+    obj.maxIntrRate2 ?? obj.max_rate2 ?? obj.maxRate ?? '';
+  const pickMaxRate1 = (obj) =>
+    obj.maxIntrRate ??
+    obj.max_rate ??
+    obj.basicRate ??
+    obj.base_rate ??
+    obj.baseRate ??
+    '';
 
   if (selectedTab.value === '적금') {
     items = favoriteSavings.value.map((raw) => ({
@@ -548,7 +672,8 @@ function updateProducts() {
       maxSaveTrm: pickPeriod(raw),
       maxIntrRate: pickMaxRate1(raw),
       maxIntrRate2: pickMaxRate2(raw),
-      savingId: raw.savingId ?? raw.saving_product_id ?? raw.savingProductId ?? raw.id,
+      savingId:
+        raw.savingId ?? raw.saving_product_id ?? raw.savingProductId ?? raw.id,
     }));
   } else if (selectedTab.value === '예금') {
     items = favoriteDeposits.value.map((raw) => ({
@@ -600,37 +725,84 @@ const disLogo = new URL('@/assets/logo_dis.png', import.meta.url).href;
 
 const getBankLogo = (bankName) => {
   // 공통 로고 파일
-  const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
-  const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
+  const busanLogo = new URL(
+    '@/assets/bank-Logos/BK_BUSAN_Profile.png',
+    import.meta.url
+  ).href;
+  const hanaLogo = new URL(
+    '@/assets/bank-Logos/BK_HANA_Profile.png',
+    import.meta.url
+  ).href;
 
   const logoMap = {
     // 주요 시중은행
-    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
+      .href,
     하나은행: hanaLogo,
-    농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
-    신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
-    우리은행: new URL('@/assets/bankLogo_images/BK_Woori_Profile.png', import.meta.url).href,
+    농협은행주식회사: new URL(
+      '@/assets/bank-Logos/BK_NH_Profile.png',
+      import.meta.url
+    ).href,
+    신한은행: new URL(
+      '@/assets/bank-Logos/BK_Shinhan_Profile.png',
+      import.meta.url
+    ).href,
+    우리은행: new URL(
+      '@/assets/bankLogo_images/BK_Woori_Profile.png',
+      import.meta.url
+    ).href,
 
     // 특수은행
-    중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
-    한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
-    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
+    중소기업은행: new URL(
+      '@/assets/bank-Logos/BK_IBK_Profile.png',
+      import.meta.url
+    ).href,
+    한국산업은행: new URL(
+      '@/assets/bank-Logos/BK_KDB_Profile.png',
+      import.meta.url
+    ).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url)
+      .href,
 
     // 지방은행
     경남은행: busanLogo,
     부산은행: busanLogo,
-    광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
-    전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
-    제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
-    아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
+    광주은행: new URL(
+      '@/assets/bank-Logos/BK_KWANGJU_Profile.png',
+      import.meta.url
+    ).href,
+    전북은행: new URL(
+      '@/assets/bank-Logos/BK_JEONBUK_Profile.png',
+      import.meta.url
+    ).href,
+    제주은행: new URL(
+      '@/assets/bank-Logos/BK_JEJU_Profile.png',
+      import.meta.url
+    ).href,
+    아이엠뱅크: new URL(
+      '@/assets/bank-Logos/BK_DAEGU_Profile.png',
+      import.meta.url
+    ).href,
 
     // 외국계은행
-    한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
+    한국스탠다드차타드은행: new URL(
+      '@/assets/bank-Logos/BK_SC_Profile.png',
+      import.meta.url
+    ).href,
 
     // 인터넷은행
-    '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
-    '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
-    '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
+    '주식회사 카카오뱅크': new URL(
+      '@/assets/bank-Logos/BK_KAKAO_Profile.png',
+      import.meta.url
+    ).href,
+    '주식회사 케이뱅크': new URL(
+      '@/assets/bank-Logos/BK_K_Profile.png',
+      import.meta.url
+    ).href,
+    '토스뱅크 주식회사': new URL(
+      '@/assets/bank-Logos/BK_TOSS_Profile.png',
+      import.meta.url
+    ).href,
 
     // 주식회사 명칭 포함
     '주식회사 하나은행': hanaLogo,
@@ -653,7 +825,10 @@ function selectProduct(product) {
     router.push(`/detail/card/${product.cardId}`);
     return;
   }
-  console.warn('선택한 상품에 유효한 ID가 없어 상세 페이지로 이동할 수 없습니다:', product);
+  console.warn(
+    '선택한 상품에 유효한 ID가 없어 상세 페이지로 이동할 수 없습니다:',
+    product
+  );
 }
 
 onMounted(() => {
@@ -973,6 +1148,7 @@ onMounted(() => {
 
 .user-text {
   flex: 1 1 auto;
+  width: 100%;
   min-width: 200px;
   max-width: 100%; /* ← 여기! 600px 제한 제거 */
   box-sizing: border-box;
@@ -1115,7 +1291,8 @@ onMounted(() => {
   align-items: center;
   gap: var(--spacing-lg);
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease,
+    border-color 0.15s ease;
   height: 100%;
 }
 
@@ -1500,7 +1677,8 @@ onMounted(() => {
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
   text-align: left;
   min-width: 240px;
   align-self: stretch;
@@ -1613,7 +1791,8 @@ onMounted(() => {
   background: var(--bg-content);
   box-shadow: var(--shadow-sm);
   scroll-snap-align: start;
-  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease,
+    border-color 0.15s ease;
 }
 .hcard:hover {
   box-shadow: var(--shadow-md);
