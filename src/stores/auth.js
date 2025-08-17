@@ -30,6 +30,9 @@ export const useAuthStore = defineStore('auth', {
       // });
     },
     logout() {
+      // FCM 토큰 정리(클라이언트/서버) - 액세스 토큰 제거 전에 실행되어야 함
+      window.dispatchEvent(new Event('app:logout'));
+
       this.accessToken = null;
       this.userId = null;
       this.nickname = null;

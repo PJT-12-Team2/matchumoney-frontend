@@ -33,14 +33,13 @@ instance.interceptors.response.use(
     if (response && response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      console.log('response.status:', response.status);
       // console.log("📦 응답 헤더 전체:", response.headers);
       const newAccessToken = response.headers['authorization'];
       // console.log("🔄 새 accessToken이 재발급되어 반영됩니다:", newAccessToken);
 
       if (newAccessToken) {
-        const tokenOnly = newAccessToken.startsWith('Bearer ')
-          ? newAccessToken.slice(7)
-          : newAccessToken;
+        const tokenOnly = newAccessToken.startsWith('Bearer ') ? newAccessToken.slice(7) : newAccessToken;
         authStore.setToken(tokenOnly);
         originalRequest.headers['Authorization'] = `Bearer ${tokenOnly}`;
         return instance(originalRequest);
