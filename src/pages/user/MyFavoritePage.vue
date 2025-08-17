@@ -668,41 +668,6 @@ const selectProduct = (product) => {
   gap: var(--spacing-md);
 }
 
-/* .card-search-results-grid .product-card {
-  background: var(--bg-content);
-  border-radius: var(--spacing-xl);
-  padding: var(--spacing-xl);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: start;
-  text-align: center;
-}
-
-.card-search-results-grid .product-card:hover {
-  transform: translateY(-0.3125rem);
-}
-
-.card-search-results-grid .product-content {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  align-items: center;
-  gap: 1.5rem;
-  width: 100%;
-  height: 100%;
-}
-
-.card-search-results-grid .product-content img {
-  height: 150px;
-  width: 100%;
-  object-fit: contain;
-  border-radius: 12px;
-  flex-shrink: 0;
-} */
-
 .compare-button {
   display: flex;
   flex-direction: row;
@@ -718,6 +683,136 @@ const selectProduct = (product) => {
 }
 
 @media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
+  .bank-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .product-card-horizontal {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+  .bank-logo-container {
+    width: 6rem;
+    height: 2rem;
+  }
+  .bank-logo-round {
+    width: 5.6rem;
+    height: 5.6rem;
+  }
+  .bank-logo-img {
+    width: 80px;
+    height: 80px;
+  }
+  .bank-logo-option {
+    width: 100px;
+    height: 100px;
+  }
+  .product-info-block {
+    align-items: flex-end;
+    width: auto;
+  }
+  .product-name-bold {
+    font-size: var(--font-size-lg);
+  }
+  .bank-name-bold {
+    font-size: var(--font-size-base);
+    padding-bottom: 0.5rem;
+  }
+  .rate-line {
+    font-size: var(--font-size-base);
+  }
+
+  .highlight-rate {
+    font-size: 1rem;
+    margin-right: 0.4rem;
+  }
+  .term-selector {
+    display: none;
+  }
+  .term-dropdown-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .compare-button > *:first-child {
+    transform: scale(0.7);
+    transform-origin: center;
+    margin-right: -1rem;
+  }
+  .compare-button > *:last-child {
+    transform: scale(0.8);
+    transform-origin: center;
+    margin-right: 0 !important;
+  }
+
+  .bank-label {
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding-top: 0.6rem;
+  }
+
+  .bank-logo-option {
+    margin-bottom: 1.2rem;
+  }
+  .product-card {
+    height: auto;
+    padding-top: calc(var(--spacing-xl) + 0.6rem);
+  }
+  .product-card-row {
+    width: 88%;
+    gap: 1.2rem;
+    min-height: 6.5rem;
+  }
+  .bank-logo-container {
+    width: 5.6rem;
+    height: 5.6rem;
+  }
+  .bank-logo-round {
+    width: 5.2rem;
+    height: 5.2rem;
+  }
+  .compare-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+    flex-wrap: nowrap;
+    gap: 0.1rem;
+  }
+
+  .card-compare-button {
+    display: flex;
+    align-items: center;
+  }
+
+  /* LikeToggle 전체 크기 살짝 축소 */
+  .card-compare-button > *:first-child {
+    transform: scale(0.85);
+    transform-origin: left center;
+  }
+
+  /* LikeToggle 내부(하트+숫자) 간격/패딩 보정 */
+  .card-compare-button :deep(.like-chip) {
+    padding: 0.35rem 0.7rem; /* 칩 자체를 살짝 줄임 */
+    border-radius: 999px;
+    line-height: 1;
+  }
+  .card-compare-button :deep(.like-icon) {
+    margin-right: 0.3rem; /* 하트 ↔ 숫자 간격 */
+    width: 1rem; /* 아이콘이 img/svg면 적용됨 */
+    height: 1rem;
+  }
+  .card-compare-button :deep(.like-count) {
+    font-size: 0.95rem; /* 숫자 조금만 축소 */
+  }
+
   .main-content {
     padding: 1rem;
   }
