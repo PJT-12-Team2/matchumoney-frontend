@@ -1,6 +1,11 @@
 <template>
   <div class="daily-quiz-container">
     <div class="daily-quiz-content">
+      <!-- 퀴즈 이력 섹션 (맨 위) -->
+      <div class="quiz-history-section">
+        <QuizHistory />
+      </div>
+
       <!-- 헤더 - 레벨, 경험치, 스트릭 정보 -->
       <div class="daily-quiz-header">
         <div class="card user-progress-card">
@@ -32,9 +37,8 @@
             <div class="completed-emoji">🎉</div>
             <h2 class="completed-title">오늘의 퀴즈 완료!</h2>
             <p class="completed-subtitle">
-              훌륭해요! 오늘 퀴즈를 완료하셨습니다.
-              <span class="xp-earned">+{{ lastEarnedXP }}XP</span>를
-              획득했습니다.
+              훌륭해요! 오늘 2개 퀴즈를 모두 완료하셨습니다. 총
+              <span class="xp-earned">경험치</span>를 획득했습니다.
             </p>
 
             <div class="next-quiz-info">
@@ -66,12 +70,14 @@
               <span>{{ todayDateString }}</span>
             </div>
             <h1 class="daily-title">💰 오늘의 금융 퀴즈</h1>
-            <p class="daily-subtitle">매일 새로운 금융 지식을 쌓아보세요!</p>
+            <p class="daily-subtitle">
+              매일 새로운 금융 지식을 쌓아보세요! (하루 최대 2문제)
+            </p>
           </div>
 
           <div class="daily-stats-grid">
             <div class="daily-stat-card primary">
-              <div class="stat-number">1</div>
+              <div class="stat-number">2</div>
               <div class="stat-label">오늘의 문제</div>
             </div>
             <div class="daily-stat-card success">
@@ -242,6 +248,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import quizAPI from '@/api/quiz';
+import QuizHistory from '@/components/quiz/QuizHistory.vue';
 
 const router = useRouter();
 
@@ -561,9 +568,9 @@ onMounted(async () => {
 .next-quiz-info {
   margin: var(--spacing-xl) 0;
   padding: var(--spacing-lg);
-  background: var(--color-info-light);
+  background: var(--color-primary-30);
   border-radius: 12px;
-  border: 1px solid var(--color-info);
+  border: 1px solid var(--color-accent);
 }
 
 .countdown-container {
@@ -571,8 +578,15 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  color: var(--color-info-dark);
+  color: var(--color-dark);
   font-weight: 600;
+}
+
+.completed-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--spacing-xl);
 }
 
 /* 퀴즈 시작 */
@@ -831,19 +845,19 @@ onMounted(async () => {
 
 .explanation-card {
   padding: var(--spacing-lg);
-  background-color: var(--color-info-light);
-  border: 1px solid var(--color-info);
+  background-color: var(--color-primary-50);
+  border: 1px solid var(--color-accent);
   border-radius: 8px;
 }
 
 .explanation-title {
   font-weight: 600;
-  color: var(--color-info-dark);
+  color: var(--color-dark);
   margin-bottom: var(--spacing-sm);
 }
 
 .explanation-text {
-  color: var(--color-info-dark);
+  color: var(--color-dark);
   line-height: 1.5;
 }
 
@@ -873,6 +887,14 @@ onMounted(async () => {
   color: var(--color-success);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   animation: xpBurst 2s ease-out;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 @keyframes xpBurst {
@@ -924,5 +946,16 @@ onMounted(async () => {
 .no-quiz-emoji {
   font-size: 4rem;
   margin-bottom: var(--spacing-lg);
+}
+
+/* 퀴즈 이력 섹션 */
+.quiz-history-section {
+  margin-top: var(--spacing-2xl);
+}
+
+@media (max-width: 768px) {
+  .quiz-history-section {
+    margin-top: var(--spacing-xl);
+  }
 }
 </style>
