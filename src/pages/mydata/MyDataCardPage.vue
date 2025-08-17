@@ -643,6 +643,19 @@
     />
     -->
   </div>
+
+  <!-- 로딩 모달 (화면 하단 중앙) -->
+  <teleport to="body">
+    <template v-if="isAnyLoading">
+      <transition name="loading-modal" appear>
+        <div class="loading-modal" role="status" aria-live="polite">
+          <span class="loading-text">
+            {{ loadingMessage }}<span class="loading-dots"></span>
+          </span>
+        </div>
+      </transition>
+    </template>
+  </teleport>
 </template>
 
 <script setup>
@@ -674,6 +687,37 @@ const showTransactionDetails = ref(false);
 const activeTab = ref('recommendations'); // 'recommendations', 'statistics', 'transactions'
 const currentCardBenefits = ref(null); // 현재 카드의 혜택 정보
 const cardTransactionsMap = ref({}); // 카드별 거래내역 매핑
+
+// ✅ 공통 로딩 배너 노출용 상태
+const globalLoading = ref(false); // (필요 시 수동으로 true/false 제어할 때 사용)
+
+const isAnyLoading = computed(() => {
+  return (
+    isLoading.value || // 카드 목록 로딩
+    isLoadingTransactions.value || // 거래내역 로딩
+    isLoadingMore.value || // 무한 스크롤 추가 로딩
+    globalLoading.value // 필요 시 수동 제어
+  );
+});
+
+const loadingMessage = computed(() => {
+  if (isLoading.value) return '💳 카드 정보를 불러오는 중입니다';
+  if (isLoadingTransactions.value) return '📊 거래내역을 분석하고 있습니다';
+  if (isLoadingMore.value) return '📈 추가 거래내역을 가져오는 중';
+  if (globalLoading.value) return '⚡ 데이터를 처리하고 있습니다';
+  return '';
+});
+
+// 👉 (선택) 긴 작업에서 단계별로 메시지를 잠깐 바꾸고 싶다면 helper 사용
+const withProgress = async (message, taskFn) => {
+  try {
+    globalLoading.value = true;
+    if (message) console.log('⏳', message);
+    return await taskFn();
+  } finally {
+    globalLoading.value = false;
+  }
+};
 
 // 프로세스 스텝 데이터
 const processSteps = ref([
@@ -884,6 +928,18 @@ const handleCardSync = async (syncData) => {
     return;
   }
 
+  await withProgress('카드 동기화 중...', async () => {
+    const requestData = {
+      userId: parseInt(userId.value),
+      cardId: syncData.cardId,
+      cardPw: syncData.cardPw,
+    };
+    const response = await cardsApi.syncKbCards(requestData);
+    alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
+    showSyncModal.value = false;
+    await fetchCards(); // 이때 상단 배너가 "카드 정보를 불러오는 중..." 으로 자동 전환됨
+  });
+
   try {
     const requestData = {
       userId: parseInt(userId.value),
@@ -968,6 +1024,7 @@ const handleUpdateTransactions = async (card) => {
 
   try {
     isLoadingTransactions.value = true;
+    console.log('⏳ 거래내역 업데이트 중...');
 
     console.log('🔄 connectedId 기반 거래내역 업데이트 시작:', userId.value);
     const response = await cardsApi.refreshTransactionsByConnectedId(
@@ -1729,6 +1786,9 @@ const getCurrentCardBenefit = () => {
 
 // 무한 스크롤 이벤트 핸들러
 const handleScroll = () => {
+  // 거래내역 탭에서만 무한 스크롤 동작
+  if (activeTab.value !== 'transactions') return;
+
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
   if (scrollTop + clientHeight >= scrollHeight - 5) {
     loadMoreTransactions();
@@ -1772,6 +1832,80 @@ onUnmounted(() => {
   width: 100%;
   min-height: 100vh;
   padding: var(--spacing-lg);
+}
+
+/* 로딩 모달 스타일 - 비교함과 동일한 위치 */
+.loading-modal {
+  position: fixed;
+  left: 50%;
+  bottom: 2%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--color-accent);
+  color: var(--color-white);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--spacing-3xl);
+  box-shadow: var(--shadow-modal);
+  z-index: 2147483647;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  border: 0;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out,
+    opacity 0.2s ease-out;
+}
+
+.loading-text {
+  font-size: var(--font-size-base);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+/* 점 애니메이션 */
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+  100% {
+    content: '';
+  }
+}
+
+/* 로딩 모달 트랜지션 */
+.loading-modal-enter-active,
+.loading-modal-leave-active {
+  transition: opacity 0.22s ease-out, transform 0.22s ease-out;
+}
+
+.loading-modal-enter-from,
+.loading-modal-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px) scale(0.96);
+}
+
+.loading-modal-enter-to,
+.loading-modal-leave-from {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
 .main-content {
