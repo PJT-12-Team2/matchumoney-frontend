@@ -31,55 +31,55 @@
         </div>
         <div v-else>
           <div v-if="currentTab === 'deposit'" class="card-search-results-grid">
-            <div
-              v-for="deposit in filteredFavorites"
-              :key="deposit.depositId"
-              class="product-card"
-              @click="goToDepositDetail(deposit.depositId)">
-              <div class="favorite-top-right">
-                <FavoriteToggle
-                  @click.stop
-                  v-model="deposit.isStarred"
-                  :productId="deposit.depositId"
-                  :productType="'DEPOSIT'" />
+            <div v-for="deposit in filteredFavorites" :key="deposit.depositId" class="product-card">
+              <div class="card-favorite-button" @click.stop>
+                <FavoriteToggle v-model="deposit.isStarred" :productId="deposit.depositId" :productType="'DEPOSIT'" />
               </div>
-              <div class="product-card-horizontal">
+              <div class="product-card-row" @click="selectProduct(deposit)">
                 <div class="bank-logo-container">
                   <img :src="getBankLogo(deposit.bankName)" alt="은행 로고" class="bank-logo-round" />
+                  <div class="compare-button" @click.stop>
+                    <LikeToggle
+                      :productId="deposit.depositId"
+                      productType="deposit-products"
+                      :initialLiked="deposit.isLiked"
+                      :initialCount="deposit.likeCount"
+                      @update="
+                        ({ liked, count }) => {
+                          deposit.isLiked = liked;
+                          deposit.likeCount = count;
+                        }
+                      " />
+                    <CompareButton :productId="deposit.depositId" productType="DEPOSIT" />
+                  </div>
                 </div>
-                <div class="product-name-block">
-                  <div class="bank-name-bold">{{ deposit.bankName }}</div>
+                <div class="product-info-column">
                   <div class="product-name-bold">{{ deposit.productName }}</div>
-                </div>
-                <div class="product-info-block">
-                  <div class="rate-line no-wrap">
+                  <div class="bank-name-bold">{{ deposit.bankName }}</div>
+                  <div class="rate-line">
                     <span class="label-bold">최고 금리 :&nbsp;</span>
-                    <span class="highlight-rate">{{ deposit.maxRate }}</span>
+                    <span class="highlight-rate">{{ deposit.maxRate }}%</span>
                   </div>
-                  <div class="rate-line no-wrap">
-                    최저 금리 :
-                    {{ deposit.basicRate }}
+                  <div class="rate-line">
+                    <span class="label-bold">최저 금리 :&nbsp;</span>
+                    <span>{{ deposit.basicRate }}%</span>
                   </div>
-                  <div class="rate-line no-wrap">
+                  <div class="rate-line">
                     기준 기간 :
-                    {{ deposit.term ? deposit.term + '개월' : '정보 없음' }}
+                    {{
+                      filters.term !== '전체'
+                        ? filters.term + '개월'
+                        : (() => {
+                            const best = product.depositOptions?.reduce((prev, curr) => {
+                              const prevRate = prev?.intrRate2 ?? 0;
+                              const currRate = curr?.intrRate2 ?? 0;
+                              return currRate > prevRate ? curr : prev;
+                            }, null);
+                            return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
+                          })()
+                    }}
                   </div>
                 </div>
-              </div>
-              <div class="product-action-row">
-                <LikeToggle
-                  :productId="deposit.depositId"
-                  productType="deposit-products"
-                  :initialLiked="deposit.isLiked"
-                  :initialCount="deposit.likeCount"
-                  @update="
-                    ({ liked, count }) => {
-                      deposit.isLiked = liked;
-                      deposit.likeCount = count;
-                    }
-                  "
-                  @click.stop />
-                <CompareButton :productId="deposit.depositId" :productType="'DEPOSIT'" @click.stop />
               </div>
             </div>
           </div>
@@ -112,12 +112,12 @@
                   <div class="product-name-bold">{{ saving.savingName }}</div>
                   <div class="bank-name-bold">{{ saving.bankName }}</div>
                   <div class="rate-line">
-                    <span class="label-bold">최고 금리 :</span>
-                    <span class="highlight-rate">{{ getRateWithTerm(saving, 'max') }}</span>
+                    <span class="label-bold">최고 금리 :&nbsp;</span>
+                    <span class="highlight-rate">{{ saving.maxRate }}%</span>
                   </div>
                   <div class="rate-line">
-                    <span class="label-bold">최저 금리 :</span>
-                    <span>{{ getRateWithTerm(saving, 'base') }}</span>
+                    <span class="label-bold">최저 금리 :&nbsp;</span>
+                    <span>{{ saving.basicRate }}%</span>
                   </div>
                   <div class="rate-line no-wrap">
                     매월 최대 금액 :

@@ -5,8 +5,8 @@
       <h1 class="page-title">페르소나 추천</h1>
       <section class="persona-carousel-section">
         <h2 class="persona-carousel-title">
-          <span class="highlight">{{ userPersonaType }}</span> 유형에게 추천하는
-          적금
+          <span class="highlight">{{ userPersonaType }}</span>
+          유형에게 추천하는 적금
         </h2>
         <!-- 데스크탑 화면: flex 목록 -->
         <div class="carousel-saving-list" v-if="!isMobile">
@@ -14,27 +14,29 @@
             v-for="saving in carouselSavings"
             :key="saving.id"
             class="carousel-saving"
-            @click="selectProduct(saving)"
-          >
-            <img
-              :src="saving.image"
-              :alt="saving.name"
-              class="carousel-saving-image"
-            />
+            @click="selectProduct(saving)">
+            <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
             <div class="carousel-saving-name">{{ saving.name }}</div>
             <div>{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
-              <span><strong>최고 금리: </strong> {{ saving.maxRate }}</span>
-              <span><strong>최저 금리: </strong> {{ saving.baseRate }}</span>
-              <span
-                ><strong>매월 최대 금액:</strong>
+              <span>
+                <strong>최고 금리:</strong>
+                {{ saving.maxRate }}
+              </span>
+              <span>
+                <strong>최저 금리:</strong>
+                {{ saving.baseRate }}
+              </span>
+              <span>
+                <strong>매월 최대 금액:</strong>
                 {{
-                  saving.maxLimit === 999999999 || '999999999'
-                    ? '한도 없음'
-                    : formatCurrency(Number(saving.maxLimit))
-                }}</span
-              >
-              <span><strong>기준 기간:</strong> 12개월</span>
+                  saving.maxLimit === 999999999 || '999999999' ? '한도 없음' : formatCurrency(Number(saving.maxLimit))
+                }}
+              </span>
+              <span>
+                <strong>기준 기간:</strong>
+                12개월
+              </span>
             </div>
           </div>
         </div>
@@ -46,33 +48,32 @@
           :slides-per-view="1"
           :space-between="16"
           :pagination="{ clickable: true }"
-          class="carousel-swiper"
-        >
+          class="carousel-swiper">
           <SwiperSlide
             v-for="saving in carouselSavings"
             :key="saving.id"
             class="carousel-saving"
-            @click="selectProduct(saving)"
-          >
-            <img
-              :src="saving.image"
-              :alt="saving.name"
-              class="carousel-saving-image"
-            />
+            @click="selectProduct(saving)">
+            <img :src="saving.image" :alt="saving.name" class="carousel-saving-image" />
             <div class="carousel-saving-name">{{ saving.name }}</div>
             <div class="bank-name-bold">{{ saving.bankName }}</div>
             <div class="carousel-saving-rates-inline">
-              <span><strong>최고 금리:</strong> {{ saving.maxRate }}</span>
-              <span><strong>최저 금리:</strong> {{ saving.baseRate }}</span>
-              <span
-                ><strong>매월 최대 금액:</strong>
-                {{
-                  saving.maxLimit === '999999999'
-                    ? '한도 없음'
-                    : formatCurrency(Number(saving.maxLimit))
-                }}</span
-              >
-              <span><strong>기준 기간:</strong> 12개월</span>
+              <span>
+                <strong>최고 금리:</strong>
+                {{ saving.maxRate }}
+              </span>
+              <span>
+                <strong>최저 금리:</strong>
+                {{ saving.baseRate }}
+              </span>
+              <span>
+                <strong>매월 최대 금액:</strong>
+                {{ saving.maxLimit === '999999999' ? '한도 없음' : formatCurrency(Number(saving.maxLimit)) }}
+              </span>
+              <span>
+                <strong>기준 기간:</strong>
+                12개월
+              </span>
             </div>
           </SwiperSlide>
         </Swiper>
@@ -92,25 +93,16 @@
             v-for="(term, idx) in terms"
             :key="term.value"
             :class="['term-button', { active: filters?.term === term.value }]"
-            @click="filters.term = term.value"
-          >
+            @click="filters.term = term.value">
             {{ term.label }}
           </div>
         </div>
         <div class="term-dropdown-wrapper">
-          <button
-            class="term-toggle-button"
-            @click="showTermDropdown = !showTermDropdown"
-          >
+          <button class="term-toggle-button" @click="showTermDropdown = !showTermDropdown">
             {{ filters.term }}개월 선택 ▼
           </button>
           <div class="term-dropdown" v-if="showTermDropdown">
-            <div
-              v-for="term in terms"
-              :key="term.value"
-              class="term-dropdown-option"
-              @click="selectTerm(term.value)"
-            >
+            <div v-for="term in terms" :key="term.value" class="term-dropdown-option" @click="selectTerm(term.value)">
               {{ term.label }}
             </div>
           </div>
@@ -118,14 +110,7 @@
         <div class="amount-filter-container">
           <div style="display: flex; align-items: center; gap: 1rem">
             <h3 class="filter-label" style="margin: 0">매월 저축 금액 설정</h3>
-            <label
-              style="
-                font-size: 0.9rem;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-              "
-            >
+            <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem">
               <input type="checkbox" v-model="useMaxLimitFilter" />
               <span>최대금액 필터 사용</span>
             </label>
@@ -139,32 +124,22 @@
                 :min="10000"
                 :max="maxAmount + sliderStep"
                 :step="sliderStep"
-                class="amount-slider"
-              />
+                class="amount-slider" />
               <div class="slider-value">
-                {{
-                  selectedAmount > maxAmount
-                    ? '한도 없음'
-                    : formatCurrency(selectedAmount)
-                }}
+                {{ selectedAmount > maxAmount ? '한도 없음' : formatCurrency(selectedAmount) }}
               </div>
             </div>
           </transition>
         </div>
-        <br /><br />
+        <br />
+        <br />
         <h3 class="filter-label">은행을 선택해주세요</h3>
         <div class="bank-grid">
           <div
             v-for="bank in bankOptions"
             :key="bank.name"
-            :class="[
-              'bank-logo-option',
-              { selected: filters?.bank === bank.name },
-            ]"
-            @click="
-              filters.bank = filters?.bank === bank.name ? null : bank.name
-            "
-          >
+            :class="['bank-logo-option', { selected: filters?.bank === bank.name }]"
+            @click="filters.bank = filters?.bank === bank.name ? null : bank.name">
             <img :src="bank.logo" :alt="bank.name" class="bank-logo-img" />
             <div class="bank-label">{{ bank.name }}</div>
           </div>
@@ -184,26 +159,14 @@
           <div>다른 조건으로 검색해보세요.</div>
         </div>
         <div v-else-if="visibleProducts.length > 0" class="search-results-grid">
-          <div
-            v-for="product in visibleProducts"
-            :key="product.id"
-            class="product-card"
-          >
+          <div v-for="product in visibleProducts" :key="product.id" class="product-card">
             <div class="saving-favorite-button" @click.stop>
-              <FavoriteToggle
-                v-model="product.isStarred"
-                :productId="product.id"
-                productType="SAVING"
-              />
+              <FavoriteToggle v-model="product.isStarred" :productId="product.id" productType="SAVING" />
             </div>
             <div class="product-card-row" @click="selectProduct(product)">
               <!-- 왼쪽(로고) -->
               <div class="bank-logo-container">
-                <img
-                  :src="getBankLogo(product.bankInitial)"
-                  alt="은행 로고"
-                  class="bank-logo-round"
-                />
+                <img :src="getBankLogo(product.bankInitial)" alt="은행 로고" class="bank-logo-round" />
                 <div class="saving-compare-button" @click.stop>
                   <LikeToggle
                     :productId="product.id"
@@ -215,8 +178,7 @@
                         product.isLiked = liked;
                         product.likeCount = count;
                       }
-                    "
-                  />
+                    " />
                   <CompareButton :productId="product.id" productType="SAVING" />
                 </div>
               </div>
@@ -225,22 +187,16 @@
                 <div class="bank-name-bold">{{ product.bank }}</div>
 
                 <div class="rate-line">
-                  <span class="label-bold">최고 금리 : </span>
-                  <span class="highlight-rate">{{
-                    getRateWithTerm(product, 'max')
-                  }}</span>
+                  <span class="label-bold">최고 금리 :</span>
+                  <span class="highlight-rate">{{ getRateWithTerm(product, 'max') }}</span>
                 </div>
                 <div class="rate-line">
-                  <span class="label-bold">최저 금리 : </span>
+                  <span class="label-bold">최저 금리 :</span>
                   <span>{{ getRateWithTerm(product, 'base') }}</span>
                 </div>
                 <div class="rate-line no-wrap">
                   매월 최대 금액 :
-                  {{
-                    product.maxLimit === '999999999'
-                      ? '한도 없음'
-                      : formatCurrency(product.maxLimit)
-                  }}
+                  {{ product.maxLimit === '999999999' ? '한도 없음' : formatCurrency(product.maxLimit) }}
                 </div>
                 <div class="rate-line">
                   기준 기간 :
@@ -248,27 +204,19 @@
                     filters.term !== '전체'
                       ? filters.term + '개월'
                       : (() => {
-                          const best = product.savingOptions?.reduce(
-                            (prev, curr) => {
-                              const prevRate = prev?.intrRate2 ?? 0;
-                              const currRate = curr?.intrRate2 ?? 0;
-                              return currRate > prevRate ? curr : prev;
-                            },
-                            null
-                          );
-                          return best?.saveTrm
-                            ? best.saveTrm + '개월'
-                            : '정보 없음';
+                          const best = product.savingOptions?.reduce((prev, curr) => {
+                            const prevRate = prev?.intrRate2 ?? 0;
+                            const currRate = curr?.intrRate2 ?? 0;
+                            return currRate > prevRate ? curr : prev;
+                          }, null);
+                          return best?.saveTrm ? best.saveTrm + '개월' : '정보 없음';
                         })()
                   }}
                 </div>
               </div>
             </div>
           </div>
-          <div
-            v-if="!allVisibleLoaded && infiniteLoading"
-            class="infinite-scroll-loading"
-          >
+          <div v-if="!allVisibleLoaded && infiniteLoading" class="infinite-scroll-loading">
             <div class="spinner"></div>
             <div>상품을 불러오는 중입니다...</div>
           </div>
@@ -354,16 +302,12 @@ const getRate = (product, type) => {
   if (!product.savingOptions || product.savingOptions.length === 0) return '-%';
 
   if (selectedTerm === '전체') {
-    const allRates = product.savingOptions.map((opt) =>
-      type === 'base' ? opt.intrRate : opt.intrRate2
-    );
+    const allRates = product.savingOptions.map((opt) => (type === 'base' ? opt.intrRate : opt.intrRate2));
     const max = Math.max(...allRates);
     return `${max.toFixed(2)}%`;
   }
 
-  const match = product.savingOptions.find(
-    (opt) => opt.saveTrm === selectedTerm
-  );
+  const match = product.savingOptions.find((opt) => opt.saveTrm === selectedTerm);
   if (!match) return '-%';
   return `${(type === 'base' ? match.intrRate : match.intrRate2).toFixed(2)}%`;
 };
@@ -385,9 +329,7 @@ const getRateWithTerm = (product, type) => {
     return typeof val === 'number' ? `${val.toFixed(2)}%` : '-%';
   }
 
-  const match = product.savingOptions.find(
-    (opt) => opt.saveTrm === selectedTerm
-  );
+  const match = product.savingOptions.find((opt) => opt.saveTrm === selectedTerm);
   if (!match) return '-%';
   const value = type === 'base' ? match.intrRate : match.intrRate2;
   return typeof value === 'number' ? `${value.toFixed(2)}%` : '-%';
@@ -463,17 +405,11 @@ onMounted(async () => {
 
   try {
     // 1. 사용자 personaId 가져오기
-    const personaIdRes = await api.get(
-      '/savings/recommendations/user/persona-id',
-      config
-    );
+    const personaIdRes = await api.get('/savings/recommendations/user/persona-id', config);
     personaCode = personaIdRes.data.personaId;
 
     // 2. 사용자 페르소나 적금 추천 가져오기
-    const recommendationRes = await api.get(
-      '/savings/recommendations/user/recommendation',
-      config
-    );
+    const recommendationRes = await api.get('/savings/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
     userPersonaType.value = result.personaName || '토끼형';
@@ -482,8 +418,7 @@ onMounted(async () => {
       savingName: item.savingName,
       bankName: item.bankName,
       maxLimit: item.maxLimit,
-      companyImage:
-        item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
+      companyImage: item.companyImage || getBankLogo(getBankInitial(item.bankName || '')),
       maxRate: item.maxRate ?? 0,
       basicRate: item.basicRate ?? 0,
     }));
@@ -544,8 +479,7 @@ const getBankInitial = (name) => {
 
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url)
-      .href,
+    shinhan: new URL('@/assets/bankLogo_images/shinhan.png', import.meta.url).href,
     hana: new URL('@/assets/bankLogo_images/hana.png', import.meta.url).href,
     woori: new URL('@/assets/bankLogo_images/woori.png', import.meta.url).href,
     kb: new URL('@/assets/bankLogo_images/kb.png', import.meta.url).href,
@@ -553,13 +487,11 @@ const getBankLogo = (initial) => {
     kakao: new URL('@/assets/bankLogo_images/kakao.png', import.meta.url).href,
     toss: new URL('@/assets/bankLogo_images/toss.png', import.meta.url).href,
     bnk: new URL('@/assets/bankLogo_images/bnk.png', import.meta.url).href,
-    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url)
-      .href,
+    gwangju: new URL('@/assets/bankLogo_images/gwangju.png', import.meta.url).href,
     ibk: new URL('@/assets/bankLogo_images/ibk.png', import.meta.url).href,
     im: new URL('@/assets/bankLogo_images/im.png', import.meta.url).href,
     jeju: new URL('@/assets/bankLogo_images/jeju.png', import.meta.url).href,
-    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url)
-      .href,
+    jeonbook: new URL('@/assets/bankLogo_images/jeonbook.png', import.meta.url).href,
     sanup: new URL('@/assets/bankLogo_images/sanup.png', import.meta.url).href,
     su: new URL('@/assets/bankLogo_images/su.png', import.meta.url).href,
     sc: new URL('@/assets/bankLogo_images/sc.png', import.meta.url).href,
@@ -577,11 +509,7 @@ const filteredProducts = computed(() => {
 
   // 기간 필터: "전체"가 아닌 다른 값이 선택된 경우에만 필터링
   if (filters.value?.term && filters.value?.term !== '전체') {
-    result = result.filter((p) =>
-      p.savingOptions?.some(
-        (opt) => String(opt.saveTrm) === filters.value?.term
-      )
-    );
+    result = result.filter((p) => p.savingOptions?.some((opt) => String(opt.saveTrm) === filters.value?.term));
   }
 
   // 예치금액 필터 추가
@@ -593,9 +521,7 @@ const filteredProducts = computed(() => {
       })
     );
     if (useMaxLimitFilter.value) {
-      result = result.filter(
-        (p) => !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value
-      );
+      result = result.filter((p) => !p.maxLimit || Number(p.maxLimit) <= selectedAmount.value);
     }
   }
 
@@ -605,26 +531,16 @@ const filteredProducts = computed(() => {
   } else if (filters.value?.bank === '기타') {
     result = result.filter(
       (p) =>
-        ![
-          '국민은행',
-          '신한은행',
-          '우리은행',
-          '하나은행',
-          '카카오뱅크',
-          '토스뱅크',
-          '농협은행',
-        ].some((bank) => p.bank.includes(bank))
+        !['국민은행', '신한은행', '우리은행', '하나은행', '카카오뱅크', '토스뱅크', '농협은행'].some((bank) =>
+          p.bank.includes(bank)
+        )
     );
   }
 
   // 🔽 선택된 기간의 최대 금리 기준 내림차순 정렬
   result.sort((a, b) => {
-    const aMax = Math.max(
-      ...(a.savingOptions?.map((opt) => opt.intrRate2) || [0])
-    );
-    const bMax = Math.max(
-      ...(b.savingOptions?.map((opt) => opt.intrRate2) || [0])
-    );
+    const aMax = Math.max(...(a.savingOptions?.map((opt) => opt.intrRate2) || [0]));
+    const bMax = Math.max(...(b.savingOptions?.map((opt) => opt.intrRate2) || [0]));
     return bMax - aMax;
   });
 
@@ -655,9 +571,7 @@ onMounted(() => {
   updateVisibleProducts();
 });
 
-const allVisibleLoaded = computed(
-  () => visibleProducts.value.length >= filteredProducts.value.length
-);
+const allVisibleLoaded = computed(() => visibleProducts.value.length >= filteredProducts.value.length);
 
 let scrollTimer = null;
 const onScroll = () => {
@@ -672,10 +586,7 @@ const onScroll = () => {
     // 자연스러운 로딩을 위해 살짝 딜레이
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => {
-      visibleCount.value = Math.min(
-        visibleCount.value + VISIBLE_STEP,
-        filteredProducts.value.length
-      );
+      visibleCount.value = Math.min(visibleCount.value + VISIBLE_STEP, filteredProducts.value.length);
       infiniteLoading.value = false;
     }, 700);
   }
@@ -703,9 +614,7 @@ const getMinAmountWithTerm = (product) => {
   const selectedTerm = filters.value?.term;
   if (!selectedTerm || selectedTerm === '전체') return null;
 
-  const matchedOption = product.savingOptions.find(
-    (opt) => String(opt.saveTrm) === selectedTerm
-  );
+  const matchedOption = product.savingOptions.find((opt) => String(opt.saveTrm) === selectedTerm);
   return matchedOption?.minAmount || null;
 };
 </script>
