@@ -59,7 +59,19 @@
         </template>
         <template #content>
           <div class="card-slider-wrapper compact">
-            <CardVisualSlider :cards="cards" />
+            <!-- 카드가 있을 때 -->
+            <CardVisualSlider 
+              v-if="cards && cards.length > 0" 
+              :cards="cards" 
+              @add-card="handleCardRegistration"
+            />
+            <!-- 카드가 없을 때 -->
+            <CardRegistrationPrompt 
+              v-else
+              title="내 카드 정보 불러오기"
+              description="CODEF를 통해 카드 정보를 연동하여 맞춤 추천을 받아보세요!"
+              @register="handleCardRegistration"
+            />
           </div>
         </template>
       </BaseCardGrey>
@@ -202,6 +214,7 @@
 <script setup>
 import CardVisualSlider from '@/components/cards/CardVisualSlider.vue';
 import CardSyncModal from '@/components/cards/CardSyncModal.vue';
+import CardRegistrationPrompt from '@/components/cards/CardRegistrationPrompt.vue';
 import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
 import { ref, computed, onMounted } from 'vue';
 import userApi from '@/api/user';
@@ -294,6 +307,11 @@ const handleCardChange = async (card) => {
 // 카드 업데이트 (CardSyncModal 표시)
 const handleCardUpdate = () => {
   // console.log("카드 업데이트 버튼 클릭 - CardSyncModal 표시");
+  showSyncModal.value = true;
+};
+
+// 카드 등록 핸들러
+const handleCardRegistration = () => {
   showSyncModal.value = true;
 };
 
