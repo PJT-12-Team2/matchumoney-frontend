@@ -29,23 +29,61 @@
         </div>
       </div>
     </div>
-
-    <!-- 모달 -->
-    <SavingConnectModal
-      v-model:visible="showModal"
-      v-model:loading="isLoading"
-      @submit="handleSync"
+    <BankConnectModal
+      v-model="showModal"
       :requireBirthdate="requireBirth"
+      :connectedCodes="connected"
+      @update:connectedCodes="connected = $event"
+      @connected="onConnected"
+      @edited="onEdited"
+      @removedAll="onRemovedAll"
+      @loadPrevious="onLoadPrevious"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, defineProps, computed } from 'vue';
-import SavingConnectModal from './SavingConnectModal.vue';
-import savingApi from '@/api/savings';
+import { ref, defineProps, computed, onMounted } from 'vue';
+import codefApi from '@/api/codef';
+import BankConnectModal from './BankConnectModal.vue';
+
+const choiceVisible = ref(true);
+const loginVisible = ref(false);
+
 const showModal = ref(false);
 const requireBirth = ref(false);
+
+const connected = ref([]);
+onMounted(async () => {
+  connected.value = await codefApi.getBankByConnectedId();
+});
+const onLoadPrevious = async () => {
+  // 저장된 Connected ID로 바로 호출
+  // 실패(재인증 필요) 시 loginVisible=true 로 전환
+
+  isLoading.value = true;
+  try {
+    await codefApi.syncAccountsPre();
+    alert('예/적금 연결 성공!');
+    showModal.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.error(e);
+    const errorList = e.response?.data?.errors || [];
+    let errorMessage = '';
+    for (const error of errorList) {
+      console.log(error.code);
+      if (error.code === 'CF-12855') {
+        console.log('생일 입력 필요!!');
+        requireBirth.value = true;
+      }
+      errorMessage += (error.message || '') + '\n';
+    }
+    alert('예/적금 연결 실패\n' + errorMessage);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 const props = defineProps({
   listLength: {
@@ -69,11 +107,53 @@ const isLoading = computed({
 const openModal = () => {
   showModal.value = true;
 };
+const onRemovedAll = async () => {
+  isLoading.value = true;
+  console.log('제거를 시작합니다!');
+  try {
+    await codefApi.deleteConnectedId();
+    alert('제거 완료');
+    showModal.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.error(e);
 
-const handleSync = async (loginDto) => {
+    alert('제거 실패\n');
+  } finally {
+    isLoading.value = false;
+  }
+};
+const onEdited = async (loginDto) => {
+  isLoading.value = true;
+  console.log('업데이트를 시작합니다!');
+  try {
+    await codefApi.updateConnectedId(loginDto);
+    alert('예/적금 연결 성공!');
+    showModal.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.error(e);
+    const errorList = e.response?.data?.errors || [];
+    let errorMessage = '';
+    for (const error of errorList) {
+      console.log(error.code);
+      if (error.code === 'CF-12855') {
+        console.log('생일 입력 필요!!');
+        requireBirth.value = true;
+      }
+      errorMessage += (error.message || '') + '\n';
+    }
+
+    alert('예/적금 연결 실패\n' + errorMessage);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const onConnected = async (loginDto) => {
   isLoading.value = true;
   try {
-    await savingApi.syncAccounts(loginDto);
+    await codefApi.syncAccounts(loginDto);
     alert('예/적금 연결 성공!');
     showModal.value = false;
     window.location.reload();
@@ -99,7 +179,7 @@ const handleSync = async (loginDto) => {
 
 <style scoped>
 .saving-card {
-  background-color: var(--color-primary);
+  background-color: var(--color-light);
   display: flex;
   justify-content: center;
   align-items: center;
