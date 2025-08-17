@@ -387,7 +387,21 @@ const filters = ref({
 filters.value.bank = null;
 
 const selectProduct = (product) => {
-  window.location.href = `/detail/${product.type}/${product.id}`;
+  if (product?.isFallback) return;
+  if (product?.savingId) {
+    router.push(`/detail/saving/${product.savingId}`);
+    return;
+  }
+  if (product?.depositId) {
+    router.push(`/detail/deposit/${product.depositId}`);
+    return;
+  }
+  if (product?.cardId) {
+    router.push(`/detail/card/${product.cardId}`);
+    return;
+  }
+  console.log('product', product);
+  console.warn('선택한 상품에 유효한 ID가 없어 상세 페이지로 이동할 수 없습니다:', product);
 };
 </script>
 
