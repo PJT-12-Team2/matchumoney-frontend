@@ -1,4 +1,4 @@
-import api from "@/api";
+import api from '@/api';
 
 const BASE_URL = `auth`;
 
@@ -37,7 +37,10 @@ export default {
 
   // 인증번호 검증
   async verifyEmailCode(email, code) {
-    const { data } = await api.post(`${BASE_URL}/email/verify`, { email, code });
+    const { data } = await api.post(`${BASE_URL}/email/verify`, {
+      email,
+      code,
+    });
     return data;
   },
 
@@ -45,5 +48,13 @@ export default {
   async resetPassword(resetDto) {
     const { data } = await api.patch(`${BASE_URL}/reset/password`, resetDto);
     return data;
+  },
+  async verifyPassword(password) {
+    const { data } = await api.post(
+      `${BASE_URL}/verify/password`,
+      { password },
+      { withCredentials: true } // 쿠키 쓰면 유지, 아니면 빼도 OK
+    );
+    return data; // 보통 { result: true/false, ... } 형태
   },
 };

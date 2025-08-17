@@ -1,7 +1,7 @@
 <template>
   <div class="card-recommendations">
     <main class="main-content">
-      <h2 class="page-title">마이데이터 기반 카드 추천</h2>
+      <h2 class="page-title">맞춤 카드</h2>
 
       <!-- 카드 연동 버튼 -->
       <div
@@ -9,26 +9,28 @@
         v-if="!cards.length && !isLoading"
         @click="showSyncModal = true"
       >
-        <div class="icon-container">
-          <div class="card-sync-icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="sync-card-icon"
-            >
-              <path
-                d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
-              />
-              <path d="M6 10h2v2H6zm3 0h5v2H9z" />
-            </svg>
+        <div class="sync-container">
+          <div class="icon-container">
+            <div class="card-sync-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="sync-card-icon"
+              >
+                <path
+                  d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+                />
+                <path d="M6 10h2v2H6zm3 0h5v2H9z" />
+              </svg>
+            </div>
           </div>
-        </div>
-        <div class="sync-content">
-          <div class="sync-title">내 카드 정보 불러오기</div>
-          <div class="sync-info">
-            CODEF를 통해 카드 정보를 연동하여<br />
-            맞춤 추천을 받아보세요!
+          <div class="sync-content">
+            <div class="sync-title">내 카드 정보 불러오기</div>
+            <div class="sync-info">
+              CODEF를 통해 카드 정보를 연동하여<br />
+              맞춤 추천을 받아보세요!
+            </div>
           </div>
         </div>
       </div>
@@ -511,12 +513,11 @@
                   </div>
                 </div>
 
-                <!-- 무한 스크롤 로딩 -->
-                <div v-if="isLoadingMore" class="infinite-loading">
-                  <BaseSpinner size="md" color="accent" />
+                <!-- 무한 스크롤 로딩 상태 -->
+                <div v-if="isLoadingMore" class="infinite-scroll-loading">
+                  <BaseSpinner size="sm" color="accent" />
                   <p>더 많은 거래내역을 불러오는 중...</p>
                 </div>
-
                 <!-- 모든 데이터 로드 완료 -->
                 <div
                   v-else-if="
@@ -524,7 +525,13 @@
                   "
                   class="load-complete"
                 >
-                  <p>모든 거래내역을 불러왔습니다.</p>
+                  <div class="complete-message">
+                    <i class="bi bi-check-circle"></i>
+                    <p>모든 거래내역을 불러왔습니다</p>
+                    <span class="total-count"
+                      >총 {{ displayedTransactions.length }}건</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
@@ -724,7 +731,7 @@ const sortBy = ref('date');
 // 무한 스크롤을 위한 변수들
 const displayedTransactions = ref([]);
 const currentPage = ref(0); // 0부터 시작하도록 변경
-const itemsPerPage = 10; // 백엔드와 동일한 기본값
+const itemsPerPage = 6; // 6개씩 표시
 const isLoadingMore = ref(false);
 const hasMoreTransactions = ref(true);
 const totalTransactionCount = ref(0);
@@ -819,17 +826,24 @@ const loadExistingTransactions = async (card) => {
       syncedTransactions.value = response.result;
       selectedSyncedCard.value = card;
 
+      // 무한 스크롤 초기화 - 처음 6개만 표시
+      displayedTransactions.value = response.result.slice(0, itemsPerPage);
+      currentPage.value = 0;
+      hasMoreTransactions.value = response.result.length > itemsPerPage;
+
       // 카드별 거래내역 매핑 업데이트
       const cardKey = card.holdingId || card.cardId;
       cardTransactionsMap.value[cardKey] = response.result;
 
-      // console.log(
-      //   `💡 ${card.cardName} 카드의 ${response.result.length}건 거래내역을 로드했습니다.`
-      // );
+      console.log(
+        `💡 ${card.cardName} 카드의 ${response.result.length}건 거래내역 중 ${itemsPerPage}개를 초기 로드했습니다.`
+      );
     } else {
       console.log(`💡 ${card.cardName} 카드의 저장된 거래내역이 없습니다.`);
       syncedTransactions.value = [];
       selectedSyncedCard.value = null;
+      displayedTransactions.value = [];
+      hasMoreTransactions.value = false;
 
       // 카드별 거래내역 매핑에서 제거
       const cardKey = card.holdingId || card.cardId;
@@ -852,6 +866,8 @@ const loadExistingTransactions = async (card) => {
     // 에러 발생 시 빈 상태로 초기화
     syncedTransactions.value = [];
     selectedSyncedCard.value = null;
+    displayedTransactions.value = [];
+    hasMoreTransactions.value = false;
   } finally {
     isLoadingTransactions.value = false;
   }
@@ -1530,11 +1546,11 @@ const initializeDisplayedTransactions = () => {
     currentPage.value = 0;
     hasMoreTransactions.value = filtered.length > itemsPerPage;
   } else {
-    // 필터가 없으면 기본 무한 스크롤 상태로 복원
-    displayedTransactions.value = [...syncedTransactions.value];
-    currentPage.value =
-      Math.floor(syncedTransactions.value.length / itemsPerPage) - 1;
-    // 백엔드에서 받은 hasMoreTransactions 상태 유지
+    // 필터가 없으면 처음 6개만 표시하도록 초기화
+    const initialLoad = syncedTransactions.value.slice(0, itemsPerPage);
+    displayedTransactions.value = initialLoad;
+    currentPage.value = 0;
+    hasMoreTransactions.value = syncedTransactions.value.length > itemsPerPage;
   }
 };
 
@@ -1566,51 +1582,33 @@ const loadMoreTransactions = async () => {
         isLoadingMore.value = false;
       }, 500);
     } else {
-      // 필터가 없는 경우: 백엔드 API 호출
-      if (!selectedSyncedCard.value || !userId.value) {
-        isLoadingMore.value = false;
-        return;
-      }
-
-      const nextPage = currentPage.value + 1;
-
-      console.log(
-        `🔍 ${selectedSyncedCard.value.cardName} 카드의 ${
-          nextPage + 1
-        }페이지 거래내역을 로드합니다...`
-      );
-
-      const response = await cardsApi.getStoredCardTransactions(
-        selectedSyncedCard.value.holdingId,
-        userId.value,
-        nextPage,
-        itemsPerPage
-      );
-
-      if (response.data && response.data.transactions) {
-        const paginatedData = response.data;
-
-        // 새로운 거래내역 추가
-        syncedTransactions.value.push(...paginatedData.transactions);
-        displayedTransactions.value.push(...paginatedData.transactions);
-
-        // 페이징 상태 업데이트
-        currentPage.value = nextPage;
-        hasMoreTransactions.value = paginatedData.hasNext || false;
-
-        console.log(
-          `💡 ${
-            paginatedData.transactions.length
-          }건의 추가 거래내역을 로드했습니다. (페이지: ${nextPage + 1})`
-        );
-      } else {
-        hasMoreTransactions.value = false;
-      }
-
-      // 최소 1초간 로딩 표시
+      // 필터가 없는 경우: 클라이언트 사이드 페이징 (전체 거래내역에서)
       setTimeout(() => {
+        const sourceData = syncedTransactions.value;
+        const nextPage = currentPage.value + 1;
+        const start = nextPage * itemsPerPage;
+        const end = start + itemsPerPage;
+        const newTransactions = sourceData.slice(start, end);
+
+        if (newTransactions.length > 0) {
+          displayedTransactions.value.push(...newTransactions);
+          currentPage.value = nextPage;
+          hasMoreTransactions.value = end < sourceData.length;
+
+          console.log(
+            `💡 ${
+              newTransactions.length
+            }건의 추가 거래내역을 로드했습니다. (페이지: ${nextPage + 1}, 총: ${
+              displayedTransactions.value.length
+            }/${sourceData.length})`
+          );
+        } else {
+          hasMoreTransactions.value = false;
+          console.log('💡 더 이상 로드할 거래내역이 없습니다.');
+        }
+
         isLoadingMore.value = false;
-      }, 1000);
+      }, 500);
     }
   } catch (error) {
     console.error('❌ 추가 거래내역 로드 실패:', error);
@@ -1726,14 +1724,10 @@ const getCurrentCardBenefit = () => {
   return 0;
 };
 
-// 스크롤 이벤트 핸들러
+// 무한 스크롤 이벤트 핸들러
 const handleScroll = () => {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
-
-  // 스크롤이 페이지 끝에서 100px 전에 도달하면 더 로드
-  if (scrollTop + windowHeight >= documentHeight - 100) {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  if (scrollTop + clientHeight >= scrollHeight - 5) {
     loadMoreTransactions();
   }
 };
@@ -1790,9 +1784,15 @@ onUnmounted(() => {
   margin-bottom: var(--spacing-2xl);
 }
 
+.sync-container {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
 /* 연동 섹션 - SavingReloadCard 스타일 적용 */
 .sync-section {
   background-color: var(--color-light);
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1827,7 +1827,6 @@ onUnmounted(() => {
 
 .sync-content {
   flex: 1;
-  text-align: center;
 }
 
 .sync-title {
@@ -3143,16 +3142,18 @@ onUnmounted(() => {
 }
 
 /* 무한 스크롤 스타일 */
-.infinite-loading {
+.infinite-scroll-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-xl);
   margin-top: var(--spacing-lg);
+  background: var(--bg-light);
+  border-radius: 8px;
 }
 
-.infinite-loading p {
+.infinite-scroll-loading p {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   margin: 0;
@@ -3165,6 +3166,28 @@ onUnmounted(() => {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   border-top: 1px solid var(--border-light);
+}
+
+.complete-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.complete-message i {
+  font-size: var(--font-size-xl);
+  color: var(--color-success);
+}
+
+.complete-message p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.complete-message .total-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-light);
 }
 
 .load-complete p {
