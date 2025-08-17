@@ -633,12 +633,15 @@
     />
 
     <!-- 거래내역 상세 모달 -->
+    <!-- TODO: TransactionDetailModal 컴포넌트 구현 필요 -->
+    <!--
     <TransactionDetailModal
       :isVisible="showTransactionDetails"
       :transactions="syncedTransactions"
       :cardInfo="selectedSyncedCard"
       @close="showTransactionDetails = false"
     />
+    -->
   </div>
 </template>
 
