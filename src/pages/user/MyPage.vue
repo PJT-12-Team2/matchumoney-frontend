@@ -20,11 +20,11 @@
           </div>
           <div class="user-text">
             <div class="user-name-and-meta">
-              <h2 class="user-name">
+              <h1 class="user-name">
                 <span class="nickname">{{ user?.nickname ?? '정보 없음' }}</span>
                 <span class="level-title">님</span>
                 <span :class="['top-percent-badge', topPercentClass]">상위 {{ topPercent }}%</span>
-              </h2>
+              </h1>
               <ul class="user-meta-horizontal">
                 <li v-if="user?.gender">{{ user.gender }}</li>
                 <li v-if="user?.birth">{{ user.birth }}</li>
@@ -97,7 +97,7 @@
         <template #title>
           <div class="section-header favbar-header">
             <span>내 즐겨찾기</span>
-            <button class="link-minimal" @click="router.push('/favorites')">즐겨찾기 바로가기</button>
+            <button class="link-minimal" @click="router.push('/favorites')">전체 보기</button>
           </div>
         </template>
         <template #content>
@@ -1147,12 +1147,36 @@ onMounted(() => {
     padding: var(--spacing-md);
   }
 
+  .my-page h1 span {
+    /* greeting/title size */
+    font-size: var(--font-size-xl);
+  }
+  .my-page h2 {
+    font-size: var(--font-size-2xl);
+  }
+  .my-page h3 {
+    font-size: var(--font-size-2xl);
+  }
+
+  /* Ensure general text elements never drop below base */
+  .my-page p,
+  .my-page span,
+  .my-page a,
+  .my-page button,
+  .my-page li,
+  .my-page .hcard-name,
+  .my-page .hcard-meta,
+  .my-page .action-title,
+  .my-page .action-desc {
+    font-size: var(--font-size-lg);
+  }
+
   /* Greeting */
   .greeting {
-    text-align: left;
+    text-align: center;
     font-size: clamp(18px, 4.5vw, 22px);
     margin-bottom: var(--spacing-sm);
-    padding-left: var(--spacing-md); /* add a little extra left spacing for mobile */
+    padding-left: 0; /* center alignment on mobile, no extra left padding */
   }
 
   /* ====== Profile / user info ====== */
@@ -1212,6 +1236,13 @@ onMounted(() => {
   .persona-card {
     padding: var(--spacing-md);
   }
+  /* Center persona extras actions on mobile */
+  .extras-actions {
+    justify-content: center;
+  }
+  .extras-title {
+    text-align: center;
+  }
 
   .persona-image {
     width: 140px;
@@ -1255,7 +1286,6 @@ onMounted(() => {
     font-size: 0.95rem;
   }
 
-  /* Cards list becomes single column, larger tap targets */
   .favbar-scroller {
     grid-template-columns: 1fr;
     gap: var(--spacing-sm);
@@ -1265,7 +1295,7 @@ onMounted(() => {
     display: grid;
     grid-template-columns: 56px 1fr;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-2xl);
     padding: 0.75rem;
     border-radius: 12px;
     min-height: 84px;
@@ -1275,6 +1305,8 @@ onMounted(() => {
     width: 56px;
     height: 56px;
     flex: 0 0 56px;
+    margin-left: var(--spacing-2xl);
+    margin-right: var(--spacing-2xl);
   }
 
   .hcard-thumb img,
@@ -1323,6 +1355,7 @@ onMounted(() => {
     flex: 0 0 40px;
   }
 }
+
 .card-slider-wrapper {
   width: 100%;
   max-width: 100%;
@@ -1555,7 +1588,7 @@ onMounted(() => {
   width: 100%;
   display: flex;
   gap: var(--spacing-md);
-  align-items: flex-start;
+  align-items: center;
   border: 1px solid var(--color-secondary-30);
   border-radius: 12px;
   padding: 0.9rem;
@@ -1571,7 +1604,7 @@ onMounted(() => {
 }
 .hcard-thumb {
   width: 64px;
-  height: 100px;
+  height: 64px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1595,6 +1628,9 @@ onMounted(() => {
 }
 .hcard-body {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* vertically center text alongside thumb */
 }
 .chip--tight {
   align-self: flex-start;
@@ -1731,12 +1767,7 @@ onMounted(() => {
 
 @media (max-width: 1024px) {
   .favbar-scroller {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 640px) {
-  .favbar-scroller {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
 </style>
