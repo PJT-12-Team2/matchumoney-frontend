@@ -1,6 +1,7 @@
 // router/index.js 또는 router.js
 import KakaoCallbackPage from '@/pages/auth/KakaoCallbackPage.vue';
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.js';
 
 /* ── 페이지 컴포넌트 ─────────────────────── */
 import LoginPage from '@/pages/auth/LoginPage.vue';
@@ -52,29 +53,41 @@ const personaCodes = [
 ];
 
 const routes = [
-  { path: '/', name: 'home', component: HomePage },
-  { path: '/signup', name: 'signup', component: SignupPage },
-  { path: '/login', name: 'login', component: LoginPage },
+  { 
+    path: '/', 
+    name: 'home', 
+    component: HomePage,
+    meta: { requiresAuth: false } // 메인 페이지는 공개
+  },
+  { 
+    path: '/signup', 
+    name: 'signup', 
+    component: SignupPage,
+    meta: { requiresAuth: false } // 회원가입은 공개
+  },
+  { 
+    path: '/login', 
+    name: 'login', 
+    component: LoginPage,
+    meta: { requiresAuth: false } // 로그인은 공개
+  },
   {
     path: '/oauth/kakao/callback',
     name: 'KakaoCallback',
     component: KakaoCallbackPage,
+    meta: { requiresAuth: false } // 카카오 콜백은 공개
   },
   {
     path: '/reset-password',
     name: 'resetPassword',
     component: ResetPasswordPage,
-    component: KakaoCallbackPage,
-  },
-  {
-    path: '/reset-password',
-    name: 'resetPassword',
-    component: ResetPasswordPage,
+    meta: { requiresAuth: false } // 비밀번호 재설정은 공개
   },
   {
     path: '/mypage',
     name: 'mypage',
     component: MyPage,
+    meta: { requiresAuth: true } // 마이페이지는 인증 필요
   },
   { path: '/myinfo', name: 'myinfo', component: MyInfoPage },
   {
@@ -242,8 +255,44 @@ const routes = [
   },
 ];
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior: () => ({ top: 0 }),
 });
+
+// 공개 페이지 (로그인 없이 접근 가능)
+const publicRoutes = [
+  '/',           // 메인 페이지
+  '/login',      // 로그인
+  '/signup',     // 회원가입
+  '/reset-password', // 비밀번호 재설정
+  '/oauth/kakao/callback', // 카카오 콜백
+];
+
+// 라우터 가드 설정
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  const isPublicRoute = publicRoutes.includes(to.path) || to.meta?.requiresAuth === false;
+  
+  // 공개 라우트라면 통과
+  if (isPublicRoute) {
+    next();
+    return;
+  }
+  
+  // 인증이 필요한 페이지인 경우 로그인 확인
+  if (!authStore.isLoggedIn) {
+    // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
+    next({
+      path: '/login',
+      query: { redirect: to.fullPath } // 로그인 후 원래 페이지로 돌아가기 위한 정보
+    });
+    return;
+  }
+  
+  // 로그인된 경우 통과
+  next();
+});
+
+export default router;
