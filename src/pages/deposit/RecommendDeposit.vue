@@ -1,10 +1,67 @@
 <template>
   <div class="deposit-recommendations">
     <main class="main-content">
-      <h2 class="page-title">예금 추천</h2>
+      <RecommendationLayout title="맞춤 예금">
+        <template #slider>
+          <AccountSlider
+            :accounts="accounts"
+            :loading="accountsLoading"
+            :error="error"
+            :current-slide="currentSlide"
+            :user-id="effectiveUserId"
+            @refresh="refreshAccounts"
+            @slide-change="handleSlideChange"
+            @connect-success="handleConnectSuccess"
+          />
+        </template>
+
+        <!-- 하이라이트 문구 -->
+        <template
+          #highlight
+          v-if="isKBOnlyMode && hasSearched && !loading && products.length > 0"
+        >
+          <div>예금을 불러와주세요.<br />인기 예금부터 안내드릴게요.</div>
+        </template>
+        <template
+          #highlight
+          v-else-if="
+            !isKbOnly && hasSearched && !loading && products.length > 0
+          "
+        >
+          <div>
+            {{ getCustomerName() }}님의 {{ getBalance() }} 잔액으로 가입 가능한
+            상품을 찾았어요!
+          </div>
+        </template>
+        <template
+          #highlight
+          v-if="hasSearched && !loading && products.length === 0"
+        >
+          <span v-if="isKBOnlyMode"
+            >현재 KB국민은행 상품을 불러올 수 없습니다.</span
+          >
+          <span v-else
+            >{{ getCustomerName() }}님의 잔액으로 가입 가능한 상품이
+            없습니다.</span
+          >
+        </template>
+
+        <template #content>
+          <ProductList
+            :products="products"
+            :loading="loading || userInfoLoading"
+            :has-searched="hasSearched"
+            :customer-name="getCustomerName()"
+            :balance="getBalance()"
+            :is-kb-only="isKBOnlyMode"
+            @product-select="selectProduct"
+            @favorite-changed="handleFavoriteChanged"
+          />
+        </template>
+      </RecommendationLayout>
 
       <!-- 로그인하지 않은 경우-->
-      <div v-if="!isLoggedIn" class="auth-required">
+      <!-- <div v-if="!isLoggedIn" class="auth-required">
         <div class="auth-message">
           <div class="auth-icon">🔐</div>
           <div class="auth-text">
@@ -15,12 +72,12 @@
             로그인하기
           </button>
         </div>
-      </div>
+      </div> -->
 
       <!-- 로그인한 경우 기존 기능 -->
-      <template v-else>
-        <!-- 계좌 슬라이더 컴포넌트 -->
-        <AccountSlider
+      <!-- <template v-else> -->
+      <!-- 계좌 슬라이더 컴포넌트 -->
+      <!-- <AccountSlider
           :accounts="accounts"
           :loading="accountsLoading"
           :error="error"
@@ -29,10 +86,10 @@
           @refresh="refreshAccounts"
           @slide-change="handleSlideChange"
           @connect-success="handleConnectSuccess"
-        />
+        /> -->
 
-        <!-- 상품 리스트 컴포넌트 -->
-        <ProductList
+      <!-- 상품 리스트 컴포넌트 -->
+      <!-- <ProductList
           :products="products"
           :loading="loading || userInfoLoading"
           :has-searched="hasSearched"
@@ -42,7 +99,7 @@
           @product-select="selectProduct"
           @favorite-changed="handleFavoriteChanged"
         />
-      </template>
+      </template> -->
     </main>
   </div>
 </template>
@@ -54,6 +111,7 @@ import { useAuthStore } from '@/stores/auth';
 import depositApi from '@/api/deposit';
 import AccountSlider from './AccountSlider.vue';
 import ProductList from './ProductList.vue';
+import RecommendationLayout from '@/components/layouts/RecommendationLayout.vue';
 
 // 로그인 페이지로 리다이렉트
 const redirectToLogin = () => {
@@ -541,7 +599,6 @@ onMounted(async () => {
     margin: 0 auto;
     border-radius: 25px;
     overflow: hidden;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.15);
   }
 }
 </style>
