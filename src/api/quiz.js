@@ -93,4 +93,25 @@ export default {
       throw error;
     }
   },
+
+  // 퀴즈 이력 조회
+  async getQuizHistory() {
+    try {
+      console.log('🔍 퀴즈 이력 API 호출:', `${BASE_URL}/history`);
+      const response = await api.get(`${BASE_URL}/history`);
+      console.log('📥 퀴즈 이력 API 응답:', response);
+
+      if (response.data && response.data.result !== undefined) {
+        return response.data.result;
+      } else if (response.data) {
+        return response.data;
+      } else {
+        console.warn('퀴즈 이력 API 응답 구조가 예상과 다릅니다:', response);
+        return [];
+      }
+    } catch (error) {
+      console.error('퀴즈 이력 API 호출 실패:', error);
+      throw error;
+    }
+  },
 };

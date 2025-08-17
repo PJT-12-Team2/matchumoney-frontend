@@ -12,23 +12,12 @@
 
         <!-- 이메일 -->
         <div class="login-row">
-          <BaseInput
-            v-model="email"
-            label="이메일"
-            id="login-email"
-            placeholder="이메일"
-          />
+          <BaseInput v-model="email" label="이메일" id="login-email" placeholder="이메일" />
         </div>
 
         <!-- 비밀번호 -->
         <div class="login-row">
-          <BaseInput
-            v-model="password"
-            label="비밀번호"
-            id="login-password"
-            type="password"
-            placeholder="비밀번호"
-          />
+          <BaseInput v-model="password" label="비밀번호" id="login-password" type="password" placeholder="비밀번호" />
         </div>
 
         <!-- 로그인 옵션 -->
@@ -50,10 +39,7 @@
 
         <!-- 카카오 로그인 버튼 -->
         <button class="kakao-btn" @click="handleKakaoLogin">
-          <img
-            src="@/assets/kakao_login_medium_wide.png"
-            alt="카카오계정으로 로그인"
-          />
+          <img src="@/assets/kakao_login_medium_wide.png" alt="카카오계정으로 로그인" />
         </button>
 
         <!-- 회원가입 링크 -->
@@ -108,12 +94,11 @@ const handleLogin = async () => {
       nickname: tokenDto.nickname,
     });
 
-    alert(
-      `${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`
-    );
+    alert(`${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`);
     if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
       router.push('/persona/start');
     } else {
+      window.dispatchEvent(new Event('app:login'));
       router.push('/');
     }
   } catch (err) {
@@ -126,9 +111,7 @@ const handleLogin = async () => {
     } else if (err.response?.status >= 500) {
       alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } else {
-      alert(
-        `로그인에 실패했습니다: ${err.response?.data?.message || err.message}`
-      );
+      alert(`로그인에 실패했습니다: ${err.response?.data?.message || err.message}`);
     }
   }
 };

@@ -77,39 +77,39 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import BaseInput from "@/components/base/BaseInput.vue";
-import "@/assets/main.css";
-import authApi from "@/api/auth";
-import { useRouter } from "vue-router";
+import { ref, watch } from 'vue';
+import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import BaseInput from '@/components/base/BaseInput.vue';
+import '@/assets/main.css';
+import authApi from '@/api/auth';
+import { useRouter } from 'vue-router';
 
-const email = ref("");
-const authCode = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-const nickname = ref("");
-const errorMessage = ref("");
+const email = ref('');
+const authCode = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const nickname = ref('');
+const errorMessage = ref('');
 const isEmailVerified = ref(false);
 const router = useRouter();
 
 watch([password, confirmPassword], ([newVal, confirmVal]) => {
   if (newVal && confirmVal && newVal !== confirmVal) {
-    errorMessage.value = "비밀번호가 일치하지 않습니다";
+    errorMessage.value = '비밀번호가 일치하지 않습니다';
   } else {
-    errorMessage.value = "";
+    errorMessage.value = '';
   }
 });
 
 const handleJoin = async () => {
   if (!isEmailVerified.value) {
-    alert("이메일 인증을 완료해주세요.");
+    alert('이메일 인증을 완료해주세요.');
     return;
   }
 
   if (password.value !== confirmPassword.value) {
-    errorMessage.value = "비밀번호가 일치하지 않습니다";
+    errorMessage.value = '비밀번호가 일치하지 않습니다';
     return;
   }
 
@@ -121,33 +121,33 @@ const handleJoin = async () => {
       passwordCheck: confirmPassword.value,
     });
 
-    alert("🎉 회원가입이 완료되었습니다. 로그인 해주세요.");
-    router.push("/login");
+    alert('🎉 회원가입이 완료되었습니다. 로그인 해주세요.');
+    router.push('/login');
   } catch (err) {
-    alert(err?.response?.data?.message || "회원가입 중 오류가 발생했습니다.");
+    alert(err?.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
   }
 };
 
 const handleSendCode = async () => {
   try {
+    alert('📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.');
     await authApi.sendVerificationEmail(email.value);
-    alert("📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.");
   } catch (err) {
-    alert(err?.response?.data?.message || "인증번호 전송 중 오류가 발생했습니다.");
+    alert(err?.response?.data?.message || '인증번호 전송 중 오류가 발생했습니다.');
   }
 };
 
 const handleVerifyCode = async () => {
   try {
     const result = await authApi.verifyEmailCode(email.value, authCode.value);
-    if (result) {
+    if (result.result) {
       isEmailVerified.value = true;
-      alert("✅ 인증번호가 확인되었습니다.");
+      alert('✅ 인증번호가 확인되었습니다.');
     } else {
-      alert("❌ 인증번호가 일치하지 않습니다.");
+      alert('❌ 인증번호가 일치하지 않습니다.');
     }
   } catch (err) {
-    alert(err?.response?.data?.message || "인증번호 확인 중 오류가 발생했습니다.");
+    alert(err?.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.');
   }
 };
 </script>

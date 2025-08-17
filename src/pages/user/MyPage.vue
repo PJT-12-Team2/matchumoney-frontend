@@ -2,38 +2,29 @@
   <div class="my-page">
     <h1 class="greeting area-greeting">
       <br />
-      안녕하세요 <strong>{{ user?.nickname ?? '사용자' }}</strong
-      >님. 오늘도 화이팅하세요!
+      안녕하세요
+      <strong>{{ user?.nickname ?? '사용자' }}</strong>
+      님. 오늘도 화이팅하세요!
     </h1>
     <BaseCardGrey class="profile-section">
       <template #title>
         <div class="section-header">
           <span>내 정보</span>
-          <button class="link-minimal" @click="router.push('/myinfo')">
-            내 정보 관리 &gt;
-          </button>
+          <button class="link-minimal" @click="router.push('/myinfo')">내 정보 관리</button>
         </div>
       </template>
       <template #content>
         <section class="user-info">
           <div class="profile-image-placeholder">
-            <img
-              :src="profileImageUrl"
-              alt="프로필 이미지"
-              class="profile-image"
-            />
+            <img :src="profileImageUrl" alt="프로필 이미지" class="profile-image" />
           </div>
           <div class="user-text">
             <div class="user-name-and-meta">
-              <h2 class="user-name">
-                <span class="nickname">{{
-                  user?.nickname ?? '정보 없음'
-                }}</span>
+              <h1 class="user-name">
+                <span class="nickname">{{ user?.nickname ?? '정보 없음' }}</span>
                 <span class="level-title">님</span>
-                <span :class="['top-percent-badge', topPercentClass]">
-                  상위 {{ topPercent }}%
-                </span>
-              </h2>
+                <span :class="['top-percent-badge', topPercentClass]">상위 {{ topPercent }}%</span>
+              </h1>
               <ul class="user-meta-horizontal">
                 <li v-if="user?.gender">{{ user.gender }}</li>
                 <li v-if="user?.birth">{{ user.birth }}</li>
@@ -46,16 +37,11 @@
                 <span class="xp-badge">Lv. {{ level }}</span>
               </div>
               <div class="xp-bar" aria-hidden="true">
-                <div
-                  class="xp-bar-fill"
-                  :style="{ width: fillPercentage }"
-                ></div>
+                <div class="xp-bar-fill" :style="{ width: fillPercentage }"></div>
               </div>
               <div class="xp-stats">
                 <span class="xp-now">{{ exp % 100 }}/100</span>
-                <span class="xp-next"
-                  >다음 레벨까지 {{ 100 - (exp % 100) }}xp</span
-                >
+                <span class="xp-next">다음 레벨까지 {{ 100 - (exp % 100) }}xp</span>
               </div>
             </div>
           </div>
@@ -68,9 +54,7 @@
         <template #title>
           <div class="section-header">
             <span>나의 카드</span>
-            <button class="link-minimal" @click="router.push('/cards/manage')">
-              카드 편집 &gt;
-            </button>
+            <button class="link-minimal" @click="router.push('/cards/manage')">카드 편집</button>
           </div>
         </template>
         <template #content>
@@ -86,44 +70,20 @@
         <template #title>
           <div class="persona-header">
             <span>나의 페르소나</span>
-            <button
-              class="fav-view-all-btn"
-              @click="router.push('/persona/start')"
-            >
-              페르소나 수정 &gt;
-            </button>
+            <button class="fav-view-all-btn" @click="router.push('/persona/start')">페르소나 수정</button>
           </div>
         </template>
         <template #content>
           <div class="persona-card">
-            <img
-              :src="personaImageUrl"
-              alt="페르소나 이미지"
-              class="persona-image"
-            />
+            <img :src="personaImageUrl" alt="페르소나 이미지" class="persona-image" />
             <h3 class="persona-name">{{ myPageInfo?.persona?.nameKo }} 유형</h3>
             <p class="persona-desc">{{ myPageInfo?.persona?.quote }}</p>
             <div class="persona-extras">
               <div class="extras-title">추천 바로가기</div>
               <div class="extras-actions">
-                <button
-                  class="extras-btn"
-                  @click="router.push(`/saving?persona=${personaSlug}`)"
-                >
-                  적금 추천
-                </button>
-                <button
-                  class="extras-btn"
-                  @click="router.push(`/deposit?persona=${personaSlug}`)"
-                >
-                  예금 추천
-                </button>
-                <button
-                  class="extras-btn"
-                  @click="router.push(`/cards?persona=${personaSlug}`)"
-                >
-                  카드 추천
-                </button>
+                <button class="extras-btn" @click="router.push(`/persona/savings`)">적금 추천</button>
+                <button class="extras-btn" @click="router.push(`/persona/deposits`)">예금 추천</button>
+                <button class="extras-btn" @click="router.push(`/persona/cards`)">카드 추천</button>
               </div>
             </div>
           </div>
@@ -137,9 +97,7 @@
         <template #title>
           <div class="section-header favbar-header">
             <span>내 즐겨찾기</span>
-            <button class="link-minimal" @click="router.push('/favorites')">
-              즐겨찾기 바로가기 &gt;
-            </button>
+            <button class="link-minimal" @click="router.push('/favorites')">전체 보기</button>
           </div>
         </template>
         <template #content>
@@ -150,58 +108,44 @@
                 :class="{ active: selectedTab === '예금' }"
                 role="tab"
                 :aria-selected="selectedTab === '예금'"
-                @click="selectedTab = '예금'"
-              >
+                @click="selectedTab = '예금'">
                 예금
               </button>
               <button
                 :class="{ active: selectedTab === '적금' }"
                 role="tab"
                 :aria-selected="selectedTab === '적금'"
-                @click="selectedTab = '적금'"
-              >
+                @click="selectedTab = '적금'">
                 적금
               </button>
               <button
                 :class="{ active: selectedTab === '카드' }"
                 role="tab"
                 :aria-selected="selectedTab === '카드'"
-                @click="selectedTab = '카드'"
-              >
+                @click="selectedTab = '카드'">
                 카드
               </button>
             </div>
             <br />
             <!-- Products under the tabs (full width) -->
             <div class="favbar-scroller" tabindex="0">
-              <div
-                v-for="(p, i) in getProductsByTab"
-                :key="'h-' + i"
-                class="hcard"
-                @click="selectProduct(p)"
-              >
+              <div v-for="(p, i) in getProductsByTab" :key="'h-' + i" class="hcard" @click="selectProduct(p)">
                 <div class="hcard-thumb" v-if="p.type !== '카드'">
-                  <img
-                    v-if="getBankLogo(p.bankName)"
-                    :src="getBankLogo(p.bankName)"
-                    alt=""
-                  />
+                  <img v-if="getBankLogo(p.bankName)" :src="getBankLogo(p.bankName)" alt="" />
                   <div v-else class="thumb-fallback">
-                    {{ (p.bankName || p.type || '').slice(0, 4) }}
+                    <img :src="disLogo" alt="로고 없음" class="thumb-fallback-img" />
                   </div>
                 </div>
                 <div class="hcard-thumb" v-else>
-                  <img
-                    v-if="p.productImage"
-                    :src="p.productImage"
-                    alt="카드 이미지"
-                  />
-                  <div v-else class="thumb-fallback">카드</div>
+                  <img v-if="p.productImage" :src="p.productImage" alt="카드 이미지" />
+                  <div v-else class="thumb-fallback">
+                    <img :src="disLogo" alt="로고 없음" class="thumb-fallback-img" />
+                  </div>
                 </div>
 
                 <div class="hcard-body">
                   <div class="hcard-name" :title="p.productName">
-                    {{ p.productName || '즐겨찾기 없음' }}
+                    {{ p.productName || '항목 없음' }}
                   </div>
                   <div class="hcard-meta">
                     <template v-if="p.type !== '카드'">
@@ -209,32 +153,27 @@
                         <span class="chip">{{ p.bankName || '은행' }}</span>
                       </div>
                       <div class="meta-line">
-                        <span v-if="p.maxIntrRate2"
-                          >최고 {{ p.maxIntrRate2 }}%</span
-                        >
-                        <span v-else-if="p.maxIntrRate"
-                          >최고 {{ p.maxIntrRate }}%</span
-                        >
-                        <span v-if="p.maxSaveTrm"
-                          >/ {{ p.maxSaveTrm }}개월</span
-                        >
+                        <template v-if="p.maxIntrRate2">
+                          최고 {{ p.maxIntrRate2 }}%
+                          <template v-if="p.maxSaveTrm">/ {{ p.maxSaveTrm }}개월</template>
+                        </template>
+                        <template v-else-if="p.maxIntrRate">
+                          최고 {{ p.maxIntrRate }}%
+                          <template v-if="p.maxSaveTrm">/ {{ p.maxSaveTrm }}개월</template>
+                        </template>
                       </div>
                     </template>
                     <template v-else>
-                      <span class="chip chip--tight">신용카드</span>
+                      <span class="chip chip--tight">{{ p.credit ? p.credit + '카드' : '카드' }}</span>
                       <div v-if="p.annualFee" class="fee-inline">
                         {{ formatAnnualFee(p.annualFee) }}
                       </div>
-                      <div v-if="p.preMonthMoney">
-                        전월실적 {{ (p.preMonthMoney / 10000).toFixed(0) }}만원
-                      </div>
+                      <div v-if="p.preMonthMoney">전월실적 {{ (p.preMonthMoney / 10000).toFixed(0) }}만원</div>
                     </template>
                   </div>
                 </div>
               </div>
-              <div v-if="!getProductsByTab?.length" class="hcard empty">
-                해당 즐겨찾기가 없습니다
-              </div>
+              <div v-if="!getProductsByTab?.length" class="hcard empty">해당 즐겨찾기가 없습니다</div>
             </div>
           </div>
         </template>
@@ -243,12 +182,7 @@
 
     <!-- Quick actions -->
     <div class="actions-grid area-actions">
-      <button
-        v-for="(a, i) in quickActions"
-        :key="i"
-        class="action-card"
-        @click="handleQuickAction(a)"
-      >
+      <button v-for="(a, i) in quickActions" :key="i" class="action-card" @click="handleQuickAction(a)">
         <div class="action-icon" aria-hidden="true">
           <i v-if="a.iconClass" :class="a.iconClass"></i>
           <span v-else>{{ a.icon }}</span>
@@ -262,11 +196,7 @@
   </div>
 
   <!-- 카드 동기화 모달 -->
-  <CardSyncModal
-    :isVisible="showSyncModal"
-    @close="showSyncModal = false"
-    @sync="handleCardSync"
-  />
+  <CardSyncModal :isVisible="showSyncModal" @close="showSyncModal = false" @sync="handleCardSync" />
 </template>
 
 <script setup>
@@ -315,7 +245,7 @@ function parseAnnualFee(raw) {
     .filter(Boolean);
 }
 function formatAnnualFee(raw) {
-  return parseAnnualFee(raw).join(' · ');
+  return parseAnnualFee(raw).join(' ㆍ ');
 }
 // 카드 동기화
 const handleCardSync = async (syncData) => {
@@ -346,17 +276,11 @@ const handleCardSync = async (syncData) => {
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 400) {
-      alert(
-        '입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.'
-      );
+      alert('입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.');
     } else if (error.response?.status === 500) {
       alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } else {
-      alert(
-        `카드 동기화에 실패했습니다: ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      alert(`카드 동기화에 실패했습니다: ${error.response?.data?.message || error.message}`);
     }
   }
 };
@@ -364,10 +288,7 @@ const handleCardSync = async (syncData) => {
 // 카드 슬라이더에서 카드 변경 시 거래내역 및 카드 혜택 조회
 const handleCardChange = async (card) => {
   // console.log("🔄 카드 변경:", card.cardName);
-  await Promise.all([
-    loadExistingTransactions(card),
-    loadCurrentCardBenefits(card),
-  ]);
+  await Promise.all([loadExistingTransactions(card), loadCurrentCardBenefits(card)]);
 };
 
 // 카드 업데이트 (CardSyncModal 표시)
@@ -408,11 +329,7 @@ const fetchCards = async () => {
       console.log('💡 사용자 카드 정보가 없습니다.');
       cards.value = [];
     } else {
-      alert(
-        `카드 목록을 불러오는데 실패했습니다: ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      alert(`카드 목록을 불러오는데 실패했습니다: ${error.response?.data?.message || error.message}`);
     }
   } finally {
     isLoading.value = false;
@@ -451,7 +368,7 @@ const ROUTES = {
 
 const quickActions = [
   {
-    title: '내 퀴즈 푼거 보기',
+    title: '내 퀴즈 기록 보기',
     desc: '최근 퀴즈 기록을 확인해요',
     iconClass: 'fa-solid fa-question',
     icon: '',
@@ -508,9 +425,7 @@ const personaSlug = computed(() => {
   const nameKo = myPageInfo.value?.persona?.nameKo || '';
   let slug = mapPersonaSlugFromName(nameKo);
   if (!slug) {
-    slug = extractSlugFromImage(
-      personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || ''
-    );
+    slug = extractSlugFromImage(personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || '');
   }
   return slug || '';
 });
@@ -521,9 +436,7 @@ function handleQuickAction(a) {
     let slug = mapPersonaSlugFromName(nameKo);
     if (!slug) {
       // 이미지 파일명에서 추론 (예: /character_images/cat.png)
-      slug = extractSlugFromImage(
-        personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || ''
-      );
+      slug = extractSlugFromImage(personaImageUrl.value || myPageInfo.value?.persona?.imageUrl || '');
     }
 
     if (slug) {
@@ -565,24 +478,18 @@ onMounted(async () => {
     user.value.birth = data.birth ?? data.birthDate ?? data.birthday ?? '';
     user.value.email = data.email ?? '';
     exp.value = data.exp;
-    user.value.gender = mapGender(
-      data.gender ?? data.genderCode ?? data.sex ?? data.gender_type ?? ''
-    );
+    user.value.gender = mapGender(data.gender ?? data.genderCode ?? data.sex ?? data.gender_type ?? '');
 
     // Updated: choose character image folder by level (1,3,4 use special folders; otherwise default)
     const rawImagePath = data.persona?.imageUrl;
     const fileName = rawImagePath?.split('/').pop();
     const folder = getCharacterFolderByLevel(level.value);
-    const imageUrl = fileName
-      ? new URL(`../../assets/${folder}/${fileName}`, import.meta.url).href
-      : '';
+    const imageUrl = fileName ? new URL(`../../assets/${folder}/${fileName}`, import.meta.url).href : '';
     personaImageUrl.value = imageUrl;
 
     // Set profile image URL (social login / local)
     profileImageUrl.value =
-      data.profileImageUrl ??
-      data.profile_image_url ??
-      new URL('@/assets/user.png', import.meta.url).href;
+      data.profileImageUrl ?? data.profile_image_url ?? new URL('@/assets/user.png', import.meta.url).href;
     myPageInfo.value.persona = {
       quote: data.persona?.quote ?? '',
       nameKo: data.persona?.nameKo ?? '',
@@ -608,27 +515,12 @@ function updateProducts() {
   let items = [];
 
   // 공통 필드 추출 유틸
-  const pickBank = (obj) =>
-    obj.bankName ?? obj.company ?? obj.bank_name ?? obj.kor_co_nm ?? '';
-  const pickName = (obj) =>
-    obj.productName ?? obj.product_name ?? obj.title ?? obj.fin_prdt_nm ?? '';
+  const pickBank = (obj) => obj.bankName ?? obj.company ?? obj.bank_name ?? obj.kor_co_nm ?? '';
+  const pickName = (obj) => obj.productName ?? obj.product_name ?? obj.title ?? obj.fin_prdt_nm ?? '';
   const pickPeriod = (obj) =>
-    obj.maxSaveTrm ??
-    obj.save_trm ??
-    obj.period ??
-    obj.sugPeriod ??
-    obj.maxTerm ??
-    obj.saveTrm ??
-    '';
-  const pickMaxRate2 = (obj) =>
-    obj.maxIntrRate2 ?? obj.max_rate2 ?? obj.maxRate ?? '';
-  const pickMaxRate1 = (obj) =>
-    obj.maxIntrRate ??
-    obj.max_rate ??
-    obj.basicRate ??
-    obj.base_rate ??
-    obj.baseRate ??
-    '';
+    obj.maxSaveTrm ?? obj.save_trm ?? obj.period ?? obj.sugPeriod ?? obj.maxTerm ?? obj.saveTrm ?? '';
+  const pickMaxRate2 = (obj) => obj.maxIntrRate2 ?? obj.max_rate2 ?? obj.maxRate ?? '';
+  const pickMaxRate1 = (obj) => obj.maxIntrRate ?? obj.max_rate ?? obj.basicRate ?? obj.base_rate ?? obj.baseRate ?? '';
 
   if (selectedTab.value === '적금') {
     items = favoriteSavings.value.map((raw) => ({
@@ -638,8 +530,7 @@ function updateProducts() {
       maxSaveTrm: pickPeriod(raw),
       maxIntrRate: pickMaxRate1(raw),
       maxIntrRate2: pickMaxRate2(raw),
-      savingId:
-        raw.savingId ?? raw.saving_product_id ?? raw.savingProductId ?? raw.id,
+      savingId: raw.savingId ?? raw.saving_product_id ?? raw.savingProductId ?? raw.id,
     }));
   } else if (selectedTab.value === '예금') {
     items = favoriteDeposits.value.map((raw) => ({
@@ -656,6 +547,7 @@ function updateProducts() {
       productName: raw.name,
       productImage: raw.imageUrl,
       type: '카드',
+      credit: raw.type,
       annualFee: raw.annualFee,
       preMonthMoney: raw.preMonthMoney,
       cardId: raw.cardId ?? raw.card_product_id ?? raw.id,
@@ -668,7 +560,7 @@ function updateProducts() {
     const fallback = {
       isFallback: true,
       type: selectedTab.value,
-      productName: '즐겨찾기 없음',
+      productName: '항목 없음',
     };
     items = [...items, ...Array(fillCount).fill(fallback)];
   } else if (items.length > REQUIRED) {
@@ -685,86 +577,42 @@ watch(selectedTab, () => {
 
 const getProductsByTab = computed(() => products.value);
 
+// Fallback bank/logo image
+const disLogo = new URL('@/assets/logo_dis.png', import.meta.url).href;
+
 const getBankLogo = (bankName) => {
   // 공통 로고 파일
-  const busanLogo = new URL(
-    '@/assets/bank-Logos/BK_BUSAN_Profile.png',
-    import.meta.url
-  ).href;
-  const hanaLogo = new URL(
-    '@/assets/bank-Logos/BK_HANA_Profile.png',
-    import.meta.url
-  ).href;
+  const busanLogo = new URL('@/assets/bank-Logos/BK_BUSAN_Profile.png', import.meta.url).href;
+  const hanaLogo = new URL('@/assets/bank-Logos/BK_HANA_Profile.png', import.meta.url).href;
 
   const logoMap = {
     // 주요 시중은행
-    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url)
-      .href,
+    국민은행: new URL('@/assets/bank-Logos/BK_KB_Profile.png', import.meta.url).href,
     하나은행: hanaLogo,
-    농협은행주식회사: new URL(
-      '@/assets/bank-Logos/BK_NH_Profile.png',
-      import.meta.url
-    ).href,
-    신한은행: new URL(
-      '@/assets/bank-Logos/BK_Shinhan_Profile.png',
-      import.meta.url
-    ).href,
-    우리은행: new URL(
-      '@/assets/bankLogo_images/BK_Woori_Profile.png',
-      import.meta.url
-    ).href,
+    농협은행주식회사: new URL('@/assets/bank-Logos/BK_NH_Profile.png', import.meta.url).href,
+    신한은행: new URL('@/assets/bank-Logos/BK_Shinhan_Profile.png', import.meta.url).href,
+    우리은행: new URL('@/assets/bankLogo_images/BK_Woori_Profile.png', import.meta.url).href,
 
     // 특수은행
-    중소기업은행: new URL(
-      '@/assets/bank-Logos/BK_IBK_Profile.png',
-      import.meta.url
-    ).href,
-    한국산업은행: new URL(
-      '@/assets/bank-Logos/BK_KDB_Profile.png',
-      import.meta.url
-    ).href,
-    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url)
-      .href,
+    중소기업은행: new URL('@/assets/bank-Logos/BK_IBK_Profile.png', import.meta.url).href,
+    한국산업은행: new URL('@/assets/bank-Logos/BK_KDB_Profile.png', import.meta.url).href,
+    수협은행: new URL('@/assets/bank-Logos/BK_SH_Profile.png', import.meta.url).href,
 
     // 지방은행
     경남은행: busanLogo,
     부산은행: busanLogo,
-    광주은행: new URL(
-      '@/assets/bank-Logos/BK_KWANGJU_Profile.png',
-      import.meta.url
-    ).href,
-    전북은행: new URL(
-      '@/assets/bank-Logos/BK_JEONBUK_Profile.png',
-      import.meta.url
-    ).href,
-    제주은행: new URL(
-      '@/assets/bank-Logos/BK_JEJU_Profile.png',
-      import.meta.url
-    ).href,
-    아이엠뱅크: new URL(
-      '@/assets/bank-Logos/BK_DAEGU_Profile.png',
-      import.meta.url
-    ).href,
+    광주은행: new URL('@/assets/bank-Logos/BK_KWANGJU_Profile.png', import.meta.url).href,
+    전북은행: new URL('@/assets/bank-Logos/BK_JEONBUK_Profile.png', import.meta.url).href,
+    제주은행: new URL('@/assets/bank-Logos/BK_JEJU_Profile.png', import.meta.url).href,
+    아이엠뱅크: new URL('@/assets/bank-Logos/BK_DAEGU_Profile.png', import.meta.url).href,
 
     // 외국계은행
-    한국스탠다드차타드은행: new URL(
-      '@/assets/bank-Logos/BK_SC_Profile.png',
-      import.meta.url
-    ).href,
+    한국스탠다드차타드은행: new URL('@/assets/bank-Logos/BK_SC_Profile.png', import.meta.url).href,
 
     // 인터넷은행
-    '주식회사 카카오뱅크': new URL(
-      '@/assets/bank-Logos/BK_KAKAO_Profile.png',
-      import.meta.url
-    ).href,
-    '주식회사 케이뱅크': new URL(
-      '@/assets/bank-Logos/BK_K_Profile.png',
-      import.meta.url
-    ).href,
-    '토스뱅크 주식회사': new URL(
-      '@/assets/bank-Logos/BK_TOSS_Profile.png',
-      import.meta.url
-    ).href,
+    '주식회사 카카오뱅크': new URL('@/assets/bank-Logos/BK_KAKAO_Profile.png', import.meta.url).href,
+    '주식회사 케이뱅크': new URL('@/assets/bank-Logos/BK_K_Profile.png', import.meta.url).href,
+    '토스뱅크 주식회사': new URL('@/assets/bank-Logos/BK_TOSS_Profile.png', import.meta.url).href,
 
     // 주식회사 명칭 포함
     '주식회사 하나은행': hanaLogo,
@@ -787,10 +635,7 @@ function selectProduct(product) {
     router.push(`/detail/card/${product.cardId}`);
     return;
   }
-  console.warn(
-    '선택한 상품에 유효한 ID가 없어 상세 페이지로 이동할 수 없습니다:',
-    product
-  );
+  console.warn('선택한 상품에 유효한 ID가 없어 상세 페이지로 이동할 수 없습니다:', product);
 }
 
 onMounted(() => {
@@ -1252,8 +1097,7 @@ onMounted(() => {
   align-items: center;
   gap: var(--spacing-lg);
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease,
-    border-color 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
   height: 100%;
 }
 
@@ -1289,83 +1133,229 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  /* ====== Global container & page grid ====== */
   .my-page {
     grid-template-columns: 1fr;
     grid-template-areas:
       'greeting'
       'profile'
-      'left'
       'persona'
+      'left'
       'favrow'
       'actions';
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
   }
-  .profile-image-placeholder {
-    width: clamp(150px, 25vw, 180px);
-    height: clamp(150px, 25vw, 180px);
-    border-radius: 50%;
-    background-color: transparent;
-    border: 2px solid var(--color-secondary-50);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+
+  .my-page h1 span {
+    /* greeting/title size */
+    font-size: var(--font-size-xl);
   }
-  .user-info {
-    gap: var(--spacing-2xl);
+  .my-page h2 {
+    font-size: var(--font-size-2xl);
   }
-  .user-text {
+  .my-page h3 {
+    font-size: var(--font-size-2xl);
+  }
+
+  /* Ensure general text elements never drop below base */
+  .my-page p,
+  .my-page span,
+  .my-page a,
+  .my-page button,
+  .my-page li,
+  .my-page .hcard-name,
+  .my-page .hcard-meta,
+  .my-page .action-title,
+  .my-page .action-desc {
+    font-size: var(--font-size-lg);
+  }
+
+  /* Greeting */
+  .greeting {
     text-align: center;
-    margin: 0;
+    font-size: clamp(18px, 4.5vw, 22px);
+    margin-bottom: var(--spacing-sm);
+    padding-left: 0; /* center alignment on mobile, no extra left padding */
+  }
+
+  /* ====== Profile / user info ====== */
+  .user-info {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md);
+  }
+
+  .profile-image-placeholder {
+    width: clamp(120px, 28vw, 160px);
+    height: clamp(120px, 28vw, 160px);
+    border-radius: 50%;
+  }
+
+  .user-text {
+    padding: 0;
+    text-align: center;
   }
 
   .user-name {
-    margin-bottom: 0.25rem;
-  }
-  .level-value {
     font-size: var(--font-size-xl);
-  }
-  .user-type,
-  .user-level {
-    font-size: var(--font-size-2xl);
-  }
-  .change-type p {
-    font-size: var(--font-size-lg);
-  }
-  .edit-button {
-    font-size: var(--font-size-md);
-  }
-  .right-grid {
-    height: auto;
-  }
-  .left-grid > :deep(.base-card-grey),
-  .right-grid > :deep(.base-card-grey) {
-    min-height: 320px;
-  }
-  .bank-logo img {
-    width: 84px;
-    height: 84px;
-    object-fit: contain;
-  }
-  .fallback-img {
-    width: 84px;
-    height: 84px;
+    margin-bottom: var(--spacing-xs);
   }
 
-  .product-info {
-    font-size: 1rem;
+  .nickname {
+    font-size: var(--font-size-2xl);
   }
+
   .user-name-and-meta {
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-sm);
   }
+
   .user-meta-horizontal {
     justify-content: center;
     gap: var(--spacing-sm);
+    font-size: 0.95rem;
   }
+
   .user-meta-horizontal li + li::before {
     margin: 0 var(--spacing-sm);
   }
+
+  /* XP panel tighter */
+  .xp-panel {
+    padding: var(--spacing-md);
+  }
+
+  /* ====== Persona card ====== */
+  .right-grid {
+    height: auto;
+  }
+
+  .persona-card {
+    padding: var(--spacing-md);
+  }
+  /* Center persona extras actions on mobile */
+  .extras-actions {
+    justify-content: center;
+  }
+  .extras-title {
+    text-align: center;
+  }
+
+  .persona-image {
+    width: 140px;
+    height: 140px;
+  }
+
+  /* ====== Card slider section (left-grid) ====== */
+  .left-grid > :deep(.base-card-grey),
+  .right-grid > :deep(.base-card-grey) {
+    min-height: 300px;
+  }
+
+  .card-slider-wrapper {
+    padding: 0.25rem 0;
+    margin-top: var(--spacing-sm);
+  }
+
+  :deep(.slider-container),
+  :deep(.swiper),
+  :deep(.swiper-wrapper),
+  :deep(.swiper-slide) {
+    background: transparent !important;
+  }
+
+  /* ====== Favorites row ====== */
+  .favbar {
+    padding: var(--spacing-sm);
+  }
+
+  .favbar-tabs {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.35rem;
+    gap: 0.35rem;
+  }
+
+  .favbar-tabs button {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .favbar-scroller {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .hcard {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    align-items: center;
+    gap: var(--spacing-2xl);
+    padding: 0.75rem;
+    border-radius: 12px;
+    min-height: 84px;
+  }
+
+  .hcard-thumb {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    margin-left: var(--spacing-2xl);
+    margin-right: var(--spacing-2xl);
+  }
+
+  .hcard-thumb img,
+  .thumb-fallback-img {
+    object-fit: contain;
+  }
+
+  .hcard-body {
+    min-width: 0;
+  }
+
+  .hcard-name {
+    font-size: 1rem;
+  }
+
+  .hcard-meta {
+    margin-top: 2px;
+    gap: 0.15rem;
+    font-size: 0.9rem;
+  }
+
+  .hcard-meta .chip {
+    font-size: 0.72rem;
+    padding: 0 0.45rem;
+  }
+
+  .fee-inline {
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  /* ====== Quick actions ====== */
+  .actions-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .action-card {
+    min-width: 0;
+    padding: var(--spacing-md);
+  }
+
+  .action-icon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+  }
 }
+
 .card-slider-wrapper {
   width: 100%;
   max-width: 100%;
@@ -1492,8 +1482,7 @@ onMounted(() => {
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   text-align: left;
   min-width: 240px;
   align-self: stretch;
@@ -1599,15 +1588,14 @@ onMounted(() => {
   width: 100%;
   display: flex;
   gap: var(--spacing-md);
-  align-items: flex-start;
+  align-items: center;
   border: 1px solid var(--color-secondary-30);
   border-radius: 12px;
   padding: 0.9rem;
   background: var(--bg-content);
   box-shadow: var(--shadow-sm);
   scroll-snap-align: start;
-  transition: box-shadow 0.15s ease, transform 0.15s ease,
-    border-color 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
 .hcard:hover {
   box-shadow: var(--shadow-md);
@@ -1616,7 +1604,7 @@ onMounted(() => {
 }
 .hcard-thumb {
   width: 64px;
-  height: 100px;
+  height: 64px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1632,8 +1620,17 @@ onMounted(() => {
   font-size: 0.85rem;
   color: var(--color-secondary-80);
 }
+.thumb-fallback-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
 .hcard-body {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* vertically center text alongside thumb */
 }
 .chip--tight {
   align-self: flex-start;
@@ -1770,12 +1767,7 @@ onMounted(() => {
 
 @media (max-width: 1024px) {
   .favbar-scroller {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 640px) {
-  .favbar-scroller {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
 </style>

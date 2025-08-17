@@ -33,6 +33,7 @@ import EducationBoardPage from '@/components/education/EducationBoardPage.vue';
 import WebtoonPage from '@/components/education/WebtoonPage.vue';
 import VideoPage from '@/components/education/EducationVideoBoardPage.vue';
 import QuizEntry from '@/pages/quiz/QuizEntry.vue';
+import DailyQuiz from '@/pages/quiz/DailyQuiz.vue';
 import ComparePage from '@/pages/compare/ComparePage.vue';
 /* 결과 페이지 (동적 import) */
 const ResultPage = () => import('@/pages/persona/PersonaResultPage.vue');
@@ -189,6 +190,13 @@ const routes = [
         props: true,
       },
       { path: 'webtoon', name: 'webtoon', component: WebtoonPage },
+    ],
+  },
+  {
+    path: '/quiz',
+    children: [
+      { path: '', name: 'QuizEntry', component: QuizEntry },
+      { path: 'daily', name: 'DailyQuiz', component: DailyQuiz },
     ],
   },
   {
