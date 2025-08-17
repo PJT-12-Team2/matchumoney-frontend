@@ -16,13 +16,27 @@
       </div>
     </div>
 
-    <!-- 계좌 정보가 없을 때 - 기존 연결 카드 + 모달 기능 추가 -->
+    <!-- 계좌 정보가 없을 때 - BankConnectModal 사용 -->
     <div v-else-if="accounts.length === 0" class="no-accounts">
-      <DepositConnectCard
-        :user-id="userId"
-        @connect-success="handleConnectSuccess"
-        @click="openConnectModal"
-      />
+      <div class="saving-card" @click.stop="openModal">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="product-logo"
+          viewBox="0 0 1024 1024"
+        >
+          <path
+            fill="#40513B"
+            d="M296 256c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm192 200v-48c0-4.4-3.6-8-8-8H296c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8m-48 396H208V148h560v344c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V108c0-17.7-14.3-32-32-32H168c-17.7 0-32 14.3-32 32v784c0 17.7 14.3 32 32 32h272c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8m104.1-115.6c1.8-34.5 16.2-66.8 40.8-91.4c26.2-26.2 62-41 99.1-41c37.4 0 72.6 14.6 99.1 41c3.2 3.2 6.3 6.6 9.2 10.1L769.2 673a8 8 0 0 0 3 14.1l93.3 22.5c5 1.2 9.8-2.6 9.9-7.7l.6-95.4a8 8 0 0 0-12.9-6.4l-20.3 15.8C805.4 569.6 748.1 540 684 540c-109.9 0-199.6 86.9-204 195.7c-.2 4.5 3.5 8.3 8 8.3h48.1c4.3 0 7.8-3.3 8-7.6M880 744h-48.1c-4.3 0-7.8 3.3-8 7.6c-1.8 34.5-16.2 66.8-40.8 91.4c-26.2 26.2-62 41-99.1 41c-37.4 0-72.6-14.6-99.1-41c-3.2-3.2-6.3-6.6-9.2-10.1l23.1-17.9a8 8 0 0 0-3-14.1l-93.3-22.5c-5-1.2-9.8 2.6-9.9-7.7l-.6 95.4a8 8 0 0 0 12.9 6.4l20.3-15.8C562.6 918.4 619.9 948 684 948c109.9 0 199.6-86.9 204-195.7c.2-4.5-3.5-8.3-8-8.3"
+          />
+        </svg>
+        <div class="card-content">
+          <div class="card-title">내 예/적금 불러오기</div>
+          <div class="card-info label">
+            예/적금 정보를 불러와<br />
+            지금 바로 시작해보세요!
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 계좌가 있을 때 - 계좌 + 추가 연결 카드 표시 -->
@@ -65,30 +79,27 @@
             </div>
           </div>
 
-          <!-- 🆕 마지막 카드: 계좌 추가 연결 카드 + 모달 기능 -->
+          <!-- 마지막 카드: 계좌 추가 연결 카드 + BankConnectModal -->
           <div
             class="account-card add-account-card"
             :class="{ swiping: isSwiping }"
-            @click="openConnectModal"
+            @click.stop="openModal"
           >
-            <div class="add-account-content">
-              <div class="add-account-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  class="plus-icon"
-                >
-                  <path
-                    fill="#609966"
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"
-                  />
-                </svg>
-              </div>
-              <div class="add-account-text">
-                <div class="add-account-title">계좌 추가 연결</div>
-                <div class="add-account-subtitle">
-                  새로운 은행 계좌를<br />추가로 연결해보세요
-                </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="product-logo"
+              viewBox="0 0 1024 1024"
+            >
+              <path
+                fill="#40513B"
+                d="M296 256c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm192 200v-48c0-4.4-3.6-8-8-8H296c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8m-48 396H208V148h560v344c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V108c0-17.7-14.3-32-32-32H168c-17.7 0-32 14.3-32 32v784c0 17.7 14.3 32 32 32h272c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8m104.1-115.6c1.8-34.5 16.2-66.8 40.8-91.4c26.2-26.2 62-41 99.1-41c37.4 0 72.6 14.6 99.1 41c3.2 3.2 6.3 6.6 9.2 10.1L769.2 673a8 8 0 0 0 3 14.1l93.3 22.5c5 1.2 9.8-2.6 9.9-7.7l.6-95.4a8 8 0 0 0-12.9-6.4l-20.3 15.8C805.4 569.6 748.1 540 684 540c-109.9 0-199.6 86.9-204 195.7c-.2 4.5 3.5 8.3 8 8.3h48.1c4.3 0 7.8-3.3 8-7.6M880 744h-48.1c-4.3 0-7.8 3.3-8 7.6c-1.8 34.5-16.2 66.8-40.8 91.4c-26.2 26.2-62 41-99.1 41c-37.4 0-72.6-14.6-99.1-41c-3.2-3.2-6.3-6.6-9.2-10.1l23.1-17.9a8 8 0 0 0-3-14.1l-93.3-22.5c-5-1.2-9.8 2.6-9.9-7.7l-.6 95.4a8 8 0 0 0 12.9 6.4l20.3-15.8C562.6 918.4 619.9 948 684 948c109.9 0 199.6-86.9 204-195.7c.2-4.5-3.5-8.3-8-8.3"
+              />
+            </svg>
+            <div class="card-content">
+              <div class="card-title">예/적금 다시 불러오기</div>
+              <div class="card-info label">
+                예/적금 정보를 다시 불러와<br />
+                최신 상태로 확인해보세요!
               </div>
             </div>
           </div>
@@ -110,17 +121,21 @@
       </div>
     </div>
 
-    <!-- 적금 스타일 모달 추가 (기능만) -->
-    <SavingConnectModal
-      v-model:visible="showConnectModal"
-      v-model:loading="isConnecting"
-      @submit="handleConnect"
+    <!-- BankConnectModal 사용 -->
+    <BankConnectModal
+      v-model="showModal"
       :requireBirthdate="requireBirth"
+      :connectedCodes="connected"
+      @update:connectedCodes="connected = $event"
+      @connected="onConnected"
+      @edited="onEdited"
+      @removedAll="onRemovedAll"
+      @loadPrevious="onLoadPrevious"
     />
 
     <!-- 로딩 화면 -->
     <div
-      v-if="isConnecting"
+      v-if="isLoading"
       style="
         position: fixed;
         top: 50%;
@@ -142,11 +157,10 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
-import SavingConnectModal from '@/components/savings/SavingConnectModal.vue';
-import DepositConnectCard from './DepositConnectCard.vue';
+import { ref, computed, defineProps, defineEmits, onMounted } from 'vue';
+import BankConnectModal from '@/components/savings/BankConnectModal.vue';
 import { useAuthStore } from '@/stores/auth';
-import savingApi from '@/api/savings.js'; // 🔄 savings.js API 사용
+import codefApi from '@/api/codef';
 
 // Props
 const props = defineProps({
@@ -184,11 +198,12 @@ const startX = ref(0);
 const currentX = ref(0);
 const isDragging = ref(false);
 const threshold = 50;
-const showConnectModal = ref(false);
 
-// 적금 스타일 연결 관련 (기능만)
-const isConnecting = ref(false);
+// BankConnectModal 관련
+const showModal = ref(false);
 const requireBirth = ref(false);
+const connected = ref([]);
+const isLoading = ref(false);
 
 // 전체 슬라이드 수 (계좌 + 추가 카드)
 const totalSlides = computed(() => {
@@ -198,6 +213,11 @@ const totalSlides = computed(() => {
 // 실제 사용할 userId
 const effectiveUserId = computed(() => {
   return props.userId || authStore.userId;
+});
+
+// 초기화 시 연결된 은행 정보 로드
+onMounted(async () => {
+  connected.value = await codefApi.getBankByConnectedId();
 });
 
 // 슬라이드 이동 함수들
@@ -218,82 +238,107 @@ const prevSlide = () => {
   emit('slideChange', newIndex);
 };
 
-// 🆕 연결 성공 핸들러
+// 연결 성공 핸들러
 const handleConnectSuccess = () => {
   emit('connect-success');
   emit('refresh'); // 계좌 목록 새로고침
 };
 
 // 모달 열기
-const openConnectModal = () => {
-  if (!effectiveUserId.value) {
-    alert('로그인이 필요합니다.');
-    return;
-  }
-  showConnectModal.value = true;
+const openModal = () => {
+  showModal.value = true;
 };
 
-// 계좌 연결 처리 (적금 API 사용)
-const handleConnect = async (loginData) => {
-  if (!effectiveUserId.value) {
-    alert('사용자 정보를 찾을 수 없습니다.');
-    return;
-  }
-
-  isConnecting.value = true;
-
+// BankConnectModal 이벤트 핸들러들
+const onLoadPrevious = async () => {
+  isLoading.value = true;
   try {
-    // 🔧 개발 환경에서 특정 테스트 계정은 성공 시뮬레이션
-    if (
-      import.meta.env.DEV &&
-      loginData.id === 'testuser' &&
-      loginData.password === '1234'
-    ) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      alert('계좌 연결 성공! (개발 테스트)');
-      showConnectModal.value = false;
-      emit('connect-success');
-      return;
-    }
-
-    // 🔄 적금 API 사용 (syncAccounts)
-    const response = await savingApi.syncAccounts({
-      id: loginData.id,
-      password: loginData.password,
-      birthDate: loginData.birthDate,
-    });
-
-    alert('계좌 연결 성공!');
-    showConnectModal.value = false;
-    emit('connect-success');
-  } catch (error) {
-    // 적금 스타일 에러 처리
-    const errorList = error.response?.data?.errors || [];
+    await codefApi.syncAccountsPre();
+    alert('예/적금 연결 성공!');
+    showModal.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.error(e);
+    const errorList = e.response?.data?.errors || [];
     let errorMessage = '';
-
-    for (const errorItem of errorList) {
-      if (errorItem.code === 'CF-12855') {
+    for (const error of errorList) {
+      console.log(error.code);
+      if (error.code === 'CF-12855') {
+        console.log('생일 입력 필요!!');
         requireBirth.value = true;
       }
-      errorMessage += (errorItem.message || '') + '\n';
+      errorMessage += (error.message || '') + '\n';
     }
-
-    // 기본 에러 메시지 처리
-    if (!errorMessage) {
-      if (error.response?.status === 401) {
-        errorMessage = '은행 로그인 정보가 올바르지 않습니다.';
-      } else if (error.response?.status === 404) {
-        errorMessage = '해당 은행에서 계좌를 찾을 수 없습니다.';
-      } else if (error.response?.status === 500) {
-        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      } else {
-        errorMessage = '계좌 연결에 실패했습니다.';
-      }
-    }
-
-    alert('계좌 연결 실패\n' + errorMessage);
+    alert('예/적금 연결 실패\n' + errorMessage);
   } finally {
-    isConnecting.value = false;
+    isLoading.value = false;
+  }
+};
+
+const onRemovedAll = async () => {
+  isLoading.value = true;
+  console.log('제거를 시작합니다!');
+  try {
+    await codefApi.deleteConnectedId();
+    alert('제거 완료');
+    showModal.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.error(e);
+    alert('제거 실패\n');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const onEdited = async (loginDto) => {
+  isLoading.value = true;
+  console.log('업데이트를 시작합니다!');
+  try {
+    await codefApi.updateConnectedId(loginDto);
+    alert('예/적금 연결 성공!');
+    showModal.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.error(e);
+    const errorList = e.response?.data?.errors || [];
+    let errorMessage = '';
+    for (const error of errorList) {
+      console.log(error.code);
+      if (error.code === 'CF-12855') {
+        console.log('생일 입력 필요!!');
+        requireBirth.value = true;
+      }
+      errorMessage += (error.message || '') + '\n';
+    }
+    alert('예/적금 연결 실패\n' + errorMessage);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const onConnected = async (loginDto) => {
+  isLoading.value = true;
+  try {
+    await codefApi.syncAccounts(loginDto);
+    alert('예/적금 연결 성공!');
+    showModal.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.error(e);
+    const errorList = e.response?.data?.errors || [];
+    let errorMessage = '';
+    for (const error of errorList) {
+      console.log(error.code);
+      if (error.code === 'CF-12855') {
+        console.log('생일 입력 필요!!');
+        requireBirth.value = true;
+      }
+      errorMessage += (error.message || '') + '\n';
+    }
+    alert('예/적금 연결 실패\n' + errorMessage);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -360,6 +405,39 @@ const handleMouseUp = () => {
 
 <style scoped>
 /* ===== 계좌 슬라이더 ===== */
+.saving-card {
+  background-color: var(--color-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--spacing-lg);
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  width: 100%;
+}
+
+.product-logo {
+  width: 24%;
+  max-width: 200px;
+  max-height: 100px;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: var(--font-size-2xl);
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  font-size: var(--font-size-base);
+  color: var(--color-title);
+}
 .account-slider {
   position: relative;
   margin-bottom: 10px;
@@ -430,7 +508,6 @@ const handleMouseUp = () => {
 /* ===== 🆕 계좌 추가 연결 카드 ===== */
 .add-account-card {
   background: var(--color-light);
-  border: 2px dashed var(--color-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -440,51 +517,6 @@ const handleMouseUp = () => {
 .add-account-card:hover {
   box-shadow: var(--box-shadow);
   border-color: var(--color-dark);
-}
-
-.add-account-card:hover .plus-icon {
-  transform: scale(1.2);
-}
-
-.add-account-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  text-align: center;
-  width: 100%;
-}
-
-.add-account-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.plus-icon {
-  width: 50px;
-  height: 50px;
-  opacity: 0.8;
-  transition: transform 0.3s ease;
-}
-
-.add-account-text {
-  text-align: center;
-}
-
-.add-account-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-dark);
-  margin-bottom: 8px;
-}
-
-.add-account-subtitle {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-accent);
-  line-height: 1.4;
 }
 
 /* ===== 로딩/에러/빈 상태 ===== */
@@ -600,36 +632,20 @@ const handleMouseUp = () => {
 }
 
 /* ===== 반응형 디자인 ===== */
-@media (max-width: 393px) {
+@media (max-width: 420px) {
   .account-name {
-    font-size: 20px;
+    font-size: var(--font-size-3xl);
+    padding-top: 1rem;
   }
 
   .balance-section h4,
   .account-section h4 {
-    font-size: 12px;
+    font-size: var(--font-size-xl);
   }
 
   .balance-amount,
   .account-number {
     font-size: 16px;
-  }
-
-  .dropdown-arrow {
-    display: none;
-  }
-
-  .add-account-title {
-    font-size: 20px;
-  }
-
-  .add-account-subtitle {
-    font-size: 12px;
-  }
-
-  .plus-icon {
-    width: 40px;
-    height: 40px;
   }
 
   .loading-container,
