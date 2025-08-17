@@ -148,14 +148,32 @@
             <img
               :src="profileImageSrc"
               alt="프로필"
-              class="rounded-circle"
+              class="header-profile"
               style="width: 2.25rem; height: 2.25rem; object-fit: cover"
+              @error="onImgError"
             />
           </RouterLink>
 
-          <!-- 로그인 버튼(모바일) -->
-          <button class="login-btn d-block d-md-none" @click="handleAuthAction">
-            {{ isLoggedIn ? '로그아웃' : '로그인' }}
+          <!-- 모바일: 로그인 상태에 따라 버튼/프로필 전환 -->
+          <RouterLink
+            v-if="isLoggedIn"
+            to="/mypage"
+            class="profile-link d-block d-md-none"
+            aria-label="마이페이지로 이동"
+          >
+            <img
+              :src="profileImageSrc"
+              alt="내 프로필"
+              class="header-profile header-profile--mobile"
+              @error="onImgError"
+            />
+          </RouterLink>
+          <button
+            v-else
+            class="login-btn d-block d-md-none"
+            @click="handleAuthAction"
+          >
+            로그인
           </button>
 
           <!-- ☰ 햄버거(모바일) -->
@@ -169,51 +187,269 @@
       </nav>
     </div>
 
-    <!-- 📱 모바일 사이드 메뉴 -->
-    <SideMenu :visible="showMenu" @close="showMenu = false" />
+    <!-- 📱 모바일 풀스크린 메뉴 (아코디언) -->
+    <div
+      v-if="showMenu"
+      class="mobile-menu-overlay d-lg-none"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="mobile-menu-header">
+        <span class="mobile-menu-title">전체 메뉴</span>
+        <button
+          class="mobile-menu-close"
+          @click="showMenu = false"
+          aria-label="메뉴 닫기"
+        >
+          ✕
+        </button>
+      </div>
+
+      <ul class="mobile-menu-list">
+        <li class="menu-group menu-single">
+          <RouterLink
+            to="/mypage"
+            class="single-link"
+            @click.native="showMenu = false"
+          >
+            <span class="single-left">
+              <span class="single-icon" aria-hidden="true"><i class="bi bi-person-circle"></i></span>
+              <span class="single-label">마이페이지</span>
+            </span>
+            <span class="chevron">›</span>
+          </RouterLink>
+        </li>
+        <li
+          v-for="(group, idx) in mobileMenuGroups"
+          :key="group.title"
+          class="menu-group"
+        >
+          <button
+            class="group-toggle"
+            @click="toggleGroup(idx)"
+            :aria-expanded="group.expanded.toString()"
+          >
+            <span class="group-left">
+              <span
+                v-if="group.iconClass"
+                class="group-icon"
+                aria-hidden="true"
+              >
+                <i :class="group.iconClass"></i>
+              </span>
+              <span class="group-title">{{ group.title }}</span>
+              <span v-if="group.desc" class="group-desc">{{ group.desc }}</span>
+            </span>
+            <span class="chevron" :class="{ open: group.expanded }">▾</span>
+          </button>
+
+          <transition name="accordion">
+            <ul v-show="group.expanded" class="submenu">
+              <li v-for="item in group.items" :key="item.to">
+                <RouterLink
+                  :to="item.to"
+                  class="submenu-link"
+                  @click.native="showMenu = false"
+                >
+                  <span
+                    v-if="item.iconClass"
+                    class="submenu-icon"
+                    aria-hidden="true"
+                  >
+                    <i :class="item.iconClass"></i>
+                  </span>
+                  <span class="submenu-label">{{ item.label }}</span>
+                </RouterLink>
+              </li>
+            </ul>
+          </transition>
+        </li>
+      </ul>
+    </div>
   </header>
 </template>
-
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { RouterLink, useRouter } from 'vue-router'; // useRouter 추가
-import { useAuthStore } from '@/stores/auth'; // 인증 스토어 추가
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import SideMenu from '@/components/SideMenu.vue';
 import defaultUser from '@/assets/user.png';
 import myLogo from '@/assets/Logo.png';
+import api from '@/api'; // axios instance
 
-/* ─────────── 인증 스토어 ─────────── */
 const authStore = useAuthStore();
-const router = useRouter(); // 라우터 추가
+const router = useRouter();
 
-/* ─────────── 1. 모바일 메뉴 ─────────── */
 const showMenu = ref(false);
-
-/* ─────────── 드롭다운 메뉴 상태 ─────────── */
 const showDropdown = ref(null);
 
-/* ─────────── 2. 프로필 이미지 ────────── */
-const profile_image_url = ref(''); // 로그인 후 URL 주입
-const profileImageSrc = computed(() => profile_image_url.value || defaultUser);
+// 📱 모바일 메뉴 데이터 (대제목/소제목)
+const mobileMenuGroups = ref([
+  {
+    title: '페르소나',
+    desc: '내 유형 기반 추천',
+    iconClass: 'bi bi-person-bounding-box',
+    expanded: false,
+    items: [
+      {
+        label: '내 페르소나 결과',
+        to: '/persona/result',
+        iconClass: 'bi bi-graph-up',
+      },
+      { label: '예금 추천', to: '/persona/deposits', iconClass: 'bi bi-bank' },
+      {
+        label: '적금 추천',
+        to: '/persona/savings',
+        iconClass: 'bi bi-piggy-bank',
+      },
+      {
+        label: '카드 추천',
+        to: '/persona/cards',
+        iconClass: 'bi bi-credit-card',
+      },
+    ],
+  },
+  {
+    title: '마이데이터',
+    desc: '소비·자산 분석',
+    iconClass: 'bi bi-bar-chart-line',
+    expanded: false,
+    items: [
+      {
+        label: '예금 추천 내역',
+        to: '/deposits/recommendations/history',
+        iconClass: 'bi bi-clipboard-data',
+      },
+      {
+        label: '적금 추천 내역',
+        to: '/savings/recommendations/history',
+        iconClass: 'bi bi-clipboard-check',
+      },
+      {
+        label: '카드 소비 · 혜택',
+        to: '/mydata/cards',
+        iconClass: 'bi bi-receipt',
+      },
+      { label: '자산 현황', to: '/mydata/assets', iconClass: 'bi bi-wallet2' },
+    ],
+  },
+  {
+    title: '상품비교',
+    desc: '조건 맞춤 비교',
+    iconClass: 'bi bi-sliders',
+    expanded: false,
+    items: [
+      {
+        label: '예금 비교함',
+        to: '/compare?type=DEPOSIT',
+        iconClass: 'bi bi-bank',
+      },
+      {
+        label: '적금 비교함',
+        to: '/compare?type=SAVING',
+        iconClass: 'bi bi-piggy-bank',
+      },
+      {
+        label: '카드 비교함',
+        to: '/compare?type=CARD',
+        iconClass: 'bi bi-credit-card',
+      },
+      {
+        label: '내 비교함 전체',
+        to: '/compare',
+        iconClass: 'bi bi-list-check',
+      },
+    ],
+  },
+  {
+    title: '교육',
+    desc: '퀴즈·콘텐츠 학습',
+    iconClass: 'bi bi-mortarboard',
+    expanded: false,
+    items: [
+      {
+        label: '금융 퀴즈',
+        to: '/education/quiz',
+        iconClass: 'bi bi-question-circle',
+      },
+      {
+        label: '교육 콘텐츠',
+        to: '/education/contents',
+        iconClass: 'bi bi-collection-play',
+      },
+      {
+        label: '금융 웹툰',
+        to: '/education/webtoons',
+        iconClass: 'bi bi-layout-text-window-reverse',
+      },
+      {
+        label: '금융 영상',
+        to: '/education/videos',
+        iconClass: 'bi bi-play-circle',
+      },
+    ],
+  },
+]);
 
-/* ─────────── 로그인 상태 및 버튼 로직 ─────────── */
+function toggleGroup(index) {
+  mobileMenuGroups.value[index].expanded =
+    !mobileMenuGroups.value[index].expanded;
+}
+
+function onProfileImageUpdated(e) {
+  const url = e?.detail?.url || '';
+  if (url) {
+    profile_image_url.value = url;
+  }
+}
+
+const profile_image_url = ref('');
+const profileImageSrc = computed(() => {
+  const url = profile_image_url.value;
+  if (!url) return defaultUser;
+  // 절대경로면 그대로 사용
+  if (typeof url === 'string' && /^(https?:)?\/\//.test(url)) return url;
+  // 상대경로면 그대로 바인딩 (프로젝트 정적 경로나 /api/files 같은 경우)
+  return url || defaultUser;
+});
+
 const isLoggedIn = computed(
   () => !!(authStore.accessToken && authStore.userId)
 );
 
 const handleAuthAction = () => {
   if (isLoggedIn.value) {
-    // 로그아웃
     authStore.logout();
-    // 홈페이지로 리다이렉트
     router.push('/');
   } else {
-    // 로그인 페이지로 이동
     router.push('/login');
   }
 };
 
-/* ─────────── 3. 알림 로직 ──────────── */
+// 프로필 이미지 로드 실패 시 기본 이미지로 대체
+const onImgError = (e) => {
+  e.target.src = defaultUser;
+};
+
+// 사용자 정보 조회 및 이미지 URL 반영
+const fetchMe = async () => {
+  try {
+    // axios 인스턴스에 baseURL("/api")가 설정되어 있다면 앞에 슬래시 없이 호출
+    const { data } = await api.get('user/me');
+    // 일부 백엔드는 payload를 result/data에 넣어 내려줌
+    const me = data?.result || data?.data || data;
+    profile_image_url.value =
+      me?.profileImageUrl ||
+      me?.profile_image_url ||
+      me?.imageUrl ||
+      me?.profileImage ||
+      '';
+  } catch (error) {
+    console.error('사용자 정보 불러오기 실패:', error);
+    profile_image_url.value = '';
+  }
+};
+
 const showNoti = ref(false);
 const notifications = ref([
   {
@@ -244,7 +480,28 @@ function markAsRead(id) {
 function onKey(e) {
   if (e.key === 'Escape') showNoti.value = false;
 }
-onMounted(() => window.addEventListener('keydown', onKey));
+
+onMounted(() => {
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('profile-image-updated', onProfileImageUpdated);
+});
+
+// 로그인 상태가 바뀔 때마다 프로필 이미지 갱신
+watch(
+  () => isLoggedIn.value,
+  async (loggedIn) => {
+    if (loggedIn) {
+      await fetchMe();
+    } else {
+      profile_image_url.value = '';
+    }
+  },
+  { immediate: true }
+);
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKey);
+  window.removeEventListener('profile-image-updated', onProfileImageUpdated);
+});
 </script>
 
 <style scoped>
@@ -472,6 +729,8 @@ onMounted(() => window.addEventListener('keydown', onKey));
 .profile-link {
   display: flex;
   align-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--color-secondary-50);
 }
 
 /* 로그인/로그아웃 버튼(데스크탑) */
@@ -528,6 +787,167 @@ onMounted(() => window.addEventListener('keydown', onKey));
   .nav-menu {
     display: none;
   }
+
+  .header-profile {
+    width: 40px; /* 원하는 크기 */
+    height: 40px;
+    border-radius: 50%; /* 원형 */
+    border: 1px solid var(--color-secondary-50);
+    object-fit: cover; /* 이미지 비율 유지 */
+  }
+  /* 모바일 크기 보정 */
+  .header-profile--mobile {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* ─────────── 모바일 풀스크린 메뉴 ─────────── */
+  .mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+  }
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .mobile-menu-title {
+    font-weight: 800;
+    font-size: 1.3rem;
+  }
+  .mobile-menu-close {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  .mobile-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    overflow-y: auto;
+    flex: 1 1 auto;
+  }
+  .menu-group {
+    border-bottom: 1px solid var(--border-light);
+  }
+  .group-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.25rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .group-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .group-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+  }
+  .group-title {
+    font-size: 1.28rem;
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+  .group-desc {
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-secondary-80);
+    font-weight: 500;
+  }
+  .menu-single {
+    border-top: 1px solid var(--border-light);
+  }
+  .single-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    color: var(--color-dark);
+  }
+  .single-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .single-icon {
+    width: 1.25rem;
+    text-align: center;
+    font-size: 1.25rem;
+  }
+  .single-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .single-link:hover {
+    background: var(--color-light);
+  }
+  .chevron {
+    transition: transform 0.2s ease;
+  }
+  .chevron.open {
+    transform: rotate(180deg);
+  }
+
+  .submenu {
+    list-style: none;
+    padding: 0.25rem 0 0.75rem 3.25rem;
+    margin: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .submenu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    text-decoration: none;
+    color: var(--color-dark);
+    border-radius: 8px;
+    font-size: 1.05rem;
+  }
+  .submenu-link:hover {
+    background: var(--color-light);
+  }
+  .submenu-icon {
+    width: 1.25rem;
+    text-align: center;
+  }
+
+  /* accordion transition */
+  .accordion-enter-active,
+  .accordion-leave-active {
+    transition: max-height 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: max-height, opacity, transform;
+  }
+  .accordion-enter-from,
+  .accordion-leave-to {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  .accordion-enter-to,
+  .accordion-leave-from {
+    max-height: 520px;
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 알림 드롭다운 스타일 개선 */
@@ -551,7 +971,7 @@ onMounted(() => window.addEventListener('keydown', onKey));
   --color-white-10: rgba(255, 255, 255, 0.1);
   --color-white-15: rgba(255, 255, 255, 0.15);
   --color-white-20: rgba(255, 255, 255, 0.2);
-  —color-white-30: rgba(255, 255, 255, 0.3);
-  —color-white-50: rgba(255, 255, 255, 0.5);
+  --color-white-30: rgba(255, 255, 255, 0.3);
+  --color-white-50: rgba(255, 255, 255, 0.5);
 }
 </style>

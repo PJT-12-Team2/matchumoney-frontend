@@ -9,20 +9,18 @@ const instance = axios.create({
 });
 instance.interceptors.request.use(
   (config) => {
-    // 토큰을 Pinia 스토어에서 가져오기
-    const token = useAuthStore().getToken();
+    const store = useAuthStore();
+    const tokenFromStore = store.getToken?.();
+    const tokenFromLS = localStorage.getItem('accessToken');
 
-    //토큰 값 있으면 헤더에 자동 추가
+    const token = tokenFromStore || tokenFromLS; // ✅ 새로고침 상황 대비
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
-
 instance.interceptors.response.use(
   (response) => {
     return response;
@@ -38,7 +36,7 @@ instance.interceptors.response.use(
       console.log('response.status:', response.status);
       // console.log("📦 응답 헤더 전체:", response.headers);
       const newAccessToken = response.headers['authorization'];
-      console.log('🔄 새 accessToken이 재발급되어 반영됩니다:', newAccessToken);
+      // console.log("🔄 새 accessToken이 재발급되어 반영됩니다:", newAccessToken);
 
       if (newAccessToken) {
         const tokenOnly = newAccessToken.startsWith('Bearer ') ? newAccessToken.slice(7) : newAccessToken;

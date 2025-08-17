@@ -492,28 +492,7 @@ const selectProduct = (product) => {
 }
 
 .card-compare-button {
-  display: flex;
-  align-items: center;
-}
-
-.card-compare-button > *:first-child {
-  transform: scale(0.85);
-  transform-origin: left center;
-}
-
-/* LikeToggle 내부(하트+숫자) 간격/패딩 보정 */
-.card-compare-button :deep(.like-chip) {
-  padding: 0.35rem 0.7rem; /* 칩 자체를 살짝 줄임 */
-  border-radius: 999px;
-  line-height: 1;
-}
-.card-compare-button :deep(.like-icon) {
-  margin-right: 0.3rem; /* 하트 ↔ 숫자 간격 */
-  width: 1rem; /* 아이콘이 img/svg면 적용됨 */
-  height: 1rem;
-}
-.card-compare-button :deep(.like-count) {
-  font-size: 0.95rem; /* 숫자 조금만 축소 */
+  margin-top: 0.5rem;
 }
 
 .product-info h4 {

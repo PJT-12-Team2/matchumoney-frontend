@@ -31,4 +31,26 @@ export default {
     );
     return data;
   },
+  async uploadProfileImage(file) {
+    // 1) presigned URL 발급
+    const { data } = await api.post(`files/profile/presign`, {
+      filename: file.name,
+      contentType: file.type,
+    });
+    const { uploadUrl, publicUrl } = data;
+
+    // 2) S3에 직접 PUT 업로드 (axios 말고 fetch 사용 권장)
+    const putRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
+    });
+    if (!putRes.ok) {
+      const text = await putRes.text().catch(() => '');
+      throw new Error(`S3 업로드 실패: ${putRes.status} ${text}`);
+    }
+
+    // 3) 최종 URL 반환 (DB 저장용)
+    return { url: publicUrl };
+  },
 };

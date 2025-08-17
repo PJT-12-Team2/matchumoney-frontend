@@ -13,7 +13,7 @@ import MyPage from '@/pages/user/MyPage.vue';
 import UpdatePasswordPage from '@/pages/user/UpdatePasswordPage.vue';
 import UpdateUserInfoPage from '@/pages/user/UpdateUserInfoPage.vue';
 import FavoritePage from '@/pages/user/MyFavoritePage.vue';
-
+import FortunePage from '@/pages/quiz/FortunePage.vue';
 import PersonaCardAllList from '@/pages/persona/PersonaCardAllList.vue';
 import PersonaDepositAllList from '@/pages/persona/PersonaDepositAllListPage.vue';
 import PersonaSavingAllList from '@/pages/persona/PersonaSavingAllListPage.vue';
@@ -30,10 +30,9 @@ import DepositDetailPage from '@/pages/detail/DepositDetailPage.vue';
 import SavingDetailPage from '@/pages/detail/SavingDetailPage.vue';
 
 import EducationBoardPage from '@/components/education/EducationBoardPage.vue';
-import QuizPage from '@/components/education/QuizPage.vue';
 import WebtoonPage from '@/components/education/WebtoonPage.vue';
 import VideoPage from '@/components/education/EducationVideoBoardPage.vue';
-
+import QuizEntry from '@/pages/quiz/QuizEntry.vue';
 import ComparePage from '@/pages/compare/ComparePage.vue';
 /* 결과 페이지 (동적 import) */
 const ResultPage = () => import('@/pages/persona/PersonaResultPage.vue');
@@ -166,9 +165,15 @@ const routes = [
     props: true,
   },
   {
+    path: '/fortune',
+    name: 'Fortune',
+    component: FortunePage,
+    props: true,
+  },
+  {
     path: '/education',
     children: [
-      { path: 'quiz', name: 'quiz', component: QuizPage },
+      { path: 'quiz', name: 'quiz', component: QuizEntry },
       { path: 'contents', name: 'contents', component: EducationBoardPage },
       { path: 'video', name: 'video', component: VideoPage },
       {
