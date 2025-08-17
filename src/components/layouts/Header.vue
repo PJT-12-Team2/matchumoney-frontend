@@ -105,14 +105,10 @@
         </ul>
 
         <!-- 로그인하지 않은 사용자용 간단한 메뉴 -->
-        <ul v-else class="nav-menu d-none d-lg-flex">
-          <li class="nav-item">
-            <RouterLink to="/login" active-class="active">로그인</RouterLink>
-          </li>
-          <li class="nav-item">
-            <RouterLink to="/signup" active-class="active">회원가입</RouterLink>
-          </li>
-        </ul>
+        <div v-else class="auth-links d-none d-lg-flex">
+          <RouterLink to="/login" class="auth-link-btn login-link-btn">로그인</RouterLink>
+          <RouterLink to="/signup" class="auth-link-btn signup-link-btn">회원가입</RouterLink>
+        </div>
 
         <!-- ② 알림 + 프로필 / 햄버거 -->
         <div class="header-actions">
@@ -174,13 +170,9 @@
               @error="onImgError"
             />
           </RouterLink>
-          <button
-            v-else
-            class="login-btn d-block d-md-none"
-            @click="handleAuthAction"
-          >
+          <RouterLink v-else to="/login" class="auth-link-btn-mobile login-link-btn-mobile d-block d-md-none">
             로그인
-          </button>
+          </RouterLink>
 
           <!-- ☰ 햄버거(모바일) -->
           <button
@@ -194,12 +186,13 @@
     </div>
 
     <!-- 📱 모바일 풀스크린 메뉴 (아코디언) -->
-    <div
-      v-if="showMenu"
-      class="mobile-menu-overlay d-lg-none"
-      role="dialog"
-      aria-modal="true"
-    >
+    <transition name="mobile-menu">
+      <div
+        v-if="showMenu"
+        class="mobile-menu-overlay d-lg-none"
+        role="dialog"
+        aria-modal="true"
+      >
       <div class="mobile-menu-header">
         <span class="mobile-menu-title">전체 메뉴</span>
         <button
@@ -317,7 +310,8 @@
           </li>
         </template>
       </ul>
-    </div>
+      </div>
+    </transition>
   </header>
 </template>
 <script setup>
@@ -814,7 +808,78 @@ onUnmounted(() => {
   box-shadow: var(--shadow-md);
 }
 
-/* 로그인 버튼(모바일) */
+/* 로그인/회원가입 링크 버튼 스타일 */
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-link-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  border: 0.125rem solid;
+}
+
+.login-link-btn {
+  background: transparent;
+  border-color: var(--color-dark);
+  color: var(--color-dark);
+}
+
+.login-link-btn:hover {
+  background: var(--color-dark);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.signup-link-btn {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: var(--color-white);
+}
+
+.signup-link-btn:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+/* 모바일 로그인 버튼 스타일 */
+.auth-link-btn-mobile {
+  padding: 0.4rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  border: 0.125rem solid;
+}
+
+.login-link-btn-mobile {
+  background: transparent;
+  border-color: var(--color-dark);
+  color: var(--color-dark);
+}
+
+.login-link-btn-mobile:hover {
+  background: var(--color-dark);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 기존 로그인 버튼(모바일) - 사용하지 않음 */
 .login-btn {
   background: var(--color-white);
   border: 0.125rem solid var(--color-white);
@@ -831,7 +896,6 @@ onUnmounted(() => {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-dark);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -868,6 +932,23 @@ onUnmounted(() => {
     z-index: 1000;
     display: flex;
     flex-direction: column;
+  }
+
+  /* 모바일 메뉴 애니메이션 */
+  .mobile-menu-enter-active {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .mobile-menu-leave-active {
+    transition: transform 0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+  .mobile-menu-enter-from {
+    transform: translateX(100%);
+  }
+  .mobile-menu-leave-to {
+    transform: translateX(100%);
+  }
+  .mobile-menu-enter-to {
+    transform: translateX(0);
   }
   .mobile-menu-header {
     display: flex;
