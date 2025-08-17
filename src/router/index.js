@@ -192,6 +192,13 @@ const routes = [
     ],
   },
   {
+    path: '/quiz',
+    children: [
+      { path: '', name: 'QuizEntry', component: QuizEntry },
+      { path: 'daily', name: 'DailyQuiz', component: DailyQuiz },
+    ],
+  },
+  {
     path: '/persona',
     children: [
       { path: 'start', name: 'PersonaTest', component: PersonaSurveyStart },

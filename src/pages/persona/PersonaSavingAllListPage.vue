@@ -443,7 +443,8 @@ const carouselSavings = computed(() => {
     id: d.savingId,
     name: d.savingName,
     bankName: d.bankName,
-    image: d.companyImage,
+    image:
+      getBankLogo(getBankInitial(d.bankName || '')) || d.companyImage || '',
     maxLimit: d.maxLimit,
     maxRate: `${d.maxRate.toFixed(2)}%`,
     baseRate: `${d.basicRate.toFixed(2)}%`,
@@ -758,7 +759,7 @@ const getMinAmountWithTerm = (product) => {
 }
 
 .carousel-saving-image {
-  width: 60%;
+  width: 7rem;
   border-radius: var(--spacing-sm);
   padding-bottom: 2rem;
 }
@@ -772,12 +773,12 @@ const getMinAmountWithTerm = (product) => {
   font-size: 1.3rem;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 0.5rem;
 }
 
 .highlight {
   font-size: var(--font-size-2xl);
-  text-decoration: underline;
+  color: #2e7d32;
+  font-weight: 900;
 }
 
 .filter-selection-section {
@@ -865,14 +866,14 @@ const getMinAmountWithTerm = (product) => {
 .bank-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
   justify-content: center;
   place-items: center;
 }
 
 .bank-logo-option {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -918,18 +919,16 @@ const getMinAmountWithTerm = (product) => {
 
 /* ---- Product Card Horizontal Layout ---- */
 .product-card {
+  position: relative;
   background: var(--bg-content);
   border-radius: var(--spacing-xl);
   padding: var(--spacing-xl);
-  cursor: pointer;
-  transition: all 0.3s ease;
   height: 18rem;
   display: flex;
-  flex-direction: column;
-  /* flex-direction: row; */
   align-items: center;
   justify-content: center;
   text-align: center;
+  padding-top: 2.4rem;
 }
 
 .product-card:hover {
@@ -987,7 +986,7 @@ const getMinAmountWithTerm = (product) => {
 
 .bank-name-bold {
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: #1e2b4e; /* strong navy blue */
   margin-bottom: 0.5rem;
 }
@@ -1018,6 +1017,15 @@ const getMinAmountWithTerm = (product) => {
   margin-right: 0.4rem;
 }
 
+.carousel-saving-rates-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-sm);
+}
+
 @media (max-width: 768px) {
   .search-results-grid {
     grid-template-columns: 1fr;
@@ -1031,10 +1039,12 @@ const getMinAmountWithTerm = (product) => {
     font-size: 1.3rem;
     font-weight: 700;
     text-align: center;
-    margin-bottom: 0.5rem;
   }
-  .carousel-saving-benefit {
-    font-size: var(--font-size-sm);
+
+  .carousel-saving-image {
+    width: 8rem;
+    border-radius: var(--spacing-sm);
+    padding-bottom: 2rem;
   }
 
   /* --- ProductCard 모바일: 3단 가로 배치 --- */
@@ -1083,6 +1093,40 @@ const getMinAmountWithTerm = (product) => {
     width: 7rem;
     height: 7rem;
   }
+
+  .bank-label {
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding-top: 0.6rem;
+  }
+
+  .carousel-saving-rates-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+  }
+
+  .bank-name-bold {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: #1e2b4e; /* strong navy blue */
+    margin-bottom: 0.5rem;
+  }
+
+  .rate-line {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    /* margin-bottom: 0.1rem; */
+  }
+
+  .bank-logo-option {
+    width: 100px;
+    height: 100px;
+  }
 }
 </style>
 <style scoped>
@@ -1124,6 +1168,20 @@ const getMinAmountWithTerm = (product) => {
   font-weight: bold;
 }
 
+.saving-compare-button {
+  display: flex; /* 가로 배치 */
+  flex-direction: row;
+  align-items: center; /* 수직 중앙 */
+  justify-content: center; /* 수평 중앙 */
+  margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.2rem;
+}
+
+.saving-compare-button > * {
+  white-space: nowrap; /* 버튼 안 텍스트 줄바꿈 방지 */
+}
+
 @media (max-width: 768px) {
   .term-selector {
     display: none;
@@ -1134,9 +1192,14 @@ const getMinAmountWithTerm = (product) => {
   }
 
   .saving-compare-button > *:first-child {
-    transform: scale(0.7); /* 전체 크기 80%로 축소 */
-    transform-origin: center; /* 축소 기준 중앙 */
+    transform: scale(0.7);
+    transform-origin: center;
     margin-right: -1rem;
+  }
+  .saving-compare-button > *:last-child {
+    transform: scale(0.8);
+    transform-origin: center;
+    margin-right: 0 !important;
   }
 }
 
@@ -1157,14 +1220,7 @@ font-size: var(--font-size-base);
 color: var(--text-secondary);
 text-align: center;
 } */
-.carousel-saving-rates-inline {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin-top: var(--spacing-sm);
-}
+
 /* 🔷 Empty state 스타일 */
 .empty-state {
   display: flex;
@@ -1217,24 +1273,11 @@ text-align: center;
   align-items: flex-start;
 }
 .saving-favorite-button {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-.saving-compare-button {
-  display: flex; /* 가로 배치 */
-  flex-direction: row;
-  align-items: center; /* 수직 중앙 */
-  justify-content: center; /* 수평 중앙 */
-  margin-top: 0.5rem;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-}
-
-.saving-compare-button > * {
-  white-space: nowrap; /* 버튼 안 텍스트 줄바꿈 방지 */
+  position: absolute;
+  top: 1.8rem;
+  right: 1.6rem;
+  margin: 0;
+  z-index: 2;
 }
 
 /* 무한 스크롤 로딩 스피너 */
