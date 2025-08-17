@@ -30,7 +30,7 @@
           <div>즐겨찾기한 상품이 없습니다.</div>
         </div>
         <div v-else>
-          <div v-if="currentTab === 'deposit'" class="card-search-results-grid">
+          <div v-if="currentTab === 'deposit'" class="search-results-grid">
             <div v-for="deposit in filteredFavorites" :key="deposit.depositId" class="product-card">
               <div class="card-favorite-button" @click.stop>
                 <FavoriteToggle v-model="deposit.isStarred" :productId="deposit.depositId" :productType="'DEPOSIT'" />
@@ -84,7 +84,7 @@
             </div>
           </div>
 
-          <div v-else-if="currentTab === 'saving'" class="card-search-results-grid">
+          <div v-else-if="currentTab === 'saving'" class="search-results-grid">
             <div v-for="saving in filteredFavorites" :key="saving.savingId" class="product-card">
               <div class="card-favorite-button" @click.stop>
                 <FavoriteToggle v-model="saving.isStarred" :productId="saving.savingId" productType="SAVING" />
@@ -107,7 +107,6 @@
                     <CompareButton :productId="saving.savingId" productType="SAVING" />
                   </div>
                 </div>
-
                 <div class="product-info-column">
                   <div class="product-name-bold">{{ saving.savingName }}</div>
                   <div class="bank-name-bold">{{ saving.bankName }}</div>
@@ -147,15 +146,34 @@
             <div
               v-for="card in filteredFavorites"
               :key="card.cardId"
-              class="product-card"
-              @click="goToCardDetail(card.cardId)">
-              <div class="favorite-top-right">
-                <FavoriteToggle @click.stop v-model="card.isStarred" :productId="card.cardId" :productType="'CARD'" />
+              class="card-product-card"
+              @click="selectProduct(card)">
+              <div class="card-favorite-button" @click.stop>
+                <FavoriteToggle v-model="card.isStarred" :productId="card.cardId" :productType="'CARD'" />
               </div>
               <div class="product-content">
-                <img :src="card.cardImageUrl" :alt="card.cardName" />
+                <div class="card-left-section">
+                  <img
+                    :src="card.cardImageUrl || card.cardImageUrl || getBankLogo('default')"
+                    :alt="card.name || card.cardName"
+                    class="product-image" />
+                  <div class="card-compare-button" @click.stop>
+                    <LikeToggle
+                      :productId="card.id"
+                      productType="card-products"
+                      :initialLiked="card.isLiked"
+                      :initialCount="card.likeCount"
+                      @update="
+                        ({ liked, count }) => {
+                          card.isLiked = liked;
+                          card.likeCount = count;
+                        }
+                      " />
+                    <CompareButton :card="card.id || card.cardId" productType="CARD" />
+                  </div>
+                </div>
                 <div class="product-info">
-                  <h4>{{ card.cardName }}</h4>
+                  <h4>{{ card.name || card.cardName }}</h4>
                   <div>
                     <span class="label">카드사:</span>
                     {{ card.issuer || '카드사 미정' }}
@@ -165,30 +183,16 @@
                     {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
                   </div>
                   <div>
-                    <span class="label">연회비 정보:</span>
-                    {{ card.annualFee || '정보 없음' }}
+                    <span class="label">연회비:</span>
+                    {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
                   </div>
+                  <!-- 혜택 태그 -->
                   <div v-if="card.options && card.options.length > 0" class="benefit-hashtags">
                     <span v-for="(option, index) in card.options.slice(0, 3)" :key="index" class="hashtag">
                       #{{ option.title }}
                     </span>
                   </div>
                 </div>
-              </div>
-              <div class="product-action-row">
-                <LikeToggle
-                  :productId="card.cardId"
-                  productType="card-products"
-                  :initialLiked="card.isLiked"
-                  :initialCount="card.likeCount"
-                  @update="
-                    ({ liked, count }) => {
-                      card.isLiked = liked;
-                      card.likeCount = count;
-                    }
-                  "
-                  @click.stop />
-                <CompareButton :productId="card.cardId" :productType="'CARD'" @click.stop />
               </div>
             </div>
           </div>
@@ -449,10 +453,67 @@ const selectProduct = (product) => {
   gap: var(--spacing-lg);
 }
 
-.product-content {
+.card-product-card {
+  background: var(--bg-content);
+  border-radius: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 20rem;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
   align-items: center;
+  justify-content: start;
+  text-align: center;
+  min-height: 24rem;
+}
+
+.product-content {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  height: 100%;
+}
+
+.product-content img {
+  height: 150px;
+  width: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.card-left-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-compare-button {
+  display: flex;
+  align-items: center;
+}
+
+.card-compare-button > *:first-child {
+  transform: scale(0.85);
+  transform-origin: left center;
+}
+
+/* LikeToggle 내부(하트+숫자) 간격/패딩 보정 */
+.card-compare-button :deep(.like-chip) {
+  padding: 0.35rem 0.7rem; /* 칩 자체를 살짝 줄임 */
+  border-radius: 999px;
+  line-height: 1;
+}
+.card-compare-button :deep(.like-icon) {
+  margin-right: 0.3rem; /* 하트 ↔ 숫자 간격 */
+  width: 1rem; /* 아이콘이 img/svg면 적용됨 */
+  height: 1rem;
+}
+.card-compare-button :deep(.like-count) {
+  font-size: 0.95rem; /* 숫자 조금만 축소 */
 }
 
 .product-info h4 {
@@ -618,6 +679,12 @@ const selectProduct = (product) => {
 .product-info > div,
 .product-info > h4 {
   line-height: 1.6;
+}
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xl);
 }
 
 .card-search-results-grid {
