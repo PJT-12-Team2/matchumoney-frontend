@@ -288,12 +288,14 @@ const isLoading = ref(false);
 const topPercent = ref(null);
 const topPercentClass = computed(() => {
   const percent = Number(topPercent.value);
-  if (!Number.isFinite(percent)) return 'badge-normal';
+  if (!Number.isFinite(percent)) return 'badge-newbie';
 
-  if (percent <= 1) return 'badge-top'; // TOP: ≤ 1%
-  if (percent <= 10) return 'badge-high'; // 상위권: ≤ 10%
-  if (percent >= 90) return 'badge-sprout'; // 새싹: ≥ 90%
-  return 'badge-normal'; // 보통
+  if (percent <= 1) return 'badge-diamond';
+  if (percent <= 10) return 'badge-platinum';
+  if (percent <= 35) return 'badge-gold';
+  if (percent <= 60) return 'badge-silver';
+  if (percent <= 85) return 'badge-bronze';
+  return 'badge-newbie';
 });
 
 const userMeta = computed(() => {
@@ -541,8 +543,17 @@ const favoriteDeposits = ref([]);
 const favoriteCards = ref([]);
 const products = ref([]);
 const myPageInfo = ref({ persona: {} });
+
 const personaImageUrl = ref('');
 const profileImageUrl = ref('');
+
+function getCharacterFolderByLevel(lv) {
+  // 기본: 2레벨 등 대부분은 기존 폴더 사용
+  if (lv === 1) return 'level1_character_images';
+  if (lv === 3) return 'level3_character_images';
+  if (lv === 4) return 'level4_character_images';
+  return 'character_images';
+}
 
 onMounted(async () => {
   try {
@@ -558,19 +569,20 @@ onMounted(async () => {
       data.gender ?? data.genderCode ?? data.sex ?? data.gender_type ?? ''
     );
 
-    // Updated logic for extracting filename and generating image URL
+    // Updated: choose character image folder by level (1,3,4 use special folders; otherwise default)
     const rawImagePath = data.persona?.imageUrl;
     const fileName = rawImagePath?.split('/').pop();
+    const folder = getCharacterFolderByLevel(level.value);
     const imageUrl = fileName
-      ? new URL(`../../assets/character_images/${fileName}`, import.meta.url)
-          .href
+      ? new URL(`../../assets/${folder}/${fileName}`, import.meta.url).href
       : '';
     personaImageUrl.value = imageUrl;
 
     // Set profile image URL (social login / local)
     profileImageUrl.value =
-      data.profileImageUrl ?? data.profile_image_url ?? '';
-
+      data.profileImageUrl ??
+      data.profile_image_url ??
+      new URL('@/assets/user.png', import.meta.url).href;
     myPageInfo.value.persona = {
       quote: data.persona?.quote ?? '',
       nameKo: data.persona?.nameKo ?? '',
@@ -1697,48 +1709,64 @@ onMounted(() => {
   top: -0.18em;
 }
 
-.badge-top {
-  background: linear-gradient(135deg, #ffd36b 0%, #f3c65a 100%);
+.badge-diamond {
+  background: linear-gradient(135deg, #6fafe4 0%, #c2dce7 100%);
   color: white;
   box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
 }
-.badge-high {
-  background: linear-gradient(135deg, #deb887 0%, #cd853f 100%);
+.badge-platinum {
+  background: linear-gradient(135deg, #80c9c9 0%, #c3ebe7 100%);
   color: white;
   box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
 }
-.badge-normal {
-  background: linear-gradient(135deg, #ade1c1 0%, #54b99e 100%);
+.badge-gold {
+  background: linear-gradient(135deg, #f2bc33 0%, #fbe479 100%);
   color: white;
   box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
 }
-.badge-sprout {
+.badge-silver {
+  background: linear-gradient(135deg, #e6ecf3 0%, #8ba3bb 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
+}
+.badge-bronze {
+  background: linear-gradient(135deg, #ffd2b5 0%, #b05d19 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
+}
+.badge-newbie {
   background: linear-gradient(135deg, #bae3af 0%, #c1dfc4 100%);
   color: white;
   box-shadow: 0 4px 20px rgba(177, 156, 217, 0.4);
 }
 
-.badge-top::before {
-  content: '👑';
+.badge-diamond::before {
+  content: '💎';
 }
-.badge-high::before {
+.badge-platinum::before {
   content: '🏆';
 }
-.badge-normal::before {
-  content: '💡';
+.badge-gold::before {
+  content: '🥇';
 }
-.badge-sprout::before {
+.badge-silver::before {
+  content: '🥈';
+}
+.badge-bronze::before {
+  content: '🥉';
+}
+.badge-newbie::before {
   content: '🌱';
 }
 
-@keyframes badgeGlow {
+/* @keyframes badgeGlow {
   from {
     transform: scale(1) translateY(0px);
   }
   to {
     transform: scale(1.02) translateY(-1px);
   }
-}
+} */
 
 @media (max-width: 1024px) {
   .favbar-scroller {

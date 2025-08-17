@@ -1,8 +1,11 @@
 <template>
-  <div class="chatbot-container">
+  <div class="chatbot-container" ref="containerRef" :style="containerStyle" :class="{ dragging: isDragging }">
     <button
       class="chat-toggle"
-      @click="toggleChat"
+      @click="onToggleClick"
+      @touchstart="onTouchStart"
+      @touchmove.prevent="onTouchMove"
+      @touchend="onTouchEnd"
       :class="{ blurred: isOpen }"
     >
       <img src="@/assets/chatbot_images/chatbot_cat.png" alt="챗봇 버튼" />
@@ -82,7 +85,7 @@
   </div>
 </template>
 <script setup>
-import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, nextTick, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -104,6 +107,120 @@ const currentParentMenu = ref(null);
 // 상태 섹션에 추가
 const isMenuTransitioning = ref(false); // 중복 클릭 방지
 const lastExplainedTerm = ref(null); // 최근 설명한 용어 저장
+
+/* ========== 모바일 드래그 위치 설정 (≤480px에서만) ========== */
+const containerRef = ref(null);
+const isDragging = ref(false);
+const isLongPress = ref(false);
+const suppressNextToggle = ref(false);
+const longPressTimer = ref(null);
+const startTouch = ref({ x: 0, y: 0 });
+const startRect = ref({ left: 0, top: 0 });
+const customPos = ref({ left: null, top: null }); // px 단위
+const hasCustomPos = ref(false);
+const isMobile = ref(false);
+
+const containerStyle = computed(() => {
+  // 데스크톱/태블릿 또는 커스텀 위치가 없으면 기존 스타일 유지 (빈 객체 반환)
+  if (!isMobile.value || !hasCustomPos.value || customPos.value.left === null) return {};
+  // 모바일에서만 left/top 지정하여 고정
+  return {
+    position: 'fixed',
+    left: customPos.value.left + 'px',
+    top: customPos.value.top + 'px',
+    right: 'auto',
+    bottom: 'auto',
+  };
+});
+
+const getBtnSize = () => {
+  // 모바일 사이즈에서의 토글 크기와 여백을 감안해 실제 버튼 크기 산정
+  const btnEl = containerRef.value?.querySelector('.chat-toggle');
+  const rect = btnEl?.getBoundingClientRect?.();
+  return rect ? { w: rect.width, h: rect.height } : { w: 56, h: 56 };
+};
+
+const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+
+const onTouchStart = (e) => {
+  if (!isMobile.value) return;
+  const t = e.touches[0];
+  startTouch.value = { x: t.clientX, y: t.clientY };
+  const rect = containerRef.value?.getBoundingClientRect?.();
+  if (rect) startRect.value = { left: rect.left, top: rect.top };
+  isLongPress.value = false;
+  isDragging.value = false;
+  if (longPressTimer.value) clearTimeout(longPressTimer.value);
+  // 250ms 길게 누르면 드래그 시작
+  longPressTimer.value = setTimeout(() => {
+    isLongPress.value = true;
+    isDragging.value = true;
+    suppressNextToggle.value = true; // 드래그 뒤 클릭 토글 방지
+  }, 250);
+};
+
+const onTouchMove = (e) => {
+  if (!isMobile.value) return;
+  if (!isLongPress.value || !isDragging.value) return;
+  const t = e.touches[0];
+  const dx = t.clientX - startTouch.value.x;
+  const dy = t.clientY - startTouch.value.y;
+  const btn = getBtnSize();
+  const maxLeft = window.innerWidth - btn.w - 8; // 가장자리 8px 여백
+  const maxTop = window.innerHeight - btn.h - 8;
+  const newLeft = clamp(startRect.value.left + dx, 8, maxLeft);
+  const newTop = clamp(startRect.value.top + dy, 8, maxTop);
+  customPos.value = { left: newLeft, top: newTop };
+  hasCustomPos.value = true;
+};
+
+const onTouchEnd = () => {
+  if (!isMobile.value) return;
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value);
+    longPressTimer.value = null;
+  }
+  if (isDragging.value) {
+    // 저장 (세션 유지)
+    try {
+      localStorage.setItem('chatbot_pos_v1', JSON.stringify(customPos.value));
+    } catch (_) {}
+  }
+  // 드래그 종료 후 살짝 딜레이 뒤 클릭 허용
+  setTimeout(() => {
+    suppressNextToggle.value = false;
+  }, 150);
+  isDragging.value = false;
+  isLongPress.value = false;
+};
+
+const onToggleClick = (e) => {
+  if (suppressNextToggle.value) return; // 드래그 직후 클릭 차단
+  toggleChat();
+};
+
+onMounted(() => {
+  const updateMobile = () => (isMobile.value = window.innerWidth <= 480);
+  updateMobile();
+  window.addEventListener('resize', updateMobile);
+  try {
+    const saved = localStorage.getItem('chatbot_pos_v1');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (
+        typeof parsed?.left === 'number' &&
+        typeof parsed?.top === 'number'
+      ) {
+        customPos.value = parsed;
+        hasCustomPos.value = true;
+      }
+    }
+  } catch (_) {}
+});
+
+onBeforeUnmount(() => {
+  if (longPressTimer.value) clearTimeout(longPressTimer.value);
+});
 
 /* CTA 버튼 (말풍선 밖) */
 const ctas = ref([]); // [{ label, route }]
@@ -1063,6 +1180,8 @@ defineExpose({ goRoute, ctas });
   right: 35px;
   z-index: 10000;
 }
+.chatbot-container.dragging { transition: none; }
+
 .chat-toggle {
   background: transparent;
   border: 2px solid #cfe5a2;
@@ -1109,10 +1228,42 @@ defineExpose({ goRoute, ctas });
   display: flex;
   flex-direction: column;
   position: absolute;
-  bottom: calc(80px + 20px);
+  bottom: calc(80px + 40px); /* 토글(80px) + 여백 40px → 버튼 안가리게 더 위로 */
   right: 20px;
   font-family: 'Pretendard', sans-serif;
   animation: slideUp 0.4s ease;
+}
+
+/* 반응형: 태블릿 사이즈에서 대화창 축소 */
+@media (max-width: 768px) {
+  .chat-window {
+    width: 320px;
+    height: 72vh;
+    right: 12px;
+    bottom: calc(64px + 28px); /* 토글(64px) + 여백 28px */
+  }
+  .chatbot-container {
+    right: 12px;
+    bottom: 16px;
+  }
+}
+
+/* 반응형: 모바일 사이즈에서 더 작게 */
+@media (max-width: 480px) {
+  .chat-window {
+    position: fixed; /* 뷰포트 기준 고정 */
+    left: 3vw; /* 좌우 여백 조금 줄여 더 넓게 */
+    right: 3vw;
+    bottom: calc(56px + 16px); /* 토글(56px) + 여백 16px */
+    width: auto; /* 고정폭 제거 */
+    max-width: 94vw; /* 안전 폭 */
+    height: auto; /* 고정높이 제거 */
+    min-height: 60dvh; /* 최소 높이 확보 */
+    max-height: 82dvh; /* 화면 대비 크게 (상단 노치/브라우저 UI 고려) */
+  }
+  .chat-body {
+    overflow-y: auto;
+  }
 }
 @keyframes slideUp {
   from {

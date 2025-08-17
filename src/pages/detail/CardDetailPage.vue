@@ -14,7 +14,6 @@
         <section class="card-header">
           <div class="fav-floating">
             <FavoriteToggle
-              class="favorite-icon"
               v-model="isFavorite"
               :productId="cardData.cardProductId"
               :productType="productType"
@@ -94,7 +93,7 @@
         <div class="benefits-section">
           <div v-if="cardData.options && cardData.options.length">
             <div
-              v-for="(option, idx) in cardData.options"
+              v-for="(option, idx) in processedOptions"
               :key="idx"
               :class="
                 option.title.includes('유의사항')
@@ -103,6 +102,7 @@
               "
               @click="
                 !option.title.includes('유의사항') &&
+                  !isZeroDiscount(option) &&
                   (option.expanded = !option.expanded)
               "
             >
@@ -113,9 +113,12 @@
                 <span class="benefit-icon-inline">🏷️</span>
                 <div class="benefit-title-wrapper">
                   <strong class="benefit-title-text">{{ option.title }}</strong>
-                  <span class="benefit-discount-black"
-                    >최대 {{ formatValue(option.value) }} 할인</span
+                  <span
+                    v-if="!isZeroDiscount(option)"
+                    class="benefit-discount-black"
                   >
+                    최대 {{ formatValue(option.value) }} 할인
+                  </span>
                 </div>
               </div>
               <p
@@ -128,7 +131,11 @@
               <transition name="slide-fade">
                 <div
                   class="benefit-expand-box"
-                  v-if="option.expanded && !option.title.includes('유의사항')"
+                  v-if="
+                    option.expanded &&
+                    !option.title.includes('유의사항') &&
+                    !isZeroDiscount(option)
+                  "
                 >
                   <p v-if="!option.showFull">
                     {{ formattedBrief(option.description) }}
@@ -206,20 +213,39 @@ const personaName = computed(() => {
 const displayAnnualFee = computed(() => {
   const raw = cardData.value?.annualFee;
   if (!raw) return '정보 없음';
-  return raw
-    // 1) remove the whole token like "[나]" or "[나 ]"
-    .replace(/\[나\s*\]/g, '')
-    // 2) drop square brackets but keep their inner content (e.g., [15,000] -> 15,000)
-    .replace(/\[|\]/g, '')
-    // 3) normalize slashes
-    .replace(/\s*\/\s*/g, ' / ')
-    // 4) remove spaces *inside* numbers after commas, e.g., 15, 000 -> 15,000
-    .replace(/,\s+(?=\d)/g, ',')
-    // 5) for commas NOT followed by a digit, ensure a single space after
-    .replace(/,(?!\d)\s*/g, ', ')
-    // 6) collapse duplicate spaces
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+  return (
+    raw
+      // 1) remove the whole token like "[나]" or "[나 ]"
+      .replace(/\[나\s*\]/g, '')
+      // 2) drop square brackets but keep their inner content (e.g., [15,000] -> 15,000)
+      .replace(/\[|\]/g, '')
+      // 3) normalize slashes
+      .replace(/\s*\/\s*/g, ' / ')
+      // 4) remove spaces *inside* numbers after commas, e.g., 15, 000 -> 15,000
+      .replace(/,\s+(?=\d)/g, ',')
+      // 5) for commas NOT followed by a digit, ensure a single space after
+      .replace(/,(?!\d)\s*/g, ', ')
+      // 6) collapse duplicate spaces
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+  );
+});
+
+const isZeroDiscount = (opt) => {
+  const v = parseFloat(opt?.value);
+  // Treat NaN, null, undefined, or exactly 0 as category-only (no discount)
+  return !Number.isFinite(v) || v === 0;
+};
+
+const processedOptions = computed(() => {
+  const opts = cardData.value?.options || [];
+  // Sort so that items with real discounts come first; category-only (zero/missing) go to the bottom
+  return opts.slice().sort((a, b) => {
+    const az = isZeroDiscount(a);
+    const bz = isZeroDiscount(b);
+    if (az === bz) return 0; // keep original order within each group
+    return az ? 1 : -1; // non-zero first, zero at bottom
+  });
 });
 
 function formatValue(value) {
@@ -285,7 +311,6 @@ function goToCardSite() {
 }
 </script>
 <style scoped>
-
 .benefit-table {
   width: 100%;
   border-collapse: collapse;
@@ -325,7 +350,7 @@ function goToCardSite() {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 40px;
+  gap: 24px;
 }
 
 /* Wrap image + reactions in a vertical flexbox with fixed spacing */
@@ -333,12 +358,12 @@ function goToCardSite() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 40px;
+  margin-right: 24px;
   position: relative;
 }
 
 .card-image {
-  width: 160px;
+  width: 180px;
   height: auto;
   border-radius: 12px;
   margin-bottom: 10px;
@@ -368,7 +393,7 @@ function goToCardSite() {
 }
 
 .card-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   margin-bottom: 5px;
 }
@@ -466,7 +491,6 @@ function goToCardSite() {
   color: #2e7d32;
   font-weight: 900;
   font-size: 18px;
-  text-decoration: underline;
 }
 
 /* Reserve space below the image so reaction buttons don't shift */
@@ -499,19 +523,6 @@ function goToCardSite() {
 .card-header-wrapper {
   padding: 14px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.favorite-icon {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 24px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.favorite-icon:hover {
-  transform: scale(1.2);
 }
 
 /* 금리 안내 스타일 */
@@ -988,8 +999,8 @@ function goToCardSite() {
     align-items: stretch;
     gap: 16px;
   }
-    /* Center the title row only on small screens */
-    .title-row {
+  /* Center the title row only on small screens */
+  .title-row {
     justify-content: center;
   }
   /* Center the image block and remove right margin used on desktop */
@@ -1000,7 +1011,8 @@ function goToCardSite() {
 
   /* Make image a bit larger but within viewport */
   .card-image {
-    width: 220px;
+    padding-top: 50px;
+    width: 180px;
     max-width: 60vw;
   }
 

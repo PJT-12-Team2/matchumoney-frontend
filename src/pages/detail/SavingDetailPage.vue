@@ -30,13 +30,13 @@
               :productId="savingData.savingProductId"
               :productType="productType"
             />
+            <FavoriteToggle
+              v-model="isFavorite"
+              :productId="savingData.savingProductId"
+              :productType="productType"
+            />
           </div>
         </div>
-        <FavoriteToggle
-          v-model="isFavorite"
-          :productId="savingData.savingProductId"
-          :productType="productType"
-        />
         <div class="card-info">
           <h2 class="card-title">{{ savingData.finPrdtNm }}</h2>
           <p class="subtitle">{{ savingData.korCoNm }}</p>
@@ -64,7 +64,9 @@
             </li>
           </ul>
           <div class="button-group">
-            <button class="go-to-card full-width">신청하러 바로가기</button>
+            <button class="go-to-card full-width" @click="goToBank">
+              신청하러 바로가기
+            </button>
             <button
               class="compare-link full-width"
               @click="
@@ -354,6 +356,21 @@ const handleLikeClick = () => {
   toggleLike();
 };
 
+const goToBank = () => {
+  const url = savingData.value?.requestUrl || savingData.value?.requesturl;
+  if (!url) {
+    alert('이 상품의 신청 페이지 URL이 없습니다.');
+    return;
+  }
+  try {
+    // 새 탭에서 열기 (보안상 noopener 사용)
+    window.open(url, '_blank', 'noopener');
+  } catch (e) {
+    // 팝업 차단 등의 이슈가 있을 때 현재 탭으로 이동
+    window.location.href = url;
+  }
+};
+
 const toggleLike = () => {
   if (!savingData.value) return;
   const id =
@@ -576,7 +593,6 @@ onMounted(() => {
   color: #2e7d32;
   font-weight: 900;
   font-size: 18px;
-  text-decoration: underline;
 }
 
 .reaction-group {
@@ -607,7 +623,7 @@ onMounted(() => {
   position: absolute;
   top: 20px;
   right: 20px;
-  font-size: 30px;
+  font-size: 24px;
   cursor: pointer;
   transition: transform 0.2s ease;
 }
@@ -900,7 +916,8 @@ onMounted(() => {
   }
 
   .card-image {
-    width: 220px;
+    padding-top: 50px;
+    width: 130px;
     max-width: 60vw;
   }
 
@@ -926,10 +943,13 @@ onMounted(() => {
   }
   .button-group > .go-to-card,
   .button-group > .compare-link {
-    width: auto;       /* override .full-width */
-    flex: 1 1 0;       /* share space evenly */
+    width: auto; /* override .full-width */
+    flex: 1 1 0; /* share space evenly */
   }
-  .card-title, .subtitle, .card-benefits, .max-limit{
+  .card-title,
+  .subtitle,
+  .card-benefits,
+  .max-limit {
     text-align: center;
   }
 }
