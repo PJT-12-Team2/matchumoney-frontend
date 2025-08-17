@@ -632,14 +632,15 @@ const handleMouseUp = () => {
 }
 
 /* ===== 반응형 디자인 ===== */
-@media (max-width: 393px) {
+@media (max-width: 420px) {
   .account-name {
-    font-size: 20px;
+    font-size: var(--font-size-3xl);
+    padding-top: 1rem;
   }
 
   .balance-section h4,
   .account-section h4 {
-    font-size: 12px;
+    font-size: var(--font-size-xl);
   }
 
   .balance-amount,

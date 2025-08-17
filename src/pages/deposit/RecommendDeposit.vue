@@ -59,47 +59,6 @@
           />
         </template>
       </RecommendationLayout>
-
-      <!-- 로그인하지 않은 경우-->
-      <!-- <div v-if="!isLoggedIn" class="auth-required">
-        <div class="auth-message">
-          <div class="auth-icon">🔐</div>
-          <div class="auth-text">
-            <h3>로그인이 필요합니다</h3>
-            <p>맞춤형 예금 상품 추천을 받으려면<br />먼저 로그인해주세요.</p>
-          </div>
-          <button @click="redirectToLogin" class="login-button">
-            로그인하기
-          </button>
-        </div>
-      </div> -->
-
-      <!-- 로그인한 경우 기존 기능 -->
-      <!-- <template v-else> -->
-      <!-- 계좌 슬라이더 컴포넌트 -->
-      <!-- <AccountSlider
-          :accounts="accounts"
-          :loading="accountsLoading"
-          :error="error"
-          :current-slide="currentSlide"
-          :user-id="effectiveUserId"
-          @refresh="refreshAccounts"
-          @slide-change="handleSlideChange"
-          @connect-success="handleConnectSuccess"
-        /> -->
-
-      <!-- 상품 리스트 컴포넌트 -->
-      <!-- <ProductList
-          :products="products"
-          :loading="loading || userInfoLoading"
-          :has-searched="hasSearched"
-          :customer-name="getCustomerName()"
-          :balance="getBalance()"
-          :is-kb-only="isKBOnlyMode"
-          @product-select="selectProduct"
-          @favorite-changed="handleFavoriteChanged"
-        />
-      </template> -->
     </main>
   </div>
 </template>

@@ -525,11 +525,14 @@ const getBankLogo = (bankName) => {
 .highlight-rate {
   font-weight: bold;
   color: var(--color-accent);
+  font-size: var(--font-size-2xl);
 }
 
 .base-rate {
   color: var(--text-secondary);
+  font-size: var(--font-size-base);
 }
+
 .favorite-button-container {
   position: absolute;
   top: 20%;
@@ -537,6 +540,7 @@ const getBankLogo = (bankName) => {
   transform: translateY(-50%);
   z-index: 10;
 }
+
 .reaction-button {
   background-color: #f1f1f1;
   border: none;

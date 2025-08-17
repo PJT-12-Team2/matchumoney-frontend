@@ -10,7 +10,6 @@
           @click="goToSlide(index)"
         >
           <span class="indicator-text">{{ slide.name }}</span>
-          <span class="indicator-icon" v-if="isMobile">{{ slide.icon }}</span>
         </button>
       </div>
 
@@ -32,7 +31,7 @@
                     <span class="text-accent">금융 라이프스타일을</span><br />
                     찾아보세요
                   </h1>
-                  <p class="hero-description">
+                  <p class="section-subtitle">
                     8가지 동물 페르소나 분석을 통해 당신에게 딱 맞는 카드, 예금,
                     적금 상품을 추천해드립니다.
                   </p>
@@ -156,7 +155,7 @@
             <div class="mydata-content-wrapper">
               <div class="mydata-left">
                 <h2 class="mydata-title">마이데이터 연동</h2>
-                <p class="mydata-description">
+                <p class="section-subtitle">
                   실제 거래내역을 분석하여 더욱 정확한 맞춤형 카드를
                   추천받으세요.
                 </p>
@@ -253,7 +252,6 @@
         <div class="cta-buttons">
           <RouterLink to="/signup">
             <button class="btn btn-outline-light btn-large">
-              <i class="icon-user-plus"></i>
               <span>무료 회원가입</span>
             </button>
           </RouterLink>
@@ -267,10 +265,10 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import userApi from '@/api/user'; // 추가
+import userApi from '@/api/user';
 
 const router = useRouter();
-const authStore = useAuthStore(); // auth store 사용
+const authStore = useAuthStore();
 const myPageInfo = ref({ persona: {} });
 
 // 반응형 상태
@@ -631,7 +629,7 @@ onUnmounted(() => {
 
 .indicator {
   padding: 0.5rem 1.25rem;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.8);
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 25px;
   color: var(--color-title);
@@ -649,7 +647,8 @@ onUnmounted(() => {
 }
 
 .indicator.active {
-  background: var(--color-dark);
+  background: var(--color-accent);
+
   font-weight: bold;
   color: white;
   transform: translateY(-2px);
@@ -884,7 +883,7 @@ onUnmounted(() => {
 }
 
 .hero-description {
-  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-size: var(--font-size-lg);
   color: #6b7280;
   margin-bottom: 2rem;
   line-height: 1.6;
@@ -980,14 +979,20 @@ onUnmounted(() => {
 
 .section-title {
   font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 700;
-  color: #1f2937;
   margin-bottom: 0.5rem;
+  color: var(--color-dark);
+  font-weight: 700; /* 또는 800 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 미묘한 그림자 */
+  letter-spacing: -0.025em; /* 자간 살짝 줄여서 임팩트 */
 }
 
 .section-subtitle {
-  font-size: clamp(1rem, 2vw, 1.125rem);
-  color: #6b7280;
+  font-size: var(--font-size-xl); /* 크기 증가 */
+  color: #374151; /* 훨씬 더 진한 색상 */
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); /* 미묘한 그림자 */
 }
 
 /* Feature Cards */
@@ -1000,7 +1005,7 @@ onUnmounted(() => {
 .feature-block {
   display: flex;
   flex-direction: column;
-  align-items: center; /* ⬅️ 중앙 정렬 */
+  align-items: center;
   text-align: center;
   gap: 1rem;
   margin-bottom: 2.5rem;
@@ -1026,7 +1031,7 @@ onUnmounted(() => {
 }
 
 .feature-title {
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
@@ -1041,16 +1046,16 @@ onUnmounted(() => {
 .persona-grid {
   display: grid;
   grid-template-columns: repeat(4, 180px);
-  gap: 0.75rem;
+  gap: 2rem;
   justify-content: center; /* 가운데 정렬 */
 }
 
 .persona-card {
-  width: 180px;
+  width: 200px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  padding: 0.5rem !important;
+  padding: 0.6rem !important;
 }
 
 .persona-card:hover {
@@ -1071,14 +1076,14 @@ onUnmounted(() => {
 }
 
 .persona-name {
-  font-size: clamp(0.875rem, 1.8vw, 1rem); /* 작게 조절 */
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 0.2rem;
 }
 
 .persona-trait {
-  font-size: clamp(0.65rem, 1.2vw, 0.8rem); /* 작게 조절 */
+  font-size: var(--font-size-base);
   color: #6b7280;
   margin-bottom: 0.1rem;
 }
@@ -1112,12 +1117,13 @@ onUnmounted(() => {
 }
 
 .product-icon-container i {
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-size: clamp(2rem, 2.5vw, 1.5rem);
+  padding-bottom: 0.5rem;
   color: var(--color-accent);
 }
 
 .product-title {
-  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-size: var(--font-size-lg);
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 0.25rem;
@@ -1125,11 +1131,11 @@ onUnmounted(() => {
 
 .product-subtitle {
   color: #6b7280;
-  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+  font-size: var(--font-size-base);
 }
 
 .product-description {
-  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-size: var(--font-size-base);
   color: #6b7280;
   margin-bottom: 1.5rem;
   line-height: 1.6;
@@ -1141,16 +1147,16 @@ onUnmounted(() => {
 }
 
 .benefit-item {
+  font-size: var(--font-size-base);
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
 }
 
 .benefit-item i {
   color: var(--color-accent);
-  font-size: 0.875rem;
+  font-size: var(--font-size-base);
   flex-shrink: 0;
 }
 
@@ -1170,7 +1176,7 @@ onUnmounted(() => {
 }
 
 .mydata-description {
-  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-size: var(--font-size-base);
   color: #6b7280;
   margin-bottom: 2rem;
   line-height: 1.6;
@@ -1188,9 +1194,10 @@ onUnmounted(() => {
 }
 
 .mydata-icon {
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-size: var(--font-size-3xl);
   color: var(--color-accent);
   flex-shrink: 0;
+  margin: 0 0.5rem 0.5rem 1.5rem;
 }
 
 .mydata-feature-content {
@@ -1198,7 +1205,7 @@ onUnmounted(() => {
 }
 
 .mydata-feature-title {
-  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-size: var(--font-size-xl);
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 0.25rem;
@@ -1206,7 +1213,7 @@ onUnmounted(() => {
 
 .mydata-feature-desc {
   color: #6b7280;
-  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+  font-size: var(--font-size-lg);
 }
 
 /* MyData Visual */
@@ -1247,13 +1254,14 @@ onUnmounted(() => {
 }
 
 .demo-icon {
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-size: var(--font-size-3xl);
+
   color: var(--color-accent);
   margin-bottom: 0.5rem;
 }
 
 .demo-text {
-  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+  font-size: var(--font-size-base);
   font-weight: 500;
   color: #1f2937;
 }
@@ -1271,7 +1279,6 @@ onUnmounted(() => {
 /* CTA Section */
 .cta-section {
   background: linear-gradient(135deg, #f9f6f1 0%, #e0f4eb 100%);
-
   color: #1f2937; /* 짙은 그레이 */
   padding: 4rem 1rem;
 }
@@ -1280,7 +1287,6 @@ onUnmounted(() => {
   font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-weight: 700;
   color: var(--color-title);
-
   margin-bottom: 1.5rem;
 }
 
@@ -1361,6 +1367,10 @@ onUnmounted(() => {
 .icon-linkedin::before {
   content: 'in';
 }
+[class*='icon-'],
+i {
+  font-style: normal !important;
+}
 
 /* Tablet Responsive (768px - 1024px) */
 @media (max-width: 1024px) {
@@ -1396,15 +1406,8 @@ onUnmounted(() => {
 
 /* Mobile Responsive (480px - 768px) */
 @media (max-width: 768px) {
-  .slider-container {
-    height: auto;
-    min-height: auto;
-  }
-
   .slide {
-    height: auto;
-    min-height: auto;
-    padding: 2.5rem 0; /* 패딩 줄임 */
+    padding: 1rem 0 4rem 0;
   }
 
   .hero-content-wrapper,
@@ -1445,7 +1448,7 @@ onUnmounted(() => {
 
   .products-grid {
     grid-template-columns: 1fr;
-    gap: 1rem; /* gap 줄임 */
+    gap: 1rem;
   }
 
   /* 모바일 product-card 최적화 */
@@ -1475,28 +1478,31 @@ onUnmounted(() => {
   }
 
   .product-description {
-    margin-bottom: 1rem; /* 마진 줄임 */
-    font-size: 0.875rem; /* 폰트 사이즈 줄임 */
-    line-height: 1.4; /* 라인 높이 줄임 */
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
   }
 
-  /* benefit-item 가로 배치 */
   .product-benefits {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    gap: 0.75rem;
     margin: 0;
+    text-align: center;
   }
 
   .benefit-item {
+    justify-content: center;
+    font-size: var(--font-size-base);
     margin-bottom: 0;
-    font-size: 0.75rem; /* 폰트 사이즈 줄임 */
   }
 
   .benefit-item i {
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
-
+  .mydata-title {
+    font-size: var(--font-size-3xl);
+  }
   .floating-cards {
     display: none;
   }
@@ -1508,11 +1514,13 @@ onUnmounted(() => {
   }
 
   .slide-indicators {
-    flex-wrap: nowrap !important; /* 🔹 강제로 한 줄 */
-    overflow-x: auto; /* 넘치면 가로 스크롤 */
-    white-space: nowrap; /* 줄바꿈 방지 */
-    justify-content: flex-start; /* 왼쪽부터 배치 */
-    bottom: 8px;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    white-space: nowrap;
+    justify-content: flex-start;
+    bottom: 0.1rem; /* 하단 여백 증가 */
+    padding: 0.75rem 1rem; /* 컨테이너 패딩 증가 */
+    margin: 0 1rem;
   }
 
   .slide-indicators::-webkit-scrollbar {
@@ -1520,11 +1528,29 @@ onUnmounted(() => {
   }
 
   .indicator {
-    flex: 0 0 auto; /* 줄바꿈 방지 */
-    padding: 0.3rem 0.6rem; /* 크기 줄임 */
-    font-size: 0.7rem; /* 글자 크기 줄임 */
+    flex: 0 0 auto;
+    padding: 0.75rem 1.5rem; /* 패딩 대폭 증가 */
+    min-width: 4.5rem;
+    font-size: 1rem !important;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.9); /* 테두리 두껍게 */
+    margin: 0 0.2rem; /* 버튼 간 간격 증가 */
+    min-height: 30px; /* 최소 높이 설정 (터치 권장 크기) */
+    border-radius: 24px; /* 더 둥글게 */
   }
 
+  .indicator.active {
+    background: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+    transform: none;
+    font-weight: 700; /* 활성 버튼 텍스트 더 두껍게 */
+  }
+
+  .indicator-text {
+    font-weight: 600; /* 텍스트 두껍게 */
+    padding: 0 0.5rem;
+  }
   .slide-navigation {
     padding: 0 1rem;
   }
@@ -1541,9 +1567,9 @@ onUnmounted(() => {
   }
 
   .play-pause-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 0.875rem;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
   }
 
   .mydata-features {
@@ -1565,7 +1591,40 @@ onUnmounted(() => {
 
   /* 섹션 헤더 최적화 */
   .section-header {
-    margin-bottom: 1.5rem; /* 마진 줄임 */
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: var(--font-size-4xl);
+  }
+
+  .section-subtitle {
+    font-size: var(--font-size-xl);
+    margin-bottom: 2rem;
+  }
+
+  .feature-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-description {
+    font-size: var(--font-size-xl);
+    color: #4b5563;
+    line-height: 1.6;
+  }
+
+  .cta-title {
+    font-size: var(--font-size-3xl);
+  }
+
+  .cta-description {
+    font-size: var(--font-size-xl);
+  }
+
+  .cta-buttons .btn {
+    font-size: var(--font-size-xl);
   }
 }
 /* Small Mobile Responsive (< 480px) */
