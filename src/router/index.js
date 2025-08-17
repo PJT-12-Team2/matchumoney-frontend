@@ -34,6 +34,8 @@ import WebtoonPage from '@/components/education/WebtoonPage.vue';
 import VideoPage from '@/components/education/EducationVideoBoardPage.vue';
 import QuizEntry from '@/pages/quiz/QuizEntry.vue';
 import ComparePage from '@/pages/compare/ComparePage.vue';
+
+import DailyQuiz from '@/pages/quiz/DailyQuiz.vue';
 /* 결과 페이지 (동적 import) */
 const ResultPage = () => import('@/pages/persona/PersonaResultPage.vue');
 
