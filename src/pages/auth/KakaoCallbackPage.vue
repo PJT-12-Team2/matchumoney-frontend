@@ -29,9 +29,8 @@ onMounted(async () => {
 
     authStore.setAuth(tokenDto);
 
-    alert(
-      ` ${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`
-    );
+    window.dispatchEvent(new Event('app:login'));
+    alert(`${tokenDto.nickname}님 환영합니다!`);
     if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
       router.push('/persona/start');
     } else {
