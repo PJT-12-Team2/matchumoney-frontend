@@ -80,14 +80,6 @@
                   v-model="form.gender"
                 />여성
               </label>
-              <label :class="['seg', form.gender === 'OTHER' && 'active']">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="OTHER"
-                  v-model="form.gender"
-                />기타
-              </label>
             </div>
             <p v-if="touched.gender && !form.gender" class="error">
               성별을 선택해 주세요.
@@ -558,7 +550,7 @@ const seeAgain = () => {
 }
 .segmented {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 .seg {
@@ -740,5 +732,15 @@ const seeAgain = () => {
 }
 .todo-text {
   font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .connector {
+    display: grid !important;
+    place-items: center;
+  }
+  .connector i::before {
+    content: '\f063'; /* fa-arrow-down */
+  }
 }
 </style>
