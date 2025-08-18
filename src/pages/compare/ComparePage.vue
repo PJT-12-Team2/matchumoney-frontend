@@ -188,7 +188,7 @@ function onAfterEnter() {
   justify-content: space-between;
   gap: 16px;
   padding: 18px 20px;
-  background: #ffffff;
+  background: linear-gradient(180deg, #f3faf6 0%, #ffffff 100%);
   border: 1px solid #e2f0e8;
   border-radius: 14px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
@@ -285,6 +285,11 @@ function onAfterEnter() {
 
 /* 전환 컨테이너 */
 .compare-body {
+  min-height: calc(
+    100vh - var(--header-height)
+  ); /* 대충 비교 컴포넌트의 최소 높이에 맞춰 설정 */
+  transition: min-height 0.2s ease;
+
   margin: 2rem 0;
 }
 
