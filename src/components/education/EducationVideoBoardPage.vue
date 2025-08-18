@@ -1,5 +1,6 @@
 <template>
   <div class="education-video-page">
+    <BackButton />
     <div class="page-description">
       <h1 class="page-title">쉽고 재미있는 금융 교육 영상</h1>
       <p class="page-subtitle">
@@ -128,6 +129,7 @@ import {
   watch,
 } from 'vue';
 import eduAPI from '@/api/edu';
+import BackButton from '@/components/common/BackButton.vue';
 
 const videos = ref([]);
 const loading = ref(false);

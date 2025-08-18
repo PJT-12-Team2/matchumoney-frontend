@@ -219,6 +219,11 @@ const permission = ref(typeof Notification !== 'undefined' ? Notification.permis
 const envReady = ref(false);
 let messagingInstance = null;
 
+// 햄버거 메뉴 상태 변경 시 글로벌 이벤트 발생
+watch(showMenu, (newValue) => {
+  window.dispatchEvent(new CustomEvent('mobile-menu-toggle', { detail: { isOpen: newValue } }));
+});
+
 // 📱 모바일 메뉴 데이터 (대제목/소제목)
 const mobileMenuGroups = ref([
   {

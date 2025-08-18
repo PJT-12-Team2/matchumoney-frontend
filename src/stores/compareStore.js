@@ -15,6 +15,22 @@ export const useCompareStore = defineStore('compare', {
     };
   },
 
+  getters: {
+    // 특정 타입의 비교함에 있는 상품 개수
+    getCompareCount: (state) => (productType) => {
+      return Array.isArray(state.compareList[productType]) 
+        ? state.compareList[productType].length 
+        : 0;
+    },
+
+    // 특정 타입의 비교함에 있는 상품 ID 목록
+    getCompareProducts: (state) => (productType) => {
+      return Array.isArray(state.compareList[productType]) 
+        ? [...state.compareList[productType]] 
+        : [];
+    },
+  },
+
   actions: {
     // 제품 추가
     addProduct(product) {
@@ -35,19 +51,19 @@ export const useCompareStore = defineStore('compare', {
 
       // 이미 같은 id가 존재하면 추가하지 않음
       if (this.compareList[product.type].includes(productId)) {
-        alert('이미 추가된 상품입니다.');
-        return;
+        return { success: false, error: 'ALREADY_EXISTS' };
       }
 
       // 같은 type 상품은 최대 2개까지만 추가
       if (this.compareList[product.type].length >= 2) {
-        alert('같은 종류의 상품은 2개까지만 추가할 수 있습니다.');
-        return;
+        // alert 대신 에러 상태를 반환해서 컴포넌트에서 처리하도록 함
+        return { success: false, error: 'COMPARE_FULL', currentProducts: [...this.compareList[product.type]] };
       }
 
       // 추가
       this.compareList[product.type].push(productId);
       this.saveToLocalStorage();
+      return { success: true };
     },
     // 제품 제거
     removeProduct(product) {

@@ -1,5 +1,6 @@
 <template>
   <div class="daily-quiz-container">
+    <BackButton />
     <div class="daily-quiz-content">
       <!-- 퀴즈 이력 섹션 (맨 위) -->
       <div class="quiz-history-section">
@@ -37,8 +38,7 @@
             <div class="completed-emoji">🎉</div>
             <h2 class="completed-title">오늘의 퀴즈 완료!</h2>
             <p class="completed-subtitle">
-              훌륭해요! 오늘 2개 퀴즈를 모두 완료하셨습니다. 총
-              <span class="xp-earned">경험치</span>를 획득했습니다.
+              훌륭해요! 오늘 2개 퀴즈를 모두 완료하셨습니다.
             </p>
 
             <div class="next-quiz-info">
@@ -130,7 +130,9 @@
         <div class="card quiz-question-card">
           <div class="question-header">
             <div class="question-badges">
-              <span class="badge badge-primary">오늘의 문제</span>
+              <span class="badge badge-primary"
+                >문제 {{ currentQuizNumber }}/{{ totalQuizCount }}</span
+              >
               <span class="badge badge-secondary">O/X 문제</span>
               <span class="badge badge-accent">+10 XP</span>
             </div>
@@ -227,7 +229,7 @@
                 @click="completeQuiz"
                 class="btn btn-primary complete-quiz-btn"
               >
-                완료
+                {{ completedQuizCount >= totalQuizCount - 1 ? '완료' : '다음 문제' }}
               </button>
             </div>
           </div>
@@ -249,6 +251,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import quizAPI from '@/api/quiz';
 import QuizHistory from '@/components/quiz/QuizHistory.vue';
+import BackButton from '@/components/common/BackButton.vue';
 
 const router = useRouter();
 
@@ -264,6 +267,11 @@ const isSubmitting = ref(false);
 const quizResult = ref(null);
 const showXPAnimation = ref(false);
 
+// 퀴즈 진행 상태
+const currentQuizNumber = ref(1); // 현재 풀고 있는 문제 번호 (1 또는 2)
+const totalQuizCount = ref(2); // 하루 총 문제 수
+const completedQuizCount = ref(0); // 완료한 문제 수
+
 // 사용자 통계
 const correctCount = ref(0);
 const wrongCount = ref(0);
@@ -271,6 +279,7 @@ const streakCount = ref(0);
 const totalXP = ref(0);
 const earnedXP = ref(0);
 const lastEarnedXP = ref(0);
+const sessionTotalXP = ref(0); // 오늘 퀴즈에서 총 획득한 경험치
 
 // Computed
 const currentLevel = computed(() => Math.floor(totalXP.value / 100) + 1);
@@ -388,10 +397,18 @@ const submitAnswer = async () => {
         earnedXP.value = result.earnedXP || 10;
         lastEarnedXP.value = earnedXP.value;
         totalXP.value += earnedXP.value;
+        sessionTotalXP.value += earnedXP.value; // 세션 총 경험치에 누적
         correctCount.value++;
 
         // XP 애니메이션 표시
         await showXPEarnedAnimation();
+        
+        // 첫 번째 문제인 경우 자동으로 다음 문제로 이동
+        if (completedQuizCount.value < totalQuizCount.value - 1) {
+          setTimeout(async () => {
+            await completeQuiz();
+          }, 1000);
+        }
       } else {
         wrongCount.value++;
       }
@@ -423,9 +440,50 @@ const showXPEarnedAnimation = () => {
   });
 };
 
-const completeQuiz = () => {
-  todayCompleted.value = true;
-  showResult.value = true;
+const completeQuiz = async () => {
+  completedQuizCount.value++;
+
+  // 첫 번째 문제를 완료한 경우
+  if (completedQuizCount.value < totalQuizCount.value) {
+    currentQuizNumber.value++;
+
+    // 상태 초기화하고 다음 문제 로드
+    resetQuizState();
+
+    try {
+      isLoading.value = true;
+      await loadTodayQuiz();
+
+      if (todayQuiz.value) {
+        // 자동으로 다음 퀴즈 시작
+        startQuiz();
+      } else {
+        // 더 이상 문제가 없으면 완료 처리
+        todayCompleted.value = true;
+        showResult.value = true;
+      }
+    } catch (error) {
+      console.error('다음 퀴즈 로드 실패:', error);
+      // 오류 발생 시 완료 처리
+      todayCompleted.value = true;
+      showResult.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  } else {
+    // 모든 문제를 완료한 경우
+    todayCompleted.value = true;
+    showResult.value = true;
+  }
+};
+
+const resetQuizState = () => {
+  quizStarted.value = false;
+  showResult.value = false;
+  selectedAnswer.value = null;
+  answerSubmitted.value = false;
+  quizResult.value = null;
+  showXPAnimation.value = false;
 };
 
 // 초기화

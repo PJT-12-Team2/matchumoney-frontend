@@ -1,5 +1,6 @@
 <template>
   <div class="signup-container">
+    <BackButton />
     <div class="login-logo">
       <img src="@/assets/Logo.png" alt="맞추머니 로고" />
     </div>
@@ -14,8 +15,8 @@
         </div>
         <div class="login-row">
           <div class="input-action-row">
-            <BaseInput v-model="email" placeholder="이메일 입력" />
-            <BaseButton class="action-btn" variant="primary" @click="handleSendCode">인증번호 전송</BaseButton>
+            <BaseInput v-model="email" placeholder="이메일 입력" :disabled="isEmailVerified" />
+            <BaseButton class="action-btn" variant="primary" @click="handleSendCode" :disabled="isEmailVerified">인증번호 전송</BaseButton>
           </div>
         </div>
 
@@ -25,8 +26,8 @@
         </div>
         <div class="login-row">
           <div class="input-action-row">
-            <BaseInput v-model="authCode" placeholder="인증번호 입력" />
-            <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode">인증번호 확인</BaseButton>
+            <BaseInput v-model="authCode" placeholder="인증번호 입력" :disabled="isEmailVerified" />
+            <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode" :disabled="isEmailVerified">인증번호 확인</BaseButton>
           </div>
         </div>
 
@@ -75,6 +76,7 @@ import { ref, watch } from "vue";
 import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
+import BackButton from "@/components/common/BackButton.vue";
 import authApi from "@/api/auth";
 import { useRouter } from "vue-router";
 
