@@ -2,7 +2,26 @@
   <div class="card-visual-slider">
     <div class="slider-container">
       <!-- ...상단 동일 -->
+      <!-- 카드가 없을 때 카드 입력 표시 -->
+      <div v-if="filteredCards.length === 0" class="slide-item no-card-item">
+        <div class="no-card-content">
+          <div class="add-card-icon">
+            <i class="bi bi-plus-circle"></i>
+          </div>
+          <div class="add-card-text">
+            <h3>카드를 등록해주세요</h3>
+            <p>보유 카드를 등록하면<br>맞춤형 혜택을 확인할 수 있어요</p>
+          </div>
+          <button class="add-card-button" @click="$emit('add-card')">
+            <i class="bi bi-plus"></i>
+            카드 등록하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 카드가 있을 때 기존 슬라이더 -->
       <div
+        v-else
         class="slider-wrapper"
         :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
         @mousedown="handleMouseDown"
@@ -24,8 +43,8 @@
 
     </div>
 
-    <!-- 슬라이더 캡션 + 컨트롤 -->
-    <div class="slider-controls">
+    <!-- 슬라이더 캡션 + 컨트롤 (카드가 있을 때만 표시) -->
+    <div v-if="filteredCards.length > 0" class="slider-controls">
       <div class="slider-caption" v-if="activeName">
         <span class="issuer" v-if="activeIssuer">{{ activeIssuer }}</span>
         <span class="name">{{ activeName }}</span>
@@ -49,6 +68,8 @@ import { ref, computed } from 'vue';
 const props = defineProps({
   cards: { type: Array, default: () => [] },
 });
+
+const emit = defineEmits(['add-card']);
 
 const filteredCards = computed(() =>
   props.cards.filter((card) => !card.isActionCard)
@@ -262,6 +283,73 @@ const handleTouchEnd = () => {
 }
 .indicator.active:hover {
   background: var(--color-dark);
+}
+
+/* 카드 없을 때 스타일 */
+.no-card-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-primary-10);
+  border: 2px dashed var(--border-medium);
+  border-radius: 1rem;
+  cursor: default;
+  transform: none;
+}
+
+.no-card-item:hover {
+  transform: none;
+}
+
+.no-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.add-card-icon {
+  font-size: 3rem;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-sm);
+}
+
+.add-card-text h3 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-sm);
+}
+
+.add-card-text p {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.add-card-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-card-button:hover {
+  background: var(--color-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 </style>

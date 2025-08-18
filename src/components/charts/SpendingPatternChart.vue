@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import {
   Chart,
   BarController,
@@ -58,7 +58,7 @@ import {
   LinearScale,
   Tooltip,
   Legend,
-} from "chart.js";
+} from 'chart.js';
 
 // Props: 거래내역 배열
 const props = defineProps({
@@ -73,7 +73,7 @@ const chartRef = ref(null);
 let chartInstance = null;
 
 // 차트 타입 상태 (기본값: 막대형)
-const chartType = ref("bar");
+const chartType = ref('bar');
 
 // 카테고리별 합계 집계
 const categorySums = computed(() => {
@@ -90,17 +90,17 @@ const categorySums = computed(() => {
     );
 
     // 카테고리가 없거나 빈 값인 경우 가맹점명으로 분류
-    if (!category || category.trim() === "") {
+    if (!category || category.trim() === '') {
       const merchantName =
         tx.resMemberStoreName ||
         tx.merchantName ||
         tx.res_member_store_name ||
-        "";
+        '';
       if (merchantName) {
         // 간단한 카테고리 분류 로직
         category = getCategoryFromMerchant(merchantName);
       } else {
-        category = "기타";
+        category = '기타';
       }
     }
 
@@ -113,31 +113,31 @@ const categorySums = computed(() => {
 // 가맹점명으로부터 카테고리 추론
 const getCategoryFromMerchant = (merchantName) => {
   const name = merchantName.toLowerCase();
-  if (name.includes("마트") || name.includes("마켓") || name.includes("편의점"))
-    return "생활/마트";
+  if (name.includes('마트') || name.includes('마켓') || name.includes('편의점'))
+    return '생활/마트';
   if (
-    name.includes("주유소") ||
-    name.includes("gs칼텍스") ||
-    name.includes("sk에너지")
+    name.includes('주유소') ||
+    name.includes('gs칼텍스') ||
+    name.includes('sk에너지')
   )
-    return "주유/교통";
+    return '주유/교통';
   if (
-    name.includes("카페") ||
-    name.includes("스타벅스") ||
-    name.includes("맥도날드") ||
-    name.includes("음식")
+    name.includes('카페') ||
+    name.includes('스타벅스') ||
+    name.includes('맥도날드') ||
+    name.includes('음식')
   )
-    return "음식/카페";
-  if (name.includes("병원") || name.includes("약국") || name.includes("의료"))
-    return "의료/건강";
+    return '음식/카페';
+  if (name.includes('병원') || name.includes('약국') || name.includes('의료'))
+    return '의료/건강';
   if (
-    name.includes("온라인") ||
-    name.includes("쇼핑") ||
-    name.includes("아마존") ||
-    name.includes("쿠팡")
+    name.includes('온라인') ||
+    name.includes('쇼핑') ||
+    name.includes('아마존') ||
+    name.includes('쿠팡')
   )
-    return "온라인쇼핑";
-  return "기타";
+    return '온라인쇼핑';
+  return '기타';
 };
 
 // 상위 5개 카테고리 추출
@@ -159,11 +159,11 @@ const changeChartType = (type) => {
 
 // 색상 배열
 const colors = [
-  "#609966", // color-accent
-  "#9dc08b", // color-secondary
-  "#edf1d6", // color-primary
-  "#f5f7f9", // color-info
-  "#636363", // color-success
+  '#609966', // color-accent
+  '#9dc08b', // color-secondary
+  '#edf1d6', // color-primary
+  '#f5f7f9', // color-info
+  '#636363', // color-success
 ];
 
 // 인덱스별 색상 가져오기
@@ -202,21 +202,21 @@ function renderChart() {
   );
 
   const getChartConfig = () => {
-    if (chartType.value === "doughnut") {
+    if (chartType.value === 'doughnut') {
       return {
-        type: "doughnut",
+        type: 'doughnut',
         data: {
           labels,
           datasets: [
             {
               data,
               backgroundColor: colors,
-              borderColor: "#ffffff",
+              borderColor: '#ffffff',
               borderWidth: 2,
               hoverBorderWidth: 3,
               borderRadius: 8,
-              borderJoinStyle: "round",
-              cutout: "40%", // 더 두껍게 조정
+              borderJoinStyle: 'round',
+              cutout: '40%', // 더 두껍게 조정
             },
           ],
         },
@@ -229,10 +229,10 @@ function renderChart() {
               display: false, // 하단 범례 숨김
             },
             tooltip: {
-              backgroundColor: "rgba(64, 81, 59, 0.95)",
-              titleColor: "#ffffff",
-              bodyColor: "#ffffff",
-              borderColor: "#609966",
+              backgroundColor: 'rgba(64, 81, 59, 0.95)',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: '#609966',
               borderWidth: 2,
               cornerRadius: 8,
               displayColors: true,
@@ -256,35 +256,36 @@ function renderChart() {
       };
     } else {
       return {
-        type: "bar",
+        type: 'bar',
         data: {
           labels,
           datasets: [
             {
-              label: "총 사용금액(원)",
+              label: '총 사용금액(원)',
               data,
               backgroundColor: colors,
               borderRadius: 8,
               barThickness:
                 window.innerWidth <= 480
-                  ? 12
+                  ? 15
                   : window.innerWidth <= 768
-                  ? 16
-                  : 20,
+                  ? 20
+                  : 25,
+              maxBarThickness: window.innerWidth <= 480 ? 20 : 30,
             },
           ],
         },
         options: {
-          indexAxis: "y",
+          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: "rgba(64, 81, 59, 0.95)",
-              titleColor: "#ffffff",
-              bodyColor: "#ffffff",
-              borderColor: "#609966",
+              backgroundColor: 'rgba(64, 81, 59, 0.95)',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: '#609966',
               borderWidth: 2,
               cornerRadius: 8,
               displayColors: true,
@@ -309,11 +310,11 @@ function renderChart() {
               beginAtZero: true,
               grid: {
                 display: true,
-                color: "#e5e7eb",
+                color: '#e5e7eb',
                 lineWidth: 0,
               },
               ticks: {
-                color: "#6b7280",
+                color: '#6b7280',
                 font: {
                   size:
                     window.innerWidth <= 480
@@ -324,9 +325,9 @@ function renderChart() {
                 },
                 callback: (value) => {
                   if (value >= 1000000) {
-                    return Math.floor(value / 10000) + "만";
+                    return Math.floor(value / 10000) + '만';
                   } else if (value >= 10000) {
-                    return Math.floor(value / 10000) + "만";
+                    return Math.floor(value / 10000) + '만';
                   }
                   return value.toLocaleString();
                 },
@@ -336,17 +337,30 @@ function renderChart() {
             y: {
               grid: { display: false },
               ticks: {
-                color: "#1f2937",
+                color: '#1f2937',
                 font: {
                   size:
                     window.innerWidth <= 480
-                      ? 10
+                      ? 9
                       : window.innerWidth <= 768
-                      ? 11
-                      : 13,
-                  weight: "600",
+                      ? 10
+                      : 12,
+                  weight: '600',
                 },
-                maxTicksLimit: window.innerWidth <= 480 ? 4 : 5,
+                // maxTicksLimit 제거하여 모든 카테고리 표시
+                // 텍스트가 잘리지 않도록 최대 너비 설정
+                maxRotation: 0,
+                minRotation: 0,
+                callback: function (value, index, values) {
+                  const label = this.getLabelForValue(value);
+                  // 모바일에서 텍스트가 너무 길면 줄임
+                  if (window.innerWidth <= 480 && label.length > 8) {
+                    return label.substring(0, 6) + '...';
+                  } else if (window.innerWidth <= 768 && label.length > 10) {
+                    return label.substring(0, 8) + '...';
+                  }
+                  return label;
+                },
               },
               title: { display: false },
             },
@@ -462,7 +476,7 @@ canvas {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--font-size-base);
 }
 
 .legend-color {
@@ -574,15 +588,15 @@ canvas {
   }
 
   .legend-item {
-    font-size: 12px;
+    font-size: var(--font-size-base);
   }
 }
 
 /* 작은 모바일 화면 */
 @media (max-width: 480px) {
   .spending-pattern-chart {
-    max-height: 350px;
-    min-height: 200px;
+    max-height: 400px;
+    min-height: 250px;
     padding: 10px;
   }
 
@@ -599,7 +613,8 @@ canvas {
   }
 
   canvas {
-    max-height: 180px;
+    max-height: 220px;
+    min-height: 180px;
     margin-top: 35px;
   }
 
@@ -610,7 +625,7 @@ canvas {
   }
 
   .legend-item {
-    font-size: 10px;
+    font-size: var(--font-size-base);
     gap: 6px;
   }
 
@@ -650,7 +665,7 @@ canvas {
   }
 
   .legend-item {
-    font-size: 9px;
+    font-size: var(--font-size-base);
     gap: 5px;
   }
 
