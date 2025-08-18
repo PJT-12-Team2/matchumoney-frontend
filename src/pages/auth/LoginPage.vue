@@ -20,12 +20,8 @@
           <BaseInput v-model="password" label="비밀번호" id="login-password" type="password" placeholder="비밀번호" />
         </div>
 
-        <!-- 로그인 옵션 -->
+        <!-- 비밀번호 찾기 -->
         <div class="login-options">
-          <label class="keep-login">
-            <input type="checkbox" v-model="keepLogin" />
-            로그인 상태 유지
-          </label>
           <a class="reset-pw" href="/reset-password">비밀번호 찾기</a>
         </div>
 
@@ -62,7 +58,6 @@ import authApi from '@/api/auth'; // ✅ 새로 추가된 import
 
 const email = ref('');
 const password = ref('');
-const keepLogin = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
@@ -190,16 +185,11 @@ const handleKakaoLogin = () => {
 /* 옵션 행 */
 .login-options {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   font-size: 0.85rem;
   margin-bottom: 1.8rem;
   color: var(--text-secondary);
-}
-.keep-login {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
 }
 .reset-pw {
   color: var(--text-link);
