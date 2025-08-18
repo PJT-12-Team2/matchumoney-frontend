@@ -173,4 +173,16 @@ onUnmounted(clearAutoHide); // ✅ 컴포넌트 파기 시 정리
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
+
+.compare-button {
+  text-align: center;
+  justify-content: center;
+  width: auto;
+  min-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding-left: 8px; /* 좌측 패딩 추가 */
+  padding-right: 8px; /* 우측 패딩 추가 */
+  margin: 0 auto; /* 좌우 마진 자동으로 중앙 정렬 */
+}
 </style>

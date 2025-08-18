@@ -31,17 +31,25 @@
           <!-- 왼쪽: 로고 -->
           <div class="bank-logo-container">
             <img :src="getBankLogo(product.bankName)" alt="은행 로고" />
-            <div class="likes_compare">
-              <span
-                class="reaction-button"
-                @click.stop="handleLikeClick(product)"
-                :class="{ active: product.liked || false }"
-              >
-                {{ product.liked ? '❤️' : '🤍' }} {{ product.likeCount || 0 }}
-              </span>
+            <!-- 수정 후 -->
+            <div class="button-container">
+              <LikeToggle
+                :productId="product.depositProductId"
+                productType="deposit-products"
+                :initialLiked="product.liked"
+                :initialCount="product.likeCount"
+                @update="
+                  ({ liked, count }) => {
+                    product.liked = liked;
+                    product.likeCount = count;
+                  }
+                "
+                @click.stop
+              />
               <CompareButton
                 :productId="product.depositProductId"
                 :productType="ProductType.DEPOSIT"
+                @click.stop
               />
             </div>
           </div>
@@ -78,6 +86,7 @@ import { useRouter } from 'vue-router';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import { ProductType } from '@/constants/productTypes';
 import CompareButton from '@/components/common/CompareButton.vue';
+import LikeToggle from '@/components/common/LikeToggle.vue';
 import api from '@/api';
 
 const router = useRouter();
@@ -120,46 +129,6 @@ const getUserId = () => {
     return userId ? Number(userId) : null;
   } catch (e) {
     return null;
-  }
-};
-
-// 🆕 좋아요 클릭 처리
-const handleLikeClick = (product) => {
-  const userId = getUserId();
-
-  if (!userId) {
-    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
-      router.push('/login');
-    }
-    return;
-  }
-
-  toggleLike(product);
-};
-
-// 🆕 좋아요 토글 기능
-const toggleLike = async (product) => {
-  const productId = product.depositProductId;
-  const currentLiked = product.liked || false;
-
-  try {
-    const likePromise = currentLiked
-      ? api.delete(`/deposit-products/${productId}/likes`)
-      : api.post(`/deposit-products/${productId}/likes`);
-
-    const response = await likePromise;
-
-    // 상품 객체 업데이트
-    product.liked = response.data.liked;
-    product.likeCount = response.data.likeCount;
-
-    console.log('좋아요 상태 업데이트:', {
-      productId,
-      liked: product.liked,
-      likeCount: product.likeCount,
-    });
-  } catch (error) {
-    console.error('좋아요 처리 중 오류:', error);
   }
 };
 
@@ -428,13 +397,6 @@ const getBankLogo = (bankName) => {
   border: 1px solid var(--border-light);
 }
 
-.likes_compare {
-  display: flex; /* 좋아요 + 버튼 가로 배치 */
-  align-items: center;
-  gap: 0.3rem; /* 좋아요와 버튼 사이 간격 */
-  font-size: 0.9rem;
-}
-
 .product-name-block {
   flex: 1;
   padding: 0 16px;
@@ -444,29 +406,22 @@ const getBankLogo = (bankName) => {
 }
 
 .bank-name-bold {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: 500;
   color: var(--color-dark);
   margin-bottom: 2px;
 }
 
 .product-name-bold {
-  font-size: 16px;
-  font-weight: 800;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 4px;
 }
 
 .rate-line {
   font-size: 12px;
   color: var(--text-secondary);
   margin-bottom: 2px;
-}
-
-.highlight-rate {
-  font-size: 18px;
-  color: var(--color-accent);
-  font-weight: bold;
 }
 
 .loading {
@@ -501,13 +456,14 @@ const getBankLogo = (bankName) => {
 }
 
 .term {
-  font-weight: 700;
-  color: #0077cc; /* 파란색 텍스트 */
-  background-color: #e0f4ff; /* 하늘색 배경 */
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   white-space: nowrap;
+  border-radius: 0.4rem;
+  font-weight: bold;
+  background: var(--color-info-light);
+  color: var(--color-info-dark);
 }
 
 .rate-values {
@@ -518,14 +474,15 @@ const getBankLogo = (bankName) => {
 }
 
 .label-bold {
-  font-weight: 500;
+  font-weight: bold;
+  font-size: var(--font-size-base);
   color: var(--text-primary);
 }
 
 .highlight-rate {
   font-weight: bold;
   color: var(--color-accent);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
 }
 
 .base-rate {
@@ -559,6 +516,13 @@ const getBankLogo = (bankName) => {
 .reaction-button.active {
   background-color: #ffe6e6;
   color: red;
+}
+.button-container {
+  display: flex;
+  gap: 0.2rem;
+  margin-top: 0.2rem;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes spin {
@@ -618,35 +582,16 @@ const getBankLogo = (bankName) => {
     justify-content: center;
     gap: 0.3rem;
   }
-
+  .button-container {
+    display: flex; /* initial에서 flex로 변경 */
+    flex-direction: column; /* 추가 */
+    align-items: center; /* 추가 */
+    justify-content: center; /* 추가 */
+    gap: 0.2rem;
+  }
   .bank-logo-container img {
     width: 6rem;
     height: 6rem;
-  }
-
-  .reaction-button {
-    font-size: 10px;
-    padding: 4px 8px;
-  }
-
-  .likes_compare {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.2rem;
-    font-size: 0.7rem;
-    width: 100%;
-  }
-  .likes_compare :deep(.compare-button) {
-    text-align: center;
-    justify-content: center;
-    width: auto;
-    min-width: fit-content;
-    display: flex;
-    align-items: center;
-    padding-left: 8px; /* 좌측 패딩 추가 */
-    padding-right: 8px; /* 우측 패딩 추가 */
-    margin: 0 auto; /* 좌우 마진 자동으로 중앙 정렬 */
   }
 
   .product-name-block {

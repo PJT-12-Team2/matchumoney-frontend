@@ -91,4 +91,73 @@ const handleClick = async () => {
     margin: 0px -11px 0px 0px;
   }
 }
+
+@media (max-width: 430px) {
+  .recommendation-item {
+    min-height: 140px; /* 최소 높이 설정 */
+    align-items: center; /* 카드 내 요소들 세로 가운데 정렬 */
+  }
+  .product-card-horizontal {
+    gap: 8px;
+    align-items: center; /* stretch를 center로 변경 */
+    height: 100%;
+  }
+
+  .bank-logo-container {
+    width: 8rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+  }
+
+  .bank-logo-container img {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .reaction-button {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .likes_compare {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    font-size: 0.7rem;
+    width: 100%;
+  }
+  .likes_compare :deep(.compare-button) {
+    text-align: center;
+    justify-content: center;
+    width: auto;
+    min-width: fit-content;
+    display: flex;
+    align-items: center;
+    padding-left: 8px; /* 좌측 패딩 추가 */
+    padding-right: 8px; /* 우측 패딩 추가 */
+    margin: 0 auto; /* 좌우 마진 자동으로 중앙 정렬 */
+  }
+
+  .product-name-block {
+    padding: 0 8px;
+  }
+
+  .kb-only-text,
+  .no-results-text {
+    font-size: var(--font-size-base);
+  }
+
+  .rate-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0rem;
+  }
+
+  .rate-values {
+    gap: 0.2rem;
+  }
+}
 </style>

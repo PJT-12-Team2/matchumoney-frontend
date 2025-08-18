@@ -458,12 +458,15 @@ const handleMouseUp = () => {
 .account-card {
   min-width: 100%;
   background-color: var(--color-primary);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  padding: 20px 20px 0px 40px;
-  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--spacing-lg);
   position: relative;
   cursor: pointer;
   user-select: none;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
 .account-card.swiping {
@@ -471,10 +474,11 @@ const handleMouseUp = () => {
 }
 
 .account-name {
-  font-size: 24px;
-  font-weight: 700;
+  font-weight: bold;
+  font-size: var(--font-size-2xl);
   color: var(--color-dark);
-  margin-bottom: 30px;
+  margin-bottom: var(--spacing-md);
+  margin-top: var(--spacing-sm);
 }
 
 .account-details {
@@ -487,7 +491,7 @@ const handleMouseUp = () => {
 
 .balance-section h4,
 .account-section h4 {
-  font-size: 16px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-title);
   margin-bottom: 5px;
@@ -511,7 +515,6 @@ const handleMouseUp = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 180px;
 }
 
 .add-account-card:hover {
@@ -527,10 +530,10 @@ const handleMouseUp = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
   padding: 2rem;
   border-radius: 20px;
   margin-bottom: 10px;
+  margin: 20px 0;
 }
 
 .loading-container {
@@ -633,19 +636,21 @@ const handleMouseUp = () => {
 
 /* ===== 반응형 디자인 ===== */
 @media (max-width: 420px) {
+  .account-card {
+    min-height: 120px;
+  }
   .account-name {
-    font-size: var(--font-size-3xl);
-    padding-top: 1rem;
+    font-size: var(--font-size-2xl);
   }
 
   .balance-section h4,
   .account-section h4 {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
   }
 
   .balance-amount,
   .account-number {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
   }
 
   .loading-container,

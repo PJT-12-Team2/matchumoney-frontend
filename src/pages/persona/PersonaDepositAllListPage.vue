@@ -220,10 +220,13 @@
               </div>
             </div>
           </div>
-          <div v-if="isLoadingMore" class="loading-state infinite-spinner-wrapper">
-      <BaseSpinner size="md" />
-      <p>예금 상품을 불러오고 있습니다...</p>
-    </div>
+          <div
+            v-if="isLoadingMore"
+            class="loading-state infinite-spinner-wrapper"
+          >
+            <BaseSpinner size="md" />
+            <p>예금 상품을 불러오고 있습니다...</p>
+          </div>
         </div>
       </section>
     </main>
@@ -803,7 +806,7 @@ const selectProduct = (product) => {
 .bank-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
   justify-content: center;
   place-items: center;
 }
@@ -863,7 +866,6 @@ const selectProduct = (product) => {
   background: var(--bg-content);
   border-radius: var(--spacing-xl);
   padding: var(--spacing-xl);
-  height: 18rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1086,7 +1088,7 @@ const selectProduct = (product) => {
     font-size: var(--font-size-base);
     color: var(--text-primary);
     font-weight: 600;
-    padding-top: 0.6rem;
+    padding-top: 0.25rem;
   }
 
   .bank-logo-option {

@@ -79,7 +79,7 @@
           >
         </div>
         <!-- 신청 버튼 -->
-        <div class="card-action-container">
+        <!-- <div class="card-action-container">
           <div class="card-action">
             <BaseButton
               variant="primary"
@@ -91,7 +91,7 @@
               신청하기
             </BaseButton>
           </div>
-        </div>
+        </div> -->
 
         <!-- 카드 설명/혜택 -->
         <div v-if="card.corpPrContainer" class="card-description">
@@ -609,9 +609,25 @@ const handleApply = () => {
   }
 
   .card-info {
-    font-size: var(--font-size-lg);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 0;
+    gap: var(--spacing-md);
+    font-size: var(--font-size-sm);
   }
 
+  .card-image-section {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .card-details {
+    flex: 4; /* 두 번째 칸(상세정보) 비율 */
+    min-width: 0;
+    margin-left: 1.5rem;
+  }
   .card-image-section {
     justify-content: center;
   }
@@ -656,11 +672,6 @@ const handleApply = () => {
   .card-image-container.horizontal-image .card-image {
     width: 85px;
     height: auto;
-  }
-
-  .card-details {
-    flex: 1;
-    min-width: 0;
   }
 
   .card-name {

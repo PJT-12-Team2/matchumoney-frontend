@@ -303,7 +303,7 @@ function isRateBest(period, index) {
   .product-img {
     width: 6rem;
     height: 6rem;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
   }
   .product-box {
     gap: var(--spacing-sm);

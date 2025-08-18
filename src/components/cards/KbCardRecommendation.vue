@@ -120,61 +120,71 @@ const loadKbRecommendations = async () => {
         cards = [];
         responseHasNext = false;
       }
-      
+
       // 좋아요/즐겨찾기 상태 조회 (캐시 사용)
       if (!isFavoriteLoaded.value) {
         try {
           const favoriteResponse = await favoriteApi.getFavorites();
-          
+
           // 응답 구조 확인 - cardList 사용
           if (Array.isArray(favoriteResponse)) {
             favoriteListCache.value = favoriteResponse;
-          } else if (favoriteResponse?.cardList && Array.isArray(favoriteResponse.cardList)) {
+          } else if (
+            favoriteResponse?.cardList &&
+            Array.isArray(favoriteResponse.cardList)
+          ) {
             favoriteListCache.value = favoriteResponse.cardList;
-          } else if (favoriteResponse?.data?.cardList && Array.isArray(favoriteResponse.data.cardList)) {
+          } else if (
+            favoriteResponse?.data?.cardList &&
+            Array.isArray(favoriteResponse.data.cardList)
+          ) {
             favoriteListCache.value = favoriteResponse.data.cardList;
-          } else if (favoriteResponse?.data && Array.isArray(favoriteResponse.data)) {
+          } else if (
+            favoriteResponse?.data &&
+            Array.isArray(favoriteResponse.data)
+          ) {
             favoriteListCache.value = favoriteResponse.data;
           }
-          
+
           isFavoriteLoaded.value = true;
         } catch (error) {
           // 즐겨찾기 조회 실패해도 계속 진행
         }
       }
-      
+
       // 각 카드의 좋아요/즐겨찾기 상태 확인 및 설정
       cards.forEach((card) => {
         // 백엔드에서 이미 좋아요/즐겨찾기 상태를 포함해서 보내주므로 사용
         // 만약 값이 없다면 캐시에서 확인
         if (card.is_liked === undefined || card.is_favorited === undefined) {
           const cardId = card.cardProductId || card.id || card.cardId;
-          
+
           // 캐시에서 즐겨찾기 상태 확인
-          const isFavorite = favoriteListCache.value.some(fav => {
-            const matchByProductType = fav.productType === 'CARD' || fav.productType === 'card-products';
-            const matchById = String(fav.productId) === String(cardId) || 
-                             String(fav.cardProductId) === String(cardId) ||
-                             String(fav.cardId) === String(cardId);
-            
+          const isFavorite = favoriteListCache.value.some((fav) => {
+            const matchByProductType =
+              fav.productType === 'CARD' || fav.productType === 'card-products';
+            const matchById =
+              String(fav.productId) === String(cardId) ||
+              String(fav.cardProductId) === String(cardId) ||
+              String(fav.cardId) === String(cardId);
+
             return matchByProductType && matchById;
           });
-          
+
           // 기본값 설정
           if (card.is_liked === undefined) card.is_liked = false;
           if (card.like_count === undefined) card.like_count = 0;
           if (card.is_favorited === undefined) card.is_favorited = isFavorite;
         }
-        
+
         // 기존 필드명으로 매핑 (하위 호환성)
         card.isLiked = card.is_liked;
         card.likeCount = card.like_count;
         card.isStarred = card.is_favorited;
       });
-      
+
       kbCards.value = cards;
       hasNext.value = responseHasNext;
-      
     } else {
       throw new Error(response?.message || '추천 데이터를 불러올 수 없습니다.');
     }
@@ -197,7 +207,10 @@ const loadMore = async () => {
   try {
     // 다음 페이지 로드
     const nextPage = currentPage.value + 1;
-    const response = await cardsApi.getKbCardRecommendations(nextPage, pageSize);
+    const response = await cardsApi.getKbCardRecommendations(
+      nextPage,
+      pageSize
+    );
 
     if (response && response.success !== false) {
       let newCards = [];
@@ -213,30 +226,32 @@ const loadMore = async () => {
         newCards = response.kbCards || [];
         responseHasNext = response.hasNext || false;
       }
-      
+
       // 추가로 로드된 카드들의 상태 설정
       newCards.forEach((card) => {
         // 백엔드에서 이미 좋아요/즐겨찾기 상태를 포함해서 보내주므로 사용
         // 만약 값이 없다면 캐시에서 확인
         if (card.is_liked === undefined || card.is_favorited === undefined) {
           const cardId = card.cardProductId || card.id || card.cardId;
-          
+
           // 캐시에서 즐겨찾기 상태 확인
-          const isFavorite = favoriteListCache.value.some(fav => {
-            const matchByProductType = fav.productType === 'CARD' || fav.productType === 'card-products';
-            const matchById = String(fav.productId) === String(cardId) || 
-                             String(fav.cardProductId) === String(cardId) ||
-                             String(fav.cardId) === String(cardId);
-            
+          const isFavorite = favoriteListCache.value.some((fav) => {
+            const matchByProductType =
+              fav.productType === 'CARD' || fav.productType === 'card-products';
+            const matchById =
+              String(fav.productId) === String(cardId) ||
+              String(fav.cardProductId) === String(cardId) ||
+              String(fav.cardId) === String(cardId);
+
             return matchByProductType && matchById;
           });
-          
+
           // 기본값 설정
           if (card.is_liked === undefined) card.is_liked = false;
           if (card.like_count === undefined) card.like_count = 0;
           if (card.is_favorited === undefined) card.is_favorited = isFavorite;
         }
-        
+
         // 기존 필드명으로 매핑 (하위 호환성)
         card.isLiked = card.is_liked;
         card.likeCount = card.like_count;
@@ -359,12 +374,14 @@ onUnmounted(() => {
 .recommendation-description {
   color: var(--color-accent);
   font-weight: bold;
-  background: var(--color-primary);
-  padding: 26px 20px;
+  text-align: center;
+  padding: 1rem 1.4rem;
   border-radius: 1rem;
   margin-bottom: 1rem;
-  border-left: 4px solid var(--color-accent);
-  text-align: center;
+  background-color: rgb(255, 255, 255);
+  border: 0.1rem solid var(--color-light);
+  border-left: 0.4rem solid var(--color-accent);
+  box-shadow: var(--shadow-card);
 }
 
 .recommendation-description p {
