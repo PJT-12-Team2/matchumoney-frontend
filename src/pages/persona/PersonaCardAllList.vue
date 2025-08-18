@@ -1,5 +1,6 @@
 <template>
   <div class="card-product-search">
+    <BackButton />
     <main class="main-content">
       <!-- 페르소나 추천 캐러셀 -->
       <h1 class="page-title">페르소나 추천</h1>
@@ -284,6 +285,7 @@
 <!-- name: 'CardSearchPage' -->
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import BackButton from '@/components/common/BackButton.vue';
 import api from '@/api';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';

@@ -1,5 +1,6 @@
 <template>
   <div class="saving-search-page">
+    <BackButton />
     <main class="main-content">
       <!-- 💡 페르소나 추천 -->
       <h1 class="page-title">페르소나 추천</h1>
@@ -304,6 +305,7 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 const modules = [Pagination];
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import BackButton from '@/components/common/BackButton.vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';

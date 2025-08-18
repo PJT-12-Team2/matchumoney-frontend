@@ -1,5 +1,6 @@
 <template>
   <div class="login-container">
+    <BackButton />
     <div class="login-logo">
       <img src="@/assets/Logo.png" alt="맞추머니 로고" />
     </div>
@@ -81,6 +82,7 @@ import { ref, watch } from 'vue';
 import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
+import BackButton from '@/components/common/BackButton.vue';
 import '@/assets/main.css';
 import authApi from '@/api/auth';
 import { useRouter } from 'vue-router';

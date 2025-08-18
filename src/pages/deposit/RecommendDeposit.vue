@@ -1,5 +1,6 @@
 <template>
   <div class="deposit-recommendations">
+    <BackButton />
     <main class="main-content">
       <RecommendationLayout title="맞춤 예금">
         <template #slider>
@@ -71,6 +72,7 @@ import depositApi from '@/api/deposit';
 import AccountSlider from './AccountSlider.vue';
 import ProductList from './ProductList.vue';
 import RecommendationLayout from '@/components/layouts/RecommendationLayout.vue';
+import BackButton from '@/components/common/BackButton.vue';
 
 // 로그인 페이지로 리다이렉트
 const redirectToLogin = () => {

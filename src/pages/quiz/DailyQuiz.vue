@@ -1,5 +1,6 @@
 <template>
   <div class="daily-quiz-container">
+    <BackButton />
     <div class="daily-quiz-content">
       <!-- 퀴즈 이력 섹션 (맨 위) -->
       <div class="quiz-history-section">
@@ -249,6 +250,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import quizAPI from '@/api/quiz';
 import QuizHistory from '@/components/quiz/QuizHistory.vue';
+import BackButton from '@/components/common/BackButton.vue';
 
 const router = useRouter();
 

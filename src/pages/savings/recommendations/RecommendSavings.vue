@@ -5,6 +5,7 @@ import BankbookProductList from '@/components/bankbook/BankbookProductList.vue';
 import RecommendationLayout from '@/components/layouts/RecommendationLayout.vue';
 import savingApi from '@/api/savings';
 import Loading from '@/components/common/Loading.vue';
+import BackButton from '@/components/common/BackButton.vue';
 
 const selectedId = ref(null);
 const savings = ref([]);
@@ -87,6 +88,7 @@ watch(
 
 <template>
   <div class="content-my">
+    <BackButton />
     <RecommendationLayout title="적금 추천">
       <!-- 상단 슬라이더 -->
       <template #slider>

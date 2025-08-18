@@ -1,5 +1,6 @@
 <template>
   <div class="login-container">
+    <BackButton />
     <!-- 상단 로고 영역 -->
     <div class="login-logo">
       <img src="@/assets/Logo.png" alt="맞추머니 로고" />
@@ -54,6 +55,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
+import BackButton from '@/components/common/BackButton.vue';
 import authApi from '@/api/auth'; // ✅ 새로 추가된 import
 
 const email = ref('');
