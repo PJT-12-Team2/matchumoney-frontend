@@ -58,14 +58,14 @@
                 <div class="hero-image">
                   <div class="hero-main-icon">
                     <div class="icon-bg">
-                      <video
-                        src="@/assets/character_images/together_animals.mp4"
+                      <img
+                        src="@/assets/character_images/together-animals-unscreen.gif"
                         class="hero-video"
                         autoplay
                         muted
                         loop
                         playsinline
-                      ></video>
+                      ></img>
                     </div>
                   </div>
                 </div>
@@ -580,7 +580,6 @@ onUnmounted(() => {
   max-width: 480px;
   height: auto;
   object-fit: contain;
-  background-color: #def2e9; /* extracted color from uploaded image */
   border-radius: 20px;
   display: block;
   margin: 0 auto;
@@ -906,6 +905,7 @@ onUnmounted(() => {
 .hero-main-icon {
   position: relative;
   width: 100%;
+  justify-items: center;
 }
 
 .icon-bg {
