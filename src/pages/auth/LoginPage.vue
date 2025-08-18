@@ -27,7 +27,7 @@
             <!-- <input type="checkbox" v-model="keepLogin" />
             로그인 상태 유지 -->
           </label>
-          <a class="reset-pw" href="/reset-password">비밀번호 찾기</a>
+          <a class="reset-pw" href="/reset-password">비밀번호 재설정</a>
         </div>
 
         <!-- 일반 로그인 버튼 -->
