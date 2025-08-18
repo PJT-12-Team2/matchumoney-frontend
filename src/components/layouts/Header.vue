@@ -84,15 +84,13 @@
             </div>
           </li>
 
-          <!-- 교육 드롭다운 -->
+          <!-- 금융 컨텐츠 드롭다운 -->
           <li
             class="nav-item"
             @mouseenter="showDropdown = 'education'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/education/quiz" active-class="active"
-              >교육</RouterLink
-            >
+            <RouterLink to="/education/quiz">금융 컨텐츠</RouterLink>
             <div v-if="showDropdown === 'education'" class="dropdown-submenu">
               <RouterLink to="/education/quiz" class="dropdown-item"
                 >퀴즈</RouterLink
@@ -116,38 +114,6 @@
 
         <!-- ② 알림 + 프로필 / 햄버거 -->
         <div class="header-actions">
-          <!-- 🔔 알림 (로그인 시에만 표시) -->
-          <div
-            v-if="isLoggedIn"
-            class="notification position-relative"
-            @click="toggleNoti"
-          >
-            <i class="bi bi-bell"></i>
-            <div v-if="unreadCount" class="notification-dot"></div>
-
-            <!-- 드롭다운 -->
-            <div
-              v-if="showNoti"
-              class="dropdown-menu dropdown-menu-end show noti-dropdown"
-            >
-              <p
-                v-if="notifications.length === 0"
-                class="dropdown-item text-muted mb-0"
-              >
-                알림이 없습니다
-              </p>
-              <RouterLink
-                v-for="n in notifications"
-                :key="n.id"
-                :to="n.link"
-                class="dropdown-item small"
-                @click="markAsRead(n.id)"
-              >
-                {{ n.text }}
-              </RouterLink>
-            </div>
-          </div>
-
           <!-- 🙍‍♂️ 프로필 + 로그아웃(데스크탑) - 로그인 시에만 표시 -->
           <div v-if="isLoggedIn" class="profile-section d-none d-md-flex">
             <RouterLink to="/mypage" class="profile-link">
@@ -429,7 +395,7 @@ const mobileMenuGroups = ref([
     ],
   },
   {
-    title: '교육',
+    title: '금융 컨텐츠',
     desc: '퀴즈·콘텐츠 학습',
     iconClass: 'bi bi-mortarboard',
     expanded: false,
@@ -524,35 +490,8 @@ const fetchMe = async () => {
   }
 };
 
-const showNoti = ref(false);
-const notifications = ref([
-  {
-    id: 1,
-    text: '새 카드 추천이 도착했어요!',
-    link: '/recommend',
-    read: false,
-  },
-  {
-    id: 2,
-    text: '이번 달 소비 리포트가 업데이트됐어요.',
-    link: '/history',
-    read: false,
-  },
-]);
-const unreadCount = computed(
-  () => notifications.value.filter((n) => !n.read).length
-);
-
-function toggleNoti() {
-  showNoti.value = !showNoti.value;
-}
-function markAsRead(id) {
-  const target = notifications.value.find((n) => n.id === id);
-  if (target) target.read = true;
-  showNoti.value = false;
-}
 function onKey(e) {
-  if (e.key === 'Escape') showNoti.value = false;
+  // Escape key handler can be used for other purposes if needed
 }
 
 onMounted(() => {
@@ -767,7 +706,6 @@ onUnmounted(() => {
   background: var(--color-light);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
-  font-weight: bold;
 }
 
 /* 액션 영역 */
