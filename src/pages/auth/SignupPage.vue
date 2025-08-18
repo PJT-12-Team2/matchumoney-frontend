@@ -39,7 +39,13 @@
           <div class="input-action-row">
             <template v-if="!isEmailVerified">
               <BaseInput v-model="authCode" placeholder="인증번호 입력" />
-              <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode">인증번호 확인</BaseButton>
+              <BaseButton
+                class="action-btn"
+                variant="primary"
+                :disabled="!authCode || isEmailVerified"
+                @click="handleVerifyCode">
+                인증번호 확인
+              </BaseButton>
             </template>
             <template v-else>
               <div class="locked-input" aria-readonly="true">{{ authCode }}</div>

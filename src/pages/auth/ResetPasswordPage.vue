@@ -15,8 +15,15 @@
         </div>
         <div class="login-row">
           <div class="input-action-row">
-            <BaseInput v-model="email" placeholder="이메일 입력" :disabled="isEmailVerified" />
-            <BaseButton class="action-btn" variant="primary" @click="handleSendCode" :disabled="isEmailVerified">인증번호 전송</BaseButton>
+            <template v-if="!isEmailVerified">
+              <BaseInput v-model="email" placeholder="이메일 입력" />
+              <BaseButton class="action-btn" variant="primary" @click="handleSendCode" :disabled="!canSendCode">
+                {{ isSendingCode ? '이메일 전송 중…' : '인증번호 전송' }}
+              </BaseButton>
+            </template>
+            <template v-else>
+              <div class="locked-input" aria-readonly="true">{{ email }}</div>
+            </template>
           </div>
         </div>
 
@@ -26,8 +33,15 @@
         </div>
         <div class="login-row">
           <div class="input-action-row">
-            <BaseInput v-model="authCode" placeholder="인증번호 입력" :disabled="isEmailVerified" />
-            <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode" :disabled="isEmailVerified">인증번호 확인</BaseButton>
+            <template v-if="!isEmailVerified">
+              <BaseInput v-model="authCode" placeholder="인증번호 입력" />
+              <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode" :disabled="!canVerifyCode">
+                {{ isVerifyingCode ? '인증 확인 중…' : '인증번호 확인' }}
+              </BaseButton>
+            </template>
+            <template v-else>
+              <div class="locked-input" aria-readonly="true">{{ authCode }}</div>
+            </template>
           </div>
         </div>
 
@@ -61,7 +75,7 @@
         <!-- 비밀번호 재설정 버튼 -->
         <div class="login-row">
           <div class="join-btn-area">
-            <BaseButton variant="primary" @click="handleResetPassword" :disabled="!isEmailVerified">
+            <BaseButton variant="primary" @click="handleResetPassword" :disabled="!canReset">
               비밀번호 재설정
             </BaseButton>
           </div>
@@ -72,62 +86,89 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import BaseInput from "@/components/base/BaseInput.vue";
-import BackButton from "@/components/common/BackButton.vue";
-import authApi from "@/api/auth";
-import { useRouter } from "vue-router";
+import { ref, watch, computed } from 'vue';
+import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import BaseInput from '@/components/base/BaseInput.vue';
+import BackButton from '@/components/common/BackButton.vue';
+import authApi from '@/api/auth';
+import { useRouter } from 'vue-router';
 
-const email = ref("");
-const authCode = ref("");
-const newPassword = ref("");
-const confirmPassword = ref("");
-const errorMessage = ref("");
+const email = ref('');
+const authCode = ref('');
+const newPassword = ref('');
+const confirmPassword = ref('');
+const errorMessage = ref('');
 const isEmailVerified = ref(false);
+const isSendingCode = ref(false);
+const isVerifyingCode = ref(false);
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isEmailValid = computed(() => emailRegex.test(String(email.value || '').trim()));
+const canSendCode = computed(() => !isEmailVerified.value && !isSendingCode.value && isEmailValid.value);
+const canVerifyCode = computed(() => !isEmailVerified.value && !isVerifyingCode.value && !!authCode.value?.trim());
+const canReset = computed(() => {
+  const np = String(newPassword.value || '').trim();
+  const cp = String(confirmPassword.value || '').trim();
+  return isEmailVerified.value && np.length > 0 && cp.length > 0 && np === cp;
+});
+
 const router = useRouter();
 
 watch([newPassword, confirmPassword], ([newVal, confirmVal]) => {
   if (newVal && confirmVal && newVal !== confirmVal) {
-    errorMessage.value = "비밀번호가 일치하지 않습니다";
+    errorMessage.value = '비밀번호가 일치하지 않습니다';
   } else {
-    errorMessage.value = "";
+    errorMessage.value = '';
   }
 });
 
 const handleSendCode = async () => {
+  if (!canSendCode.value) return;
+  const trimmed = String(email.value || '').trim();
+  if (!emailRegex.test(trimmed)) {
+    alert('유효한 이메일 주소를 입력해주세요.');
+    return;
+  }
+  isSendingCode.value = true; // 버튼에 "이메일 전송 중…" 표시
   try {
-    await authApi.sendResetVerificationEmail(email.value);
-    alert("📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.");
+    await authApi.sendResetVerificationEmail(trimmed);
+    alert('📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.');
   } catch (err) {
-    alert(err?.response?.data?.message || "인증번호 전송 중 오류가 발생했습니다.");
+    alert(err?.response?.data?.message || '인증번호 전송 중 오류가 발생했습니다.');
+  } finally {
+    isSendingCode.value = false;
   }
 };
 
 const handleVerifyCode = async () => {
+  if (!canVerifyCode.value) return;
+  isVerifyingCode.value = true; // 버튼에 "인증 확인 중…" 표시
   try {
-    const result = await authApi.verifyEmailCode(email.value, authCode.value);
-    console.log("인증 결과:", result);
+    const trimmedEmail = String(email.value || '').trim();
+    const trimmedCode = String(authCode.value || '').trim();
+    const result = await authApi.verifyEmailCode(trimmedEmail, trimmedCode);
     if (result.result) {
-      isEmailVerified.value = true;
-      alert("✅ 인증번호가 확인되었습니다.");
+      isEmailVerified.value = true; // 이후 이메일/코드 입력 & 전송/확인 버튼 비활성화
+      alert('✅ 인증번호가 확인되었습니다.');
     } else {
-      alert("❌ 인증번호가 일치하지 않습니다.");
+      alert('❌ 인증번호가 일치하지 않습니다.');
     }
   } catch (err) {
-    alert(err?.response?.data?.message || "인증번호 확인 중 오류가 발생했습니다.");
+    alert(err?.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.');
+  } finally {
+    isVerifyingCode.value = false;
   }
 };
 
 const handleResetPassword = async () => {
   if (!isEmailVerified.value) {
-    alert("이메일 인증을 완료해주세요.");
+    alert('이메일 인증을 완료해주세요.');
     return;
   }
 
   if (newPassword.value !== confirmPassword.value) {
-    alert("비밀번호가 일치하지 않습니다.");
+    alert('비밀번호가 일치하지 않습니다.');
     return;
   }
 
@@ -138,10 +179,10 @@ const handleResetPassword = async () => {
       confirmPassword: confirmPassword.value,
     });
 
-    alert("🎉 비밀번호가 성공적으로 재설정되었습니다.");
-    router.push("/login");
+    alert('🎉 비밀번호가 성공적으로 재설정되었습니다.');
+    router.push('/login');
   } catch (err) {
-    alert(err?.response?.data?.message || "비밀번호 재설정 중 오류가 발생했습니다.");
+    alert(err?.response?.data?.message || '비밀번호 재설정 중 오류가 발생했습니다.');
   }
 };
 </script>
@@ -208,6 +249,24 @@ const handleResetPassword = async () => {
   margin-bottom: 0;
 }
 
+/* Locked input style */
+.locked-input {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: 2px solid var(--border-medium);
+  border-radius: 8px;
+  background: var(--color-gray-100);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Error Message */
 .error-row {
   height: 1.2rem;
@@ -230,6 +289,14 @@ const handleResetPassword = async () => {
   white-space: nowrap;
   flex-shrink: 0;
   width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .join-btn-area {
@@ -265,6 +332,11 @@ const handleResetPassword = async () => {
     margin-top: 0.2rem;
     height: 30px;
     font-size: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
   }
   .join-btn-area .base-button {
     width: 50%;
@@ -288,6 +360,12 @@ const handleResetPassword = async () => {
   ::v-deep(.input-field) {
     font-size: 1.2rem;
     height: 48px;
+    padding: 0.75rem;
+  }
+
+  .locked-input {
+    height: 48px;
+    font-size: 1.2rem;
     padding: 0.75rem;
   }
 }
