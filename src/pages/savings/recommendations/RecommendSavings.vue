@@ -87,7 +87,8 @@ watch(
 
 <template>
   <div class="content-my">
-    <RecommendationLayout title="적금 추천">
+    1
+    <RecommendationLayout title="맞춤 적금">
       <!-- 상단 슬라이더 -->
       <template #slider>
         <SavingMyProductSlider

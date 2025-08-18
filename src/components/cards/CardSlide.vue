@@ -341,6 +341,7 @@ const handleUpdateTransactions = () => {
 .action-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-sm) var(--spacing-md);
   border: none;

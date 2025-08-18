@@ -79,14 +79,6 @@
                   v-model="form.gender"
                 />여성
               </label>
-              <label :class="['seg', form.gender === 'OTHER' && 'active']">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="OTHER"
-                  v-model="form.gender"
-                />기타
-              </label>
             </div>
             <p v-if="touched.gender && !form.gender" class="error">
               성별을 선택해 주세요.
@@ -295,7 +287,9 @@ const extractSections = (text) => {
   if (!text) return out;
 
   // Normalize
-  let t = String(text).replace(/^\uFEFF/, '').trim();
+  let t = String(text)
+    .replace(/^\uFEFF/, '')
+    .trim();
 
   // Prefer explicit sections
   const reportMatch = t.match(/<REPORT>[\s\S]*?<\/REPORT>/i);
@@ -319,9 +313,15 @@ const extractSections = (text) => {
       .replace(/^.*?님[^\n]*\n+/gi, '');
 
     // Use the first meaningful paragraph (not too short and not a greeting)
-    const paras = t.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+    const paras = t
+      .split(/\n{2,}/)
+      .map((p) => p.trim())
+      .filter(Boolean);
     const firstIdx = paras.findIndex(
-      (p) => p.length > 30 && !/^안녕하세요/i.test(p) && !/안내해\s*드리겠습니다|안내해드리겠습니다/.test(p)
+      (p) =>
+        p.length > 30 &&
+        !/^안녕하세요/i.test(p) &&
+        !/안내해\s*드리겠습니다|안내해드리겠습니다/.test(p)
     );
     const chosen = firstIdx >= 0 ? paras[firstIdx] : paras[0] || t;
     out.report = chosen.trim();
@@ -334,11 +334,14 @@ const extractSections = (text) => {
       .filter((s) => /^\s*[-•\d).]/.test(s))
       .map((s) => s.replace(/^\s*[-•\d).\s]+/, '').trim())
       .filter(Boolean);
-    out.actions = candidates.length >= 3 ? candidates.slice(0, 3) : [
-      '지출 계획 점검하기',
-      '중요 거래는 문서 재확인하기',
-      '불필요한 소비 줄이고 예산 기록하기',
-    ];
+    out.actions =
+      candidates.length >= 3
+        ? candidates.slice(0, 3)
+        : [
+            '지출 계획 점검하기',
+            '중요 거래는 문서 재확인하기',
+            '불필요한 소비 줄이고 예산 기록하기',
+          ];
   }
   return out;
 };
@@ -545,7 +548,7 @@ const seeAgain = () => {
 }
 .segmented {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 .seg {
@@ -727,5 +730,15 @@ const seeAgain = () => {
 }
 .todo-text {
   font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .connector {
+    display: grid !important;
+    place-items: center;
+  }
+  .connector i::before {
+    content: '\f063'; /* fa-arrow-down */
+  }
 }
 </style>
