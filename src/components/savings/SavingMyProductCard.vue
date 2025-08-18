@@ -25,11 +25,11 @@ defineProps({
         <div class="date-section">
           <div class="info-row">
             <div class="label">신규일</div>
-            <div class="value">{{ formatDateString(saving.start_date) }}</div>
+            <div class="value">{{ formatDateString(saving.startDate) }}</div>
           </div>
           <div class="info-row">
             <div class="label">만기일</div>
-            <div class="value">{{ formatDateString(saving.end_date) }}</div>
+            <div class="value">{{ formatDateString(saving.endDate) }}</div>
           </div>
         </div>
         <div class="rate-section">
