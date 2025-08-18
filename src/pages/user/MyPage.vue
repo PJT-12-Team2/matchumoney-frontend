@@ -68,7 +68,7 @@
         <template #title>
           <div class="section-header">
             <span>나의 카드</span>
-            <button class="link-minimal" @click="router.push('/cards/manage')">
+            <button class="link-minimal" @click="router.push('/mydata/cards')">
               카드 편집
             </button>
           </div>
