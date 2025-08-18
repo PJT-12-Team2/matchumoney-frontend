@@ -247,6 +247,21 @@ const routes = [
     name: 'favoritePage',
     component: FavoritePage,
   },
+  // 404 처리 - 모든 경로를 catch
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore();
+
+      // 로그인된 상태면 메인 페이지로, 로그아웃 상태면 로그인 페이지로
+      if (authStore.isLoggedIn) {
+        next('/');
+      } else {
+        next('/login');
+      }
+    },
+  },
 ];
 
 const router = createRouter({
