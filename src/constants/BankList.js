@@ -28,10 +28,6 @@ export const BankType = {
     name: 'SC은행',
     imageLink: '/src/assets/bank-Logos/BK_SC_Profile.png',
   },
-  '0027': {
-    name: '씨티은행',
-    imageLink: 'https://placehold.co/64x64/EBF4FF/3B82F6?text=CITI',
-  },
   '0031': {
     name: '대구은행',
     imageLink: '/src/assets/bank-Logos/BK_DAEGU_Profile.png',
@@ -55,10 +51,6 @@ export const BankType = {
   '0039': {
     name: '경남은행',
     imageLink: '/src/assets/bank-Logos/BK_KYOUNGNAM_Profile.png',
-  },
-  '0045': {
-    name: '새마을금고',
-    imageLink: 'https://placehold.co/64x64/F0FFF4/22C55E?text=KFCC',
   },
   '0048': {
     name: '신협은행',
