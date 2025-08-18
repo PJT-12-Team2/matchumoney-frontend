@@ -409,7 +409,7 @@ async function submitDeleteAccount() {
 }
 
 async function handleVerifyPassword() {
-  console.log('[verify] submit called'); // ✅ 호출 여부 확인
+  console.log('[verify] submit called');
   verifyErr.value = '';
 
   if (!verifyPw.value) {
@@ -417,16 +417,18 @@ async function handleVerifyPassword() {
     return;
   }
 
+  isChecking.value = true; // 로딩 on
   try {
     console.log('[verify] request start');
-    const res = await authApi.verifyPassword(verifyPw.value); // ✅ /auth/verify/password
+    const res = await authApi.verifyPassword(verifyPw.value); // { ok: true } 예상
     console.log('[verify] response', res);
 
-    const ok = typeof res?.result === 'boolean' ? res.result : typeof res === 'boolean' ? res : false;
+    const ok = !!(res?.ok ?? res?.result ?? res === true);
 
     if (ok) {
-      isVerified.value = true;
+      isVerified.value = true; // 폼 잠금 해제
       verifyPw.value = '';
+      verifyErr.value = ''; // 에러 문구 클리어
       console.log('[verify] success');
     } else {
       verifyErr.value = '비밀번호가 올바르지 않습니다.';
@@ -434,7 +436,10 @@ async function handleVerifyPassword() {
     }
   } catch (err) {
     console.error('[verify] error', err?.response?.status, err?.response?.data);
-    verifyErr.value = err?.response?.data?.message || '비밀번호 검증 중 오류가 발생했습니다.';
+    verifyErr.value =
+      err?.response?.data?.message || '비밀번호 검증 중 오류가 발생했습니다.';
+  } finally {
+    isChecking.value = false; // 로딩 off
   }
 }
 

@@ -6,75 +6,35 @@
         핵심만 빠르게 이해하고 <br />지금 당장 써먹는 금융 지식을 배우세요.
       </p>
     </div>
-    <div class="filter-bar">
-      <label class="series-toggle">
-        <input type="checkbox" v-model="groupBySeries" />
-        <span>유사 시리즈 묶어서 보기</span>
-      </label>
-      <select
-        v-model="selectedSeries"
-        :disabled="!groupBySeries"
-        class="series-select"
-      >
-        <option v-for="opt in seriesOptions" :key="opt" :value="opt">
-          {{ opt === 'ALL' ? '전체 시리즈' : opt }}
-        </option>
-      </select>
-    </div>
     <div ref="scrollRoot" :class="{ 'no-scroll': isOverlayOpen }">
       <section class="video-section">
-        <!-- 일반 모드: 평소처럼 카드 나열 -->
-        <template v-if="!groupBySeries">
-          <div class="card-grid">
-            <div
-              v-for="(m, i) in videos"
-              :key="m.id ?? i"
-              class="card"
-              @click="openOverlay(m)"
-            >
-              <img
-                v-if="m.type === 'youtube'"
-                :src="`https://img.youtube.com/vi/${extractYoutubeId(
-                  m.link
-                )}/hqdefault.jpg`"
-                :alt="m.title || '영상 썸네일'"
-                class="thumb thumb-16x9"
-                loading="lazy"
-              />
-              <div
-                v-else-if="m.type === 'video'"
-                class="thumb thumb-16x9 video-fallback"
-              >
-                <span class="play-badge">▶</span>
-              </div>
-              <img
-                v-else-if="m.type === 'image'"
-                :src="m.url"
-                :alt="m.title || '이미지'"
-                class="thumb thumb-16x9"
-                loading="lazy"
-              />
-              <div v-else class="thumb thumb-16x9 blank">파일 열기</div>
-              <div class="card-title" :title="m.title">{{ m.title }}</div>
-            </div>
-          </div>
-        </template>
-
-        <!-- 시리즈 그룹 모드: [여이주TV] 등 시리즈별 섹션 묶음 -->
-        <template v-else>
+        <div
+          v-for="([category, items], gi) in categoryEntries"
+          :key="category + '_' + gi"
+          class="series-section"
+        >
+          <br />
           <div
-            v-for="([seriesKey, items], gi) in seriesGroupEntries"
-            :key="seriesKey + '_' + gi"
-            class="series-section"
+            class="series-header"
+            :aria-expanded="!isMobile || !!expanded[category]"
+            :aria-controls="`panel-${gi}`"
+            role="button"
+            @click="isMobile && toggleSeries(category)"
           >
-            <div class="series-header">
-              <h3 class="series-title">{{ seriesKey }}</h3>
-              <span class="series-count">{{ items.length }}개</span>
-            </div>
-            <div class="card-grid">
+            <h3 class="series-title">{{ category }}</h3>
+            <span class="series-count">{{ items.length }}개</span>
+            <span class="toggle-indicator">▼</span>
+          </div>
+          <hr />
+          <transition name="accordion">
+            <div
+              class="card-grid accordion-panel"
+              :id="`panel-${gi}`"
+              v-show="!isMobile || !!expanded[category]"
+            >
               <div
                 v-for="(m, i) in items"
-                :key="m.id ?? seriesKey + '_' + i"
+                :key="m.id ?? category + '_' + i"
                 class="card"
                 @click="openOverlay(m)"
               >
@@ -104,12 +64,8 @@
                 <div class="card-title" :title="m.title">{{ m.title }}</div>
               </div>
             </div>
-          </div>
-        </template>
-
-        <div ref="sentinel" class="infinite-sentinel"></div>
-        <div v-if="loading" class="infinite-loading">로딩 중…</div>
-        <div v-if="done" class="infinite-done">모두 불러왔습니다</div>
+          </transition>
+        </div>
       </section>
 
       <div
@@ -163,15 +119,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick, computed } from 'vue';
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  computed,
+  watch,
+} from 'vue';
 import eduAPI from '@/api/edu';
 
 const videos = ref([]);
 const loading = ref(false);
 const done = ref(false);
-const sentinel = ref(null);
-const scrollRoot = ref(null);
-let io = null;
+// ── Loading throttle ──
+// ── Responsive infinite loading utilities ──
+function getPerRow() {
+  // Match CSS breakpoints: >=1024px => 4 per row, >=640px => 2 per row, else 1
+  const w = window.innerWidth || 0;
+  if (w >= 1024) return 4;
+  if (w >= 640) return 2;
+  return 1;
+}
 
 const pageSize = 12;
 const offset = ref(0);
@@ -180,82 +149,144 @@ const seenIds = new Set();
 const isOverlayOpen = ref(false);
 const current = ref(null);
 
-/* ── 시리즈(여이주TV 등) 그룹 모드 ───────────────────── */
-const groupBySeries = ref(false);
-const selectedSeries = ref('ALL');
+// ── 반응형 토글(모바일에서만 아코디언) ──
+const isMobile = ref(false);
+const expanded = ref({});
 
-// 제목에서 [시리즈명] 패턴 감지 → 예: [여이주TV] #01, [여이주TV]#12
-function extractSeriesKeyFromTitle(title) {
-  const t = String(title || '').trim();
-  // 1) [시리즈] #12 / [시리즈]12 / [시리즈]
-  let m = t.match(/^\s*\[([^\]]+)\]\s*(?:#?\s*\d+)?/);
-  if (m && m[1]) return m[1].trim();
-  // 2) 여이주TV #01 같은 케이스(대괄호 없는 경우)
-  m = t.match(/^\s*([가-힣A-Za-z0-9]+TV)\s*#?\s*\d+/i);
-  if (m && m[1]) return m[1].trim();
-  return null; // 시리즈 키 없음
+function toggleSeries(key) {
+  expanded.value[key] = !expanded.value[key];
+}
+function setIsMobile() {
+  isMobile.value = window.matchMedia('(max-width: 768px)').matches;
+}
+function resetExpandState() {
+  const map = {};
+  for (const [cat] of categoryEntries.value) {
+    map[cat] = !isMobile.value; // 데스크톱: 펼침, 모바일: 접힘
+  }
+  expanded.value = map;
+}
+/* ── 고정 카테고리 분류 ─────────────────────────────────── */
+const CATEGORY_ORDER = [
+  '여이주TV',
+  '가상자산 투자사기',
+  '금융위원회',
+  '모여라~ 주린이',
+  '청년 주택 임대차 교육',
+];
+
+// '기타'를 세분화할 추가 카테고리 (표시 순서 그대로)
+const EXTRA_CATEGORIES = [
+  {
+    name: '청년 주택임대차 교육',
+    patterns: ['청년 주택 임대차 교육', '청년 주택임대차 교육'],
+  },
+  { name: 'KBS KLAB', patterns: ['KBS KLAB'] },
+  { name: '유용한 금융정보 따라하기', patterns: ['유용한 금융정보 따라하기'] },
+  { name: '저축의 모든 것', patterns: ['저축의 모든 것'] },
+  { name: '보험사기 피해예방 드라마', patterns: ['보험사기 피해예방 드라마'] },
+];
+
+function getCategoryFromTitle(title) {
+  const t = String(title || '');
+  for (const cat of CATEGORY_ORDER) {
+    if (t.includes(cat)) return cat;
+  }
+  return null; // 매칭되지 않으면 기타 처리
 }
 
-// 시리즈 그룹 구성 { key: VideoItem[] }
-const seriesGroups = computed(() => {
-  const map = new Map();
+function extractEpisodeNumber(title) {
+  if (!title) return Infinity;
+  const s = String(title);
+  const m1 = s.match(/#\s*(\d{1,3})/); // #01
+  if (m1) return parseInt(m1[1], 10);
+  const m2 = s.match(/(\d{1,3})\s*화/); // 1화
+  if (m2) return parseInt(m2[1], 10);
+  const m3 = s.match(/\b[Ee][Pp]\.??\s*(\d{1,3})/); // EP2, Ep.02
+  if (m3) return parseInt(m3[1], 10);
+  const m4 = s.match(/\((\d{1,3})\)\s*$/); // (3)
+  if (m4) return parseInt(m4[1], 10);
+  return Infinity; // 번호 없으면 뒤로
+}
+
+const categoryEntries = computed(() => {
+  // 1) 기본 카테고리 맵 구성
+  const baseMap = new Map(CATEGORY_ORDER.map((c) => [c, []]));
+  baseMap.set('기타', []);
+
   for (const it of videos.value) {
-    const key = extractSeriesKeyFromTitle(it.title);
-    if (!key) continue;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key).push(it);
+    const cat = getCategoryFromTitle(it.title) || '기타';
+    baseMap.get(cat).push(it);
   }
-  // 각 그룹 안을 최신순으로 보이도록(원본 순서 유지 원하면 제거)
-  for (const [k, arr] of map) {
-    map.set(k, [...arr]);
+
+  // 2) '기타' 세분화: EXTRA_CATEGORIES → '숏츠'
+  const extraBuckets = new Map(EXTRA_CATEGORIES.map((e) => [e.name, []]));
+  const shorts = [];
+
+  const etc = baseMap.get('기타') ?? [];
+  for (const it of etc) {
+    const t = String(it.title || '');
+    let assigned = false;
+    for (const rule of EXTRA_CATEGORIES) {
+      if (rule.patterns.some((p) => t.includes(p))) {
+        extraBuckets.get(rule.name).push(it);
+        assigned = true;
+        break;
+      }
+    }
+    if (!assigned) {
+      // 유튜브 Shorts 판별 또는 남은 기타 전부 → '숏츠'
+      const isShort = (() => {
+        const link = it.link || '';
+        try {
+          const u = new URL(link, window.location.origin);
+          return /\/shorts\//.test(u.pathname);
+        } catch {
+          return /(?:shorts\/|\/shorts\/)/i.test(String(link));
+        }
+      })();
+      shorts.push(it);
+    }
   }
-  return map;
-});
 
-// 드롭다운 옵션: ALL + 시리즈명들(가나다/알파벳 순)
-const seriesOptions = computed(() => {
-  const keys = Array.from(seriesGroups.value.keys());
-  keys.sort((a, b) => a.localeCompare(b));
-  return ['ALL', ...keys];
-});
+  // 3) 각 그룹 내부 정렬: 에피소드 번호 오름차순 → 동일/없음은 제목순
+  const sortByEpisode = (arr) =>
+    arr.sort((a, b) => {
+      const ea = extractEpisodeNumber(a.title);
+      const eb = extractEpisodeNumber(b.title);
+      if (ea === eb) return (a.title || '').localeCompare(b.title || '');
+      return ea - eb;
+    });
 
-// 선택된 시리즈만 보여줄 엔트리 (기본: 전체)
-const seriesGroupEntries = computed(() => {
-  const entries = Array.from(seriesGroups.value.entries());
-  if (selectedSeries.value === 'ALL') return entries;
-  return entries.filter(([key]) => key === selectedSeries.value);
-});
+  for (const [k, arr] of baseMap) sortByEpisode(arr);
+  for (const [k, arr] of extraBuckets) sortByEpisode(arr);
+  sortByEpisode(shorts);
 
+  // 4) 출력 순서: 기본 CATEGORY_ORDER → EXTRA_CATEGORIES → 숏츠 (비어있는 카테고리는 생략)
+  const ordered = [];
+  for (const cat of CATEGORY_ORDER) {
+    const arr = baseMap.get(cat);
+    if (arr && arr.length) ordered.push([cat, arr]);
+  }
+  for (const rule of EXTRA_CATEGORIES) {
+    const arr = extraBuckets.get(rule.name);
+    if (arr && arr.length) ordered.push([rule.name, arr]);
+  }
+  if (shorts.length) ordered.push(['숏츠', shorts]);
+
+  return ordered;
+});
+async function loadAll() {
+  // 페이지가 떨어질 때까지 반복해서 모두 적재
+  while (!done.value) {
+    await loadMore();
+  }
+}
 onMounted(async () => {
-  await loadMore();
-  await nextTick();
-
-  // IntersectionObserver (가능하면 사용)
-  const rootEl = getScrollRoot();
-  io = new IntersectionObserver(
-    (entries) => {
-      if (entries.some((e) => e.isIntersecting)) loadMore();
-    },
-    { root: rootEl, rootMargin: '1200px 0px', threshold: 0.01 }
-  );
-  if (sentinel.value) io.observe(sentinel.value);
-
-  // ✅ 스크롤 폴백(무조건 등록)
-  const target = rootEl ?? window;
-  target.addEventListener('scroll', onScroll, { passive: true });
-
-  // ✅ 초기 화면이 짧으면 강제 추가 로드
-  await topUpIfShort();
-
-  window.addEventListener('keydown', onKeyDown);
+  await loadAll();
 });
 
-onBeforeUnmount(() => {
-  io?.disconnect();
-  const rootEl = getScrollRoot();
-  (rootEl ?? window).removeEventListener('scroll', onScroll);
-  window.removeEventListener('keydown', onKeyDown);
-});
+onBeforeUnmount(() => {});
 
 async function loadMore() {
   if (loading.value || done.value) return;
@@ -267,7 +298,6 @@ async function loadMore() {
       : raw?.content ?? raw?.list ?? raw?.items ?? [];
     if (!rows || rows.length === 0) {
       done.value = true;
-      if (io && sentinel.value) io.unobserve(sentinel.value);
       return;
     }
     const normalized = await normalizeVideos(rows);
@@ -280,61 +310,9 @@ async function loadMore() {
     videos.value.push(...append);
     offset.value += rows.length;
   } catch (e) {
-    console.error('무한 스크롤 로드 실패:', e);
+    console.error('전체 로드 실패:', e);
   } finally {
     loading.value = false;
-  }
-}
-
-/* ── 스크롤 루트/폴백/탑업 ─────────────────────────────── */
-function getScrollRoot() {
-  const el = scrollRoot.value;
-  if (!el) return null; // window 스크롤
-  const st = getComputedStyle(el);
-  const scrollable = /(auto|scroll)/.test(st.overflowY);
-  return scrollable && el.clientHeight < el.scrollHeight ? el : null;
-}
-
-let ticking = false;
-function onScroll() {
-  if (ticking) return;
-  ticking = true;
-  requestAnimationFrame(async () => {
-    ticking = false;
-    if (loading.value || done.value) return;
-    const vpBottom = getViewportBottom();
-    const sTop = getSentinelTop();
-    if (vpBottom + 200 >= sTop) await loadMore();
-  });
-}
-
-function getViewportBottom() {
-  const rootEl = getScrollRoot();
-  return rootEl
-    ? rootEl.scrollTop + rootEl.clientHeight
-    : window.scrollY + window.innerHeight;
-}
-function getSentinelTop() {
-  const rootEl = getScrollRoot();
-  const el = sentinel.value;
-  if (!el) return Number.MAX_SAFE_INTEGER;
-  const rect = el.getBoundingClientRect();
-  if (!rootEl) return window.scrollY + rect.top;
-  const rootRect = rootEl.getBoundingClientRect();
-  return rootEl.scrollTop + (rect.top - rootRect.top);
-}
-
-// 첫 화면이 짧을 때 자동 추가 로딩 (최대 3회)
-async function topUpIfShort(maxRounds = 3) {
-  let rounds = 0;
-  while (!done.value && !loading.value && rounds < maxRounds) {
-    const vpBottom = getViewportBottom();
-    const sTop = getSentinelTop();
-    if (vpBottom + 200 >= sTop) {
-      await loadMore();
-      await nextTick();
-      rounds++;
-    } else break;
   }
 }
 
@@ -527,19 +505,6 @@ function extractYoutubeId(url) {
   max-height: calc(1.4em * 2.4);
 }
 
-.infinite-sentinel {
-  display: block;
-  width: 100%;
-  height: 1px;
-}
-.infinite-loading,
-.infinite-done {
-  text-align: center;
-  padding: 0.75rem;
-  color: #666;
-  font-size: 14px;
-}
-
 .video-overlay {
   position: fixed;
   inset: 0;
@@ -586,13 +551,13 @@ function extractYoutubeId(url) {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 .page-title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-4xl);
   font-weight: bold;
-  color: #222;
+  color: var(--text-primary);
 }
 .page-subtitle {
   font-size: var(--font-size-base);
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.8;
 }
 .education-video-page {
@@ -630,19 +595,69 @@ function extractYoutubeId(url) {
   margin-bottom: 28px;
 }
 .series-header {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+  font-size: 1rem; /* 제목 조금 작게 */
+  display: grid;
+  grid-template-columns: 1fr auto auto; /* 제목 | 갯수 | 토글 */
+  column-gap: var(--spacing-sm);
+  align-items: center;
   margin: 6px 2px 10px;
+  font-weight: bold;
+  cursor: pointer;
 }
 .series-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #222;
-  margin: 0;
+  font-size: var(--font-size-xl);
+  line-height: 1.3;
+  color: var(--text-primary);
 }
 .series-count {
-  font-size: 12px;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 2.5rem; /* 숫자 정렬을 위한 고정 폭 */
+  text-align: right;
+}
+.toggle-indicator {
+  font-size: 0.9rem;
+  margin-left: 8px;
+}
+.series-header[aria-expanded='true'] .toggle-indicator {
+  transform: rotate(180deg);
+}
+
+/* 아코디언 간격 + 애니메이션 */
+.accordion-panel {
+  margin-top: var(--spacing-sm);
+  overflow: hidden;
+}
+.accordion-enter-active,
+.accordion-leave-active {
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+.accordion-enter-from,
+.accordion-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+.accordion-enter-to,
+.accordion-leave-from {
+  max-height: 1200px;
+  opacity: 1;
+}
+</style>
+
+<style scoped>
+@media (max-width: 768px) {
+  .series-title {
+    font-size: 1rem;
+  }
+  .series-header {
+    column-gap: var(--spacing-xs);
+  }
+  .series-count {
+    min-width: 2.2rem;
+  }
+  .accordion-panel {
+    margin-top: var(--spacing-md);
+  }
 }
 </style>

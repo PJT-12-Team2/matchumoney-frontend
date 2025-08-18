@@ -197,7 +197,7 @@ const handleAction = () => {
 }
 
 .card-info {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--color-black); /* 검정 계열 */
   line-height: 1.5;
   opacity: 0.97;
@@ -313,13 +313,13 @@ const handleAction = () => {
   }
 
   .card-title {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-xs);
     color: #222;
   }
 
   .card-info {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     color: #333;
     margin-bottom: var(--spacing-xs);
   }
@@ -392,12 +392,12 @@ const handleAction = () => {
   }
 
   .card-title {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-lg);
     color: #222;
   }
 
   .card-info {
-    font-size: 0.7rem;
+    font-size: var(--font-size-base);
     color: #333;
   }
 

@@ -49,12 +49,13 @@ export default {
     const { data } = await api.patch(`${BASE_URL}/reset/password`, resetDto);
     return data;
   },
-  async verifyPassword(password) {
+  
+  async verifyPassword(rawPassword) {
     const { data } = await api.post(
       `${BASE_URL}/verify/password`,
-      { password },
-      { withCredentials: true } // 쿠키 쓰면 유지, 아니면 빼도 OK
+      { rawPassword } // ✅ 서버 DTO 키 맞춤
+      // withCredentials: true 는 쿠키 기반일 때만 필요. Bearer 토큰이면 없어도 됨.
     );
-    return data; // 보통 { result: true/false, ... } 형태
+    return data; // ✅ { ok: true } 가 그대로 나가게
   },
 };

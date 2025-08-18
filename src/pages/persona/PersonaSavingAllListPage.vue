@@ -216,9 +216,12 @@
               </div>
             </div>
           </div>
-          <div v-if="!allVisibleLoaded && infiniteLoading" class="infinite-scroll-loading">
-            <div class="spinner"></div>
-            <div>상품을 불러오는 중입니다...</div>
+          <div
+            v-if="!allVisibleLoaded && infiniteLoading"
+            class="loading-state infinite-scroll-loading"
+          >
+            <BaseSpinner size="md" />
+            <p>적금 상품을 불러오고 있습니다...</p>
           </div>
         </div>
       </section>
@@ -236,6 +239,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
 // 반응형 상태: 모바일 화면 여부
 const isMobile = ref(window.innerWidth <= 768);
 
@@ -1208,6 +1212,14 @@ text-align: center;
   height: 36px;
   animation: spin 1s linear infinite;
   margin-bottom: 0.5rem;
+}
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  text-align: center;
 }
 
 @keyframes spin {

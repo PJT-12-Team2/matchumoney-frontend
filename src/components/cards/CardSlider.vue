@@ -112,14 +112,24 @@ const goToSlide = (index) => {
 
 // 카드 변경 이벤트 전송
 const emitCardChange = () => {
-  if (currentCard.value) {
-    emit('cardChange', currentCard.value);
-  }
+  emit('cardChange', currentCard.value);
 };
 
 // 드래그/스와이프 핸들러들
 const handleMouseDown = (event) => {
   if (event.button !== 0) return; // 왼쪽 마우스 버튼만
+  
+  // 버튼이나 상호작용 요소를 클릭한 경우 드래그 방지
+  const target = event.target;
+  if (target.tagName === 'BUTTON' || 
+      target.closest('button') || 
+      target.classList.contains('card-action') ||
+      target.closest('.card-action') ||
+      target.closest('.sync-button') ||
+      target.closest('.transaction-button')) {
+    return;
+  }
+  
   isDragging.value = true;
   startX.value = event.clientX;
   startY.value = event.clientY;
@@ -163,6 +173,17 @@ const handleMouseUp = () => {
 
 const handleTouchStart = (event) => {
   if (event.touches.length === 1) {
+    // 버튼이나 상호작용 요소를 터치한 경우 드래그 방지
+    const target = event.target;
+    if (target.tagName === 'BUTTON' || 
+        target.closest('button') || 
+        target.classList.contains('card-action') ||
+        target.closest('.card-action') ||
+        target.closest('.sync-button') ||
+        target.closest('.transaction-button')) {
+      return;
+    }
+    
     isDragging.value = true;
     startX.value = event.touches[0].clientX;
     startY.value = event.touches[0].clientY;

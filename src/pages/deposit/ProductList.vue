@@ -1,42 +1,5 @@
 <template>
   <div class="product-section">
-    <!-- KB국민은행 전용 메시지 (계좌가 없을 때) -->
-    <div
-      v-if="isKbOnly && hasSearched && !loading && products.length > 0"
-      class="kb-only-message slide-up fade-in"
-    >
-      <div class="kb-only-text">
-        <span class="bank-icon">🏦</span>
-        {{ customerName }}님을 위한 KB국민은행 추천 상품을 보여드립니다!
-      </div>
-    </div>
-
-    <!-- 추천 메시지 (계좌가 있을 때) -->
-    <div
-      v-else-if="!isKbOnly && hasSearched && !loading && products.length > 0"
-      class="recommendation-message slide-up fade-in"
-    >
-      <div class="recommendation-text">
-        <span class="recommendation-icon">💰</span>
-        {{ customerName }}님의 {{ balance }} 잔액으로 가입 가능한 상품을
-        찾았어요!
-      </div>
-    </div>
-
-    <!-- 검색 결과가 없을 때 메시지 -->
-    <div
-      v-if="hasSearched && !loading && products.length === 0"
-      class="no-results-message slide-up fade-in"
-    >
-      <div class="no-results-text">
-        <span class="sad-icon">😔</span>
-        <span v-if="isKbOnly">현재 KB국민은행 상품을 불러올 수 없습니다.</span>
-        <span v-else
-          >{{ customerName }}님의 잔액으로 가입 가능한 상품이 없습니다.</span
-        >
-      </div>
-    </div>
-
     <!-- 상품 리스트 -->
     <section class="products-section" v-if="hasSearched">
       <div v-if="loading" class="loading">
@@ -306,27 +269,26 @@ const getBankLogo = (bankName) => {
 
 <style scoped>
 .kb-only-message {
-  background: var(--color-warning-light);
-  padding: 16px 20px;
-  border-radius: 12px;
-  margin-bottom: 25px;
-  border-left: 4px solid var(--color-warning);
-  box-shadow: 0 2px 8px var(--color-warning-20);
+  color: var(--color-accent);
+  font-weight: bold;
+  padding: 1rem 1.4rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  background-color: rgb(255, 255, 255);
+  border: 0.1rem solid var(--color-light);
+  border-left: 0.4rem solid var(--color-accent);
+  box-shadow: var(--shadow-card);
 }
 
 .kb-only-text {
-  font-size: 15px;
+  font-size: var(--font-size-base);
   font-weight: 700;
-  color: var(--color-warning-dark);
+  color: var(--color-accent);
   display: flex;
   align-items: center;
   gap: 10px;
   text-align: center;
   justify-content: center;
-}
-
-.bank-icon {
-  font-size: 18px;
 }
 
 .no-results-message {
@@ -354,25 +316,24 @@ const getBankLogo = (bankName) => {
 }
 
 .recommendation-message {
-  background: var(--color-info-light);
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
   padding: 16px 20px;
   border-radius: 12px;
   margin-bottom: 25px;
-  border-left: 4px solid var(--color-accent);
+  border: 0.1rem solid var(--color-light);
+  border-left: 0.4rem solid var(--color-accent);
+  box-shadow: var(--shadow-card);
 }
 
 .recommendation-text {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--color-accent);
   display: flex;
   align-items: center;
   gap: 8px;
   justify-content: center;
-}
-
-.recommendation-icon {
-  font-size: 16px;
 }
 
 .products-section h3 {
@@ -429,7 +390,7 @@ const getBankLogo = (bankName) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-sm, 14px);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   box-shadow: var(--shadow-md);
   border: 2px solid var(--bg-card, var(--color-light));
@@ -540,7 +501,7 @@ const getBankLogo = (bankName) => {
 }
 
 .term {
-  font-weight: 500;
+  font-weight: 700;
   color: #0077cc; /* 파란색 텍스트 */
   background-color: #e0f4ff; /* 하늘색 배경 */
   padding: 2px 6px;
@@ -564,18 +525,22 @@ const getBankLogo = (bankName) => {
 .highlight-rate {
   font-weight: bold;
   color: var(--color-accent);
+  font-size: var(--font-size-2xl);
 }
 
 .base-rate {
   color: var(--text-secondary);
+  font-size: var(--font-size-base);
 }
+
 .favorite-button-container {
   position: absolute;
-  top: 50%;
-  right: 12px;
+  top: 20%;
+  right: 3%;
   transform: translateY(-50%);
   z-index: 10;
 }
+
 .reaction-button {
   background-color: #f1f1f1;
   border: none;
@@ -635,19 +600,72 @@ const getBankLogo = (bankName) => {
   }
 }
 
-@media (max-width: 393px) {
+@media (max-width: 430px) {
+  .recommendation-item {
+    min-height: 140px; /* 최소 높이 설정 */
+    align-items: center; /* 카드 내 요소들 세로 가운데 정렬 */
+  }
+  .product-card-horizontal {
+    gap: 8px;
+    align-items: center; /* stretch를 center로 변경 */
+    height: 100%;
+  }
+
   .bank-logo-container {
-    width: 4rem;
-    height: 4rem;
+    width: 8rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+  }
+
+  .bank-logo-container img {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .reaction-button {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .likes_compare {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    font-size: 0.7rem;
+    width: 100%;
+  }
+  .likes_compare :deep(.compare-button) {
+    text-align: center;
+    justify-content: center;
+    width: auto;
+    min-width: fit-content;
+    display: flex;
+    align-items: center;
+    padding-left: 8px; /* 좌측 패딩 추가 */
+    padding-right: 8px; /* 우측 패딩 추가 */
+    margin: 0 auto; /* 좌우 마진 자동으로 중앙 정렬 */
   }
 
   .product-name-block {
-    padding: 0 12px;
+    padding: 0 8px;
   }
 
   .kb-only-text,
   .no-results-text {
-    font-size: 14px;
+    font-size: var(--font-size-base);
+  }
+
+  .rate-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0rem;
+  }
+
+  .rate-values {
+    gap: 0.2rem;
   }
 }
 

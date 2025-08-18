@@ -1,199 +1,260 @@
 <template>
-  <div class="kb-card-recommendation">
-    <div class="recommendation-header">
-      <div class="header-content">
-        <img
-          src="@/assets/bankLogo_images/kb.png"
-          alt="KB국민카드"
-          class="kb-logo"
-        />
-        <div class="header-text">
-          <h3>KB국민카드 추천</h3>
-          <p>신청 가능한 KB국민카드를 확인해보세요</p>
-        </div>
-      </div>
+  <!-- 로딩 상태 -->
+  <div v-if="isLoading" class="loading-container">
+    <BaseSpinner size="md" color="accent" />
+    <p>KB국민카드 추천을 불러오는 중...</p>
+  </div>
+
+  <!-- 에러 상태 -->
+  <div v-else-if="error" class="error-container">
+    <i class="bi bi-exclamation-triangle error-icon"></i>
+    <p>KB국민카드 추천을 불러올 수 없습니다.</p>
+    <BaseButton
+      variant="outline"
+      size="sm"
+      @click="loadKbRecommendations"
+      class="retry-button"
+    >
+      다시 시도
+    </BaseButton>
+  </div>
+
+  <!-- 추천 설명 -->
+  <div
+    v-if="!isLoading && !error && kbCards.length > 0"
+    class="recommendation-description"
+  >
+    <p>
+      개인 맞춤형 KB국민카드를 추천드립니다. <br class="mobile-break" />각
+      카드의 특징과 혜택을 비교해보세요.
+    </p>
+  </div>
+
+  <!-- 추천 카드 목록 -->
+  <div v-if="kbCards.length > 0" class="cards-container">
+    <div class="cards-list">
+      <KbCardListItem
+        v-for="(card, index) in kbCards"
+        :key="card.cardProductId"
+        :card="card"
+        :index="index"
+        @apply="handleCardApply"
+        @click="handleCardClick"
+      />
     </div>
 
-    <!-- 로딩 상태 -->
-    <div v-if="isLoading" class="loading-container">
+    <!-- 무한스크롤 로딩 -->
+    <div v-if="isLoadingMore" class="infinite-loading">
       <BaseSpinner size="md" color="accent" />
-      <p>KB국민카드 추천을 불러오는 중...</p>
+      <p>더 많은 카드를 불러오는 중...</p>
     </div>
+  </div>
 
-    <!-- 에러 상태 -->
-    <div v-else-if="error" class="error-container">
-      <i class="bi bi-exclamation-triangle error-icon"></i>
-      <p>KB국민카드 추천을 불러올 수 없습니다.</p>
-      <BaseButton
-        variant="outline"
-        size="sm"
-        @click="loadKbRecommendations"
-        class="retry-button"
-      >
-        다시 시도
-      </BaseButton>
-    </div>
-
-    <!-- 추천 카드 목록 -->
-    <div v-else-if="kbCards.length > 0" class="cards-container">
-      <div class="cards-grid">
-        <div
-          v-for="card in paginatedCards"
-          :key="card.cardProductId"
-          class="card-item"
-        >
-          <KbCardItem :card="card" @apply="handleCardApply" />
-        </div>
-      </div>
-
-      <!-- 페이징 컨트롤 -->
-      <div v-if="totalPages > 1" class="pagination-container">
-        <div class="pagination-info">
-          <span>{{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, totalCount) }} / {{ totalCount }}개</span>
-        </div>
-        <div class="pagination-controls">
-          <BaseButton
-            variant="outline"
-            size="sm"
-            @click="goToPage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            class="page-btn"
-          >
-            <i class="bi bi-chevron-left"></i>
-          </BaseButton>
-          
-          <div class="page-numbers">
-            <BaseButton
-              v-for="page in visiblePages"
-              :key="page"
-              :variant="page === currentPage ? 'primary' : 'outline'"
-              size="sm"
-              @click="goToPage(page)"
-              class="page-number-btn"
-            >
-              {{ page }}
-            </BaseButton>
-          </div>
-
-          <BaseButton
-            variant="outline"
-            size="sm"
-            @click="goToPage(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            class="page-btn"
-          >
-            <i class="bi bi-chevron-right"></i>
-          </BaseButton>
-        </div>
-      </div>
-    </div>
-
-    <!-- 추천 카드가 없는 경우 -->
-    <div v-else class="no-cards-container">
-      <i class="bi bi-card-list no-cards-icon"></i>
-      <p>현재 추천할 수 있는 KB국민카드가 없습니다.</p>
-    </div>
+  <!-- 추천 카드가 없는 경우 -->
+  <div v-else class="no-cards-container">
+    <i class="bi bi-card-list no-cards-icon"></i>
+    <p>현재 추천할 수 있는 KB국민카드가 없습니다.</p>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import cardsApi from "@/api/cards.js";
-import BaseButton from "@/components/base/BaseButton.vue";
-import BaseSpinner from "@/components/base/BaseSpinner.vue";
-import KbCardItem from "./KbCardItem.vue";
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import cardsApi from '@/api/cards.js';
+import favoriteApi from '@/api/favorite.js';
+import BaseButton from '@/components/base/BaseButton.vue';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
+import KbCardListItem from './KbCardListItem.vue';
 
 // 반응형 데이터
 const isLoading = ref(false);
+const isLoadingMore = ref(false);
 const error = ref(null);
 const kbCards = ref([]);
-const totalCount = ref(0);
-const currentPage = ref(1);
-const itemsPerPage = ref(8); // 페이지당 8개씩 표시
+const hasNext = ref(true);
+const currentPage = ref(0);
+const pageSize = 6; // 6개씩 로드
 
-// computed
-const totalPages = computed(() => Math.ceil(totalCount.value / itemsPerPage.value));
+// 즐겨찾기 상태 캐시 (한 번만 조회)
+const favoriteListCache = ref([]);
+const isFavoriteLoaded = ref(false);
 
-const paginatedCards = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value;
-  const end = start + itemsPerPage.value;
-  return kbCards.value.slice(start, end);
-});
-
-const visiblePages = computed(() => {
-  const pages = [];
-  const maxVisible = 5;
-  const total = totalPages.value;
-  const current = currentPage.value;
-  
-  if (total <= maxVisible) {
-    for (let i = 1; i <= total; i++) {
-      pages.push(i);
-    }
-  } else {
-    let start = Math.max(1, current - 2);
-    let end = Math.min(total, current + 2);
-    
-    if (current <= 3) {
-      end = Math.min(total, 5);
-    } else if (current >= total - 2) {
-      start = Math.max(1, total - 4);
-    }
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
+// 스크롤 이벤트 핸들러
+const onScroll = async () => {
+  if (isLoadingMore.value || !hasNext.value) return;
+  const scrollY = window.scrollY || window.pageYOffset;
+  const viewport = window.innerHeight;
+  const full = document.documentElement.scrollHeight;
+  if (scrollY + viewport >= full - 200) {
+    await loadMore();
   }
-  
-  return pages;
-});
+};
 
-// KB카드 추천 로드
+// KB카드 추천 로드 (초기 로드)
 const loadKbRecommendations = async () => {
   try {
     isLoading.value = true;
     error.value = null;
+    kbCards.value = [];
+    hasNext.value = true;
+    currentPage.value = 0;
 
-    const response = await cardsApi.getKbCardRecommendations();
-    console.log("KB카드 추천 전체 응답:", response);
+    const response = await cardsApi.getKbCardRecommendations(0, pageSize);
 
     // 응답 구조 확인 및 처리
     if (response && response.success !== false) {
+      let cards = [];
+      let responseHasNext = false;
+
       // 백엔드 응답이 SuccessResponse 형태인 경우
-      if (response.data && typeof response.data === "object") {
-        kbCards.value = response.data.kbCards || [];
-        totalCount.value = response.data.totalCount || 0;
+      if (response.data && typeof response.data === 'object') {
+        cards = response.data.kbCards || [];
+        responseHasNext = response.data.hasNext || false;
       }
       // 직접 데이터가 오는 경우
       else if (response.kbCards) {
-        kbCards.value = response.kbCards || [];
-        totalCount.value = response.totalCount || 0;
+        cards = response.kbCards || [];
+        responseHasNext = response.hasNext || false;
       }
       // 다른 구조인 경우 빈 배열로 처리
       else {
-        console.warn("예상과 다른 응답 구조:", response);
-        kbCards.value = [];
-        totalCount.value = 0;
+        cards = [];
+        responseHasNext = false;
       }
+      
+      // 좋아요/즐겨찾기 상태 조회 (캐시 사용)
+      if (!isFavoriteLoaded.value) {
+        try {
+          const favoriteResponse = await favoriteApi.getFavorites();
+          
+          // 응답 구조 확인 - cardList 사용
+          if (Array.isArray(favoriteResponse)) {
+            favoriteListCache.value = favoriteResponse;
+          } else if (favoriteResponse?.cardList && Array.isArray(favoriteResponse.cardList)) {
+            favoriteListCache.value = favoriteResponse.cardList;
+          } else if (favoriteResponse?.data?.cardList && Array.isArray(favoriteResponse.data.cardList)) {
+            favoriteListCache.value = favoriteResponse.data.cardList;
+          } else if (favoriteResponse?.data && Array.isArray(favoriteResponse.data)) {
+            favoriteListCache.value = favoriteResponse.data;
+          }
+          
+          isFavoriteLoaded.value = true;
+        } catch (error) {
+          // 즐겨찾기 조회 실패해도 계속 진행
+        }
+      }
+      
+      // 각 카드의 좋아요/즐겨찾기 상태 확인 및 설정
+      cards.forEach((card) => {
+        // 백엔드에서 이미 좋아요/즐겨찾기 상태를 포함해서 보내주므로 사용
+        // 만약 값이 없다면 캐시에서 확인
+        if (card.is_liked === undefined || card.is_favorited === undefined) {
+          const cardId = card.cardProductId || card.id || card.cardId;
+          
+          // 캐시에서 즐겨찾기 상태 확인
+          const isFavorite = favoriteListCache.value.some(fav => {
+            const matchByProductType = fav.productType === 'CARD' || fav.productType === 'card-products';
+            const matchById = String(fav.productId) === String(cardId) || 
+                             String(fav.cardProductId) === String(cardId) ||
+                             String(fav.cardId) === String(cardId);
+            
+            return matchByProductType && matchById;
+          });
+          
+          // 기본값 설정
+          if (card.is_liked === undefined) card.is_liked = false;
+          if (card.like_count === undefined) card.like_count = 0;
+          if (card.is_favorited === undefined) card.is_favorited = isFavorite;
+        }
+        
+        // 기존 필드명으로 매핑 (하위 호환성)
+        card.isLiked = card.is_liked;
+        card.likeCount = card.like_count;
+        card.isStarred = card.is_favorited;
+      });
+      
+      kbCards.value = cards;
+      hasNext.value = responseHasNext;
+      
     } else {
-      throw new Error(response?.message || "추천 데이터를 불러올 수 없습니다.");
+      throw new Error(response?.message || '추천 데이터를 불러올 수 없습니다.');
     }
   } catch (err) {
-    console.error("KB카드 추천 로드 실패:", err);
-    console.error("오류 상세:", err.response?.data || err.message);
     error.value =
       err.response?.data?.message ||
       err.message ||
-      "KB카드 추천을 불러오는 중 오류가 발생했습니다.";
+      'KB카드 추천을 불러오는 중 오류가 발생했습니다.';
   } finally {
     isLoading.value = false;
   }
 };
 
-// 페이지 이동
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
+// 더 많은 카드 로드
+const loadMore = async () => {
+  if (!hasNext.value || isLoadingMore.value) return;
+
+  isLoadingMore.value = true;
+
+  try {
+    // 다음 페이지 로드
+    const nextPage = currentPage.value + 1;
+    const response = await cardsApi.getKbCardRecommendations(nextPage, pageSize);
+
+    if (response && response.success !== false) {
+      let newCards = [];
+      let responseHasNext = false;
+
+      // 백엔드 응답이 SuccessResponse 형태인 경우
+      if (response.data && typeof response.data === 'object') {
+        newCards = response.data.kbCards || [];
+        responseHasNext = response.data.hasNext || false;
+      }
+      // 직접 데이터가 오는 경우
+      else if (response.kbCards) {
+        newCards = response.kbCards || [];
+        responseHasNext = response.hasNext || false;
+      }
+      
+      // 추가로 로드된 카드들의 상태 설정
+      newCards.forEach((card) => {
+        // 백엔드에서 이미 좋아요/즐겨찾기 상태를 포함해서 보내주므로 사용
+        // 만약 값이 없다면 캐시에서 확인
+        if (card.is_liked === undefined || card.is_favorited === undefined) {
+          const cardId = card.cardProductId || card.id || card.cardId;
+          
+          // 캐시에서 즐겨찾기 상태 확인
+          const isFavorite = favoriteListCache.value.some(fav => {
+            const matchByProductType = fav.productType === 'CARD' || fav.productType === 'card-products';
+            const matchById = String(fav.productId) === String(cardId) || 
+                             String(fav.cardProductId) === String(cardId) ||
+                             String(fav.cardId) === String(cardId);
+            
+            return matchByProductType && matchById;
+          });
+          
+          // 기본값 설정
+          if (card.is_liked === undefined) card.is_liked = false;
+          if (card.like_count === undefined) card.like_count = 0;
+          if (card.is_favorited === undefined) card.is_favorited = isFavorite;
+        }
+        
+        // 기존 필드명으로 매핑 (하위 호환성)
+        card.isLiked = card.is_liked;
+        card.likeCount = card.like_count;
+        card.isStarred = card.is_favorited;
+      });
+
+      // 기존 카드에 추가
+      kbCards.value.push(...newCards);
+      hasNext.value = responseHasNext;
+      currentPage.value = nextPage;
+    }
+  } catch (err) {
+    console.error('더 많은 카드 로딩 실패:', err);
+  } finally {
+    // 최소 1초간 로딩 표시
+    setTimeout(() => {
+      isLoadingMore.value = false;
+    }, 1000);
   }
 };
 
@@ -203,15 +264,25 @@ const handleCardApply = (card) => {
   const applyUrl = card.requestPcUrl || card.requestMobileUrl;
 
   if (applyUrl) {
-    window.open(applyUrl, "_blank");
+    window.open(applyUrl, '_blank');
   } else {
-    alert("죄송합니다. 현재 온라인 신청이 불가능합니다.");
+    alert('죄송합니다. 현재 온라인 신청이 불가능합니다.');
   }
+};
+
+// 카드 클릭 처리
+const handleCardClick = (card) => {
+  // TODO: 카드 상세 페이지로 이동
 };
 
 // 마운트 시 데이터 로드
 onMounted(() => {
   loadKbRecommendations();
+  window.addEventListener('scroll', onScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll);
 });
 </script>
 
@@ -225,7 +296,7 @@ onMounted(() => {
 }
 
 .recommendation-header {
-  background: var(--color-dark);
+  background: var(--color-primary);
   padding: var(--spacing-lg);
 }
 
@@ -254,7 +325,7 @@ onMounted(() => {
 
 .header-text p {
   color: rgba(255, 255, 255, 0.9);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   margin: 0;
   font-weight: 500;
 }
@@ -285,23 +356,31 @@ onMounted(() => {
   margin-top: var(--spacing-md);
 }
 
-.cards-container {
-  padding: var(--spacing-lg);
+.recommendation-description {
+  color: var(--color-accent);
+  font-weight: bold;
+  background: var(--color-primary);
+  padding: 26px 20px;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--color-accent);
+  text-align: center;
 }
 
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
+.recommendation-description p {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.mobile-break {
+  display: none;
+}
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   margin-bottom: var(--spacing-lg);
-}
-
-.card-item {
-  transition: transform 0.2s ease;
-}
-
-.card-item:hover {
-  transform: translateY(-4px);
 }
 
 .spinning {
@@ -317,51 +396,20 @@ onMounted(() => {
   }
 }
 
-/* 페이징 스타일 */
-.pagination-container {
+/* 무한스크롤 로딩 스타일 */
+.infinite-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-md);
-  padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--color-border);
+  padding: var(--spacing-xl);
   margin-top: var(--spacing-lg);
 }
 
-.pagination-info {
-  font-size: var(--font-size-sm);
+.infinite-loading p {
   color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.page-btn {
-  min-width: 36px;
-  height: 36px;
-  padding: 0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.page-numbers {
-  display: flex;
-  gap: var(--spacing-xs);
-  margin: 0 var(--spacing-sm);
-}
-
-.page-number-btn {
-  min-width: 36px;
-  height: 36px;
-  padding: 0;
-  border-radius: 8px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  margin: 0;
 }
 
 /* 태블릿 */
@@ -397,11 +445,11 @@ onMounted(() => {
   }
 
   .header-text h3 {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
   }
 
   .header-text p {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
   }
 
   .recommendation-header {
@@ -410,6 +458,10 @@ onMounted(() => {
 
   .cards-container {
     padding: var(--spacing-sm);
+  }
+
+  .mobile-break {
+    display: inline;
   }
 
   .loading-container,
