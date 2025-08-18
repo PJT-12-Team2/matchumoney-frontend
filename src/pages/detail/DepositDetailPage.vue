@@ -1,5 +1,6 @@
 <template>
   <div class="container" v-if="depositData">
+    <BackButton />
     <div class="deposit-detail-page">
       <section class="persona-banner-section">
         <div class="info-banner">
@@ -187,6 +188,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
+import BackButton from '@/components/common/BackButton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
 import CompareButton from '@/components/common/CompareButton.vue';

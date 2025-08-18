@@ -537,7 +537,7 @@ onMounted(async () => {
   border-radius: 12px;
   background: var(--bg-card);
   transition: all 0.3s ease;
-  height: 100%;
+  height: 90%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -586,7 +586,7 @@ onMounted(async () => {
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 20px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   font-weight: 600;
 }
 
@@ -670,7 +670,6 @@ onMounted(async () => {
 .mobile-pagination {
   display: flex;
   justify-content: center;
-  margin-top: var(--spacing-lg);
   padding: var(--spacing-md);
 }
 

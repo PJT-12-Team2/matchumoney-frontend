@@ -1,5 +1,6 @@
 <template>
   <div class="container" v-if="savingData">
+    <BackButton />
     <div class="saving-detail-page">
       <section class="persona-banner-section">
         <div class="info-banner">
@@ -204,6 +205,7 @@ import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import { ProductType } from '@/constants/productTypes';
 import LikeToggle from '@/components/common/LikeToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
+import BackButton from '@/components/common/BackButton.vue';
 
 const productType = ProductType.SAVING;
 

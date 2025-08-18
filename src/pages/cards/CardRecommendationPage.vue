@@ -1,5 +1,6 @@
 <template>
   <div class="card-recommendation-page">
+    <BackButton />
     <!-- 헤더 -->
     <div class="page-header">
       <h1 class="page-title">카드 추천</h1>
@@ -152,6 +153,7 @@ import BaseSpinner from '@/components/base/BaseSpinner.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import RecommendedCardItem from '@/components/cards/RecommendedCardItem.vue';
 import SpendingCategoryChart from '@/components/cards/SpendingCategoryChart.vue';
+import BackButton from '@/components/common/BackButton.vue';
 import cardsApi from '@/api/cards.js';
 
 export default {
@@ -161,6 +163,7 @@ export default {
     BaseButton,
     RecommendedCardItem,
     SpendingCategoryChart,
+    BackButton,
   },
   setup() {
     const authStore = useAuthStore();
