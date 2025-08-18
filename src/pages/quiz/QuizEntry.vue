@@ -6,7 +6,9 @@
           <i class="fa-solid fa-sparkles title-icon" aria-hidden="true"></i>
           오늘의 지식과 흐름
         </h1>
-        <p class="subtitle">퀴즈로 지식을 쌓고, 리포트로 금전운 흐름을 확인하세요.</p>
+        <p class="subtitle">
+          퀴즈로 지식을 쌓고, 리포트로 금전운 흐름을 확인하세요.
+        </p>
       </div>
 
       <div class="quiz-options">
@@ -80,7 +82,9 @@ const goToFortune = () => {
   margin: 0 0 var(--spacing-md) 0;
 }
 
-.title-icon { font-size: 1.15em; }
+.title-icon {
+  font-size: 1.15em;
+}
 
 .subtitle {
   font-size: var(--font-size-lg);
@@ -101,7 +105,8 @@ const goToFortune = () => {
   padding: var(--spacing-2xl);
   box-shadow: var(--shadow-lg);
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    border-color 0.25s ease;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -114,8 +119,12 @@ const goToFortune = () => {
 }
 
 /* 카드별 호버 포커스 컬러 */
-.daily-quiz:hover { border-color: var(--color-accent); }
-.fortune-quiz:hover { border-color: var(--color-secondary); }
+.daily-quiz:hover {
+  border-color: var(--color-accent);
+}
+.fortune-quiz:hover {
+  border-color: var(--color-secondary);
+}
 
 /* 아이콘 배지 */
 .quiz-icon {
@@ -130,7 +139,7 @@ const goToFortune = () => {
   display: grid;
   place-items: center;
   background: #f2f6ff;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .quiz-card h2 {
@@ -148,7 +157,7 @@ const goToFortune = () => {
 
 .quiz-reward {
   display: inline-block;
-  background: var(--gradient-accent);
+  background: var(--color-accent);
   color: var(--color-white);
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: 999px;
@@ -158,9 +167,18 @@ const goToFortune = () => {
 
 /* 모바일 반응형 */
 @media (max-width: 768px) {
-  .quiz-entry-container { padding: var(--spacing-lg); }
-  .title { font-size: var(--font-size-3xl); }
-  .quiz-options { grid-template-columns: 1fr; gap: var(--spacing-xl); }
-  .quiz-card { padding: var(--spacing-xl); }
+  .quiz-entry-container {
+    padding: var(--spacing-lg);
+  }
+  .title {
+    font-size: var(--font-size-3xl);
+  }
+  .quiz-options {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+  }
+  .quiz-card {
+    padding: var(--spacing-xl);
+  }
 }
 </style>

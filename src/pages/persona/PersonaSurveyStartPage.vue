@@ -1,5 +1,6 @@
 <template>
     <div class="card-recommendation-wrapper">
+      <BackButton />
       <div class="slider-container">
           <div class="slider-track">
             <img
@@ -51,6 +52,7 @@
   <script setup>
   import { useRouter } from 'vue-router'
   import { ref, onMounted, onBeforeUnmount } from 'vue'
+  import BackButton from '@/components/common/BackButton.vue'
   const cards = [
     new URL('@/assets/character_images/ant.png', import.meta.url).href,
     new URL('@/assets/character_images/cat.png', import.meta.url).href,

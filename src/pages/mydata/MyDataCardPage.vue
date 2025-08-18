@@ -1,5 +1,6 @@
 <template>
   <div class="card-recommendations">
+    <BackButton />
     <main class="main-content">
       <h2 class="page-title">맞춤 카드</h2>
 
@@ -672,6 +673,7 @@ import SpendingPatternChart from '@/components/charts/SpendingPatternChart.vue';
 import CardRecommendationSection from '@/components/cards/CardRecommendationSection.vue';
 import cardsApi from '@/api/cards';
 import KbCardRecommendation from '@/components/cards/KbCardRecommendation.vue';
+import BackButton from '@/components/common/BackButton.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
