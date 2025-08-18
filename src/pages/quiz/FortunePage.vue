@@ -1,5 +1,6 @@
 <template>
   <div class="fortune-page">
+    <BackButton />
     <div class="hero">
       <div class="hero-inner">
         <div class="orb" aria-hidden="true"></div>
@@ -172,6 +173,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import BackButton from '@/components/common/BackButton.vue';
 
 // Ensure Font Awesome CSS is available (fallback injector)
 onMounted(() => {

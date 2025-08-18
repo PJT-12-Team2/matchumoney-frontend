@@ -53,41 +53,41 @@ const personaCodes = [
 ];
 
 const routes = [
-  { 
-    path: '/', 
-    name: 'home', 
+  {
+    path: '/',
+    name: 'home',
     component: HomePage,
-    meta: { requiresAuth: false } // 메인 페이지는 공개
+    meta: { requiresAuth: false }, // 메인 페이지는 공개
   },
-  { 
-    path: '/signup', 
-    name: 'signup', 
+  {
+    path: '/signup',
+    name: 'signup',
     component: SignupPage,
-    meta: { requiresAuth: false } // 회원가입은 공개
+    meta: { requiresAuth: false }, // 회원가입은 공개
   },
-  { 
-    path: '/login', 
-    name: 'login', 
+  {
+    path: '/login',
+    name: 'login',
     component: LoginPage,
-    meta: { requiresAuth: false } // 로그인은 공개
+    meta: { requiresAuth: false }, // 로그인은 공개
   },
   {
     path: '/oauth/kakao/callback',
     name: 'KakaoCallback',
     component: KakaoCallbackPage,
-    meta: { requiresAuth: false } // 카카오 콜백은 공개
+    meta: { requiresAuth: false }, // 카카오 콜백은 공개
   },
   {
     path: '/reset-password',
     name: 'resetPassword',
     component: ResetPasswordPage,
-    meta: { requiresAuth: false } // 비밀번호 재설정은 공개
+    meta: { requiresAuth: false }, // 비밀번호 재설정은 공개
   },
   {
     path: '/mypage',
     name: 'mypage',
     component: MyPage,
-    meta: { requiresAuth: true } // 마이페이지는 인증 필요
+    meta: { requiresAuth: true }, // 마이페이지는 인증 필요
   },
   { path: '/myinfo', name: 'myinfo', component: MyInfoPage },
   {
@@ -247,6 +247,21 @@ const routes = [
     name: 'favoritePage',
     component: FavoritePage,
   },
+  // 404 처리 - 모든 경로를 catch
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore();
+
+      // 로그인된 상태면 메인 페이지로, 로그아웃 상태면 로그인 페이지로
+      if (authStore.isLoggedIn) {
+        next('/');
+      } else {
+        next('/login');
+      }
+    },
+  },
 ];
 
 const router = createRouter({
@@ -257,9 +272,9 @@ const router = createRouter({
 
 // 공개 페이지 (로그인 없이 접근 가능)
 const publicRoutes = [
-  '/',           // 메인 페이지
-  '/login',      // 로그인
-  '/signup',     // 회원가입
+  '/', // 메인 페이지
+  '/login', // 로그인
+  '/signup', // 회원가입
   '/reset-password', // 비밀번호 재설정
   '/oauth/kakao/callback', // 카카오 콜백
 ];
@@ -267,24 +282,25 @@ const publicRoutes = [
 // 라우터 가드 설정
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-  const isPublicRoute = publicRoutes.includes(to.path) || to.meta?.requiresAuth === false;
-  
+  const isPublicRoute =
+    publicRoutes.includes(to.path) || to.meta?.requiresAuth === false;
+
   // 공개 라우트라면 통과
   if (isPublicRoute) {
     next();
     return;
   }
-  
+
   // 인증이 필요한 페이지인 경우 로그인 확인
   if (!authStore.isLoggedIn) {
     // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
     next({
       path: '/login',
-      query: { redirect: to.fullPath } // 로그인 후 원래 페이지로 돌아가기 위한 정보
+      query: { redirect: to.fullPath }, // 로그인 후 원래 페이지로 돌아가기 위한 정보
     });
     return;
   }
-  
+
   // 로그인된 경우 통과
   next();
 });

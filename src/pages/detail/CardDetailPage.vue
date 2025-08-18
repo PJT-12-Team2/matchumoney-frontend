@@ -1,5 +1,6 @@
 <template>
   <div class="container" v-if="cardData">
+    <BackButton />
     <div class="saving-detail-page">
       <section class="persona-banner-section">
         <div class="info-banner">
@@ -176,6 +177,7 @@
 </template>
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import BackButton from '@/components/common/BackButton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
 import LikeToggle from '@/components/common/LikeToggle.vue';

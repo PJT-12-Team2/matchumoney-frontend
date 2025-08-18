@@ -1,6 +1,7 @@
 <template>
   <!-- 웹툰 Section -->
   <section class="webtoon-section">
+    <BackButton />
     <div class="page-description">
       <h1 class="page-title">웹툰으로 배우는 금융 교육</h1>
       <p class="page-subtitle">
@@ -104,6 +105,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { RouterLink } from 'vue-router';
+import BackButton from '@/components/common/BackButton.vue';
 
 // 웹툰 관련 데이터
 const webtoons = ref([]);
