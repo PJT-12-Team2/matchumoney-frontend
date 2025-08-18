@@ -269,6 +269,7 @@ function isRateBest(period, index) {
   width: 8rem;
   height: 8rem;
   object-fit: contain;
+  margin-bottom: 1rem;
 }
 
 .product-name {
@@ -278,6 +279,7 @@ function isRateBest(period, index) {
   font-weight: 600;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  margin-top: 1rem;
 }
 .product-name::-webkit-scrollbar {
   display: none;
