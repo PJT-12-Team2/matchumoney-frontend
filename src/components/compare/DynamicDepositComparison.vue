@@ -280,7 +280,7 @@ function isRateBest(period, index) {
   font-weight: 600;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 .product-name::-webkit-scrollbar {
   display: none;
@@ -394,6 +394,12 @@ function isRateBest(period, index) {
   justify-content: space-between;
   align-items: center;
 }
+
+.product-box > div:first-child > * {
+  margin: 0 auto;
+  display: block;
+}
+
 .mobile-line {
   white-space: pre-line;
 }

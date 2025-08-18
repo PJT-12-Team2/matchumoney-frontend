@@ -90,13 +90,13 @@
             @mouseenter="showDropdown = 'education'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/education/quiz">금융 컨텐츠</RouterLink>
+            <RouterLink to="/education/quiz">컨텐츠</RouterLink>
             <div v-if="showDropdown === 'education'" class="dropdown-submenu">
               <RouterLink to="/education/quiz" class="dropdown-item"
-                >퀴즈</RouterLink
+                >금융 컨텐츠</RouterLink
               >
               <RouterLink to="/education/contents" class="dropdown-item"
-                >교육 콘텐츠</RouterLink
+                >교육 컨텐츠</RouterLink
               >
             </div>
           </li>

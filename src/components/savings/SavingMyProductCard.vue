@@ -106,4 +106,10 @@ defineProps({
   font-weight: bold;
   font-size: var(--font-size-xl);
 }
+
+@media (max-width: 420px) {
+  .saving-card {
+    min-height: 120px;
+  }
+}
 </style>

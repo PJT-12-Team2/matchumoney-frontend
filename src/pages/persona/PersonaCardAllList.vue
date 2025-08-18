@@ -268,7 +268,10 @@
               </div>
             </div>
           </div>
-          <div v-if="isLoadingMore" class="loading-state infinite-spinner-wrapper">
+          <div
+            v-if="isLoadingMore"
+            class="loading-state infinite-spinner-wrapper"
+          >
             <BaseSpinner size="md" />
             <p>카드 상품을 불러오고 있습니다...</p>
           </div>
@@ -276,7 +279,6 @@
       </section>
     </main>
   </div>
-
 </template>
 
 <!-- name: 'CardSearchPage' -->
@@ -720,18 +722,17 @@ onMounted(() => {
 
   .benefit-button {
     width: 100%;
-    min-height: 4.8rem;
+    min-height: 4rem;
     aspect-ratio: 1 / 1;
-    padding: 0.5rem;
+    padding: 0.4rem;
     border-radius: 12px;
-    /* 기존 flex 스크롤 흔적 무력화 */
     flex: initial;
     scroll-snap-align: unset;
   }
 
   .benefit-button .emoji {
     font-size: 1.6rem;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
   }
 
   /* 라벨: 2줄까지 깔끔히 보이게 */
@@ -827,6 +828,7 @@ onMounted(() => {
   justify-content: start;
   text-align: center;
   min-height: 24rem;
+  box-shadow: var(--shadow-card);
 }
 .product-card:hover {
   transform: translateY(-0.3125rem);
@@ -1011,5 +1013,40 @@ onMounted(() => {
   justify-content: center;
   padding: var(--spacing-2xl) var(--spacing-lg);
   text-align: center;
+}
+
+@media (max-width: 768px) {
+  .product-content {
+    display: grid;
+    grid-template-columns: 100px 1fr; /* 120px에서 100px로 줄임 */
+    align-items: center;
+    gap: 1.5rem; /* 1.5rem에서 1rem으로 줄임 */
+    width: 100%;
+    height: 100%;
+    padding-bottom: 1.6rem;
+  }
+
+  .product-content img {
+    height: 120px; /* 150px에서 120px로 줄임 */
+    width: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .product-card {
+    background: var(--bg-content);
+    border-radius: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 20rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    text-align: center;
+    min-height: 20rem;
+  }
 }
 </style>

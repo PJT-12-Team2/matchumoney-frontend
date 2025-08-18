@@ -58,12 +58,12 @@
         <div class="info-container">
           <div class="product-card__badge">{{ saving.period }}개월</div>
           <div class="product-card__info">
-            <span class="text-bold"> 최고 금리</span>
+            <span class="text-bold"> 최고 금리: </span>
             <span class="product-card__rate--highlight">
               {{ ' ' + roundToTwoDecimalPlaces(saving.maxRate) + '% ' }}
             </span>
             {{ ' /\n' }}
-            <span>기본 금리</span>
+            <span>기준 금리: </span>
             <span>{{ ' ' + roundToTwoDecimalPlaces(saving.baseRate) }}%</span>
           </div>
         </div>
@@ -185,8 +185,8 @@ const props = defineProps({
 }
 
 .product-card__rate--highlight {
-  font-size: var(--font-size-base);
-  color: var(--color-success);
+  font-size: var(--font-size-xl);
+  color: var(--color-accent);
   font-weight: bold;
 }
 
@@ -202,7 +202,7 @@ const props = defineProps({
   align-self: center;
   display: inline-block;
   border-radius: 0.4rem;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   font-weight: bold;
   background: var(--color-info-light);
   color: var(--color-info-dark);
@@ -253,8 +253,10 @@ const props = defineProps({
   background: var(--color-warning);
   color: white;
 }
+
 .text-bold {
   font-weight: bold;
+  font-size: var(--font-size-base);
 }
 .product-card__info--highlight {
   color: var(--color-success-dark);
@@ -276,25 +278,63 @@ const props = defineProps({
   display: flex;
   gap: 0.2rem;
   margin-top: 0.2rem;
+  align-items: center; /* 추가 */
+  justify-content: center; /* 추가 */
 }
 .info-container {
   gap: 0.4rem;
   display: flex;
 }
 @media (max-width: 640px) {
+  .product-card {
+    display: flex;
+  }
+
+  .product-card__logo-box {
+    flex: 2; /* 첫 번째 칸 비율 */
+  }
+
+  .product-card__content-box {
+    flex: 5; /* 두 번째 칸 비율 */
+    width: auto; /* 기존 width 제거 */
+  }
   .button-container,
   .info-container {
     display: initial;
     justify-self: end;
   }
+  .button-container {
+    display: flex; /* initial에서 flex로 변경 */
+    flex-direction: column; /* 추가 */
+    align-items: center; /* 추가 */
+    justify-content: center; /* 추가 */
+    gap: 0.2rem;
+  }
   .product-card__title {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
+  }
+
+  .text-bold,
+  .product-card__badge {
+    font-size: var(--font-size-base);
+  }
+
+  .product-card__company {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--color-dark);
+    margin-bottom: 2px;
+  }
+  .product-card__rate--highlight {
+    font-size: var(--font-size-xl);
+    color: var(--color-accent);
+    font-weight: bold;
   }
   .product-card {
     gap: var(--spacing-sm);
   }
   .product-card__info {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
   }
   .product-card__logo-box {
     justify-content: center;

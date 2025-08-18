@@ -209,7 +209,7 @@ function isRateBest(period, index) {
   overflow: auto;
   white-space: nowrap;
   font-weight: 600;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   /* 스크롤바 스타일 제거 */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */
@@ -289,6 +289,12 @@ function isRateBest(period, index) {
   justify-content: space-between;
   align-items: center;
 }
+
+.product-box > div:first-child > * {
+  margin: 0 auto;
+  display: block;
+}
+
 .mobile-line {
   white-space: pre-line;
 }
@@ -297,7 +303,7 @@ function isRateBest(period, index) {
   .product-img {
     width: 6rem;
     height: 6rem;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
   }
   .product-box {
     gap: var(--spacing-sm);
@@ -340,10 +346,10 @@ function isRateBest(period, index) {
   max-width: 240px;
 }
 .box {
-  background-color: rgb(233, 233, 233);
+  /* background-color: rgb(233, 233, 233);
   border-radius: 50%;
-  aspect-ratio: 1/1;
-  margin-bottom: 1rem;
+  aspect-ratio: 1/1; */
+  margin-bottom: 0.1rem;
 }
 .tag {
   display: inline-block;

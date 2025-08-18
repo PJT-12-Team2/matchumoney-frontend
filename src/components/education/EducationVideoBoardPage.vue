@@ -424,7 +424,7 @@ function extractYoutubeId(url) {
 <style scoped>
 .education-video-page {
   padding: 2rem 1.5rem;
-  max-width: 80%;
+  max-width: 100%;
   margin: 0 auto;
 }
 .education-video-page.no-scroll {
@@ -551,7 +551,7 @@ function extractYoutubeId(url) {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 .page-title {
-  font-size: var(--font-size-4xl);
+  font-size: var(--font-size-3xl);
   font-weight: bold;
   color: var(--text-primary);
 }
@@ -562,7 +562,7 @@ function extractYoutubeId(url) {
 }
 .education-video-page {
   padding: 2rem 1.5rem;
-  max-width: 80%;
+  max-width: 90%;
   margin: 0 auto;
 }
 .education-video-page.no-scroll {
