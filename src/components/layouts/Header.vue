@@ -43,27 +43,11 @@
           </li>
 
           <!-- 금융 컨텐츠 드롭다운 -->
-<<<<<<< Updated upstream
-          <li
-            class="nav-item"
-            @mouseenter="showDropdown = 'education'"
-            @mouseleave="showDropdown = null"
-          >
+          <li class="nav-item" @mouseenter="showDropdown = 'education'" @mouseleave="showDropdown = null">
             <RouterLink to="/education/quiz">컨텐츠</RouterLink>
             <div v-if="showDropdown === 'education'" class="dropdown-submenu">
-              <RouterLink to="/education/quiz" class="dropdown-item"
-                >금융 컨텐츠</RouterLink
-              >
-              <RouterLink to="/education/contents" class="dropdown-item"
-                >교육 컨텐츠</RouterLink
-              >
-=======
-          <li class="nav-item" @mouseenter="showDropdown = 'education'" @mouseleave="showDropdown = null">
-            <RouterLink to="/education/quiz">금융 컨텐츠</RouterLink>
-            <div v-if="showDropdown === 'education'" class="dropdown-submenu">
-              <RouterLink to="/education/quiz" class="dropdown-item">퀴즈</RouterLink>
-              <RouterLink to="/education/contents" class="dropdown-item">교육 콘텐츠</RouterLink>
->>>>>>> Stashed changes
+              <RouterLink to="/education/quiz" class="dropdown-item">금융 컨텐츠</RouterLink>
+              <RouterLink to="/education/contents" class="dropdown-item">교육 컨텐츠</RouterLink>
             </div>
           </li>
         </ul>
@@ -221,6 +205,7 @@ import api from '@/api'; // axios instance
 import { getToken, deleteToken } from 'firebase/messaging';
 import { getMessagingIfSupported } from '@/firebase/firebaseClient';
 import pushApi from '@/api/push';
+import { showToast } from '@/util/toast';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -366,6 +351,8 @@ const handleAuthAction = () => {
 // 모바일 메뉴에서 로그아웃 처리
 const handleLogout = () => {
   authStore.logout();
+  // 🔕 FCM 정리 (fcmService에서 이벤트 수신)
+  window.dispatchEvent(new Event('app:logout'));
   showMenu.value = false; // 메뉴 닫기
   router.push('/');
 };
@@ -421,26 +408,39 @@ async function subscribePush() {
     const swReg = await ensureSW();
     const perm = await Notification.requestPermission();
     permission.value = perm;
-    if (perm !== 'granted') return false;
+    if (perm !== 'granted') {
+      showToast({ title: '권한 필요', message: '알림 권한이 허용되지 않았습니다.', type: 'warning' });
+      return false;
+    }
 
     if (!messagingInstance) messagingInstance = await getMessagingIfSupported();
     const vapidKey = import.meta.env.VITE_FIREBASE_MESSAGING_VAPID_KEY;
-    if (!vapidKey || !messagingInstance) return false;
+    if (!vapidKey || !messagingInstance) {
+      showToast({ title: '설정 오류', message: '푸쉬 환경이 올바르지 않습니다.', type: 'danger' });
+      return false;
+    }
 
     const token = await getToken(messagingInstance, {
       vapidKey,
       serviceWorkerRegistration: swReg,
     });
-    if (!token) return false;
+    if (!token) {
+      showToast({ title: '실패', message: 'FCM 토큰 발급에 실패했습니다.', type: 'danger' });
+      return false;
+    }
 
     const cached = localStorage.getItem('fcmToken');
     if (cached !== token) {
       await pushApi.registerToken(token);
       localStorage.setItem('fcmToken', token);
     }
+    console.log('[Header] Push subscribed, token cached');
+    headerPushOn.value = true;
+    showToast({ title: '알림', message: '푸쉬 알림이 활성화되었습니다.', type: 'success' });
     return true;
   } catch (e) {
     console.warn('[Header] subscribePush error:', e);
+    showToast({ title: '오류', message: '구독 중 오류가 발생했습니다.', type: 'danger' });
     return false;
   } finally {
     loading.value = false;
@@ -464,9 +464,13 @@ async function unsubscribePush() {
       } catch (_) {}
       localStorage.removeItem('fcmToken');
     }
+    console.log('[Header] Push unsubscribed, token removed');
+    headerPushOn.value = false;
+    showToast({ title: '알림', message: '푸쉬 알림이 비활성화되었습니다.', type: 'info' });
     return true;
   } catch (e) {
     console.warn('[Header] unsubscribePush error:', e);
+    showToast({ title: '오류', message: '구독 해제 중 오류가 발생했습니다.', type: 'danger' });
     return false;
   } finally {
     loading.value = false;
@@ -475,14 +479,49 @@ async function unsubscribePush() {
 
 async function handlePushToggle() {
   if (headerPushOn.value) {
+    console.log('[Header] Toggle ON → subscribe');
     const ok = await subscribePush();
     if (!ok) headerPushOn.value = false;
   } else {
+    console.log('[Header] Toggle OFF → unsubscribe');
     const ok = await unsubscribePush();
     if (!ok) headerPushOn.value = true;
   }
 }
 
+// 로그인 이벤트에서 토글 상태 동기화 (자동 구독 포함)
+const onAppLogin = async () => {
+  try {
+    if (!envReady.value) return;
+    permission.value = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    const hasToken = !!localStorage.getItem('fcmToken');
+
+    if (hasToken) {
+      headerPushOn.value = true;
+      return;
+    }
+
+    // 권한이 이미 허용되어 있으면 자동 구독 시도
+    if (permission.value === 'granted') {
+      const ok = await subscribePush();
+      headerPushOn.value = !!ok;
+    } else {
+      // 권한 미허용 상태면 스위치는 off 유지
+      headerPushOn.value = false;
+    }
+  } catch (e) {
+    console.warn('[Header] onAppLogin sync failed', e);
+  }
+};
+
+const onAppLogout = () => {
+  // 로그아웃 시 토글 off 로 동기화
+  headerPushOn.value = false;
+};
+
+// 전역 이벤트 리스너 등록
+window.addEventListener('app:login', onAppLogin);
+window.addEventListener('app:logout', onAppLogout);
 // 로그인 상태가 바뀔 때마다 프로필 이미지 갱신
 watch(
   () => isLoggedIn.value,
@@ -498,6 +537,8 @@ watch(
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey);
   window.removeEventListener('profile-image-updated', onProfileImageUpdated);
+  window.removeEventListener('app:login', onAppLogin);
+  window.removeEventListener('app:logout', onAppLogout);
 });
 </script>
 
