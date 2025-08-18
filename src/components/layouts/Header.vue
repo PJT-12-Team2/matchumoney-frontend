@@ -13,107 +13,65 @@
         <!-- ① 데스크탑 메뉴 (로그인 시에만 표시) -->
         <ul v-if="isLoggedIn" class="nav-menu d-none d-lg-flex">
           <!-- 페르소나 드롭다운 -->
-          <li
-            class="nav-item"
-            @mouseenter="showDropdown = 'persona'"
-            @mouseleave="showDropdown = null"
-          >
-            <RouterLink to="/persona/start" active-class="active"
-              >페르소나</RouterLink
-            >
+          <li class="nav-item" @mouseenter="showDropdown = 'persona'" @mouseleave="showDropdown = null">
+            <RouterLink to="/persona/start" active-class="active">페르소나</RouterLink>
             <div v-if="showDropdown === 'persona'" class="dropdown-submenu">
-              <RouterLink to="/persona/deposits" class="dropdown-item"
-                >예금</RouterLink
-              >
-              <RouterLink to="/persona/savings" class="dropdown-item"
-                >적금</RouterLink
-              >
-              <RouterLink to="/persona/cards" class="dropdown-item"
-                >카드</RouterLink
-              >
+              <RouterLink to="/persona/deposits" class="dropdown-item">예금</RouterLink>
+              <RouterLink to="/persona/savings" class="dropdown-item">적금</RouterLink>
+              <RouterLink to="/persona/cards" class="dropdown-item">카드</RouterLink>
             </div>
           </li>
 
           <!-- 마이데이터 드롭다운 -->
-          <li
-            class="nav-item"
-            @mouseenter="showDropdown = 'mydata'"
-            @mouseleave="showDropdown = null"
-          >
-            <RouterLink
-              to="/deposits/recommendations/history"
-              active-class="active"
-              >마이데이터</RouterLink
-            >
+          <li class="nav-item" @mouseenter="showDropdown = 'mydata'" @mouseleave="showDropdown = null">
+            <RouterLink to="/deposits/recommendations/history" active-class="active">마이데이터</RouterLink>
             <div v-if="showDropdown === 'mydata'" class="dropdown-submenu">
-              <RouterLink
-                to="/deposits/recommendations/history"
-                class="dropdown-item"
-                >예금</RouterLink
-              >
-              <RouterLink
-                to="/savings/recommendations/history"
-                class="dropdown-item"
-                >적금</RouterLink
-              >
-              <RouterLink to="/mydata/cards" class="dropdown-item"
-                >카드</RouterLink
-              >
+              <RouterLink to="/deposits/recommendations/history" class="dropdown-item">예금</RouterLink>
+              <RouterLink to="/savings/recommendations/history" class="dropdown-item">적금</RouterLink>
+              <RouterLink to="/mydata/cards" class="dropdown-item">카드</RouterLink>
             </div>
           </li>
 
           <!-- 상품비교 드롭다운 -->
-          <li
-            class="nav-item"
-            @mouseenter="showDropdown = 'compare'"
-            @mouseleave="showDropdown = null"
-          >
-            <RouterLink to="/compare" active-class="active"
-              >상품비교</RouterLink
-            >
+          <li class="nav-item" @mouseenter="showDropdown = 'compare'" @mouseleave="showDropdown = null">
+            <RouterLink to="/compare" active-class="active">상품비교</RouterLink>
             <div v-if="showDropdown === 'compare'" class="dropdown-submenu">
-              <RouterLink to="/compare?type=DEPOSIT" class="dropdown-item"
-                >예금</RouterLink
-              >
-              <RouterLink to="/compare?type=SAVING" class="dropdown-item"
-                >적금</RouterLink
-              >
-              <RouterLink to="/compare?type=CARD" class="dropdown-item"
-                >카드</RouterLink
-              >
+              <RouterLink to="/compare?type=DEPOSIT" class="dropdown-item">예금</RouterLink>
+              <RouterLink to="/compare?type=SAVING" class="dropdown-item">적금</RouterLink>
+              <RouterLink to="/compare?type=CARD" class="dropdown-item">카드</RouterLink>
             </div>
           </li>
 
           <!-- 금융 컨텐츠 드롭다운 -->
-          <li
-            class="nav-item"
-            @mouseenter="showDropdown = 'education'"
-            @mouseleave="showDropdown = null"
-          >
+          <li class="nav-item" @mouseenter="showDropdown = 'education'" @mouseleave="showDropdown = null">
             <RouterLink to="/education/quiz">컨텐츠</RouterLink>
             <div v-if="showDropdown === 'education'" class="dropdown-submenu">
-              <RouterLink to="/education/quiz" class="dropdown-item"
-                >금융 컨텐츠</RouterLink
-              >
-              <RouterLink to="/education/contents" class="dropdown-item"
-                >교육 컨텐츠</RouterLink
-              >
+              <RouterLink to="/education/quiz" class="dropdown-item">금융 컨텐츠</RouterLink>
+              <RouterLink to="/education/contents" class="dropdown-item">교육 컨텐츠</RouterLink>
             </div>
           </li>
         </ul>
 
         <!-- 로그인하지 않은 사용자용 간단한 메뉴 -->
         <div v-else class="auth-links d-none d-lg-flex">
-          <RouterLink to="/login" class="auth-link-btn login-link-btn"
-            >로그인</RouterLink
-          >
-          <RouterLink to="/signup" class="auth-link-btn signup-link-btn"
-            >회원가입</RouterLink
-          >
+          <RouterLink to="/login" class="auth-link-btn login-link-btn">로그인</RouterLink>
+          <RouterLink to="/signup" class="auth-link-btn signup-link-btn">회원가입</RouterLink>
         </div>
 
         <!-- ② 알림 + 프로필 / 햄버거 -->
         <div class="header-actions">
+          <!-- 🔔 웹 푸시 토글 (헤더) -->
+          <div v-if="isLoggedIn" class="push-toggle-mini d-flex" title="웹 푸시">
+            <span class="push-label"></span>
+            <label class="switch">
+              <input
+                type="checkbox"
+                v-model="headerPushOn"
+                @change="handlePushToggle"
+                :disabled="!envReady || loading" />
+              <span class="slider"></span>
+            </label>
+          </div>
           <!-- 🙍‍♂️ 프로필 + 로그아웃(데스크탑) - 로그인 시에만 표시 -->
           <div v-if="isLoggedIn" class="profile-section d-none d-md-flex">
             <RouterLink to="/mypage" class="profile-link">
@@ -122,8 +80,7 @@
                 alt="프로필"
                 class="header-profile"
                 style="width: 2.25rem; height: 2.25rem; object-fit: cover"
-                @error="onImgError"
-              />
+                @error="onImgError" />
             </RouterLink>
 
             <!-- 로그아웃 버튼 -->
@@ -137,93 +94,51 @@
             v-if="isLoggedIn"
             to="/mypage"
             class="profile-link d-block d-md-none"
-            aria-label="마이페이지로 이동"
-          >
+            aria-label="마이페이지로 이동">
             <img
               :src="profileImageSrc"
               alt="내 프로필"
               class="header-profile header-profile--mobile"
-              @error="onImgError"
-            />
+              @error="onImgError" />
           </RouterLink>
-          <RouterLink
-            v-else
-            to="/login"
-            class="auth-link-btn-mobile login-link-btn-mobile d-block d-md-none"
-          >
+          <RouterLink v-else to="/login" class="auth-link-btn-mobile login-link-btn-mobile d-block d-md-none">
             로그인
           </RouterLink>
 
           <!-- ☰ 햄버거(모바일) -->
-          <button
-            class="btn text-black fs-4 ms-3 d-lg-none"
-            @click="showMenu = true"
-          >
-            ☰
-          </button>
+          <button class="btn text-black fs-4 ms-3 d-lg-none" @click="showMenu = true">☰</button>
         </div>
       </nav>
     </div>
 
     <!-- 📱 모바일 풀스크린 메뉴 (아코디언) -->
     <transition name="mobile-menu">
-      <div
-        v-if="showMenu"
-        class="mobile-menu-overlay d-lg-none"
-        role="dialog"
-        aria-modal="true"
-      >
+      <div v-if="showMenu" class="mobile-menu-overlay d-lg-none" role="dialog" aria-modal="true">
         <div class="mobile-menu-header">
           <span class="mobile-menu-title">전체 메뉴</span>
-          <button
-            class="mobile-menu-close"
-            @click="showMenu = false"
-            aria-label="메뉴 닫기"
-          >
-            ✕
-          </button>
+          <button class="mobile-menu-close" @click="showMenu = false" aria-label="메뉴 닫기">✕</button>
         </div>
 
         <ul class="mobile-menu-list">
           <!-- 로그인한 사용자용 메뉴 -->
           <template v-if="isLoggedIn">
             <li class="menu-group menu-single">
-              <RouterLink
-                to="/mypage"
-                class="single-link"
-                @click.native="showMenu = false"
-              >
+              <RouterLink to="/mypage" class="single-link" @click.native="showMenu = false">
                 <span class="single-left">
-                  <span class="single-icon" aria-hidden="true"
-                    ><i class="bi bi-person-circle"></i
-                  ></span>
+                  <span class="single-icon" aria-hidden="true"><i class="bi bi-person-circle"></i></span>
                   <span class="single-label">마이페이지</span>
                 </span>
                 <span class="chevron">›</span>
               </RouterLink>
             </li>
-            <li
-              v-for="(group, idx) in mobileMenuGroups"
-              :key="group.title"
-              class="menu-group"
-            >
-              <button
-                class="group-toggle"
-                @click="toggleGroup(idx)"
-                :aria-expanded="group.expanded.toString()"
-              >
+            <li v-for="(group, idx) in mobileMenuGroups" :key="group.title" class="menu-group">
+              <button class="group-toggle" @click="toggleGroup(idx)" :aria-expanded="group.expanded.toString()">
                 <span class="group-left">
-                  <span
-                    v-if="group.iconClass"
-                    class="group-icon"
-                    aria-hidden="true"
-                  >
+                  <span v-if="group.iconClass" class="group-icon" aria-hidden="true">
                     <i :class="group.iconClass"></i>
                   </span>
                   <span class="group-title">{{ group.title }}</span>
-                  <span v-if="group.desc" class="group-desc">{{
-                    group.desc
-                  }}</span>
+                  <span v-if="group.desc" class="group-desc">{{ group.desc }}</span>
                 </span>
                 <span class="chevron" :class="{ open: group.expanded }">▾</span>
               </button>
@@ -231,16 +146,8 @@
               <transition name="accordion">
                 <ul v-show="group.expanded" class="submenu">
                   <li v-for="item in group.items" :key="item.to">
-                    <RouterLink
-                      :to="item.to"
-                      class="submenu-link"
-                      @click.native="showMenu = false"
-                    >
-                      <span
-                        v-if="item.iconClass"
-                        class="submenu-icon"
-                        aria-hidden="true"
-                      >
+                    <RouterLink :to="item.to" class="submenu-link" @click.native="showMenu = false">
+                      <span v-if="item.iconClass" class="submenu-icon" aria-hidden="true">
                         <i :class="item.iconClass"></i>
                       </span>
                       <span class="submenu-label">{{ item.label }}</span>
@@ -254,9 +161,7 @@
             <li class="menu-group menu-single">
               <button class="single-link logout-link" @click="handleLogout">
                 <span class="single-left">
-                  <span class="single-icon" aria-hidden="true"
-                    ><i class="bi bi-box-arrow-right"></i
-                  ></span>
+                  <span class="single-icon" aria-hidden="true"><i class="bi bi-box-arrow-right"></i></span>
                   <span class="single-label">로그아웃</span>
                 </span>
               </button>
@@ -266,30 +171,18 @@
           <!-- 로그인하지 않은 사용자용 메뉴 -->
           <template v-else>
             <li class="menu-group menu-single">
-              <RouterLink
-                to="/login"
-                class="single-link"
-                @click.native="showMenu = false"
-              >
+              <RouterLink to="/login" class="single-link" @click.native="showMenu = false">
                 <span class="single-left">
-                  <span class="single-icon" aria-hidden="true"
-                    ><i class="bi bi-box-arrow-in-right"></i
-                  ></span>
+                  <span class="single-icon" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
                   <span class="single-label">로그인</span>
                 </span>
                 <span class="chevron">›</span>
               </RouterLink>
             </li>
             <li class="menu-group menu-single">
-              <RouterLink
-                to="/signup"
-                class="single-link"
-                @click.native="showMenu = false"
-              >
+              <RouterLink to="/signup" class="single-link" @click.native="showMenu = false">
                 <span class="single-left">
-                  <span class="single-icon" aria-hidden="true"
-                    ><i class="bi bi-person-plus"></i
-                  ></span>
+                  <span class="single-icon" aria-hidden="true"><i class="bi bi-person-plus"></i></span>
                   <span class="single-label">회원가입</span>
                 </span>
                 <span class="chevron">›</span>
@@ -309,12 +202,22 @@ import SideMenu from '@/components/SideMenu.vue';
 import defaultUser from '@/assets/user.png';
 import myLogo from '@/assets/Logo.png';
 import api from '@/api'; // axios instance
+import { getToken, deleteToken } from 'firebase/messaging';
+import { getMessagingIfSupported } from '@/firebase/firebaseClient';
+import pushApi from '@/api/push';
+import { showToast } from '@/util/toast';
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const showMenu = ref(false);
 const showDropdown = ref(null);
+
+const loading = ref(false);
+const headerPushOn = ref(!!localStorage.getItem('fcmToken'));
+const permission = ref(typeof Notification !== 'undefined' ? Notification.permission : 'default');
+const envReady = ref(false);
+let messagingInstance = null;
 
 // 햄버거 메뉴 상태 변경 시 글로벌 이벤트 발생
 watch(showMenu, (newValue) => {
@@ -419,8 +322,7 @@ const mobileMenuGroups = ref([
 ]);
 
 function toggleGroup(index) {
-  mobileMenuGroups.value[index].expanded =
-    !mobileMenuGroups.value[index].expanded;
+  mobileMenuGroups.value[index].expanded = !mobileMenuGroups.value[index].expanded;
 }
 
 function onProfileImageUpdated(e) {
@@ -440,9 +342,7 @@ const profileImageSrc = computed(() => {
   return url || defaultUser;
 });
 
-const isLoggedIn = computed(
-  () => !!(authStore.accessToken && authStore.userId)
-);
+const isLoggedIn = computed(() => !!(authStore.accessToken && authStore.userId));
 
 const handleAuthAction = () => {
   if (isLoggedIn.value) {
@@ -456,6 +356,8 @@ const handleAuthAction = () => {
 // 모바일 메뉴에서 로그아웃 처리
 const handleLogout = () => {
   authStore.logout();
+  // 🔕 FCM 정리 (fcmService에서 이벤트 수신)
+  window.dispatchEvent(new Event('app:logout'));
   showMenu.value = false; // 메뉴 닫기
   router.push('/');
 };
@@ -472,12 +374,7 @@ const fetchMe = async () => {
     const { data } = await api.get('user/me');
     // 일부 백엔드는 payload를 result/data에 넣어 내려줌
     const me = data?.result || data?.data || data;
-    profile_image_url.value =
-      me?.profileImageUrl ||
-      me?.profile_image_url ||
-      me?.imageUrl ||
-      me?.profileImage ||
-      '';
+    profile_image_url.value = me?.profileImageUrl || me?.profile_image_url || me?.imageUrl || me?.profileImage || '';
   } catch (error) {
     console.error('사용자 정보 불러오기 실패:', error);
     profile_image_url.value = '';
@@ -488,11 +385,148 @@ function onKey(e) {
   // Escape key handler can be used for other purposes if needed
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('keydown', onKey);
   window.addEventListener('profile-image-updated', onProfileImageUpdated);
+  // ─ Push toggle init (desktop header)
+  try {
+    const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const isHttps = location.protocol === 'https:';
+    envReady.value = (isLocalhost || isHttps) && 'serviceWorker' in navigator;
+    if (envReady.value) {
+      messagingInstance = await getMessagingIfSupported();
+      permission.value = Notification.permission;
+      headerPushOn.value = !!localStorage.getItem('fcmToken');
+    }
+  } catch (e) {
+    console.warn('[Header] push init failed', e);
+  }
 });
+// ────────── 웹 푸시 토글 관련 함수 ──────────
+async function ensureSW() {
+  return await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+}
 
+async function subscribePush() {
+  loading.value = true;
+  try {
+    const swReg = await ensureSW();
+    const perm = await Notification.requestPermission();
+    permission.value = perm;
+    if (perm !== 'granted') {
+      showToast({ title: '권한 필요', message: '알림 권한이 허용되지 않았습니다.', type: 'warning' });
+      return false;
+    }
+
+    if (!messagingInstance) messagingInstance = await getMessagingIfSupported();
+    const vapidKey = import.meta.env.VITE_FIREBASE_MESSAGING_VAPID_KEY;
+    if (!vapidKey || !messagingInstance) {
+      showToast({ title: '설정 오류', message: '푸쉬 환경이 올바르지 않습니다.', type: 'danger' });
+      return false;
+    }
+
+    const token = await getToken(messagingInstance, {
+      vapidKey,
+      serviceWorkerRegistration: swReg,
+    });
+    if (!token) {
+      showToast({ title: '실패', message: 'FCM 토큰 발급에 실패했습니다.', type: 'danger' });
+      return false;
+    }
+
+    const cached = localStorage.getItem('fcmToken');
+    if (cached !== token) {
+      await pushApi.registerToken(token);
+      localStorage.setItem('fcmToken', token);
+    }
+    console.log('[Header] Push subscribed, token cached');
+    headerPushOn.value = true;
+    showToast({ title: '알림', message: '푸쉬 알림이 활성화되었습니다.', type: 'success' });
+    return true;
+  } catch (e) {
+    console.warn('[Header] subscribePush error:', e);
+    showToast({ title: '오류', message: '구독 중 오류가 발생했습니다.', type: 'danger' });
+    return false;
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function unsubscribePush() {
+  loading.value = true;
+  try {
+    const token = localStorage.getItem('fcmToken');
+    if (!messagingInstance) messagingInstance = await getMessagingIfSupported();
+
+    if (messagingInstance) {
+      try {
+        await deleteToken(messagingInstance);
+      } catch (_) {}
+    }
+    if (token) {
+      try {
+        await pushApi.deleteToken(token);
+      } catch (_) {}
+      localStorage.removeItem('fcmToken');
+    }
+    console.log('[Header] Push unsubscribed, token removed');
+    headerPushOn.value = false;
+    showToast({ title: '알림', message: '푸쉬 알림이 비활성화되었습니다.', type: 'info' });
+    return true;
+  } catch (e) {
+    console.warn('[Header] unsubscribePush error:', e);
+    showToast({ title: '오류', message: '구독 해제 중 오류가 발생했습니다.', type: 'danger' });
+    return false;
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handlePushToggle() {
+  if (headerPushOn.value) {
+    console.log('[Header] Toggle ON → subscribe');
+    const ok = await subscribePush();
+    if (!ok) headerPushOn.value = false;
+  } else {
+    console.log('[Header] Toggle OFF → unsubscribe');
+    const ok = await unsubscribePush();
+    if (!ok) headerPushOn.value = true;
+  }
+}
+
+// 로그인 이벤트에서 토글 상태 동기화 (자동 구독 포함)
+const onAppLogin = async () => {
+  try {
+    if (!envReady.value) return;
+    permission.value = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    const hasToken = !!localStorage.getItem('fcmToken');
+
+    if (hasToken) {
+      headerPushOn.value = true;
+      return;
+    }
+
+    // 권한이 이미 허용되어 있으면 자동 구독 시도
+    if (permission.value === 'granted') {
+      const ok = await subscribePush();
+      headerPushOn.value = !!ok;
+    } else {
+      // 권한 미허용 상태면 스위치는 off 유지
+      headerPushOn.value = false;
+    }
+  } catch (e) {
+    console.warn('[Header] onAppLogin sync failed', e);
+  }
+};
+
+const onAppLogout = () => {
+  // 로그아웃 시 토글 off 로 동기화
+  headerPushOn.value = false;
+};
+
+// 전역 이벤트 리스너 등록
+window.addEventListener('app:login', onAppLogin);
+window.addEventListener('app:logout', onAppLogout);
 // 로그인 상태가 바뀔 때마다 프로필 이미지 갱신
 watch(
   () => isLoggedIn.value,
@@ -508,6 +542,8 @@ watch(
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey);
   window.removeEventListener('profile-image-updated', onProfileImageUpdated);
+  window.removeEventListener('app:login', onAppLogin);
+  window.removeEventListener('app:logout', onAppLogout);
 });
 </script>
 
@@ -563,7 +599,7 @@ onUnmounted(() => {
 .header-nav {
   display: flex;
   align-items: center;
-  gap: 1.875rem;
+  gap: 1rem;
   justify-content: flex-end;
 }
 .nav-menu {
@@ -675,12 +711,7 @@ onUnmounted(() => {
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--border-light),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--border-light), transparent);
 }
 
 /* 드롭다운 애니메이션 개선 */
@@ -1077,8 +1108,8 @@ onUnmounted(() => {
   /* accordion transition */
   .accordion-enter-active,
   .accordion-leave-active {
-    transition: max-height 260ms cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: max-height 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease,
+      transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: max-height, opacity, transform;
   }
   .accordion-enter-from,
@@ -1118,5 +1149,102 @@ onUnmounted(() => {
   --color-white-20: rgba(255, 255, 255, 0.2);
   --color-white-30: rgba(255, 255, 255, 0.3);
   --color-white-50: rgba(255, 255, 255, 0.5);
+}
+/* ─ Push toggle (header) ─ */
+.push-toggle-mini {
+  --switch-w: 52px; /* desktop width */
+  --switch-h: 28px; /* desktop height */
+  --knob: 24px; /* circle diameter */
+  --gap: 3px; /* inner padding */
+  --icon-offset-x: 1px;
+  --icon-offset-y: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.push-toggle-mini .push-label {
+  font-size: 0.85rem;
+  color: var(--color-dark);
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: var(--switch-w);
+  height: var(--switch-h);
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  background: var(--color-gray-300);
+  transition: 0.2s ease;
+  border-radius: 24px;
+}
+.slider:before {
+  content: '';
+  position: absolute;
+  width: var(--knob);
+  height: var(--knob);
+  left: var(--gap);
+  top: calc((var(--switch-h) - var(--knob)) / 2);
+  background: var(--color-white);
+  border-radius: 50%;
+  transition: 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+}
+
+/* icon inside toggle */
+.slider::after {
+  content: '🔕';
+  position: absolute;
+  top: calc(50% + var(--icon-offset-y));
+  right: calc(var(--gap) + 4px + var(--icon-offset-x));
+  left: auto;
+  transform: translateY(-50%);
+  font-size: 11px;
+  line-height: 1;
+  z-index: 1;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+.switch input:checked + .slider::after {
+  content: '🔔';
+  left: calc(var(--gap) + 4px + var(--icon-offset-x));
+  right: auto;
+}
+.switch input:checked + .slider {
+  background: var(--color-accent);
+}
+.switch input:checked + .slider:before {
+  transform: translateX(calc(var(--switch-w) - var(--knob) - (var(--gap) * 2)));
+}
+.switch input:disabled + .slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 992px) {
+  .push-toggle-mini {
+    --switch-w: 52px; /* mobile width */
+    --switch-h: 28px; /* mobile height */
+    --knob: 24px; /* knob size */
+    --gap: 3px; /* inner padding */
+    --icon-offset-x: 0px;
+    --icon-offset-y: -0.5px;
+    display: inline-flex; /* ensure visible on mobile */
+    gap: 0.5rem;
+  }
+  .push-toggle-mini .push-label {
+    font-size: 1.1rem;
+  }
+  .push-toggle-mini .slider::after {
+    font-size: 12px;
+  }
 }
 </style>

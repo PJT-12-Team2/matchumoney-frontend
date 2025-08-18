@@ -2,26 +2,21 @@
   <div>
     <div class="push-toggle">
       <div class="left">
-        <span class="label">푸시 알림</span>
+        <span class="label">푸쉬 알림</span>
       </div>
       <div class="right">
-        <button
-          :class="['btn btn-outline-accent', { selected: subscribed }]"
-          :disabled="!envReady || loading || subscribed"
-          @click="subscribe">
-          {{ loading && !subscribed ? 'ON' : 'ON' }}
-        </button>
-        <button
-          :class="['btn btn-outline-secondary ms-2', { selected: !subscribed && envReady && permission !== 'denied' }]"
-          :disabled="!envReady || loading || !subscribed"
-          @click="unsubscribe">
-          {{ loading && subscribed ? 'OFF' : 'OFF' }}
-        </button>
+        <label class="switch" :aria-checked="subscribed" role="switch">
+          <input type="checkbox" :checked="subscribed" :disabled="!envReady || loading" @change="onToggle" />
+          <span class="slider"></span>
+        </label>
+        <span class="switch-text" :class="{ on: subscribed, off: !subscribed }">
+          {{ subscribed ? 'ON' : 'OFF' }}
+        </span>
       </div>
     </div>
 
     <p v-if="!envReady" class="hint">
-      이 브라우저/프로토콜에서는 푸시 알림이 지원되지 않습니다. (localhost 또는 HTTPS 필요)
+      이 브라우저/프로토콜에서는 푸쉬 알림이 지원되지 않습니다. (localhost 또는 HTTPS 필요)
     </p>
     <p v-else-if="permission === 'denied'" class="hint">
       알림 권한이 차단되어 있습니다. 브라우저 설정에서 권한을 허용해 주세요.
@@ -35,6 +30,38 @@ import { getToken, deleteToken } from 'firebase/messaging';
 import { getMessagingIfSupported } from '@/firebase/firebaseClient';
 import pushApi from '@/api/push';
 import { showToast } from '@/util/toast';
+import { getMessagingIfSupported } from '@/firebase/firebaseClient';
+
+window.addEventListener('app:login', async () => {
+  try {
+    const existing = localStorage.getItem('fcmToken');
+    if (existing) {
+      console.log('[FCM] existing token present (skip auto-subscribe)');
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      showToast({
+        title: '알림',
+        message: '브라우저 알림 권한이 차단되어 있어 자동 활성화를 건너뜁니다.',
+        type: 'warning',
+      });
+      return;
+    }
+    // Let PushToggle handle UX normally; this is just a safety net to ensure a token exists
+    const messaging = await getMessagingIfSupported();
+    if (!messaging) return;
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const vapidKey = import.meta.env.VITE_FIREBASE_MESSAGING_VAPID_KEY;
+    if (!vapidKey) return;
+    const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: reg });
+    if (token) {
+      localStorage.setItem('fcmToken', token);
+      showToast({ title: '알림', message: '로그인 완료: 푸쉬 알림이 자동 활성화되었습니다.', type: 'success' });
+    }
+  } catch (e) {
+    console.log('[FCM] auto-subscribe failed', e);
+  }
+});
 
 const loading = ref(false);
 const subscribed = ref(!!localStorage.getItem('fcmToken'));
@@ -73,9 +100,11 @@ async function subscribe() {
   try {
     loading.value = true;
     const swReg = await ensureSW();
+    console.log('[PushToggle] SW registered', swReg);
 
     const perm = await Notification.requestPermission();
     permission.value = perm;
+    console.log('[PushToggle] permission =', perm);
     if (perm !== 'granted') {
       showToast({ title: '알림', message: '알림 권한이 허용되지 않았습니다.', type: 'warning' });
       return;
@@ -88,8 +117,10 @@ async function subscribe() {
         return;
       }
     }
+    console.log('[PushToggle] messaging ready =', !!messagingInstance);
 
     const vapidKey = import.meta.env.VITE_FIREBASE_MESSAGING_VAPID_KEY;
+    console.log('[PushToggle] has vapidKey =', !!vapidKey);
     if (!vapidKey) {
       showToast({ title: '설정 필요', message: 'VAPID 공개키가 설정되지 않았습니다.', type: 'warning' });
       return;
@@ -99,6 +130,7 @@ async function subscribe() {
       vapidKey,
       serviceWorkerRegistration: swReg,
     });
+    console.log('[PushToggle] issued token =', token ? token.slice(0, 16) + '...' : null);
 
     if (!token) {
       showToast({ title: '실패', message: 'FCM 토큰 발급에 실패했습니다.', type: 'danger' });
@@ -110,9 +142,12 @@ async function subscribe() {
       await pushApi.registerToken(token);
       localStorage.setItem('fcmToken', token);
     }
+    if (cached === token) {
+      console.log('[PushToggle] token unchanged; already subscribed');
+    }
 
     subscribed.value = true;
-    showToast({ title: '완료', message: '웹 푸시 알림이 활성화되었습니다.', type: 'success' });
+    toastSuccess('푸쉬 알림이 활성화되었습니다.');
   } catch (e) {
     console.error('[PushToggle] subscribe error:', e);
     showToast({ title: '오류', message: '구독 중 오류가 발생했습니다.', type: 'danger' });
@@ -142,14 +177,52 @@ async function unsubscribe() {
       } catch (_) {}
       localStorage.removeItem('fcmToken');
     }
+    console.log('[PushToggle] token removed (client/server/local)');
 
     subscribed.value = false;
-    showToast({ title: '완료', message: '웹 푸시 알림을 해제했습니다.', type: 'info' });
+    toastInfo('푸쉬 알림을 해제했습니다.');
   } catch (e) {
     console.error('[PushToggle] unsubscribe error:', e);
     showToast({ title: '오류', message: '해제 중 오류가 발생했습니다.', type: 'danger' });
   } finally {
     loading.value = false;
+  }
+}
+
+function toastInfo(msg) {
+  try {
+    showToast({ title: '알림', message: msg, type: 'info' });
+  } catch (_) {
+    console.log('[Toast/info]', msg);
+  }
+}
+function toastSuccess(msg) {
+  try {
+    showToast({ title: '완료', message: msg, type: 'success' });
+  } catch (_) {
+    console.log('[Toast/success]', msg);
+  }
+}
+
+function onToggle(e) {
+  console.log(
+    '[PushToggle] onToggle change=',
+    e?.target?.checked,
+    'subscribed=',
+    subscribed.value,
+    'envReady=',
+    envReady.value
+  );
+  const next = e?.target?.checked;
+  if (!envReady.value) {
+    toastInfo('이 환경에서는 푸쉬 알림이 지원되지 않아요. (HTTPS/localhost 필요)');
+    return;
+  }
+  if (next === undefined || !envReady.value) return;
+  if (next && !subscribed.value) {
+    subscribe();
+  } else if (!next && subscribed.value) {
+    unsubscribe();
   }
 }
 </script>
@@ -202,30 +275,74 @@ async function unsubscribe() {
   color: var(--color-dark);
 }
 
-/* Button variant to match brand accent */
-.btn-outline-accent {
-  background-color: transparent;
-  color: var(--color-accent);
-  border: 2px solid var(--color-accent);
+/* ===== Toggle Switch ===== */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 30px;
 }
-.btn-outline-accent:disabled {
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--color-gray-300);
+  border-radius: 999px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: inset 0 0 0 2px var(--color-gray-400);
+}
+.slider::before {
+  content: '';
+  position: absolute;
+  height: 24px;
+  width: 24px;
+  left: 3px;
+  top: 3px;
+  background: var(--color-white);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.slider::after {
+  content: '🔕';
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  transition: opacity 0.2s ease;
+}
+.switch input:checked + .slider {
+  background: var(--color-accent);
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+.switch input:checked + .slider::before {
+  transform: translateX(22px);
+}
+.switch input:checked + .slider::after {
+  content: '🔔';
+  left: auto;
+  right: 8px;
+}
+.switch input:disabled + .slider {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.btn-outline-accent:hover:not(:disabled) {
-  background-color: var(--color-accent);
-  color: var(--color-white);
+.switch-text {
+  margin-left: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
 }
-
-.btn.selected {
-  background-color: var(--color-accent);
-  color: var(--color-white);
-  border-color: var(--color-accent);
+.switch-text.on {
+  color: var(--color-accent);
 }
-.btn-outline-secondary.selected {
-  background-color: var(--color-secondary);
-  color: var(--color-white);
-  border-color: var(--color-secondary);
+.switch-text.off {
+  color: var(--color-gray-500);
 }
 
 .hint {

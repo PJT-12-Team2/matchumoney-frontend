@@ -17,49 +17,24 @@
             clickable: true,
           }"
           :modules="modules"
-          class="carousel-swiper"
-        >
-          <SwiperSlide
-            v-for="card in carouselCards"
-            :key="card.id"
-            class="carousel-card"
-            @click="selectProduct(card)"
-          >
+          class="carousel-swiper">
+          <SwiperSlide v-for="card in carouselCards" :key="card.id" class="carousel-card" @click="selectProduct(card)">
             <div style="width: 14rem; height: 14rem">
-              <img
-                :src="card.image"
-                :alt="card.name"
-                class="carousel-card-image"
-              />
+              <img :src="card.image" :alt="card.name" class="carousel-card-image" />
             </div>
             <div class="carousel-card-name">{{ card.name }}</div>
             <div>{{ card.issuer || '카드사 미정' }}</div>
             <div class="carousel-card-benefit">
               <div>
                 <span class="label">전월실적금액:</span>
-                {{
-                  card.preMonthMoney
-                    ? card.preMonthMoney.toLocaleString() + '원'
-                    : '정보 없음'
-                }}
+                {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
               </div>
               <div>
                 <span class="label">연회비:</span>
-                {{
-                  card.annualFee
-                    ? card.annualFee.replace(/\[|\]/g, '')
-                    : '정보 없음'
-                }}
+                {{ card.annualFee ? card.annualFee.replace(/\[|\]/g, '') : '정보 없음' }}
               </div>
-              <div
-                v-if="card.options && card.options.length > 0"
-                class="benefit-hashtags"
-              >
-                <span
-                  v-for="(option, index) in card.options.slice(0, 3)"
-                  :key="index"
-                  class="hashtag"
-                >
+              <div v-if="card.options && card.options.length > 0" class="benefit-hashtags">
+                <span v-for="(option, index) in card.options.slice(0, 3)" :key="index" class="hashtag">
                   #{{ option.title }}
                 </span>
               </div>
@@ -75,45 +50,24 @@
           :pagination="{
             clickable: true,
           }"
-          :modules="modules"
-        >
-          <SwiperSlide
-            v-for="card in carouselCards"
-            :key="card.id"
-            class="carousel-card"
-            @click="selectProduct(card)"
-          >
+          :modules="modules">
+          <SwiperSlide v-for="card in carouselCards" :key="card.id" class="carousel-card" @click="selectProduct(card)">
             <div style="width: 14rem; height: 14rem">
-              <img
-                :src="card.image"
-                :alt="card.name"
-                class="carousel-card-image"
-              />
+              <img :src="card.image" :alt="card.name" class="carousel-card-image" />
             </div>
             <div class="carousel-card-name">{{ card.name }}</div>
             <div>{{ card.issuer || '카드사 미정' }}</div>
             <div class="carousel-card-benefit">
               <div>
                 <span class="label">전월실적금액:</span>
-                {{
-                  card.preMonthMoney
-                    ? card.preMonthMoney.toLocaleString() + '원'
-                    : '정보 없음'
-                }}
+                {{ card.preMonthMoney ? card.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
               </div>
               <div>
                 <span class="label">연회비:</span>
                 {{ card.annualFee.replace(/\[|\]/g, '') || '정보 없음' }}
               </div>
-              <div
-                v-if="card.options && card.options.length > 0"
-                class="benefit-hashtags"
-              >
-                <span
-                  v-for="(option, index) in card.options.slice(0, 3)"
-                  :key="index"
-                  class="hashtag"
-                >
+              <div v-if="card.options && card.options.length > 0" class="benefit-hashtags">
+                <span v-for="(option, index) in card.options.slice(0, 3)" :key="index" class="hashtag">
                   #{{ option.title }}
                 </span>
               </div>
@@ -137,8 +91,7 @@
                 filters.creditCard = !filters.creditCard;
                 searchProducts();
               }
-            "
-          >
+            ">
             신용카드
           </button>
           <button
@@ -148,8 +101,7 @@
                 filters.debitCard = !filters.debitCard;
                 searchProducts();
               }
-            "
-          >
+            ">
             체크카드
           </button>
         </div>
@@ -163,8 +115,7 @@
             :class="{
               selected: filters.selectedBenefits.includes(benefit.id),
             }"
-            @click="toggleBenefit(benefit.id)"
-          >
+            @click="toggleBenefit(benefit.id)">
             <span class="emoji">{{ benefit.emoji }}</span>
             <span>{{ benefit.name }}</span>
           </div>
@@ -187,30 +138,16 @@
         </div>
 
         <div v-else class="search-results-grid">
-          <div
-            v-for="product in searchResults"
-            :key="product.id"
-            class="product-card"
-            @click="selectProduct(product)"
-          >
+          <div v-for="product in searchResults" :key="product.id" class="product-card" @click="selectProduct(product)">
             <div class="card-favorite-button" @click.stop>
-              <FavoriteToggle
-                v-model="product.isStarred"
-                :productId="product.id"
-                productType="CARD"
-              />
+              <FavoriteToggle v-model="product.isStarred" :productId="product.id" productType="CARD" />
             </div>
             <div class="product-content">
               <div class="card-left-section">
                 <img
-                  :src="
-                    product.imageUrl ||
-                    product.cardImageUrl ||
-                    getBankLogo('default')
-                  "
+                  :src="product.imageUrl || product.cardImageUrl || getBankLogo('default')"
                   :alt="product.name || product.cardName"
-                  class="product-image"
-                />
+                  class="product-image" />
                 <div class="card-compare-button" @click.stop>
                   <div class="like-fix">
                     <LikeToggle
@@ -223,13 +160,9 @@
                           product.isLiked = liked;
                           product.likeCount = count;
                         }
-                      "
-                    />
+                      " />
                   </div>
-                  <CompareButton
-                    :productId="product.id || product.cardId"
-                    productType="CARD"
-                  />
+                  <CompareButton :productId="product.id || product.cardId" productType="CARD" />
                 </div>
               </div>
               <div class="product-info">
@@ -239,40 +172,22 @@
                 </div>
                 <div>
                   <span class="label">전월실적금액:</span>
-                  {{
-                    product.preMonthMoney
-                      ? product.preMonthMoney.toLocaleString() + '원'
-                      : '정보 없음'
-                  }}
+                  {{ product.preMonthMoney ? product.preMonthMoney.toLocaleString() + '원' : '정보 없음' }}
                 </div>
                 <div>
                   <span class="label">연회비:</span>
-                  {{
-                    product.annualFee
-                      ? product.annualFee.replace(/\[|\]/g, '')
-                      : '정보 없음'
-                  }}
+                  {{ product.annualFee ? product.annualFee.replace(/\[|\]/g, '') : '정보 없음' }}
                 </div>
                 <!-- 혜택 태그 -->
-                <div
-                  v-if="product.options && product.options.length > 0"
-                  class="benefit-hashtags"
-                >
-                  <span
-                    v-for="(option, index) in product.options.slice(0, 3)"
-                    :key="index"
-                    class="hashtag"
-                  >
+                <div v-if="product.options && product.options.length > 0" class="benefit-hashtags">
+                  <span v-for="(option, index) in product.options.slice(0, 3)" :key="index" class="hashtag">
                     #{{ option.title }}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-          <div
-            v-if="isLoadingMore"
-            class="loading-state infinite-spinner-wrapper"
-          >
+          <div v-if="isLoadingMore" class="loading-state infinite-spinner-wrapper">
             <BaseSpinner size="md" />
             <p>카드 상품을 불러오고 있습니다...</p>
           </div>
@@ -374,10 +289,7 @@ const fetchRecommendedCards = async () => {
     };
 
     // 사용자 페르소나 카드 추천 가져오기
-    const recommendationRes = await api.get(
-      '/cards/recommendations/user/recommendation',
-      config
-    );
+    const recommendationRes = await api.get('/cards/recommendations/user/recommendation', config);
     const result = recommendationRes.data.result;
 
     userPersonaType.value = result.personaName || '토끼형';
@@ -507,14 +419,10 @@ const selectProduct = (product) => {
 // 은행 로고 가져오기
 const getBankLogo = (initial) => {
   const logos = {
-    shinhan:
-      'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png',
+    shinhan: 'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png',
     hana: 'https://d1c5n4ri2guedi.cloudfront.net/card/718/card_img/28063/718card.png',
   };
-  return (
-    logos[initial] ||
-    'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png'
-  );
+  return logos[initial] || 'https://d1c5n4ri2guedi.cloudfront.net/card/2835/card_img/41600/2835card.png';
 };
 
 onMounted(() => {
@@ -822,7 +730,6 @@ onMounted(() => {
   border-radius: var(--spacing-xl);
   padding: var(--spacing-xl);
   cursor: pointer;
-  transition: all 0.3s ease;
   height: 20rem;
   display: flex;
   flex-direction: column;
@@ -830,10 +737,11 @@ onMounted(() => {
   justify-content: start;
   text-align: center;
   min-height: 24rem;
-  box-shadow: var(--shadow-card);
 }
 .product-card:hover {
-  transform: translateY(-0.3125rem);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-accent);
 }
 
 .product-content {
@@ -1041,7 +949,6 @@ onMounted(() => {
     border-radius: var(--spacing-xl);
     padding: var(--spacing-lg);
     cursor: pointer;
-    transition: all 0.3s ease;
     height: 20rem;
     display: flex;
     flex-direction: column;

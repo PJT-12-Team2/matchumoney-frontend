@@ -23,6 +23,10 @@
 
         <!-- 비밀번호 찾기 -->
         <div class="login-options">
+          <label class="keep-login">
+            <!-- <input type="checkbox" v-model="keepLogin" />
+            로그인 상태 유지 -->
+          </label>
           <a class="reset-pw" href="/reset-password">비밀번호 찾기</a>
         </div>
 
@@ -93,10 +97,10 @@ const handleLogin = async () => {
     });
 
     alert(`${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`);
-    
+
     // 로그인 후 리다이렉트 처리
     const redirectPath = route.query.redirect || '/';
-    
+
     if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
       router.push('/persona/start');
     } else {

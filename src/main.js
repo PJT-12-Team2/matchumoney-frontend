@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth';
 
 import router from './router';
 import App from './App.vue';
+import { initFCM } from '@/firebase/fcmService';
 
 // 1) 글로벌 스타일
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -26,11 +27,15 @@ if (token) {
   authStore.accessToken = token;
 }
 
+// FCM 초기화: 앱 시작 시 한 번 등록 (토큰 유무와 무관)
+// - onMessage(포그라운드 토스트) 핸들러를 일찍 바인딩하기 위함
+initFCM();
+
+// 로그인/구독 이벤트에도 재시도 (토큰 갱신/권한 허용 직후)
+window.addEventListener('app:login', initFCM);
+window.addEventListener('app:push:subscribed', initFCM);
+// 필요 시 해제 이벤트도 훅만 남겨둠 (현재는 별도 동작 없음)
+window.addEventListener('app:push:unsubscribed', () => {});
+
 app.use(router);
 app.mount('#app');
-
-// 4) FCM 초기화 (service로 분리)
-import { initFCM } from '@/firebase/fcmService';
-window.addEventListener('app:login', () => {
-  initFCM();
-});

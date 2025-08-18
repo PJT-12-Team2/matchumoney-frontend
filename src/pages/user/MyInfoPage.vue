@@ -393,7 +393,7 @@ async function submitDeleteAccount() {
         detail: deleteDetail.value.trim(),
       });
     } else {
-      await api.post('/auth/account/delete', {
+      await api.post('/auth/withdraw', {
         reason: deleteReason.value,
         detail: deleteDetail.value.trim(),
       });
@@ -436,8 +436,7 @@ async function handleVerifyPassword() {
     }
   } catch (err) {
     console.error('[verify] error', err?.response?.status, err?.response?.data);
-    verifyErr.value =
-      err?.response?.data?.message || '비밀번호 검증 중 오류가 발생했습니다.';
+    verifyErr.value = err?.response?.data?.message || '비밀번호 검증 중 오류가 발생했습니다.';
   } finally {
     isChecking.value = false; // 로딩 off
   }

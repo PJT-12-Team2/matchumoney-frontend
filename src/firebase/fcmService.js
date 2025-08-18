@@ -12,6 +12,35 @@ let initDone = false; // 초기화 완료 (완료 후 재호출 방지)
 let onMessageBound = false; // onMessage 핸들러 중복 바인딩 방지
 let cachedMessaging = null; // 필요 시 재사용
 
+// --- in-memory de-duplication for foreground toasts ---
+const __recentMsgs = new Map(); // key -> timestamp
+const __DEDUP_TTL_MS = 60 * 1000; // keep keys for 60s
+const __DEDUP_MAX = 200; // avoid unbounded growth
+
+function __cleanupDedupMap(now = Date.now()) {
+  for (const [k, t] of __recentMsgs) {
+    if (now - t > __DEDUP_TTL_MS) __recentMsgs.delete(k);
+  }
+  // hard cap size
+  if (__recentMsgs.size > __DEDUP_MAX) {
+    const drop = __recentMsgs.size - __DEDUP_MAX;
+    let i = 0;
+    for (const k of __recentMsgs.keys()) {
+      __recentMsgs.delete(k);
+      if (++i >= drop) break;
+    }
+  }
+}
+
+function __seenBefore(key) {
+  if (!key) return false;
+  const now = Date.now();
+  __cleanupDedupMap(now);
+  if (__recentMsgs.has(key)) return true;
+  __recentMsgs.set(key, now);
+  return false;
+}
+
 // --- helper: 포그라운드 핸들러 바인딩(단 1회) ---
 function bindOnMessageOnce(messaging) {
   if (onMessageBound) {
@@ -24,9 +53,21 @@ function bindOnMessageOnce(messaging) {
   }
   console.log('[FCM] binding onMessage');
   onMessage(messaging, (payload) => {
-    console.log('[FCM] 포그라운드 메시지 수신:', payload);
-    const n = payload?.notification;
+    // Foreground only: avoid double UI when tab hidden and SW shows a system notification
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+      return;
+    }
+
+    // De-duplication: use messageId -> traceId -> stable data signature
     const d = payload?.data || {};
+    const n = payload?.notification;
+    const dedupKey = payload?.messageId || d.traceId || d.type + '|' + d.title + '|' + d.body + '|' + d.link;
+    if (__seenBefore(dedupKey)) {
+      console.log('[FCM] duplicate foreground message ignored:', dedupKey);
+      return;
+    }
+
+    console.log('[FCM] 포그라운드 메시지 수신:', payload);
     const title = n?.title || d.title || '알림';
     const body = n?.body || d.body || '';
     const link = d.link || n?.click_action || '/';
