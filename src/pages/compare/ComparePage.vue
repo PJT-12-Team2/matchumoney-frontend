@@ -188,7 +188,7 @@ function onAfterEnter() {
   justify-content: space-between;
   gap: 16px;
   padding: 18px 20px;
-  background: linear-gradient(180deg, #f3faf6 0%, #ffffff 100%);
+  background: #ffffff;
   border: 1px solid #e2f0e8;
   border-radius: 14px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);

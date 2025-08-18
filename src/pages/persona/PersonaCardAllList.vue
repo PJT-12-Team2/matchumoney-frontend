@@ -148,18 +148,24 @@
                   :alt="product.name || product.cardName"
                   class="product-image" />
                 <div class="card-compare-button" @click.stop>
-                  <LikeToggle
-                    :productId="product.id"
-                    productType="card-products"
-                    :initialLiked="product.isLiked"
-                    :initialCount="product.likeCount"
-                    @update="
-                      ({ liked, count }) => {
-                        product.isLiked = liked;
-                        product.likeCount = count;
-                      }
-                    " />
-                  <CompareButton :productId="product.id || product.cardId" productType="CARD" />
+                  <div class="like-fix">
+                    <LikeToggle
+                      :productId="product.id"
+                      productType="card-products"
+                      :initialLiked="product.isLiked"
+                      :initialCount="product.likeCount"
+                      @update="
+                        ({ liked, count }) => {
+                          product.isLiked = liked;
+                          product.likeCount = count;
+                        }
+                      "
+                    />
+                  </div>
+                  <CompareButton
+                    :productId="product.id || product.cardId"
+                    productType="CARD"
+                  />
                 </div>
               </div>
               <div class="product-info">
@@ -185,16 +191,15 @@
               </div>
             </div>
           </div>
+          <div v-if="isLoadingMore" class="loading-state infinite-spinner-wrapper">
+            <BaseSpinner size="md" />
+            <p>카드 상품을 불러오고 있습니다...</p>
+          </div>
         </div>
       </section>
     </main>
   </div>
-  <div class="infinite-spinner-wrapper">
-    <div class="infinite-spinner-block" v-show="isLoadingMore">
-      <div class="infinite-spinner"></div>
-      <div class="infinite-spinner-text">상품을 불러오는 중입니다...</div>
-    </div>
-  </div>
+
 </template>
 
 <!-- name: 'CardSearchPage' -->
@@ -208,6 +213,7 @@ import { Pagination } from 'swiper/modules';
 import FavoriteToggle from '@/components/common/FavoriteToggle.vue';
 import CompareButton from '@/components/common/CompareButton.vue';
 import LikeToggle from '@/components/common/LikeToggle.vue';
+import BaseSpinner from '@/components/base/BaseSpinner.vue';
 
 const modules = [Pagination];
 const pageSize = 6; // 서버 요청 크기
@@ -601,8 +607,10 @@ onMounted(() => {
 }
 .highlight {
   font-size: var(--font-size-2xl);
-  text-decoration: underline;
+  color: #2e7d32;
+  font-weight: 900;
 }
+
 .filter-label {
   font-size: var(--font-size-lg);
   font-weight: 700;
@@ -664,27 +672,56 @@ onMounted(() => {
   .card-compare-button {
     display: flex;
     align-items: center;
-  }
-
-  /* LikeToggle 전체 크기 살짝 축소 */
-  .card-compare-button > *:first-child {
-    transform: scale(0.85);
-    transform-origin: left center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
   }
 
   /* LikeToggle 내부(하트+숫자) 간격/패딩 보정 */
   .card-compare-button :deep(.like-chip) {
-    padding: 0.35rem 0.7rem; /* 칩 자체를 살짝 줄임 */
+    display: flex; /* 가로 정렬 보장 */
+    flex-direction: row;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap; /* 줄바꿈 금지 */
+    padding: 0.35rem 0.7rem;
     border-radius: 999px;
     line-height: 1;
+    width: auto; /* 고정폭 방지 */
+    min-width: unset;
   }
   .card-compare-button :deep(.like-icon) {
-    margin-right: 0.3rem; /* 하트 ↔ 숫자 간격 */
-    width: 1rem; /* 아이콘이 img/svg면 적용됨 */
-    height: 1rem;
+    margin-right: 0.3rem;
+    flex: 0 0 auto;
   }
   .card-compare-button :deep(.like-count) {
-    font-size: 0.95rem; /* 숫자 조금만 축소 */
+    display: inline-block;
+    font-size: 0.95rem;
+    line-height: 1; /* 숫자 수직 가운데 보정 */
+    white-space: nowrap;
+  }
+
+  /* Compare button 텍스트 줄바꿈/뭉개짐 방지 */
+  .card-compare-button :deep(.compare-button),
+  .card-compare-button :deep(button) {
+    white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  /* LikeToggle 강제 가로 정렬 래퍼 */
+  .like-fix {
+    display: inline-flex;
+    align-items: center;
+  }
+  .like-fix :deep(*) {
+    white-space: nowrap;
+  }
+  .like-fix :deep(button),
+  .like-fix :deep(.like-chip),
+  .like-fix :deep(.chip) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
   }
 }
 </style>
@@ -796,8 +833,54 @@ onMounted(() => {
 }
 
 .card-compare-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
   margin-top: 0.5rem;
 }
+
+.card-compare-button :deep(.compare-button),
+.card-compare-button :deep(button) {
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* LikeToggle 내부(하트+숫자) 가로정렬/줄바꿈 방지 (데스크탑 포함) */
+.card-compare-button :deep(.like-chip) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.card-compare-button :deep(.like-count) {
+  display: inline-block;
+  line-height: 1;
+  white-space: nowrap;
+}
+.card-compare-button :deep(.like-icon) {
+  flex: 0 0 auto;
+}
+
+/* LikeToggle 강제 가로 정렬 래퍼 (데스크톱) */
+.like-fix {
+  display: inline-flex;
+  align-items: center;
+}
+.like-fix :deep(*) {
+  white-space: nowrap;
+}
+.like-fix :deep(button),
+.like-fix :deep(.like-chip),
+.like-fix :deep(.chip) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 .infinite-spinner-wrapper {
   grid-column: 1 / -1;
   display: flex;
@@ -830,5 +913,13 @@ onMounted(() => {
 .infinite-spinner-text {
   font-size: 0.95rem;
   color: var(--text-secondary);
+}
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  text-align: center;
 }
 </style>

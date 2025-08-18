@@ -109,11 +109,12 @@
         </template>
         <template #content>
           <div class="persona-card">
-            <img
-              :src="personaImageUrl"
-              alt="페르소나 이미지"
-              class="persona-image"
-            />
+            <div class="persona-figure">
+              <img :src="personaImageUrl" alt="페르소나 이미지" class="persona-image" />
+              <div class="speech-bubble" role="note">
+                레벨이 오를수록<br />제가 진화해요!
+              </div>
+            </div>
             <h3 class="persona-name">{{ myPageInfo?.persona?.nameKo }} 유형</h3>
             <p class="persona-desc">{{ myPageInfo?.persona?.quote }}</p>
             <div class="persona-extras">
@@ -850,8 +851,11 @@ onMounted(() => {
   flex-direction: column;
 }
 /* Let persona-card stretch to fill card body so extras can sit at bottom if space allows */
+/* persona-card: contain bubble absolutely and prevent overflow */
 .persona-card {
   flex: 1;
+  position: relative;
+  overflow: visible; /* 글씨(말풍선)가 카드 밖으로 넘어가도 보이도록 */
 }
 
 /* Extras block under persona summary */
@@ -981,7 +985,70 @@ onMounted(() => {
   object-fit: contain;
 }
 
-/* Global override for all BaseCardGrey cards */
+.persona-figure {
+  position: relative;
+  display: inline-block;
+  transform: translateY(8px); /* 카드 높이는 그대로, 시각적으로만 아래로 */
+}
+/* 말풍선을 캐릭터 오른쪽에 배치하고, 꼬리와 팁을 왼쪽으로 이동 */
+/* === Persona speech bubble (clean classic style) === */
+/* === Persona speech bubble (pill, rounder, smaller, classic triangle) === */
+.speech-bubble {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 10px);
+  transform: translateY(-50%);
+  max-width: 180px;              /* narrower to fit card */
+  background: #ffffff;
+  border: 1px solid var(--color-secondary-30);
+  border-radius: 18px;           /* 더 동글동글 */
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-secondary-100);
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+  animation: bubblePop 280ms ease-out;
+  white-space: normal;
+  word-break: keep-all;          /* 한국어 단어 예쁘게 줄바꿈 */
+}
+/* 테두리용 외곽 삼각형 */
+.speech-bubble::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-right: 10px solid var(--color-secondary-30); /* border color */
+}
+/* 내부 흰색 삼각형 */
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -9px;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 9px solid #fff;  /* bubble bg */
+}
+@media (max-width: 768px) {
+  .speech-bubble {
+    left: calc(100% + 6px);
+    max-width: 160px;
+    font-size: 0.95rem;
+    padding: 9px 12px;
+    border-radius: 16px; /* 모바일에서도 둥글게 */
+  }
+  .speech-bubble::before { left: -9px; border-right-width: 9px; border-top-width: 8px; border-bottom-width: 8px; }
+  .speech-bubble::after  { left: -8px; border-right-width: 8px; border-top-width: 7px; border-bottom-width: 7px; }
+}
+
+/* Global override for all BaseCardGrey cards */  
 :deep(.base-card-grey) {
   background: transparent !important; /* 기존: #fff */
   border: 1px solid var(--color-secondary-30) !important;
@@ -1008,6 +1075,7 @@ onMounted(() => {
   font-size: 1.25rem;
   font-weight: 800;
   margin: 0.25rem 0;
+  margin-top: 0.5rem; /* 말풍선이 우측에 있어도 텍스트와 시각적 간섭 최소화 */
 }
 .persona-desc {
   color: var(--color-secondary-80);

@@ -1713,11 +1713,105 @@ const formatTime = (dateString) => {
   return '오전';
 };
 
+// YYYY-MM-DD 로 변환 (거래내역의 YYYYMMDD 지원)
+const formatDateISO = (dateString) => {
+  if (!dateString) return '';
+  const s = String(dateString);
+  if (s.length === 8) {
+    const y = s.substring(0, 4);
+    const m = s.substring(4, 6);
+    const d = s.substring(6, 8);
+    return `${y}-${m}-${d}`;
+  }
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return '';
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+// CSV 안전 이스케이프
+const escapeCSV = (val) => {
+  if (val === null || val === undefined) return '';
+  const str = String(val);
+  // 큰따옴표 이스케이프
+  const escaped = str.replace(/"/g, '""');
+  // 콤마/개행/따옴표가 있으면 감싸기
+  if (/[",\n\r]/.test(escaped)) {
+    return `"${escaped}"`;
+  }
+  return escaped;
+};
+
+const toCSV = (rows) => {
+  // Excel 한글 깨짐 방지용 BOM 포함
+  const header = '\uFEFF';
+  const body = rows.map((r) => r.map(escapeCSV).join(',')).join('\r\n');
+  return header + body;
+};
+
+const downloadCSV = (filename, csvText) => {
+  const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 // 액션 메서드들
 
 const exportTransactions = () => {
-  // 거래내역 내보내기 로직
-  alert('거래내역을 내보냅니다.');
+  // 현재 거래내역 탭에서 적용된 "검색/필터/정렬" 결과 전체를 내보냅니다 (페이지네이션과 무관)
+  const data = getAllFilteredTransactions();
+
+  if (!data || data.length === 0) {
+    alert(
+      '내보낼 거래내역이 없습니다. 먼저 거래내역을 불러오거나 필터를 해제해주세요.'
+    );
+    return;
+  }
+
+  const cardName = selectedSyncedCard.value?.cardName || '카드';
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const filename = `거래내역_${cardName}_${yyyy}-${mm}-${dd}.csv`;
+
+  // CSV 헤더
+  const rows = [
+    [
+      '거래일자',
+      '거래시간',
+      '가맹점명',
+      '카테고리',
+      '금액(원)',
+      '결제수단',
+      '상태',
+    ],
+  ];
+
+  // 데이터 행
+  for (const t of data) {
+    const date = formatDateISO(t.transactionDate);
+    const time = formatTime(t.transactionDate) || '';
+    const merchant = t.merchantName || '';
+    const category = t.merchantCategory || t.paymentType || '기타';
+    const amountAbs = Math.abs(t.amount || 0);
+    const amountStr = amountAbs.toLocaleString();
+    const payment = selectedSyncedCard.value?.cardName || '카드';
+    const status = '완료';
+
+    rows.push([date, time, merchant, category, amountStr, payment, status]);
+  }
+
+  const csv = toCSV(rows);
+  downloadCSV(filename, csv);
 };
 
 const syncTransactions = async () => {
