@@ -10,8 +10,8 @@
 
       <!-- 메뉴 + 알림 + 프로필 -->
       <nav class="header-nav">
-        <!-- ① 데스크탑 메뉴 -->
-        <ul class="nav-menu d-none d-lg-flex">
+        <!-- ① 데스크탑 메뉴 (로그인 시에만 표시) -->
+        <ul v-if="isLoggedIn" class="nav-menu d-none d-lg-flex">
           <!-- 페르소나 드롭다운 -->
           <li
             class="nav-item"
@@ -84,15 +84,13 @@
             </div>
           </li>
 
-          <!-- 교육 드롭다운 -->
+          <!-- 금융 컨텐츠 드롭다운 -->
           <li
             class="nav-item"
             @mouseenter="showDropdown = 'education'"
             @mouseleave="showDropdown = null"
           >
-            <RouterLink to="/education/quiz" active-class="active"
-              >교육</RouterLink
-            >
+            <RouterLink to="/education/quiz">금융 컨텐츠</RouterLink>
             <div v-if="showDropdown === 'education'" class="dropdown-submenu">
               <RouterLink to="/education/quiz" class="dropdown-item"
                 >퀴즈</RouterLink
@@ -104,55 +102,35 @@
           </li>
         </ul>
 
+        <!-- 로그인하지 않은 사용자용 간단한 메뉴 -->
+        <div v-else class="auth-links d-none d-lg-flex">
+          <RouterLink to="/login" class="auth-link-btn login-link-btn"
+            >로그인</RouterLink
+          >
+          <RouterLink to="/signup" class="auth-link-btn signup-link-btn"
+            >회원가입</RouterLink
+          >
+        </div>
+
         <!-- ② 알림 + 프로필 / 햄버거 -->
         <div class="header-actions">
-          <!-- 🔔 알림 -->
-          <div class="notification position-relative" @click="toggleNoti">
-            <i class="bi bi-bell"></i>
-            <div v-if="unreadCount" class="notification-dot"></div>
+          <!-- 🙍‍♂️ 프로필 + 로그아웃(데스크탑) - 로그인 시에만 표시 -->
+          <div v-if="isLoggedIn" class="profile-section d-none d-md-flex">
+            <RouterLink to="/mypage" class="profile-link">
+              <img
+                :src="profileImageSrc"
+                alt="프로필"
+                class="header-profile"
+                style="width: 2.25rem; height: 2.25rem; object-fit: cover"
+                @error="onImgError"
+              />
+            </RouterLink>
 
-            <!-- 드롭다운 -->
-            <div
-              v-if="showNoti"
-              class="dropdown-menu dropdown-menu-end show noti-dropdown"
-            >
-              <p
-                v-if="notifications.length === 0"
-                class="dropdown-item text-muted mb-0"
-              >
-                알림이 없습니다
-              </p>
-              <RouterLink
-                v-for="n in notifications"
-                :key="n.id"
-                :to="n.link"
-                class="dropdown-item small"
-                @click="markAsRead(n.id)"
-              >
-                {{ n.text }}
-              </RouterLink>
-            </div>
+            <!-- 로그아웃 버튼 -->
+            <button class="logout-btn" @click="handleLogout" title="로그아웃">
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
           </div>
-
-          <!-- 로그인/로그아웃 버튼 (데스크탑) - 알림과 프로필 사이에 위치 -->
-          <button class="auth-btn d-none d-md-flex" @click="handleAuthAction">
-            {{ isLoggedIn ? '로그아웃' : '로그인' }}
-          </button>
-
-          <!-- 🙍‍♂️ 프로필(데스크탑) - 로그인 시에만 표시 -->
-          <RouterLink
-            v-if="isLoggedIn"
-            to="/mypage"
-            class="profile-link d-none d-md-flex"
-          >
-            <img
-              :src="profileImageSrc"
-              alt="프로필"
-              class="header-profile"
-              style="width: 2.25rem; height: 2.25rem; object-fit: cover"
-              @error="onImgError"
-            />
-          </RouterLink>
 
           <!-- 모바일: 로그인 상태에 따라 버튼/프로필 전환 -->
           <RouterLink
@@ -168,13 +146,13 @@
               @error="onImgError"
             />
           </RouterLink>
-          <button
+          <RouterLink
             v-else
-            class="login-btn d-block d-md-none"
-            @click="handleAuthAction"
+            to="/login"
+            class="auth-link-btn-mobile login-link-btn-mobile d-block d-md-none"
           >
             로그인
-          </button>
+          </RouterLink>
 
           <!-- ☰ 햄버거(모바일) -->
           <button
@@ -188,86 +166,139 @@
     </div>
 
     <!-- 📱 모바일 풀스크린 메뉴 (아코디언) -->
-    <div
-      v-if="showMenu"
-      class="mobile-menu-overlay d-lg-none"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div class="mobile-menu-header">
-        <span class="mobile-menu-title">전체 메뉴</span>
-        <button
-          class="mobile-menu-close"
-          @click="showMenu = false"
-          aria-label="메뉴 닫기"
-        >
-          ✕
-        </button>
-      </div>
-
-      <ul class="mobile-menu-list">
-        <li class="menu-group menu-single">
-          <RouterLink
-            to="/mypage"
-            class="single-link"
-            @click.native="showMenu = false"
-          >
-            <span class="single-left">
-              <span class="single-icon" aria-hidden="true"
-                ><i class="bi bi-person-circle"></i
-              ></span>
-              <span class="single-label">마이페이지</span>
-            </span>
-            <span class="chevron">›</span>
-          </RouterLink>
-        </li>
-        <li
-          v-for="(group, idx) in mobileMenuGroups"
-          :key="group.title"
-          class="menu-group"
-        >
+    <transition name="mobile-menu">
+      <div
+        v-if="showMenu"
+        class="mobile-menu-overlay d-lg-none"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="mobile-menu-header">
+          <span class="mobile-menu-title">전체 메뉴</span>
           <button
-            class="group-toggle"
-            @click="toggleGroup(idx)"
-            :aria-expanded="group.expanded.toString()"
+            class="mobile-menu-close"
+            @click="showMenu = false"
+            aria-label="메뉴 닫기"
           >
-            <span class="group-left">
-              <span
-                v-if="group.iconClass"
-                class="group-icon"
-                aria-hidden="true"
-              >
-                <i :class="group.iconClass"></i>
-              </span>
-              <span class="group-title">{{ group.title }}</span>
-              <span v-if="group.desc" class="group-desc">{{ group.desc }}</span>
-            </span>
-            <span class="chevron" :class="{ open: group.expanded }">▾</span>
+            ✕
           </button>
+        </div>
 
-          <transition name="accordion">
-            <ul v-show="group.expanded" class="submenu">
-              <li v-for="item in group.items" :key="item.to">
-                <RouterLink
-                  :to="item.to"
-                  class="submenu-link"
-                  @click.native="showMenu = false"
-                >
+        <ul class="mobile-menu-list">
+          <!-- 로그인한 사용자용 메뉴 -->
+          <template v-if="isLoggedIn">
+            <li class="menu-group menu-single">
+              <RouterLink
+                to="/mypage"
+                class="single-link"
+                @click.native="showMenu = false"
+              >
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-person-circle"></i
+                  ></span>
+                  <span class="single-label">마이페이지</span>
+                </span>
+                <span class="chevron">›</span>
+              </RouterLink>
+            </li>
+            <li
+              v-for="(group, idx) in mobileMenuGroups"
+              :key="group.title"
+              class="menu-group"
+            >
+              <button
+                class="group-toggle"
+                @click="toggleGroup(idx)"
+                :aria-expanded="group.expanded.toString()"
+              >
+                <span class="group-left">
                   <span
-                    v-if="item.iconClass"
-                    class="submenu-icon"
+                    v-if="group.iconClass"
+                    class="group-icon"
                     aria-hidden="true"
                   >
-                    <i :class="item.iconClass"></i>
+                    <i :class="group.iconClass"></i>
                   </span>
-                  <span class="submenu-label">{{ item.label }}</span>
-                </RouterLink>
-              </li>
-            </ul>
-          </transition>
-        </li>
-      </ul>
-    </div>
+                  <span class="group-title">{{ group.title }}</span>
+                  <span v-if="group.desc" class="group-desc">{{
+                    group.desc
+                  }}</span>
+                </span>
+                <span class="chevron" :class="{ open: group.expanded }">▾</span>
+              </button>
+
+              <transition name="accordion">
+                <ul v-show="group.expanded" class="submenu">
+                  <li v-for="item in group.items" :key="item.to">
+                    <RouterLink
+                      :to="item.to"
+                      class="submenu-link"
+                      @click.native="showMenu = false"
+                    >
+                      <span
+                        v-if="item.iconClass"
+                        class="submenu-icon"
+                        aria-hidden="true"
+                      >
+                        <i :class="item.iconClass"></i>
+                      </span>
+                      <span class="submenu-label">{{ item.label }}</span>
+                    </RouterLink>
+                  </li>
+                </ul>
+              </transition>
+            </li>
+
+            <!-- 로그아웃 버튼 -->
+            <li class="menu-group menu-single">
+              <button class="single-link logout-link" @click="handleLogout">
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-box-arrow-right"></i
+                  ></span>
+                  <span class="single-label">로그아웃</span>
+                </span>
+              </button>
+            </li>
+          </template>
+
+          <!-- 로그인하지 않은 사용자용 메뉴 -->
+          <template v-else>
+            <li class="menu-group menu-single">
+              <RouterLink
+                to="/login"
+                class="single-link"
+                @click.native="showMenu = false"
+              >
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-box-arrow-in-right"></i
+                  ></span>
+                  <span class="single-label">로그인</span>
+                </span>
+                <span class="chevron">›</span>
+              </RouterLink>
+            </li>
+            <li class="menu-group menu-single">
+              <RouterLink
+                to="/signup"
+                class="single-link"
+                @click.native="showMenu = false"
+              >
+                <span class="single-left">
+                  <span class="single-icon" aria-hidden="true"
+                    ><i class="bi bi-person-plus"></i
+                  ></span>
+                  <span class="single-label">회원가입</span>
+                </span>
+                <span class="chevron">›</span>
+              </RouterLink>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </transition>
   </header>
 </template>
 <script setup>
@@ -353,7 +384,7 @@ const mobileMenuGroups = ref([
     ],
   },
   {
-    title: '교육',
+    title: '금융 컨텐츠',
     desc: '퀴즈·콘텐츠 학습',
     iconClass: 'bi bi-mortarboard',
     expanded: false,
@@ -417,6 +448,13 @@ const handleAuthAction = () => {
   }
 };
 
+// 모바일 메뉴에서 로그아웃 처리
+const handleLogout = () => {
+  authStore.logout();
+  showMenu.value = false; // 메뉴 닫기
+  router.push('/');
+};
+
 // 프로필 이미지 로드 실패 시 기본 이미지로 대체
 const onImgError = (e) => {
   e.target.src = defaultUser;
@@ -441,35 +479,8 @@ const fetchMe = async () => {
   }
 };
 
-const showNoti = ref(false);
-const notifications = ref([
-  {
-    id: 1,
-    text: '새 카드 추천이 도착했어요!',
-    link: '/recommend',
-    read: false,
-  },
-  {
-    id: 2,
-    text: '이번 달 소비 리포트가 업데이트됐어요.',
-    link: '/history',
-    read: false,
-  },
-]);
-const unreadCount = computed(
-  () => notifications.value.filter((n) => !n.read).length
-);
-
-function toggleNoti() {
-  showNoti.value = !showNoti.value;
-}
-function markAsRead(id) {
-  const target = notifications.value.find((n) => n.id === id);
-  if (target) target.read = true;
-  showNoti.value = false;
-}
 function onKey(e) {
-  if (e.key === 'Escape') showNoti.value = false;
+  // Escape key handler can be used for other purposes if needed
 }
 
 onMounted(() => {
@@ -684,14 +695,13 @@ onUnmounted(() => {
   background: var(--color-light);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
-  font-weight: bold;
 }
 
 /* 액션 영역 */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 /* 알림 */
@@ -716,12 +726,49 @@ onUnmounted(() => {
   font-size: 0.85rem;
 }
 
-/* 프로필 */
+/* 프로필 섹션 */
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .profile-link {
   display: flex;
   align-items: center;
   border-radius: 50%;
   border: 1px solid var(--color-secondary-50);
+}
+
+/* 로그아웃 버튼 */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.logout-btn:hover {
+  background: var(--color-error-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-profile {
+  border-radius: 50%; /* 원형 */
 }
 
 /* 로그인/로그아웃 버튼(데스크탑) */
@@ -746,7 +793,78 @@ onUnmounted(() => {
   box-shadow: var(--shadow-md);
 }
 
-/* 로그인 버튼(모바일) */
+/* 로그인/회원가입 링크 버튼 스타일 */
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-link-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  border: 0.125rem solid;
+}
+
+.login-link-btn {
+  background: transparent;
+  border-color: var(--color-dark);
+  color: var(--color-dark);
+}
+
+.login-link-btn:hover {
+  background: var(--color-dark);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.signup-link-btn {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: var(--color-white);
+}
+
+.signup-link-btn:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+/* 모바일 로그인 버튼 스타일 */
+.auth-link-btn-mobile {
+  padding: 0.4rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  border: 0.125rem solid;
+}
+
+.login-link-btn-mobile {
+  background: transparent;
+  border-color: var(--color-dark);
+  color: var(--color-dark);
+}
+
+.login-link-btn-mobile:hover {
+  background: var(--color-dark);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 기존 로그인 버튼(모바일) - 사용하지 않음 */
 .login-btn {
   background: var(--color-white);
   border: 0.125rem solid var(--color-white);
@@ -763,7 +881,6 @@ onUnmounted(() => {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-dark);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -800,6 +917,23 @@ onUnmounted(() => {
     z-index: 1000;
     display: flex;
     flex-direction: column;
+  }
+
+  /* 모바일 메뉴 애니메이션 */
+  .mobile-menu-enter-active {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .mobile-menu-leave-active {
+    transition: transform 0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+  .mobile-menu-enter-from {
+    transform: translateX(100%);
+  }
+  .mobile-menu-leave-to {
+    transform: translateX(100%);
+  }
+  .mobile-menu-enter-to {
+    transform: translateX(0);
   }
   .mobile-menu-header {
     display: flex;
@@ -887,6 +1021,21 @@ onUnmounted(() => {
   }
   .single-link:hover {
     background: var(--color-light);
+  }
+
+  /* 로그아웃 버튼 스타일 */
+  .logout-link {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    color: var(--color-dark);
+    cursor: pointer;
+  }
+
+  .logout-link:hover {
+    background: var(--color-error-light);
+    color: var(--color-error-dark);
   }
   .chevron {
     transition: transform 0.2s ease;

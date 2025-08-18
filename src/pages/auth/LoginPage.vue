@@ -54,7 +54,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
@@ -65,6 +65,7 @@ const password = ref('');
 const keepLogin = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 const handleLogin = async () => {
   // 입력값 검증
@@ -95,11 +96,15 @@ const handleLogin = async () => {
     });
 
     alert(`${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`);
+    
+    // 로그인 후 리다이렉트 처리
+    const redirectPath = route.query.redirect || '/';
+    
     if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
       router.push('/persona/start');
     } else {
       window.dispatchEvent(new Event('app:login'));
-      router.push('/');
+      router.push(redirectPath);
     }
   } catch (err) {
     console.error('❌ 로그인 실패:', err);

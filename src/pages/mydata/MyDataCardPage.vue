@@ -1,15 +1,37 @@
 <template>
   <div class="card-recommendations">
     <main class="main-content">
-      <h2 class="page-title">마이데이터 기반 카드 추천</h2>
+      <h2 class="page-title">맞춤 카드</h2>
 
       <!-- 카드 연동 버튼 -->
-      <div class="sync-section" v-if="!cards.length && !isLoading">
-        <div class="sync-info">
-          <p>CODEF를 통해 KB카드 정보를 연동하세요</p>
-          <BaseButton variant="primary" @click="showSyncModal = true">
-            카드 연동하기
-          </BaseButton>
+      <div
+        class="sync-section"
+        v-if="!cards.length && !isLoading"
+        @click="showSyncModal = true"
+      >
+        <div class="sync-container">
+          <div class="icon-container">
+            <div class="card-sync-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="sync-card-icon"
+              >
+                <path
+                  d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+                />
+                <path d="M6 10h2v2H6zm3 0h5v2H9z" />
+              </svg>
+            </div>
+          </div>
+          <div class="sync-content">
+            <div class="sync-title">내 카드 정보 불러오기</div>
+            <div class="sync-info">
+              CODEF를 통해 카드 정보를 연동하여<br />
+              맞춤 추천을 받아보세요!
+            </div>
+          </div>
         </div>
       </div>
 
@@ -491,37 +513,25 @@
                   </div>
                 </div>
 
-                <!-- 페이지네이션 -->
-                <div class="pagination" v-if="getTotalPages() > 1">
-                  <button
-                    @click="changePage(currentPage - 1)"
-                    :disabled="currentPage <= 1"
-                    class="page-btn"
-                  >
-                    <i class="bi bi-chevron-left"></i>
-                  </button>
-                  <span class="page-info">
-                    {{ currentPage }} / {{ getTotalPages() }}
-                  </span>
-                  <button
-                    @click="changePage(currentPage + 1)"
-                    :disabled="currentPage >= getTotalPages()"
-                    class="page-btn"
-                  >
-                    <i class="bi bi-chevron-right"></i>
-                  </button>
+                <!-- 무한 스크롤 로딩 상태 -->
+                <div v-if="isLoadingMore" class="infinite-scroll-loading">
+                  <BaseSpinner size="sm" color="accent" />
+                  <p>더 많은 거래내역을 불러오는 중...</p>
                 </div>
-
-                <!-- 액션 버튼 -->
-                <div class="transaction-actions">
-                  <BaseButton variant="outline" @click="exportTransactions">
-                    <i class="bi bi-download"></i>
-                    거래내역 내보내기
-                  </BaseButton>
-                  <BaseButton variant="outline" @click="syncTransactions">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    새로고침
-                  </BaseButton>
+                <!-- 모든 데이터 로드 완료 -->
+                <div
+                  v-else-if="
+                    !hasMoreTransactions && displayedTransactions.length > 0
+                  "
+                  class="load-complete"
+                >
+                  <div class="complete-message">
+                    <i class="bi bi-check-circle"></i>
+                    <p>모든 거래내역을 불러왔습니다</p>
+                    <span class="total-count"
+                      >총 {{ displayedTransactions.length }}건</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
@@ -532,54 +542,69 @@
       <!-- 카드는 있지만 거래내역이 없을 때: 소비 패턴 기반 카드 추천 안내 -->
       <div
         v-else-if="cards.length > 0 && syncedTransactions.length === 0"
-        class="recommendation-guide card"
+        class="recommendation-guide"
       >
-        <div class="guide-content">
-          <div class="guide-icon">
-            <i class="icon-chart"></i>
-          </div>
-          <h3 class="guide-title">소비 패턴을 통해 카드를 추천받으세요</h3>
-          <p class="guide-description">
-            거래내역을 연동하시면 개인화된 카드 추천과 소비 분석을
-            제공해드립니다.
-          </p>
-          <div class="guide-actions">
-            <BaseButton
-              v-if="cards.length > 0"
-              variant="outline"
-              full-width
-              @click="
-                showTransactionModal = true;
-                selectedCard = cards[0];
-              "
-            >
-              <i class="icon-sync"></i>
-              거래내역 연동하기
-            </BaseButton>
-          </div>
-        </div>
+        <!-- 메인 안내 섹션 -->
+        <div class="guide-hero card">
+          <div class="guide-content">
+            <div class="guide-header">
+              <div class="guide-icon-wrapper">
+                <div class="guide-icon">
+                  <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="guide-badge badge badge-accent">
+                  <i class="bi bi-stars"></i>
+                  맞춤 추천
+                </div>
+              </div>
+              <h2 class="guide-title">소비 패턴 기반<br />맞춤 카드 추천</h2>
+              <p class="guide-description">
+                거래내역을 연동하시면
+                <strong>맞추머니가 분석한 개인화된 카드 추천</strong>과
+                <strong>상세한 소비 분석 리포트</strong>를 받아보실 수 있습니다.
+              </p>
+            </div>
 
-        <!-- 추천 프로세스 설명 -->
-        <div class="process-steps">
-          <div class="step-item">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h4>거래내역 연동</h4>
-              <p>안전한 마이데이터를 통해 거래내역을 불러옵니다</p>
+            <div class="guide-stats">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-number">100%</span>
+                  <span class="stat-label">안전한 연동</span>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="bi bi-lightning"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-number">3초</span>
+                  <span class="stat-label">빠른 분석</span>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="bi bi-trophy"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-number">TOP 5</span>
+                  <span class="stat-label">추천 카드</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="step-item">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h4>소비 패턴 분석</h4>
-              <p>맞추머니가 고객님의 소비 패턴을 자동으로 분석합니다</p>
-            </div>
-          </div>
-          <div class="step-item">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h4>맞춤 카드 추천</h4>
-              <p>소비 패턴에 최적화된 카드를 추천해드립니다</p>
+
+            <div class="guide-actions">
+              <BaseButton
+                v-if="cards.length > 0"
+                variant="primary"
+                class="cta-button"
+                @click="handleKbLogin"
+              >
+                <i class="bi bi-arrow-right-circle"></i>
+                거래내역 연동하고 추천받기
+              </BaseButton>
             </div>
           </div>
         </div>
@@ -608,17 +633,33 @@
     />
 
     <!-- 거래내역 상세 모달 -->
+    <!-- TODO: TransactionDetailModal 컴포넌트 구현 필요 -->
+    <!--
     <TransactionDetailModal
       :isVisible="showTransactionDetails"
       :transactions="syncedTransactions"
       :cardInfo="selectedSyncedCard"
       @close="showTransactionDetails = false"
     />
+    -->
   </div>
+
+  <!-- 로딩 모달 (화면 하단 중앙) -->
+  <teleport to="body">
+    <template v-if="isAnyLoading">
+      <transition name="loading-modal" appear>
+        <div class="loading-modal" role="status" aria-live="polite">
+          <span class="loading-text">
+            {{ loadingMessage }}<span class="loading-dots"></span>
+          </span>
+        </div>
+      </transition>
+    </template>
+  </teleport>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import DefaultLayout from '@/components/layouts/DefaultLayout.vue';
@@ -646,6 +687,59 @@ const showTransactionDetails = ref(false);
 const activeTab = ref('recommendations'); // 'recommendations', 'statistics', 'transactions'
 const currentCardBenefits = ref(null); // 현재 카드의 혜택 정보
 const cardTransactionsMap = ref({}); // 카드별 거래내역 매핑
+
+// ✅ 공통 로딩 배너 노출용 상태
+const globalLoading = ref(false); // (필요 시 수동으로 true/false 제어할 때 사용)
+
+const isAnyLoading = computed(() => {
+  return (
+    isLoading.value || // 카드 목록 로딩
+    isLoadingTransactions.value || // 거래내역 로딩
+    isLoadingMore.value || // 무한 스크롤 추가 로딩
+    globalLoading.value // 필요 시 수동 제어
+  );
+});
+
+const loadingMessage = computed(() => {
+  if (isLoading.value) return '💳 카드 정보를 불러오는 중입니다';
+  if (isLoadingTransactions.value) return '📊 거래내역을 분석하고 있습니다';
+  if (isLoadingMore.value) return '📈 추가 거래내역을 가져오는 중';
+  if (globalLoading.value) return '⚡ 데이터를 처리하고 있습니다';
+  return '';
+});
+
+// 👉 (선택) 긴 작업에서 단계별로 메시지를 잠깐 바꾸고 싶다면 helper 사용
+const withProgress = async (message, taskFn) => {
+  try {
+    globalLoading.value = true;
+    if (message) console.log('⏳', message);
+    return await taskFn();
+  } finally {
+    globalLoading.value = false;
+  }
+};
+
+// 프로세스 스텝 데이터
+const processSteps = ref([
+  {
+    title: '거래내역 연동',
+    description: '안전한 마이데이터를 통해 거래내역을 불러옵니다',
+    icon: 'bi bi-link-45deg',
+    features: ['마이데이터 연동', '실시간 동기화', '보안 인증'],
+  },
+  {
+    title: '소비 패턴 분석',
+    description: '맞추머니가 고객님의 소비 패턴을 자동으로 분석합니다',
+    icon: 'bi bi-graph-up-arrow',
+    features: ['스마트 분석', '카테고리 분류', '소비 트렌드'],
+  },
+  {
+    title: '맞춤 카드 추천',
+    description: '소비 패턴에 최적화된 카드를 추천해드립니다',
+    icon: 'bi bi-award',
+    features: ['개인화 추천', '혜택 비교', '절약 효과'],
+  },
+]);
 
 // 분석 기간 상수
 const ANALYSIS_PERIOD_DAYS = 30;
@@ -681,17 +775,22 @@ const statisticsMonthFilter = ref('');
 const categoryFilter = ref('');
 const amountFilter = ref('');
 const sortBy = ref('date');
-const currentPage = ref(1);
-const itemsPerPage = 10;
+// 무한 스크롤을 위한 변수들
+const displayedTransactions = ref([]);
+const currentPage = ref(0); // 0부터 시작하도록 변경
+const itemsPerPage = 6; // 6개씩 표시
+const isLoadingMore = ref(false);
+const hasMoreTransactions = ref(true);
+const totalTransactionCount = ref(0);
 
 const userId = computed(() => authStore.getUserId());
 
 // 카드 목록 조회
 const fetchCards = async () => {
+  // 로그인하지 않은 사용자의 경우 카드 목록을 빈 배열로 설정
   if (!userId.value) {
-    console.error('사용자 ID가 없습니다. 로그인이 필요합니다.');
-    alert('로그인이 필요합니다.');
-    router.push('/login');
+    console.log('🔓 로그인하지 않은 사용자 - KB카드 추천만 표시');
+    cards.value = [];
     return;
   }
 
@@ -774,17 +873,24 @@ const loadExistingTransactions = async (card) => {
       syncedTransactions.value = response.result;
       selectedSyncedCard.value = card;
 
+      // 무한 스크롤 초기화 - 처음 6개만 표시
+      displayedTransactions.value = response.result.slice(0, itemsPerPage);
+      currentPage.value = 0;
+      hasMoreTransactions.value = response.result.length > itemsPerPage;
+
       // 카드별 거래내역 매핑 업데이트
       const cardKey = card.holdingId || card.cardId;
       cardTransactionsMap.value[cardKey] = response.result;
 
-      // console.log(
-      //   `💡 ${card.cardName} 카드의 ${response.result.length}건 거래내역을 로드했습니다.`
-      // );
+      console.log(
+        `💡 ${card.cardName} 카드의 ${response.result.length}건 거래내역 중 ${itemsPerPage}개를 초기 로드했습니다.`
+      );
     } else {
       console.log(`💡 ${card.cardName} 카드의 저장된 거래내역이 없습니다.`);
       syncedTransactions.value = [];
       selectedSyncedCard.value = null;
+      displayedTransactions.value = [];
+      hasMoreTransactions.value = false;
 
       // 카드별 거래내역 매핑에서 제거
       const cardKey = card.holdingId || card.cardId;
@@ -807,6 +913,8 @@ const loadExistingTransactions = async (card) => {
     // 에러 발생 시 빈 상태로 초기화
     syncedTransactions.value = [];
     selectedSyncedCard.value = null;
+    displayedTransactions.value = [];
+    hasMoreTransactions.value = false;
   } finally {
     isLoadingTransactions.value = false;
   }
@@ -819,6 +927,18 @@ const handleCardSync = async (syncData) => {
     router.push('/login');
     return;
   }
+
+  await withProgress('카드 동기화 중...', async () => {
+    const requestData = {
+      userId: parseInt(userId.value),
+      cardId: syncData.cardId,
+      cardPw: syncData.cardPw,
+    };
+    const response = await cardsApi.syncKbCards(requestData);
+    alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
+    showSyncModal.value = false;
+    await fetchCards(); // 이때 상단 배너가 "카드 정보를 불러오는 중..." 으로 자동 전환됨
+  });
 
   try {
     const requestData = {
@@ -863,7 +983,16 @@ const handleCardSync = async (syncData) => {
 
 // 카드 슬라이더에서 카드 변경 시 거래내역 및 카드 혜택 조회
 const handleCardChange = async (card) => {
-  // console.log("🔄 카드 변경:", card.cardName);
+  // console.log("🔄 카드 변경:", card?.cardName);
+
+  // 카드가 null인 경우 (마지막 슬라이드 - ActionCardSlide) 상태 초기화
+  if (!card) {
+    syncedTransactions.value = [];
+    selectedSyncedCard.value = null;
+    currentCardBenefits.value = null;
+    return;
+  }
+
   await Promise.all([
     loadExistingTransactions(card),
     loadCurrentCardBenefits(card),
@@ -883,11 +1012,56 @@ const handleRegisterTransactions = (card) => {
   showTransactionModal.value = true;
 };
 
-// 거래내역 업데이트 핸들러
-const handleUpdateTransactions = (card) => {
+// 거래내역 업데이트 핸들러 (모달창 없이 바로 실행)
+const handleUpdateTransactions = async (card) => {
   console.log('🔄 거래내역 업데이트:', card.cardName);
-  selectedCard.value = card;
-  showTransactionModal.value = true;
+
+  if (!userId.value) {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    isLoadingTransactions.value = true;
+    console.log('⏳ 거래내역 업데이트 중...');
+
+    console.log('🔄 connectedId 기반 거래내역 업데이트 시작:', userId.value);
+    const response = await cardsApi.refreshTransactionsByConnectedId(
+      userId.value
+    );
+
+    console.log('✅ 거래내역 업데이트 완료:', response);
+
+    // 업데이트 완료 후 현재 카드의 거래내역 다시 로드
+    await loadExistingTransactions(card);
+
+    alert(`${response.message || '거래내역이 업데이트되었습니다.'}`);
+  } catch (error) {
+    console.error('❌ 거래내역 업데이트 실패:', error);
+
+    if (error.response?.status === 401) {
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      authStore.logout();
+      router.push('/login');
+    } else if (error.response?.status === 400) {
+      alert(
+        'connectedId가 없거나 카드 정보가 올바르지 않습니다. 카드를 다시 등록해주세요.'
+      );
+    } else if (error.response?.status === 404) {
+      alert('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.');
+    } else if (error.response?.status === 500) {
+      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } else {
+      alert(
+        `거래내역 업데이트에 실패했습니다: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  } finally {
+    isLoadingTransactions.value = false;
+  }
 };
 
 // 날짜 포맷팅 함수
@@ -921,6 +1095,12 @@ const getAmountClass = (amount) => {
 // 탭 변경 처리
 const changeTab = (tabName) => {
   activeTab.value = tabName;
+};
+
+// KB카드 로그인 처리
+const handleKbLogin = () => {
+  // KB카드 동기화 모달창 표시
+  showSyncModal.value = true;
 };
 
 // 카드 추천 섹션에서 거래내역 동기화 요청 처리
@@ -1409,16 +1589,99 @@ const getFilteredAverage = () => {
   return filtered.length > 0 ? Math.round(total / filtered.length) : 0;
 };
 
-const getPaginatedTransactions = () => {
-  const filtered = getAllFilteredTransactions(); // 거래내역 탭에서는 전체 데이터 사용
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filtered.slice(start, end);
+// 무한 스크롤용 - 표시할 거래내역 초기화 (필터 적용 시)
+const initializeDisplayedTransactions = () => {
+  // 필터가 적용된 경우에만 클라이언트 사이드 필터링 수행
+  const hasFilters =
+    searchQuery.value ||
+    monthFilter.value ||
+    categoryFilter.value ||
+    amountFilter.value;
+
+  if (hasFilters) {
+    // 필터가 있으면 클라이언트 사이드 필터링
+    const filtered = getAllFilteredTransactions();
+    const initialLoad = filtered.slice(0, itemsPerPage);
+    displayedTransactions.value = initialLoad;
+    currentPage.value = 0;
+    hasMoreTransactions.value = filtered.length > itemsPerPage;
+  } else {
+    // 필터가 없으면 처음 6개만 표시하도록 초기화
+    const initialLoad = syncedTransactions.value.slice(0, itemsPerPage);
+    displayedTransactions.value = initialLoad;
+    currentPage.value = 0;
+    hasMoreTransactions.value = syncedTransactions.value.length > itemsPerPage;
+  }
 };
 
-const getTotalPages = () => {
-  return Math.ceil(getAllFilteredTransactions().length / itemsPerPage); // 거래내역 탭에서는 전체 데이터 사용
+// 무한 스크롤용 - 더 많은 거래내역 로드 (실제 API 호출 또는 클라이언트 필터링)
+const loadMoreTransactions = async () => {
+  if (isLoadingMore.value || !hasMoreTransactions.value) return;
+
+  isLoadingMore.value = true;
+
+  try {
+    const hasFilters =
+      searchQuery.value ||
+      monthFilter.value ||
+      categoryFilter.value ||
+      amountFilter.value;
+
+    if (hasFilters) {
+      // 필터가 적용된 경우: 클라이언트 사이드 페이징
+      setTimeout(() => {
+        const filtered = getAllFilteredTransactions();
+        const nextPage = currentPage.value + 1;
+        const start = nextPage * itemsPerPage;
+        const end = start + itemsPerPage;
+        const newTransactions = filtered.slice(start, end);
+
+        displayedTransactions.value.push(...newTransactions);
+        currentPage.value = nextPage;
+        hasMoreTransactions.value = end < filtered.length;
+        isLoadingMore.value = false;
+      }, 500);
+    } else {
+      // 필터가 없는 경우: 클라이언트 사이드 페이징 (전체 거래내역에서)
+      setTimeout(() => {
+        const sourceData = syncedTransactions.value;
+        const nextPage = currentPage.value + 1;
+        const start = nextPage * itemsPerPage;
+        const end = start + itemsPerPage;
+        const newTransactions = sourceData.slice(start, end);
+
+        if (newTransactions.length > 0) {
+          displayedTransactions.value.push(...newTransactions);
+          currentPage.value = nextPage;
+          hasMoreTransactions.value = end < sourceData.length;
+
+          console.log(
+            `💡 ${
+              newTransactions.length
+            }건의 추가 거래내역을 로드했습니다. (페이지: ${nextPage + 1}, 총: ${
+              displayedTransactions.value.length
+            }/${sourceData.length})`
+          );
+        } else {
+          hasMoreTransactions.value = false;
+          console.log('💡 더 이상 로드할 거래내역이 없습니다.');
+        }
+
+        isLoadingMore.value = false;
+      }, 500);
+    }
+  } catch (error) {
+    console.error('❌ 추가 거래내역 로드 실패:', error);
+    hasMoreTransactions.value = false;
+    isLoadingMore.value = false;
+  }
 };
+
+const getPaginatedTransactions = () => {
+  return displayedTransactions.value;
+};
+
+// getTotalPages 함수는 더 이상 필요하지 않음 (무한 스크롤 사용)
 
 // 거래내역 탭용 - 전체 데이터 기준 통계
 const getAllTransactionCount = () => {
@@ -1439,14 +1702,10 @@ const getAllFilteredAverage = () => {
 
 const changeSortOrder = (newSortBy) => {
   sortBy.value = newSortBy;
-  currentPage.value = 1;
+  initializeDisplayedTransactions();
 };
 
-const changePage = (newPage) => {
-  if (newPage >= 1 && newPage <= getTotalPages()) {
-    currentPage.value = newPage;
-  }
-};
+// changePage 함수는 더 이상 필요하지 않음 (무한 스크롤 사용)
 
 const formatTime = (dateString) => {
   if (!dateString) return '';
@@ -1555,10 +1814,54 @@ const exportTransactions = () => {
   downloadCSV(filename, csv);
 };
 
-const syncTransactions = () => {
-  // 거래내역 새로고침 로직
-  if (selectedSyncedCard.value) {
-    loadExistingTransactions(selectedSyncedCard.value);
+const syncTransactions = async () => {
+  // connectedId 기반 거래내역 업데이트 (모달창 없이 바로 실행)
+  if (!userId.value) {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    isLoadingTransactions.value = true;
+
+    console.log('🔄 거래내역 업데이트 시작:', userId.value);
+    const response = await cardsApi.refreshTransactionsByConnectedId(
+      userId.value
+    );
+
+    console.log('✅ 거래내역 업데이트 완료:', response);
+
+    // 업데이트 완료 후 기존 거래내역 다시 로드
+    if (selectedSyncedCard.value) {
+      await loadExistingTransactions(selectedSyncedCard.value);
+    }
+
+    alert(`${response.message || '거래내역이 업데이트되었습니다.'}`);
+  } catch (error) {
+    console.error('❌ 거래내역 업데이트 실패:', error);
+
+    if (error.response?.status === 401) {
+      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      authStore.logout();
+      router.push('/login');
+    } else if (error.response?.status === 400) {
+      alert(
+        'connectedId가 없거나 카드 정보가 올바르지 않습니다. 카드를 다시 등록해주세요.'
+      );
+    } else if (error.response?.status === 404) {
+      alert('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.');
+    } else if (error.response?.status === 500) {
+      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } else {
+      alert(
+        `거래내역 업데이트에 실패했습니다: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  } finally {
+    isLoadingTransactions.value = false;
   }
 };
 
@@ -1575,8 +1878,44 @@ const getCurrentCardBenefit = () => {
   return 0;
 };
 
+// 무한 스크롤 이벤트 핸들러
+const handleScroll = () => {
+  // 거래내역 탭에서만 무한 스크롤 동작
+  if (activeTab.value !== 'transactions') return;
+
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  if (scrollTop + clientHeight >= scrollHeight - 5) {
+    loadMoreTransactions();
+  }
+};
+
+// 필터 변경 시 거래내역 초기화
+watch(
+  [searchQuery, monthFilter, categoryFilter, amountFilter],
+  () => {
+    initializeDisplayedTransactions();
+  },
+  { deep: true }
+);
+
+// 거래내역 데이터가 변경될 때마다 초기화
+watch(
+  syncedTransactions,
+  () => {
+    initializeDisplayedTransactions();
+  },
+  { deep: true }
+);
+
 onMounted(() => {
   fetchCards();
+  // 스크롤 이벤트 리스너 추가
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  // 스크롤 이벤트 리스너 제거
+  window.removeEventListener('scroll', handleScroll);
 });
 </script>
 
@@ -1587,6 +1926,80 @@ onMounted(() => {
   width: 100%;
   min-height: 100vh;
   padding: var(--spacing-lg);
+}
+
+/* 로딩 모달 스타일 - 비교함과 동일한 위치 */
+.loading-modal {
+  position: fixed;
+  left: 50%;
+  bottom: 2%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--color-accent);
+  color: var(--color-white);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--spacing-3xl);
+  box-shadow: var(--shadow-modal);
+  z-index: 2147483647;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  border: 0;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out,
+    opacity 0.2s ease-out;
+}
+
+.loading-text {
+  font-size: var(--font-size-base);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+/* 점 애니메이션 */
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+  100% {
+    content: '';
+  }
+}
+
+/* 로딩 모달 트랜지션 */
+.loading-modal-enter-active,
+.loading-modal-leave-active {
+  transition: opacity 0.22s ease-out, transform 0.22s ease-out;
+}
+
+.loading-modal-enter-from,
+.loading-modal-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px) scale(0.96);
+}
+
+.loading-modal-enter-to,
+.loading-modal-leave-from {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
 .main-content {
@@ -1602,14 +2015,62 @@ onMounted(() => {
   margin-bottom: var(--spacing-2xl);
 }
 
-/* 연동 섹션 - main.css card 클래스 사용 */
+.sync-container {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+/* 연동 섹션 - SavingReloadCard 스타일 적용 */
 .sync-section {
-  text-align: center;
-  padding: var(--spacing-2xl) var(--spacing-lg);
-  background: var(--color-light);
-  border-radius: 16px;
+  background-color: var(--color-light);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--spacing-lg);
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
   margin-bottom: var(--spacing-2xl);
-  border: 1px solid var(--border-light);
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24%;
+  max-width: 200px;
+  max-height: 100px;
+}
+
+.card-sync-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sync-card-icon {
+  width: 60px;
+  height: 60px;
+  color: var(--color-dark);
+}
+
+.sync-content {
+  flex: 1;
+}
+
+.sync-title {
+  font-weight: bold;
+  font-size: var(--font-size-2xl);
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.sync-info {
+  font-size: var(--font-size-base);
+  color: var(--color-title);
+  line-height: 1.5;
 }
 
 /* 카드 슬라이더 */
@@ -1728,109 +2189,156 @@ onMounted(() => {
   color: var(--color-error, #dc2626);
 }
 
-/* 추천 안내 섹션 - card 클래스와 gradient 결합 */
+/* 새로운 추천 안내 섹션 */
 .recommendation-guide {
+  margin-bottom: var(--spacing-3xl);
+}
+
+/* 메인 히어로 섹션 */
+.guide-hero {
   background: var(--color-primary);
-  color: var(--color-black);
-  text-align: center;
+  border: 1px solid var(--color-accent-30);
+  box-shadow: var(--shadow-md);
   margin-bottom: var(--spacing-2xl);
-  border: 1px solid var(--color-dark-20);
+  border-radius: 16px;
+  padding: var(--spacing-2xl);
 }
 
 .guide-content {
-  margin-bottom: var(--spacing-2xl, 40px);
+  text-align: center;
+}
+
+.guide-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.guide-icon-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  position: relative;
 }
 
 .guide-icon {
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.2);
+  width: 100px;
+  height: 100px;
+  background: var(--color-accent);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto var(--spacing-lg, 24px);
-  font-size: 2.5rem;
-  backdrop-filter: blur(10px);
+  font-size: 3rem;
+  color: white;
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-md);
 }
 
-.guide-icon .icon-chart::before {
-  content: '📊';
+.guide-badge {
+  position: absolute;
+  top: -8px;
+  right: -20px;
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-dark);
+}
+.guide-badge i {
+  color: var(--color-dark);
 }
 
 .guide-title {
-  font-size: var(--font-size-2xl, 24px);
-  font-weight: 700;
-  margin-bottom: var(--spacing-md, 16px);
-  color: var(--color-black);
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .guide-description {
-  font-size: var(--font-size-lg, 18px);
-  color: var(--color-black);
-  line-height: 1.6;
-  margin-bottom: var(--spacing-xl, 30px);
-  max-width: 500px;
+  font-size: var(--font-size-lg);
+  color: var(--color-dark);
+  line-height: 1.7;
+  margin-bottom: var(--spacing-xl);
+  max-width: 600px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.guide-actions {
-  margin-bottom: var(--spacing-xl, 30px);
-}
-
-.sync-transaction-btn .icon-sync::before {
-  content: '🔄';
-  margin-right: var(--spacing-xs, 8px);
-}
-
-.process-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg, 24px);
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.step-item {
-  border-radius: 16px;
-  padding: var(--spacing-lg, 24px);
-  text-align: center;
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--color-black);
-  transition: transform 0.3s ease;
-}
-
-.step-item:hover {
-  transform: translateY(-4px);
-}
-
-.step-number {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto var(--spacing-md, 16px);
-  font-size: var(--font-size-lg, 18px);
+.guide-description strong {
+  color: var(--color-accent);
   font-weight: 700;
-  color: var(--color-black);
 }
 
-.step-content h4 {
-  font-size: var(--font-size-lg, 18px);
-  font-weight: 600;
-  color: var(--color-black);
-  margin-bottom: var(--spacing-xs, 8px);
+/* 통계 카드 섹션 */
+.guide-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.step-content p {
-  font-size: var(--font-size-base, 16px);
-  color: var(--color-black);
-  line-height: 1.5;
-  margin: 0;
+.stat-item {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: var(--spacing-lg);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-icon {
+  font-size: var(--font-size-lg);
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-sm);
+}
+
+.stat-content {
+  display: flex;
+  text-align: left;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.stat-number {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--color-dark);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-dark);
+  font-weight: 500;
+}
+
+/* CTA 버튼 */
+.guide-actions {
+  text-align: center;
+}
+
+.cta-button {
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  background: var(--color-accent);
+  border: none;
+  color: white;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-dark);
 }
 
 /* 거래내역 콘텐츠 전체 */
@@ -1979,15 +2487,16 @@ onMounted(() => {
 
 .summary-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .summary-header h3 {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--text-primary);
@@ -1997,18 +2506,18 @@ onMounted(() => {
 .analysis-period {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   background: var(--bg-light);
-  padding: 4px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 6px;
 }
 
 .quick-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xs);
 }
 
 .stat-item {
@@ -2031,7 +2540,7 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -2120,7 +2629,7 @@ onMounted(() => {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xs);
 }
 
 .summary-item {
@@ -2133,7 +2642,7 @@ onMounted(() => {
 }
 
 .summary-icon {
-  font-size: 32px;
+  font-size: var(--font-size-2xl);
 }
 
 .summary-data {
@@ -2332,12 +2841,13 @@ onMounted(() => {
 }
 
 .filter-select {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--border-light);
   border-radius: 6px;
   font-size: var(--font-size-sm);
   background: var(--bg-light);
   min-width: 120px;
+  height: 32px;
 }
 
 .filter-select:focus {
@@ -2356,7 +2866,7 @@ onMounted(() => {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
+  gap: var(--spacing-xs);
 }
 
 .stat-card {
@@ -2564,8 +3074,37 @@ onMounted(() => {
   }
 
   .sync-section {
-    padding: var(--spacing-xl) var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-md);
     margin-bottom: var(--spacing-xl);
+    /* 반응형에서도 가로 배치 유지 */
+    flex-direction: row;
+    gap: var(--spacing-sm);
+  }
+
+  .icon-container {
+    width: 20%;
+    max-width: 70px;
+    max-height: 50px;
+    flex-shrink: 0; /* 아이콘 크기 고정 */
+  }
+
+  .sync-card-icon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .sync-content {
+    flex: 1;
+    min-width: 0; /* 텍스트 overflow 방지 */
+  }
+
+  .sync-title {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .sync-info {
+    font-size: var(--font-size-sm);
   }
 
   .card-slider {
@@ -2590,7 +3129,7 @@ onMounted(() => {
   }
 
   .section-header h3 {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
   }
 
   .transactions-section {
@@ -2656,6 +3195,94 @@ onMounted(() => {
     padding: var(--spacing-md);
   }
 
+  /* 새로운 추천 안내 섹션 모바일 스타일 */
+  .recommendation-guide {
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .guide-hero {
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    border-radius: 12px;
+  }
+
+  .guide-header {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .guide-icon-wrapper {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .guide-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .guide-badge {
+    top: -6px;
+    right: -15px;
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .guide-title {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-md);
+    line-height: 1.3;
+  }
+
+  .guide-description {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-lg);
+    padding: 0 var(--spacing-md);
+  }
+
+  .guide-stats {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    max-width: 100%;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: var(--spacing-md);
+    background-color: var(--color-white);
+    border-radius: 12px;
+  }
+
+  .stat-icon {
+    margin-right: var(--spacing-md);
+    margin-bottom: 0;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .stat-content {
+    flex: 1;
+  }
+
+  .stat-number {
+    font-size: var(--font-size-lg);
+  }
+
+  .stat-label {
+    font-size: var(--font-size-base);
+  }
+
+  .cta-button {
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: var(--font-size-base);
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
   /* 탭 버튼 모바일 스타일 */
   .tab-buttons {
     margin-bottom: var(--spacing-lg);
@@ -2698,12 +3325,27 @@ onMounted(() => {
     min-width: auto;
   }
 
+  .search-input {
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) 44px;
+    font-size: var(--font-size-lg);
+    min-height: 48px;
+  }
+
+  .search-box i {
+    left: var(--spacing-lg);
+    font-size: var(--font-size-lg);
+  }
+
   .filter-buttons {
     justify-content: stretch;
   }
 
   .filter-select {
     flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+    height: 38px;
+    min-height: auto;
   }
 
   .stats-grid {
@@ -2727,6 +3369,75 @@ onMounted(() => {
 
   .transaction-actions {
     flex-direction: column;
+  }
+}
+
+/* 무한 스크롤 스타일 */
+.infinite-scroll-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+
+.infinite-scroll-loading p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.load-complete {
+  text-align: center;
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  border-top: 1px solid var(--border-light);
+}
+
+.complete-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.complete-message i {
+  font-size: var(--font-size-xl);
+  color: var(--color-success);
+}
+
+.complete-message p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.complete-message .total-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-light);
+}
+
+.load-complete p {
+  margin: 0;
+}
+
+/* 태블릿용 미디어 쿼리 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .guide-stats {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 700px;
+  }
+
+  .stat-item {
+    padding: var(--spacing-md);
+  }
+
+  .guide-title {
+    font-size: var(--font-size-3xl);
   }
 }
 </style>

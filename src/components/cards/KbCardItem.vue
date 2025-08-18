@@ -22,7 +22,9 @@
           <div class="card-header">
             <h4 class="card-name">{{ card.name }}</h4>
             <div class="card-badges">
-              <span :class="getCardTypeBadgeClass(card.type)">{{ formatCardType(card.type) }}</span>
+              <span :class="getCardTypeBadgeClass(card.type)">{{
+                formatCardType(card.type)
+              }}</span>
               <span v-if="card.issuer" class="issuer-badge">{{
                 card.issuer
               }}</span>
@@ -34,7 +36,10 @@
             <div class="fee-info">
               <span class="fee-label">연회비</span>
               <div class="fee-details">
-                <span class="fee-amount" v-html="formatAnnualFee(card.annualFee)"></span>
+                <span
+                  class="fee-amount"
+                  v-html="formatAnnualFee(card.annualFee)"
+                ></span>
               </div>
             </div>
             <div v-if="card.preMonthMoney > 0" class="condition-info">
@@ -75,8 +80,8 @@
 </template>
 
 <script setup>
-import BaseCardGrey from "@/components/base/BaseCardGrey.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
+import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
 
 const props = defineProps({
   card: {
@@ -85,20 +90,20 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["apply"]);
+const emit = defineEmits(['apply']);
 
 // 이미지 에러 핸들링
 const handleImageError = (event) => {
-  event.target.style.display = "none";
+  event.target.style.display = 'none';
   if (event.target.nextElementSibling) {
-    event.target.nextElementSibling.style.display = "flex";
+    event.target.nextElementSibling.style.display = 'flex';
   }
 };
 
 // 카드 타입 포맷팅
 const formatCardType = (type) => {
   if (!type) return '카드';
-  
+
   switch (type.toLowerCase()) {
     case 'credit':
     case '신용':
@@ -122,7 +127,7 @@ const formatCardType = (type) => {
 const getCardTypeBadgeClass = (type) => {
   const baseClass = 'card-type-badge';
   if (!type) return baseClass;
-  
+
   switch (type.toLowerCase()) {
     case 'credit':
     case '신용':
@@ -144,34 +149,68 @@ const getCardTypeBadgeClass = (type) => {
 
 // 연회비 포맷팅 개선
 const formatAnnualFee = (fee) => {
-  if (!fee || fee === "0" || fee === "무료") {
-    return "무료";
+  if (!fee || fee === '0' || fee === '무료') {
+    return '무료';
   }
 
-  const feeStr = fee.toString().trim();
-  
+  // 불필요한 문자들 제거 (대괄호, 중괄호, 특수문자 등)
+  let feeStr = fee
+    .toString()
+    .trim()
+    .replace(/[\[\]{}|ㅇ]/g, '') // 대괄호, 중괄호, |, ㅇ 제거
+    .replace(/\s+/g, ' ') // 중복 공백 제거
+    .trim();
+
+  // 숫자 뒤에 0이 빠진 경우 수정 (예: 15,0원 → 15,000원)
+  feeStr = feeStr.replace(/(\d+),0원/g, (match, number) => {
+    // 15,0 같은 형태를 15,000으로 변환
+    return `${number},000원`;
+  });
+
+  // 맨 뒤에 불필요하게 남은 금액 제거 (예: "국내전용 15,000원 / 해외겸용 15,000원 20,000원" 에서 마지막 20,000원 제거)
+  // 이미 두 개의 금액이 있는 경우 세 번째 금액은 제거
+  const amountMatches = feeStr.match(/\d{1,3}(?:,\d{3})*원/g);
+  if (amountMatches && amountMatches.length > 2) {
+    // 마지막 금액을 제거
+    const lastAmount = amountMatches[amountMatches.length - 1];
+    const lastIndex = feeStr.lastIndexOf(lastAmount);
+    feeStr = feeStr.substring(0, lastIndex).trim();
+  }
+
   // 국내/해외 연회비가 구분되어 있는 경우
   if (feeStr.includes('국내') || feeStr.includes('해외')) {
+    // 숫자 포맷팅
+    feeStr = feeStr.replace(/(\d{1,3}(?:,\d{3})*),?(\d{3})?원/g, (match, main, extra) => {
+      const number = parseInt(main.replace(/,/g, '') + (extra || ''));
+      return `${number.toLocaleString()}원`;
+    });
+
     return feeStr
-      .replace(/(\d+)원/g, (match, number) => `${parseInt(number).toLocaleString()}원`)
       .replace(/국내\s*:\s*/g, '<div class="fee-domestic">국내: ')
       .replace(/해외\s*:\s*/g, '</div><div class="fee-international">해외: ')
       .replace(/^\s*/, '<div class="fee-total">')
       .replace(/\s*$/, '</div>');
   }
-  
+
   // 일반적인 경우
-  const numericFee = feeStr.replace(/[^\d]/g, "");
-  if (numericFee && parseInt(numericFee) > 0) {
-    const formattedAmount = parseInt(numericFee).toLocaleString();
-    
-    // 추가 텍스트가 있는 경우 (예: "50,000원 (국내전용)")
-    const additionalText = feeStr.replace(/[\d,원]+/g, '').trim();
-    if (additionalText) {
-      return `${formattedAmount}원 ${additionalText}`;
+  const numericMatch = feeStr.match(/(\d{1,3}(?:,\d{3})*),?(\d{3})?/);
+  if (numericMatch) {
+    const number = parseInt(numericMatch[0].replace(/,/g, ''));
+    if (number > 0) {
+      const formattedAmount = number.toLocaleString();
+      
+      // 숫자를 제외한 나머지 텍스트
+      const additionalText = feeStr
+        .replace(/\d{1,3}(?:,\d{3})*,?\d*원?/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (additionalText) {
+        return `${formattedAmount}원 ${additionalText}`;
+      }
+      
+      return `${formattedAmount}원`;
     }
-    
-    return `${formattedAmount}원`;
   }
 
   // 특수한 경우나 텍스트만 있는 경우
@@ -180,7 +219,7 @@ const formatAnnualFee = (fee) => {
 
 // 통화 포맷팅
 const formatCurrency = (amount) => {
-  if (!amount || amount === 0) return "없음";
+  if (!amount || amount === 0) return '없음';
 
   if (amount >= 10000) {
     const man = Math.floor(amount / 10000);
@@ -197,21 +236,21 @@ const formatCurrency = (amount) => {
 
 // 텍스트 자르기
 const truncateText = (text, maxLength) => {
-  if (!text) return "";
+  if (!text) return '';
 
   // HTML 태그 제거
-  const plainText = text.replace(/<[^>]*>/g, "");
+  const plainText = text.replace(/<[^>]*>/g, '');
 
   if (plainText.length <= maxLength) {
     return plainText;
   }
 
-  return plainText.substring(0, maxLength) + "...";
+  return plainText.substring(0, maxLength) + '...';
 };
 
 // 신청 버튼 클릭 핸들러
 const handleApply = () => {
-  emit("apply", props.card);
+  emit('apply', props.card);
 };
 </script>
 
