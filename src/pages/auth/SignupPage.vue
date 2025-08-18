@@ -17,7 +17,13 @@
           <div class="input-action-row">
             <template v-if="!isEmailVerified">
               <BaseInput v-model="email" placeholder="이메일 입력" />
-              <BaseButton class="action-btn" variant="primary" @click="handleSendCode">인증번호 전송</BaseButton>
+              <BaseButton
+                class="action-btn"
+                variant="primary"
+                :disabled="sendingCode || !email"
+                @click="handleSendCode">
+                {{ sendingCode ? '전송 중…' : '인증번호 전송' }}
+              </BaseButton>
             </template>
             <template v-else>
               <div class="locked-input" aria-readonly="true">{{ email }}</div>
@@ -104,6 +110,7 @@ const confirmPassword = ref('');
 const nickname = ref('');
 const errorMessage = ref('');
 const isEmailVerified = ref(false);
+const sendingCode = ref(false);
 const router = useRouter();
 
 watch([password, confirmPassword], ([newVal, confirmVal]) => {
@@ -141,11 +148,19 @@ const handleJoin = async () => {
 };
 
 const handleSendCode = async () => {
+  if (!email.value) {
+    alert('이메일을 입력해주세요.');
+    return;
+  }
+  if (sendingCode.value) return; // 중복 클릭 방지
+  sendingCode.value = true;
   try {
-    alert('📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.');
     await authApi.sendVerificationEmail(email.value);
+    alert('📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.');
   } catch (err) {
     alert(err?.response?.data?.message || '인증번호 전송 중 오류가 발생했습니다.');
+  } finally {
+    sendingCode.value = false;
   }
 };
 
@@ -225,6 +240,10 @@ const handleVerifyCode = async () => {
   white-space: nowrap;
   flex-shrink: 0;
   width: 120px;
+}
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .login-block .login-row .input-action-row {
