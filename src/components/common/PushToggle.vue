@@ -5,18 +5,13 @@
         <span class="label">푸시 알림</span>
       </div>
       <div class="right">
-        <button
-          :class="['btn btn-outline-accent', { selected: subscribed }]"
-          :disabled="!envReady || loading || subscribed"
-          @click="subscribe">
-          {{ loading && !subscribed ? 'ON' : 'ON' }}
-        </button>
-        <button
-          :class="['btn btn-outline-secondary ms-2', { selected: !subscribed && envReady && permission !== 'denied' }]"
-          :disabled="!envReady || loading || !subscribed"
-          @click="unsubscribe">
-          {{ loading && subscribed ? 'OFF' : 'OFF' }}
-        </button>
+        <label class="switch" :aria-checked="subscribed" role="switch">
+          <input type="checkbox" :checked="subscribed" :disabled="!envReady || loading" @change="onToggle" />
+          <span class="slider"></span>
+        </label>
+        <span class="switch-text" :class="{ on: subscribed, off: !subscribed }">
+          {{ subscribed ? 'ON' : 'OFF' }}
+        </span>
       </div>
     </div>
 
@@ -152,6 +147,16 @@ async function unsubscribe() {
     loading.value = false;
   }
 }
+
+function onToggle(e) {
+  const next = e?.target?.checked;
+  if (next === undefined || !envReady.value) return;
+  if (next && !subscribed.value) {
+    subscribe();
+  } else if (!next && subscribed.value) {
+    unsubscribe();
+  }
+}
 </script>
 
 <style scoped>
@@ -202,30 +207,74 @@ async function unsubscribe() {
   color: var(--color-dark);
 }
 
-/* Button variant to match brand accent */
-.btn-outline-accent {
-  background-color: transparent;
-  color: var(--color-accent);
-  border: 2px solid var(--color-accent);
+/* ===== Toggle Switch ===== */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 30px;
 }
-.btn-outline-accent:disabled {
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--color-gray-300);
+  border-radius: 999px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: inset 0 0 0 2px var(--color-gray-400);
+}
+.slider::before {
+  content: '';
+  position: absolute;
+  height: 24px;
+  width: 24px;
+  left: 3px;
+  top: 3px;
+  background: var(--color-white);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.slider::after {
+  content: '🔕';
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  transition: opacity 0.2s ease;
+}
+.switch input:checked + .slider {
+  background: var(--color-accent);
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+.switch input:checked + .slider::before {
+  transform: translateX(22px);
+}
+.switch input:checked + .slider::after {
+  content: '🔔';
+  left: auto;
+  right: 8px;
+}
+.switch input:disabled + .slider {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.btn-outline-accent:hover:not(:disabled) {
-  background-color: var(--color-accent);
-  color: var(--color-white);
+.switch-text {
+  margin-left: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
 }
-
-.btn.selected {
-  background-color: var(--color-accent);
-  color: var(--color-white);
-  border-color: var(--color-accent);
+.switch-text.on {
+  color: var(--color-accent);
 }
-.btn-outline-secondary.selected {
-  background-color: var(--color-secondary);
-  color: var(--color-white);
-  border-color: var(--color-secondary);
+.switch-text.off {
+  color: var(--color-gray-500);
 }
 
 .hint {
