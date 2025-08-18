@@ -15,19 +15,29 @@
         </div>
         <div class="login-row">
           <div class="input-action-row">
-            <BaseInput v-model="email" placeholder="이메일 입력" :disabled="isEmailVerified" />
-            <BaseButton class="action-btn" variant="primary" @click="handleSendCode" :disabled="isEmailVerified">인증번호 전송</BaseButton>
+            <template v-if="!isEmailVerified">
+              <BaseInput v-model="email" placeholder="이메일 입력" />
+              <BaseButton class="action-btn" variant="primary" @click="handleSendCode">인증번호 전송</BaseButton>
+            </template>
+            <template v-else>
+              <div class="locked-input" aria-readonly="true">{{ email }}</div>
+            </template>
           </div>
         </div>
 
         <!-- 인증번호 -->
         <div class="login-row">
-          <div class="login-label">인증번호 입력</div>
+          <div class="login-label">인증번호</div>
         </div>
         <div class="login-row">
           <div class="input-action-row">
-            <BaseInput v-model="authCode" placeholder="인증번호 입력" :disabled="isEmailVerified" />
-            <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode" :disabled="isEmailVerified">인증번호 확인</BaseButton>
+            <template v-if="!isEmailVerified">
+              <BaseInput v-model="authCode" placeholder="인증번호 입력" />
+              <BaseButton class="action-btn" variant="primary" @click="handleVerifyCode">인증번호 확인</BaseButton>
+            </template>
+            <template v-else>
+              <div class="locked-input" aria-readonly="true">{{ authCode }}</div>
+            </template>
           </div>
         </div>
 
@@ -252,7 +262,31 @@ const handleVerifyCode = async () => {
   background-color: var(--color-disabled);
   cursor: not-allowed;
 }
+
+.locked-input {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: 2px solid var(--border-medium);
+  border-radius: 8px;
+  background: var(--color-gray-100);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 768px) {
+  .locked-input {
+    height: 48px;
+    font-size: 1.2rem;
+    padding: 0.75rem;
+  }
+
   .login-card {
     width: 90%;
     height: auto;
