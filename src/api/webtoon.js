@@ -6,4 +6,8 @@ export default {
     const { data } = await api.get(`${BASE_URL}/top4`);
     return data;
   },
+  async getAll() {
+    const { data } = await api.get(BASE_URL);
+    return data;
+  },
 };
