@@ -1,5 +1,5 @@
 <template>
-  <div class="survey-wrapper" @click="clearSelection">
+  <div class="survey-wrapper" @click="clearSelection" :key="componentKey">
     <!-- 진행도 ------------------------------------------------------- -->
     <div class="progress-container">
       <div class="progress-text">{{ animatedIndex }}/{{ totalQuestions }}</div>
@@ -51,7 +51,7 @@ import api from '@/api';
 /* ------------------------------------------------------------------ */
 /* ① 상태 & 상수                                                       */
 /* ------------------------------------------------------------------ */
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onActivated, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -71,6 +71,7 @@ const PERSONAS = [
 const scores = ref(Object.fromEntries(PERSONAS.map((p) => [p, 0])));
 const answers = ref([]); // ⭐ 선택 기록 (되돌릴 때 사용)
 const selectedChoice = ref(null); // 현재 선택된 답변
+const componentKey = ref(0); // 강제 재렌더링용 키
 
 /* ------------------------------------------------------------------ */
 /* ② 질문·선택지 (10 문항 × 4 보기)                                     */
@@ -188,6 +189,32 @@ const animatedIndex = ref(1);
 /* ------------------------------------------------------------------ */
 /* ④ 로직                                                              */
 /* ------------------------------------------------------------------ */
+
+// 설문 상태 초기화 함수
+function resetSurveyState() {
+  scores.value = Object.fromEntries(PERSONAS.map((p) => [p, 0]));
+  answers.value = [];
+  currentQuestionIndex.value = 0;
+  selectedChoice.value = null;
+  animatedIndex.value = 1;
+  componentKey.value++; // 컴포넌트 강제 재렌더링
+
+  // DOM 요소도 강제로 초기화
+  nextTick(() => {
+    setTimeout(() => {
+      const buttons = document.querySelectorAll('.choice-btn');
+      buttons.forEach((btn) => {
+        btn.blur();
+        btn.classList.remove('selected');
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+        btn.style.transform = '';
+        btn.style.boxShadow = '';
+      });
+    }, 100);
+  });
+}
 function selectChoice(choice) {
   selectedChoice.value = choice;
   setTimeout(() => {
@@ -306,7 +333,17 @@ function animateCounter() {
     }
   }, 25);
 }
-onMounted(animateCounter);
+// 컴포넌트 마운트 시 상태 초기화 및 애니메이션 시작
+onMounted(() => {
+  resetSurveyState();
+  animateCounter();
+});
+
+// 페이지 재활성화 시에도 강제 초기화 (뒤로가기, 새로고침 등)
+onActivated(() => {
+  resetSurveyState();
+  animateCounter();
+});
 watch(currentQuestionIndex, animateCounter);
 
 // 질문이 변경될 때마다 선택 상태 초기화

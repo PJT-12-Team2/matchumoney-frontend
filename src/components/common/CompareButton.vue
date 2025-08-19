@@ -62,9 +62,11 @@ import { useCompareStore } from '@/stores/compareStore';
 import { defineProps, computed, ref, nextTick, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/api';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const compareStore = useCompareStore();
 const router = useRouter();
+const { showAlert } = useCustomModal();
 
 const props = defineProps({
   productId: { type: Number, required: true },
@@ -162,7 +164,7 @@ const onCompareClick = async (e) => {
       clearAutoHide();
     } else if (result.error === 'ALREADY_EXISTS') {
       // 이미 존재하는 상품인 경우
-      alert('이미 추가된 상품입니다.');
+      await showAlert('이미 추가된 상품입니다.', '중복 상품');
     }
     return;
   }

@@ -252,8 +252,10 @@ import { useRouter } from 'vue-router';
 import quizAPI from '@/api/quiz';
 import QuizHistory from '@/components/quiz/QuizHistory.vue';
 import BackButton from '@/components/common/BackButton.vue';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const router = useRouter();
+const { showAlert, showError } = useCustomModal();
 
 // 상태 관리
 const isLoading = ref(true);
@@ -414,16 +416,16 @@ const submitAnswer = async () => {
       }
     } else {
       console.warn('답변 제출 응답이 올바르지 않습니다:', result);
-      alert('서버 응답이 올바르지 않습니다.');
+      await showError('서버 응답이 올바르지 않습니다.', '서버 오류');
     }
   } catch (error) {
     console.error('답변 제출 실패:', error);
     if (error.response?.status === 404) {
-      alert('퀴즈 제출 API를 찾을 수 없습니다. 백엔드 연결을 확인하세요.');
+      await showError('퀴즈 제출 API를 찾을 수 없습니다. 백엔드 연결을 확인하세요.', 'API 오류');
     } else if (error.response?.status === 400) {
-      alert('이미 제출된 문제이거나 잘못된 요청입니다.');
+      await showError('이미 제출된 문제이거나 잘못된 요청입니다.', '요청 오류');
     } else {
-      alert('답변 제출에 실패했습니다. 네트워크 연결을 확인하세요.');
+      await showError('답변 제출에 실패했습니다. 네트워크 연결을 확인하세요.', '제출 실패');
     }
   } finally {
     isSubmitting.value = false;
