@@ -174,6 +174,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import BackButton from '@/components/common/BackButton.vue';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 // Ensure Font Awesome CSS is available (fallback injector)
 onMounted(() => {
@@ -200,6 +201,7 @@ const form = ref({
 
 const touched = ref({ birthDate: false, gender: false });
 const step = ref(1); // 1=입력, 2=리포트, 3=투두
+const { showAlert, showSuccess } = useCustomModal();
 const loadingReport = ref(false);
 const loadingTasks = ref(false);
 const resultText = ref('');
@@ -357,9 +359,9 @@ const formatted = (text) => {
 const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(resultText.value);
-    alert('운세 내용을 복사했어요.');
+    await showSuccess('운세 내용을 복사했어요.', '복사 완료');
   } catch (_) {
-    alert('복사에 실패했어요.');
+    await showAlert('복사에 실패했어요.', '복사 실패');
   }
 };
 

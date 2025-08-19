@@ -1,6 +1,5 @@
 <template>
   <div class="login-container">
-    <BackButton />
     <!-- 상단 로고 영역 -->
     <div class="login-logo">
       <img src="@/assets/Logo.png" alt="맞추머니 로고" />
@@ -59,19 +58,20 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
-import BackButton from '@/components/common/BackButton.vue';
 import authApi from '@/api/auth'; // ✅ 새로 추가된 import
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const email = ref('');
 const password = ref('');
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const { showAlert, showSuccess, showError } = useCustomModal();
 
 const handleLogin = async () => {
   // 입력값 검증
   if (!email.value || !password.value) {
-    alert('이메일과 비밀번호를 입력해주세요.');
+    await showAlert('이메일과 비밀번호를 입력해주세요.', '입력 오류');
     return;
   }
 
@@ -96,7 +96,7 @@ const handleLogin = async () => {
       nickname: tokenDto.nickname,
     });
 
-    alert(`${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`);
+    await showSuccess(`${tokenDto.nickname}님, Matchumoney에 오신 것을 진심으로 환영합니다!`, '로그인 성공');
 
     // 로그인 후 리다이렉트 처리
     const redirectPath = route.query.redirect || '/';
@@ -111,13 +111,13 @@ const handleLogin = async () => {
     console.error('❌ 로그인 실패:', err);
 
     if (err.response?.status === 401) {
-      alert('이메일 또는 비밀번호가 올바르지 않습니다.');
+      await showError('이메일 또는 비밀번호가 올바르지 않습니다.', '로그인 실패');
     } else if (err.response?.status === 403) {
-      alert('접근이 거부되었습니다. 계정 상태를 확인해주세요.');
+      await showError('접근이 거부되었습니다. 계정 상태를 확인해주세요.', '접근 거부');
     } else if (err.response?.status >= 500) {
-      alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      await showError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', '서버 오류');
     } else {
-      alert(`로그인에 실패했습니다: ${err.response?.data?.message || err.message}`);
+      await showError(`로그인에 실패했습니다: ${err.response?.data?.message || err.message}`, '로그인 실패');
     }
   }
 };

@@ -93,6 +93,7 @@ import BaseInput from '@/components/base/BaseInput.vue';
 import BackButton from '@/components/common/BackButton.vue';
 import authApi from '@/api/auth';
 import { useRouter } from 'vue-router';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const email = ref('');
 const authCode = ref('');
@@ -114,6 +115,7 @@ const canReset = computed(() => {
 });
 
 const router = useRouter();
+const { showAlert, showSuccess, showError } = useCustomModal();
 
 watch([newPassword, confirmPassword], ([newVal, confirmVal]) => {
   if (newVal && confirmVal && newVal !== confirmVal) {
@@ -127,15 +129,15 @@ const handleSendCode = async () => {
   if (!canSendCode.value) return;
   const trimmed = String(email.value || '').trim();
   if (!emailRegex.test(trimmed)) {
-    alert('유효한 이메일 주소를 입력해주세요.');
+    await showAlert('유효한 이메일 주소를 입력해주세요.', '입력 오류');
     return;
   }
   isSendingCode.value = true; // 버튼에 "이메일 전송 중…" 표시
   try {
     await authApi.sendResetVerificationEmail(trimmed);
-    alert('📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.');
+    await showSuccess('인증번호가 전송되었습니다. 이메일을 확인해주세요.', '전송 완료');
   } catch (err) {
-    alert(err?.response?.data?.message || '인증번호 전송 중 오류가 발생했습니다.');
+    await showError(err?.response?.data?.message || '인증번호 전송 중 오류가 발생했습니다.', '전송 실패');
   } finally {
     isSendingCode.value = false;
   }
@@ -150,12 +152,12 @@ const handleVerifyCode = async () => {
     const result = await authApi.verifyEmailCode(trimmedEmail, trimmedCode);
     if (result.result) {
       isEmailVerified.value = true; // 이후 이메일/코드 입력 & 전송/확인 버튼 비활성화
-      alert('✅ 인증번호가 확인되었습니다.');
+      await showSuccess('인증번호가 확인되었습니다.', '인증 성공');
     } else {
-      alert('❌ 인증번호가 일치하지 않습니다.');
+      await showError('인증번호가 일치하지 않습니다.', '인증 실패');
     }
   } catch (err) {
-    alert(err?.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.');
+    await showError(err?.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.', '확인 실패');
   } finally {
     isVerifyingCode.value = false;
   }
@@ -163,12 +165,12 @@ const handleVerifyCode = async () => {
 
 const handleResetPassword = async () => {
   if (!isEmailVerified.value) {
-    alert('이메일 인증을 완료해주세요.');
+    await showAlert('이메일 인증을 완료해주세요.', '안내');
     return;
   }
 
   if (newPassword.value !== confirmPassword.value) {
-    alert('비밀번호가 일치하지 않습니다.');
+    await showAlert('비밀번호가 일치하지 않습니다.', '입력 오류');
     return;
   }
 
@@ -179,10 +181,10 @@ const handleResetPassword = async () => {
       confirmPassword: confirmPassword.value,
     });
 
-    alert('🎉 비밀번호가 성공적으로 재설정되었습니다.');
+    await showSuccess('비밀번호가 성공적으로 재설정되었습니다.', '재설정 완료');
     router.push('/login');
   } catch (err) {
-    alert(err?.response?.data?.message || '비밀번호 재설정 중 오류가 발생했습니다.');
+    await showError(err?.response?.data?.message || '비밀번호 재설정 중 오류가 발생했습니다.', '재설정 실패');
   }
 };
 </script>

@@ -1,6 +1,5 @@
 <template>
   <div class="login-container">
-    <BackButton />
     <div class="login-logo">
       <img src="@/assets/Logo.png" alt="맞추머니 로고" />
     </div>
@@ -21,7 +20,8 @@
                 class="action-btn"
                 variant="primary"
                 :disabled="sendingCode || !email"
-                @click="handleSendCode">
+                @click="handleSendCode"
+              >
                 {{ sendingCode ? '전송 중…' : '인증번호 전송' }}
               </BaseButton>
             </template>
@@ -43,12 +43,15 @@
                 class="action-btn"
                 variant="primary"
                 :disabled="!authCode || isEmailVerified"
-                @click="handleVerifyCode">
+                @click="handleVerifyCode"
+              >
                 인증번호 확인
               </BaseButton>
             </template>
             <template v-else>
-              <div class="locked-input" aria-readonly="true">{{ authCode }}</div>
+              <div class="locked-input" aria-readonly="true">
+                {{ authCode }}
+              </div>
             </template>
           </div>
         </div>
@@ -69,7 +72,11 @@
         </div>
         <div class="login-row">
           <div class="input-action-row">
-            <BaseInput v-model="password" type="password" placeholder="비밀번호 입력 (특수문자 포함 8~20자)" />
+            <BaseInput
+              v-model="password"
+              type="password"
+              placeholder="비밀번호 입력 (특수문자 포함 8~20자)"
+            />
           </div>
         </div>
 
@@ -80,18 +87,29 @@
           </div>
           <div class="login-row">
             <div class="input-action-row">
-              <BaseInput v-model="confirmPassword" type="password" placeholder="비밀번호 확인" />
+              <BaseInput
+                v-model="confirmPassword"
+                type="password"
+                placeholder="비밀번호 확인"
+              />
             </div>
           </div>
         </div>
 
         <!-- 에러 메시지 -->
         <div class="login-row error-row">
-          <span class="error-msg" :class="{ visible: !!errorMessage }">{{ errorMessage }}</span>
+          <span class="error-msg" :class="{ visible: !!errorMessage }">{{
+            errorMessage
+          }}</span>
         </div>
         <div class="login-row">
           <div class="join-btn-area">
-            <BaseButton variant="primary" @click="handleJoin" :disabled="!isEmailVerified">회원가입</BaseButton>
+            <BaseButton
+              variant="primary"
+              @click="handleJoin"
+              :disabled="!isEmailVerified"
+              >회원가입</BaseButton
+            >
           </div>
         </div>
       </template>
@@ -104,10 +122,10 @@ import { ref, watch } from 'vue';
 import BaseCardGrey from '@/components/base/BaseCardGrey.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
-import BackButton from '@/components/common/BackButton.vue';
 import '@/assets/main.css';
 import authApi from '@/api/auth';
 import { useRouter } from 'vue-router';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const email = ref('');
 const authCode = ref('');
@@ -118,6 +136,7 @@ const errorMessage = ref('');
 const isEmailVerified = ref(false);
 const sendingCode = ref(false);
 const router = useRouter();
+const { showAlert, showSuccess, showError } = useCustomModal();
 
 watch([password, confirmPassword], ([newVal, confirmVal]) => {
   if (newVal && confirmVal && newVal !== confirmVal) {
@@ -129,7 +148,7 @@ watch([password, confirmPassword], ([newVal, confirmVal]) => {
 
 const handleJoin = async () => {
   if (!isEmailVerified.value) {
-    alert('이메일 인증을 완료해주세요.');
+    await showAlert('이메일 인증을 완료해주세요.', '안내');
     return;
   }
 
@@ -146,25 +165,27 @@ const handleJoin = async () => {
       passwordCheck: confirmPassword.value,
     });
 
-    alert('🎉 회원가입이 완료되었습니다. 로그인 해주세요.');
+    await showSuccess('회원가입이 완료되었습니다. 로그인 해주세요.', '가입 완료');
     router.push('/login');
   } catch (err) {
-    alert(err?.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
+    await showError(err?.response?.data?.message || '회원가입 중 오류가 발생했습니다.', '가입 실패');
   }
 };
 
 const handleSendCode = async () => {
   if (!email.value) {
-    alert('이메일을 입력해주세요.');
+    await showAlert('이메일을 입력해주세요.', '입력 오류');
     return;
   }
   if (sendingCode.value) return; // 중복 클릭 방지
   sendingCode.value = true;
   try {
     await authApi.sendVerificationEmail(email.value);
-    alert('📮 인증번호가 전송되었습니다. 이메일을 확인해주세요.');
+    await showSuccess('인증번호가 전송되었습니다. 이메일을 확인해주세요.', '전송 완료');
   } catch (err) {
-    alert(err?.response?.data?.message || '인증번호 전송 중 오류가 발생했습니다.');
+    await showError(
+      err?.response?.data?.message || '인증번호 전송 중 오류가 발생했습니다.', '전송 실패'
+    );
   } finally {
     sendingCode.value = false;
   }
@@ -175,12 +196,14 @@ const handleVerifyCode = async () => {
     const result = await authApi.verifyEmailCode(email.value, authCode.value);
     if (result.result) {
       isEmailVerified.value = true;
-      alert('✅ 인증번호가 확인되었습니다.');
+      await showSuccess('인증번호가 확인되었습니다.', '인증 성공');
     } else {
-      alert('❌ 인증번호가 일치하지 않습니다.');
+      await showError('인증번호가 일치하지 않습니다.', '인증 실패');
     }
   } catch (err) {
-    alert(err?.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.');
+    await showError(
+      err?.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.', '확인 실패'
+    );
   }
 };
 </script>
