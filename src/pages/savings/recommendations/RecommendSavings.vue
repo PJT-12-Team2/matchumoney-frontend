@@ -89,6 +89,7 @@ watch(
 <template>
   <div class="content-my">
     <RecommendationLayout title="맞춤 적금">
+      <BackButton />
       <!-- 상단 슬라이더 -->
       <template #slider>
         <SavingMyProductSlider

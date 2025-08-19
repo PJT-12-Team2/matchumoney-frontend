@@ -254,11 +254,14 @@
                       <span class="chip chip--tight">{{
                         p.credit ? p.credit + '카드' : '카드'
                       }}</span>
-                      <div v-if="p.annualFee" class="fee-inline">
-                        {{ formatAnnualFee(p.annualFee) }}
-                      </div>
-                      <div v-if="p.preMonthMoney">
-                        전월실적 {{ (p.preMonthMoney / 10000).toFixed(0) }}만원
+                      <div v-if="p.annualFee" class="fee-lines">
+                        <div
+                          v-for="fee in parseAnnualFee(p.annualFee)"
+                          :key="fee"
+                          class="fee-line"
+                        >
+                          {{ fee }}
+                        </div>
                       </div>
                     </template>
                   </div>
@@ -1920,10 +1923,11 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  font-size: var(--font-size-base);
 }
 .fee-inline {
   margin-top: 2px;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   color: var(--color-secondary-90);
   white-space: nowrap;
 }

@@ -51,3 +51,8 @@ export function showToast({ title = '', message = '', type = 'info', delay = 500
     toastEl.remove();
   });
 }
+
+// dev quick test
+window.testToast = () => {
+  showToast({ title: '테스트', message: '토스트 정상 출력 👍', type: 'info' });
+};
