@@ -5,7 +5,9 @@
     <div class="page-description">
       <h1 class="page-title">웹툰으로 배우는 금융 교육</h1>
       <p class="page-subtitle">
-        다양하고 재미있는 웹툰으로 <br />어려운 금융 지식을 쉽게 배워보세요
+        다양하고 재미있는 웹툰으로
+        <br />
+        어려운 금융 지식을 쉽게 배워보세요
       </p>
     </div>
     <!-- 로딩 상태 -->
@@ -22,43 +24,24 @@
 
     <!-- 웹툰 목록 (시리즈별 그룹화) -->
     <div v-else>
-      <div
-        v-for="(episodes, series) in groupedWebtoons"
-        :key="series"
-        class="series-block"
-      >
+      <div v-for="(episodes, series) in groupedWebtoons" :key="series" class="series-block">
         <br />
         <div
           class="series-header"
           :aria-expanded="!isMobile || !!expanded[series]"
           :aria-controls="`panel-${series}`"
           role="button"
-          @click="isMobile && toggleSeries(series)"
-        >
+          @click="isMobile && toggleSeries(series)">
           <span class="series-title">{{ series }}</span>
           <span class="series-count">{{ episodes.length }}개</span>
           <span class="toggle-indicator">▼</span>
         </div>
         <hr />
         <transition name="accordion">
-          <div
-            class="webtoon-grid accordion-panel"
-            :id="`panel-${series}`"
-            v-show="!isMobile || !!expanded[series]"
-          >
-            <div
-              v-for="webtoon in episodes"
-              :key="webtoon.id"
-              class="webtoon-card"
-              @click="openModal(webtoon)"
-            >
+          <div class="webtoon-grid accordion-panel" :id="`panel-${series}`" v-show="!isMobile || !!expanded[series]">
+            <div v-for="webtoon in episodes" :key="webtoon.id" class="webtoon-card" @click="openModal(webtoon)">
               <div class="webtoon-image-container">
-                <img
-                  :src="webtoon.fileDownUrl"
-                  :alt="webtoon.title"
-                  class="webtoon-image"
-                  @error="handleImageError"
-                />
+                <img :src="webtoon.fileDownUrl" :alt="webtoon.title" class="webtoon-image" @error="handleImageError" />
                 <div class="webtoon-overlay">
                   <span class="play-icon">📖</span>
                   <span class="overlay-text">웹툰 읽기</span>
@@ -88,8 +71,7 @@
             :src="selectedWebtoon.secondImageUrl"
             :alt="selectedWebtoon.title"
             class="webtoon-full-image"
-            @error="handleModalImageError"
-          />
+            @error="handleModalImageError" />
         </div>
 
         <!-- 모달 푸터 -->
@@ -103,7 +85,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
-import axios from 'axios';
+import webtoonApi from '@/api/webtoon';
 import { RouterLink } from 'vue-router';
 import BackButton from '@/components/common/BackButton.vue';
 
@@ -225,8 +207,8 @@ async function fetchWebtoons() {
   error.value = false;
 
   try {
-    const response = await axios.get('http://localhost:8080/api/webtoon');
-    webtoons.value = response.data;
+    const data = await webtoonApi.getAll?.();
+    webtoons.value = data || [];
     console.log('웹툰 데이터:', webtoons.value);
   } catch (err) {
     console.error('웹툰 조회 실패:', err);
@@ -247,13 +229,11 @@ function closeModal() {
 }
 
 function handleImageError(event) {
-  event.target.src =
-    'https://via.placeholder.com/300x400/cccccc/666666?text=이미지+없음';
+  event.target.src = 'https://via.placeholder.com/300x400/cccccc/666666?text=이미지+없음';
 }
 
 function handleModalImageError(event) {
-  event.target.src =
-    'https://via.placeholder.com/600x800/cccccc/666666?text=웹툰+이미지+없음';
+  event.target.src = 'https://via.placeholder.com/600x800/cccccc/666666?text=웹툰+이미지+없음';
 }
 
 // ESC 키로 모달 닫기
