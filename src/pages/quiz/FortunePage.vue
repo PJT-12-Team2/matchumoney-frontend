@@ -13,7 +13,7 @@
         </p>
       </div>
     </div>
-    <br />
+
     <div class="content">
       <!-- 1) 입력 카드 -->
       <form class="card form-card equal-card" @submit.prevent="handleSubmit" novalidate>
@@ -103,7 +103,7 @@
       </div>
 
       <!-- ▶ connector 2: 리포트 → 투두 -->
-      <div class="connector connector-2" :class="{ active: step >= 3 }">
+      <div class="connector" :class="{ active: step >= 3 }">
         <i class="fa-solid fa-arrow-right"></i>
       </div>
 
@@ -137,6 +137,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import BackButton from '@/components/common/BackButton.vue';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 // Ensure Font Awesome CSS is available (fallback injector)
 onMounted(() => {
@@ -162,6 +163,7 @@ const form = ref({
 
 const touched = ref({ birthDate: false, gender: false });
 const step = ref(1); // 1=입력, 2=리포트, 3=투두
+const { showAlert, showSuccess } = useCustomModal();
 const loadingReport = ref(false);
 const loadingTasks = ref(false);
 const resultText = ref('');
@@ -309,9 +311,9 @@ const formatted = (text) => {
 const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(resultText.value);
-    alert('운세 내용을 복사했어요.');
+    await showSuccess('운세 내용을 복사했어요.', '복사 완료');
   } catch (_) {
-    alert('복사에 실패했어요.');
+    await showAlert('복사에 실패했어요.', '복사 실패');
   }
 };
 
@@ -372,11 +374,8 @@ const seeAgain = () => {
   padding: 0 24px;
   display: grid;
   gap: 24px;
-  grid-template-columns: 1fr 48px 1fr 48px 1fr; /* keep original card widths (no shrink) */
+  grid-template-columns: 1fr 48px 1fr 48px 1fr; /* card, arrow, card, arrow, card */
   align-items: stretch;
-  justify-content: center;
-  position: relative;
-  left: 10%; /* shift content slightly to the right */
 }
 /* ✅ Tablet/Desktop-narrow: 세로 재배치 */
 @media (max-width: 1280px) {
@@ -384,26 +383,9 @@ const seeAgain = () => {
     grid-template-columns: 1fr; /* 세로 스택 */
     gap: 18px;
     padding: 0 16px;
-    position: static; /* cancel desktop relative offset */
-    left: auto; /* ensure no horizontal shift on mobile */
-    /* increase vertical spacing and center items on mobile/tablet */
-    gap: 28px; /* was 18px */
-    justify-items: center; /* center cards and arrows horizontally */
   }
   .connector {
-    display: grid;
-    place-items: center;
-    margin: 10px 0 14px; /* increase space around arrows */
-    font-size: 26px; /* slightly larger arrow for readability */
-    opacity: 0.65;
-  }
-  .connector i {
-    transform: rotate(90deg);
-  }
-  /* Mobile/Tablet: remove desktop nudge so both arrows align perfectly */
-  .connector-2 {
-    justify-items: center !important;
-    transform: none !important;
+    display: none;
   }
   .equal-card {
     min-height: 620px;
@@ -418,10 +400,6 @@ const seeAgain = () => {
   opacity: 0.5;
   transition: opacity 0.25s ease;
   pointer-events: none;
-}
-.connector-2 {
-  justify-items: end; /* move icon to the right side of its column */
-  transform: translateX(4px); /* subtle right nudge for better visual centering */
 }
 .connector.active {
   opacity: 1;
@@ -439,25 +417,6 @@ const seeAgain = () => {
 @media (max-width: 980px) {
   .content {
     grid-template-columns: 1fr;
-    position: static;
-    left: auto;
-    gap: 28px;
-    justify-items: center;
-  }
-  .connector {
-    display: grid;
-    place-items: center;
-    margin: 10px 0 14px;
-    font-size: 26px;
-    opacity: 0.65;
-  }
-  .connector i {
-    transform: rotate(90deg); /* arrow-right -> arrow-down */
-  }
-  /* Mobile: ensure the second arrow centers like the first */
-  .connector-2 {
-    justify-items: center !important;
-    transform: none !important;
   }
 }
 
