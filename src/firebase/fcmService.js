@@ -11,6 +11,8 @@ let initStarted = false; // 초기화 시도 중 (진행 중 재호출 방지)
 let initDone = false; // 초기화 완료 (완료 후 재호출 방지)
 let onMessageBound = false; // onMessage 핸들러 중복 바인딩 방지
 let cachedMessaging = null; // 필요 시 재사용
+let onMessageUnsubscribe = null; // onMessage 해제 함수 (HMR/중복 대비)
+const __GLOBAL_ONMESSAGE_KEY__ = '__FCM_ONMESSAGE_BOUND__';
 
 // --- in-memory de-duplication for foreground toasts ---
 const __recentMsgs = new Map(); // key -> timestamp
@@ -43,6 +45,11 @@ function __seenBefore(key) {
 
 // --- helper: 포그라운드 핸들러 바인딩(단 1회) ---
 function bindOnMessageOnce(messaging) {
+  // 1) 브라우저 전역(HMR 포함) 중복 바인딩 차단
+  if (typeof window !== 'undefined' && window[__GLOBAL_ONMESSAGE_KEY__]) {
+    console.log('[FCM] onMessage already bound (global) — skip');
+    return;
+  }
   if (onMessageBound) {
     console.log('[FCM] onMessage already bound — skip');
     return;
@@ -51,37 +58,66 @@ function bindOnMessageOnce(messaging) {
     console.warn('[FCM] bindOnMessageOnce called without messaging instance');
     return;
   }
+
+  // 2) 기존 바인딩이 있다면 우선 해제 (HMR/중복 대비)
+  if (typeof onMessageUnsubscribe === 'function') {
+    try {
+      onMessageUnsubscribe();
+      console.log('[FCM] previous onMessage listener unsubscribed');
+    } catch (_) {}
+    onMessageUnsubscribe = null;
+  }
+
   console.log('[FCM] binding onMessage');
-  onMessage(messaging, (payload) => {
+  onMessageUnsubscribe = onMessage(messaging, (payload) => {
     // Foreground only: avoid double UI when tab hidden and SW shows a system notification
     if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
       return;
     }
 
-    // De-duplication: use messageId -> traceId -> stable data signature
     const d = payload?.data || {};
     const n = payload?.notification;
-    const dedupKey = payload?.messageId || d.traceId || d.type + '|' + d.title + '|' + d.body + '|' + d.link;
-    if (__seenBefore(dedupKey)) {
-      console.log('[FCM] duplicate foreground message ignored:', dedupKey);
-      return;
-    }
 
-    console.log('[FCM] 포그라운드 메시지 수신:', payload);
+    // 먼저 표시할 텍스트들을 계산
     const title = n?.title || d.title || '알림';
     const body = n?.body || d.body || '';
     const link = d.link || n?.click_action || '/';
 
+    // ✅ 1순위: 콘텐츠 기반 시그니처로 중복 제거 (ID가 달라도 동일 내용이면 1회만)
+    const contentSig = [d.type || '', title || '', body || '', link || ''].join('|');
+    if (__seenBefore(contentSig)) {
+      console.log('[FCM] duplicate (by content) ignored:', contentSig);
+      return;
+    }
+
+    // 2순위: traceId가 있으면 추가적으로 중복 방지 키로 기록
+    if (d.traceId && __seenBefore(d.traceId)) {
+      console.log('[FCM] duplicate (by traceId) ignored:', d.traceId);
+      return;
+    }
+
+    // 3순위: messageId가 있으면 추가적으로 중복 방지 키로 기록
+    if (payload?.messageId && __seenBefore(payload.messageId)) {
+      console.log('[FCM] duplicate (by messageId) ignored:', payload.messageId);
+      return;
+    }
+
+    console.log('[FCM] 포그라운드 메시지 수신:', payload);
+
     showToast({
       title,
       message: body,
-      type: 'info',
+      type: 'success',
       onClick: () => {
         if (link) window.open(link, '_blank');
       },
     });
   });
+
   onMessageBound = true;
+  if (typeof window !== 'undefined') {
+    window[__GLOBAL_ONMESSAGE_KEY__] = true;
+  }
 }
 
 export async function initFCM() {

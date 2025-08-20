@@ -399,7 +399,7 @@ async function submitDeleteAccount() {
       });
     }
     alert('회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
-    window.location.href = '/';
+    window.location.href = '/login';
   } catch (err) {
     console.error('[delete account] error', err);
     deleteError.value = err?.response?.data?.message || '탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
