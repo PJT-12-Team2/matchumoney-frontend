@@ -16,7 +16,7 @@ const __GLOBAL_ONMESSAGE_KEY__ = '__FCM_ONMESSAGE_BOUND__';
 
 // --- in-memory de-duplication for foreground toasts ---
 const __recentMsgs = new Map(); // key -> timestamp
-const __DEDUP_TTL_MS = 60 * 1000; // keep keys for 60s
+const __DEDUP_TTL_MS = 15 * 1000; // keep keys for 15s (short cooldown)
 const __DEDUP_MAX = 200; // avoid unbounded growth
 
 function __cleanupDedupMap(now = Date.now()) {
@@ -41,6 +41,48 @@ function __seenBefore(key) {
   if (__recentMsgs.has(key)) return true;
   __recentMsgs.set(key, now);
   return false;
+}
+
+function __markSeen(key) {
+  if (!key) return;
+  const now = Date.now();
+  __cleanupDedupMap(now);
+  __recentMsgs.set(key, now);
+}
+
+// --- canonical signature for foreground de-duplication ---
+function __canonicalSig(payload) {
+  const d = payload?.data || {};
+  const n = payload?.notification || {};
+
+  const type = (d.type || '').trim();
+  const title = (n.title || d.title || '').trim();
+  const body = (n.body || d.body || '').trim();
+
+  // link 기본값 '/' 처리 후 표준화
+  let link = d.link || n.click_action || '/';
+  try {
+    // URL 인스턴스로 프로토콜/호스트는 제거하고 path+query+hash만 사용
+    const u = new URL(link, location.origin);
+    link = (u.pathname + u.search + u.hash).replace(/\/+$/, '') || '/';
+  } catch {
+    // 상대경로/임의 문자열인 경우 최소 정규화
+    link = link.replace(/^https?:\/\//, '').replace(/\/+$/, '') || '/';
+  }
+
+  return `${type}|${title}|${body}|${link}`;
+}
+
+function __looseSig(payload) {
+  const d = payload?.data || {};
+  const n = payload?.notification || {};
+
+  const type = (d.type || '').trim();
+  const title = (n.title || d.title || '').trim();
+  const body = (n.body || d.body || '').trim();
+
+  // ⬇️ 링크는 제외하여 동일 타이틀/본문을 단시간 중복으로 간주
+  return `${type}|${title}|${body}`;
 }
 
 // --- helper: 포그라운드 핸들러 바인딩(단 1회) ---
@@ -79,14 +121,20 @@ function bindOnMessageOnce(messaging) {
     const n = payload?.notification;
 
     // 먼저 표시할 텍스트들을 계산
-    const title = n?.title || d.title || '알림';
-    const body = n?.body || d.body || '';
+    const title = (n?.title || d.title || '알림').trim();
+    const body = (n?.body || d.body || '').trim();
     const link = d.link || n?.click_action || '/';
 
-    // ✅ 1순위: 콘텐츠 기반 시그니처로 중복 제거 (ID가 달라도 동일 내용이면 1회만)
-    const contentSig = [d.type || '', title || '', body || '', link || ''].join('|');
-    if (__seenBefore(contentSig)) {
-      console.log('[FCM] duplicate (by content) ignored:', contentSig);
+    const looseKey = __looseSig(payload);
+
+    const canonKey = __canonicalSig(payload);
+    if (__seenBefore(canonKey)) {
+      console.log('[FCM] duplicate (canonical) ignored:', canonKey);
+      return;
+    }
+    // 🔁 body 유무/공백 차이만 있을 때도 중복으로 간주
+    if (__seenBefore(looseKey)) {
+      console.log('[FCM] duplicate (loose) ignored:', looseKey);
       return;
     }
 
@@ -103,6 +151,9 @@ function bindOnMessageOnce(messaging) {
     }
 
     console.log('[FCM] 포그라운드 메시지 수신:', payload);
+
+    __markSeen(canonKey);
+    __markSeen(looseKey);
 
     showToast({
       title,
