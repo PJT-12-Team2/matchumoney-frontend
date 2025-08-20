@@ -22,7 +22,7 @@
         <div class="product-box">
           <div>
             <img
-              :src="p.companyImage || '/src/assets/Logo_dis.png'"
+              :src="p.companyImage || '/src/assets/logo_dis.png'"
               class="product-img"
             />
             <br />

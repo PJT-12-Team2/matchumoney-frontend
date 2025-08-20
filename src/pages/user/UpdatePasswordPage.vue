@@ -75,11 +75,13 @@ import '@/assets/main.css';
 import { ref, watch } from 'vue';
 
 import userApi from '@/api/user';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const currentPw = ref('');
 const newPw = ref('');
 const confirmPw = ref('');
 const errorMessage = ref('');
+const { showAlert, showSuccess, showError } = useCustomModal();
 
 // 실시간으로 새 비밀번호와 확인이 일치하는지 체크
 watch([newPw, confirmPw], ([newVal, confirmVal]) => {
@@ -102,7 +104,7 @@ const handleChangePassword = async () => {
       newPassword: newPw.value,
       confirmPassword: confirmPw.value,
     });
-    alert('비밀번호가 성공적으로 변경되었습니다.');
+    await showSuccess('비밀번호가 성공적으로 변경되었습니다.', '변경 완료');
     currentPw.value = '';
     newPw.value = '';
     confirmPw.value = '';
@@ -111,7 +113,7 @@ const handleChangePassword = async () => {
     if (msg === '비밀번호가 일치하지 않습니다') {
       errorMessage.value = msg;
     } else {
-      alert(msg || '비밀번호 변경에 실패했습니다.');
+      await showError(msg || '비밀번호 변경에 실패했습니다.', '변경 실패');
       errorMessage.value = ''; // Reset error message for other cases
     }
     console.error('비밀번호 변경 실패:', err);

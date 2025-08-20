@@ -100,7 +100,9 @@ import '@/assets/main.css';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import userApi from '@/api/user';
 import { useRouter } from 'vue-router';
+import { useCustomModal } from '@/composables/useCustomModal';
 const router = useRouter();
+const { showAlert, showError, showSuccess } = useCustomModal();
 
 const fileInputRef = ref(null);
 const selectedFile = ref(null);
@@ -118,12 +120,12 @@ const onFileChange = async (e) => {
 
   // 간단한 유효성 검사 (선택 사항)
   if (!file.type.startsWith('image/')) {
-    alert('이미지 파일만 업로드할 수 있습니다.');
+    await showAlert('이미지 파일만 업로드할 수 있습니다.', '파일 형식 오류');
     return;
   }
   // 5MB 제한 (필요시 조정)
   if (file.size > 5 * 1024 * 1024) {
-    alert('이미지 용량은 5MB 이하만 허용됩니다.');
+    await showAlert('이미지 용량은 5MB 이하만 허용됩니다.', '파일 크기 오류');
     return;
   }
 
@@ -140,20 +142,20 @@ const onFileChange = async (e) => {
       const res = await userApi.uploadProfileImage(file);
       profileImageUrl.value = res?.result?.url || res?.url || '';
       if (!profileImageUrl.value) {
-        alert(
-          '이미지 업로드 응답에 URL이 없습니다. 백엔드 응답(JSON)에 url 필드를 추가해주세요.'
+        await showError(
+          '이미지 업로드 응답에 URL이 없습니다. 백엔드 응답(JSON)에 url 필드를 추가해주세요.', '업로드 응답 오류'
         );
       }
     } else {
       // 2) 더 이상 base64(data URL)로 저장하지 않습니다. (DB 길이 문제 방지)
-      alert(
-        '백엔드에 이미지 업로드 API가 필요합니다. (예: POST /api/files/profile -> { url })\n데이터 URL 저장은 허용하지 않아요.'
+      await showError(
+        '백엔드에 이미지 업로드 API가 필요합니다. (예: POST /api/files/profile -> { url })\n데이터 URL 저장은 허용하지 않아요.', 'API 누락'
       );
       profileImageUrl.value = '';
     }
   } catch (err) {
     console.error('프로필 이미지 처리 실패:', err);
-    alert('프로필 이미지 처리에 실패했습니다.');
+    await showError('프로필 이미지 처리에 실패했습니다.', '처리 실패');
   } finally {
     uploading.value = false;
   }
@@ -249,11 +251,11 @@ const submitForm = async () => {
   try {
     const res = await userApi.updateUserInfo(updateDto);
     // console.log("회원정보 수정 성공:", res);
-    alert('회원정보가 성공적으로 수정되었습니다.');
+    await showSuccess('회원정보가 성공적으로 수정되었습니다.', '수정 완료');
     router.push('/myinfo');
   } catch (err) {
     // console.error("회원정보 수정 실패:", err);
-    alert('회원정보 수정에 실패했습니다.');
+    await showError('회원정보 수정에 실패했습니다.', '수정 실패');
   }
 };
 </script>

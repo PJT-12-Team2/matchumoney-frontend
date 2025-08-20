@@ -17,6 +17,7 @@
 import { ref, watch } from 'vue';
 import likeAPI from '@/api/like';
 import { useRouter } from 'vue-router';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const props = defineProps({
   productId: { type: [String, Number], required: true },
@@ -29,13 +30,15 @@ const emit = defineEmits(['update']);
 
 const router = useRouter();
 const userId = ref(sessionStorage.getItem('userId'));
+const { showConfirm } = useCustomModal();
 
 const internalLiked = ref(props.initialLiked);
 const likeCount = ref(props.initialCount);
 
 const handleClick = async () => {
   if (!userId.value) {
-    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+    const result = await showConfirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?', '로그인 필요', false, '이동');
+    if (result) {
       router.push('/login');
     }
     return;

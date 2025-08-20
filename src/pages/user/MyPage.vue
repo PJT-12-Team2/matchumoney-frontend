@@ -315,8 +315,10 @@ import userApi from '@/api/user';
 import cardsApi from '@/api/cards';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const authStore = useAuthStore();
+const { showAlert, showSuccess, showError } = useCustomModal();
 const cards = ref([]);
 const showSyncModal = ref(false);
 const isLoading = ref(false);
@@ -357,7 +359,10 @@ function formatAnnualFee(raw) {
 // 카드 동기화
 const handleCardSync = async (syncData) => {
   if (!userId.value) {
-    alert('로그인이 필요합니다.');
+    await showAlert(
+      '로그인이 필요합니다. 로그인 페이지로 이동합니다.',
+      '로그인 필요'
+    );
     router.push('/login');
     return;
   }
@@ -370,7 +375,10 @@ const handleCardSync = async (syncData) => {
 
     const response = await cardsApi.syncKbCards(requestData);
 
-    alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
+    await showSuccess(
+      response.message || '카드 동기화가 완료되었습니다.',
+      '동기화 완료'
+    );
 
     // 카드 동기화 모달 닫기
     showSyncModal.value = false;
@@ -379,20 +387,28 @@ const handleCardSync = async (syncData) => {
     await fetchCards();
   } catch (error) {
     if (error.response?.status === 401) {
-      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      await showError(
+        '인증이 만료되었습니다. 다시 로그인해주세요.',
+        '인증 만료'
+      );
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 400) {
-      alert(
-        '입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.'
+      await showError(
+        '입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.',
+        '입력 오류'
       );
     } else if (error.response?.status === 500) {
-      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      await showError(
+        '마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.',
+        'API 오류'
+      );
     } else {
-      alert(
+      await showError(
         `카드 동기화에 실패했습니다: ${
           error.response?.data?.message || error.message
-        }`
+        }`,
+        '동기화 실패'
       );
     }
   }
@@ -421,7 +437,10 @@ const handleCardRegistration = () => {
 const fetchCards = async () => {
   if (!userId.value) {
     console.error('사용자 ID가 없습니다. 로그인이 필요합니다.');
-    alert('로그인이 필요합니다.');
+    await showAlert(
+      '로그인이 필요합니다. 로그인 페이지로 이동합니다.',
+      '로그인 필요'
+    );
     router.push('/login');
     return;
   }
@@ -443,17 +462,21 @@ const fetchCards = async () => {
     console.error('❌ 카드 목록 조회 실패:', error);
 
     if (error.response?.status === 401) {
-      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      await showError(
+        '인증이 만료되었습니다. 다시 로그인해주세요.',
+        '인증 만료'
+      );
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 404) {
       console.log('💡 사용자 카드 정보가 없습니다.');
       cards.value = [];
     } else {
-      alert(
+      await showError(
         `카드 목록을 불러오는데 실패했습니다: ${
           error.response?.data?.message || error.message
-        }`
+        }`,
+        '목록 조회 실패'
       );
     }
   } finally {

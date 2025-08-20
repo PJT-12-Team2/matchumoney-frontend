@@ -9,15 +9,17 @@ import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import authApi from '@/api/auth';
 import { useAuthStore } from '@/stores/auth';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { showAlert, showSuccess, showError } = useCustomModal();
 
 onMounted(async () => {
   const code = route.query.code;
   if (!code) {
-    alert('카카오 인가 코드가 없습니다.');
+    await showError('카카오 인가 코드가 없습니다.', '로그인 오류');
     router.push('/login');
     return;
   }
@@ -30,7 +32,7 @@ onMounted(async () => {
     authStore.setAuth(tokenDto);
 
     window.dispatchEvent(new Event('app:login'));
-    alert(`${tokenDto.nickname}님 환영합니다!`);
+    await showSuccess(`${tokenDto.nickname}님 환영합니다!`, '로그인 성공');
     if (tokenDto.personaId === null || tokenDto.personaId === undefined) {
       router.push('/persona/start');
     } else {
@@ -38,7 +40,7 @@ onMounted(async () => {
     }
   } catch (err) {
     // console.error("카카오 로그인 실패:", err);
-    alert('카카오 로그인에 실패했습니다.');
+    await showError('카카오 로그인에 실패했습니다.', '로그인 실패');
     router.push('/login');
   }
 });

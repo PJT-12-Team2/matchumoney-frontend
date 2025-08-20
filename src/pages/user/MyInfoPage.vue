@@ -180,6 +180,7 @@ import userApi from '@/api/user';
 import api from '@/api';
 import authApi from '@/api/auth';
 import { useAuthStore } from '@/stores/auth';
+import { useCustomModal } from '@/composables/useCustomModal';
 // ===== 회원 탈퇴 다이얼로그 상태 =====
 const showDeleteDialog = ref(false);
 const deleteReason = ref('');
@@ -209,6 +210,7 @@ const isChecking = ref(true);
 const isDev = (import.meta.env?.MODE || 'development') !== 'production';
 
 const authStore = useAuthStore();
+const { showAlert, showSuccess, showError, showDangerConfirm } = useCustomModal();
 
 const fileInput = ref(null);
 const uploading = ref(false);
@@ -217,7 +219,7 @@ const previewUrl = ref('');
 function triggerFilePicker() {
   // 소셜이든 비번검증 완료든, 편집 가능할 때만 허용
   if (!isVerified.value && !isSocialLogin.value) {
-    alert('비밀번호 확인 후 변경할 수 있어요.');
+    showAlert('비밀번호 확인 후 변경할 수 있어요.', '알림');
     return;
   }
   fileInput.value && fileInput.value.click();
@@ -312,7 +314,7 @@ async function onFileChange(e) {
     }
   } catch (err) {
     console.error('[profile presign/upload] error', err);
-    alert('이미지 업로드에 실패했습니다. 다른 이미지를 시도해 주세요.');
+    showError('이미지 업로드에 실패했습니다. 다른 이미지를 시도해 주세요.', '업로드 실패');
   } finally {
     uploading.value = false;
     if (fileInput.value) fileInput.value.value = '';
@@ -342,14 +344,14 @@ async function handleSaveProfile() {
       gender: form.gender,
       birthDate: form.birthDate,
     });
-    alert('변경 사항이 저장되었습니다.');
+    await showSuccess('변경 사항이 저장되었습니다.', '저장 완료');
     // 저장 알림 후 새로고침으로 전체 상태 동기화
     setTimeout(() => {
       window.location.reload();
     }, 100);
   } catch (e) {
     console.error('회원 정보 수정 실패', e);
-    alert('수정에 실패했습니다. 다시 시도해 주세요.');
+    showError('수정에 실패했습니다. 다시 시도해 주세요.', '저장 실패');
   }
 }
 
@@ -382,24 +384,24 @@ async function submitDeleteAccount() {
     return;
   }
 
-  if (!confirm('정말로 회원 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  const confirmed = await showDangerConfirm(
+    '정말로 회원 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+    '회원 탈퇴 확인',
+    '탈퇴'
+  );
+  if (!confirmed) return;
 
   isDeleting.value = true;
   try {
     // 백엔드 규격에 맞춰 경로/메서드만 바꾸세요.
-    if (typeof authApi?.deleteAccount === 'function') {
-      await authApi.deleteAccount({
-        reason: deleteReason.value,
-        detail: deleteDetail.value.trim(),
-      });
-    } else {
-      await api.post('/auth/withdraw', {
-        reason: deleteReason.value,
-        detail: deleteDetail.value.trim(),
-      });
-    }
-    alert('회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
-    window.location.href = '/login';
+
+    await api.post('/auth/withdraw', {
+      reason: deleteReason.value,
+      detail: deleteDetail.value.trim(),
+    });
+
+    await showSuccess('회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.', '탈퇴 완료');
+    window.location.href = '/';
   } catch (err) {
     console.error('[delete account] error', err);
     deleteError.value = err?.response?.data?.message || '탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
@@ -449,7 +451,7 @@ function handleGoChangePassword() {
   // 소셜 계정은 이 버튼이 노출되지 않지만, 방어적으로 체크
   if (isSocialLogin.value) return;
   if (!isVerified.value) {
-    alert('비밀번호 확인 후 이동할 수 있어요.');
+    showAlert('비밀번호 확인 후 이동할 수 있어요.', '알림');
     return;
   }
   router.push('/myinfo/update/password');
@@ -876,5 +878,111 @@ a.info-item {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
+}
+
+/* ===== 커스텀 모달 ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  width: min(400px, 90vw);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  padding: 24px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+}
+
+.modal-message {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+  word-break: keep-all;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-actions .btn {
+  min-width: 80px;
+  padding: 0 16px;
+}
+
+.btn-danger {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #fff !important;
+}
+
+.btn-danger:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 480px) {
+  .modal {
+    width: calc(100vw - 40px);
+    padding: 20px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .modal-message {
+    font-size: 15px;
+  }
 }
 </style>

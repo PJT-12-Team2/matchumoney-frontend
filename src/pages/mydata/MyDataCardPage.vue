@@ -674,9 +674,11 @@ import CardRecommendationSection from '@/components/cards/CardRecommendationSect
 import cardsApi from '@/api/cards';
 import KbCardRecommendation from '@/components/cards/KbCardRecommendation.vue';
 import BackButton from '@/components/common/BackButton.vue';
+import { useCustomModal } from '@/composables/useCustomModal';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const { showAlert, showSuccess, showError } = useCustomModal();
 const isLoading = ref(false);
 const isLoadingTransactions = ref(false);
 const cards = ref([]);
@@ -813,17 +815,17 @@ const fetchCards = async () => {
     console.error('❌ 카드 목록 조회 실패:', error);
 
     if (error.response?.status === 401) {
-      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      await showError('인증이 만료되었습니다. 다시 로그인해주세요.', '인증 만료');
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 404) {
       // console.log("💡 사용자 카드 정보가 없습니다.");
       cards.value = [];
     } else {
-      alert(
+      await showError(
         `카드 목록을 불러오는데 실패했습니다: ${
           error.response?.data?.message || error.message
-        }`
+        }`, '목록 조회 실패'
       );
     }
   } finally {
@@ -925,7 +927,7 @@ const loadExistingTransactions = async (card) => {
 // 카드 동기화
 const handleCardSync = async (syncData) => {
   if (!userId.value) {
-    alert('로그인이 필요합니다.');
+    await showAlert('로그인이 필요합니다. 로그인 페이지로 이동합니다.', '로그인 필요');
     router.push('/login');
     return;
   }
@@ -937,7 +939,7 @@ const handleCardSync = async (syncData) => {
       cardPw: syncData.cardPw,
     };
     const response = await cardsApi.syncKbCards(requestData);
-    alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
+    await showSuccess(response.message || '카드 동기화가 완료되었습니다.', '동기화 완료');
     showSyncModal.value = false;
     await fetchCards(); // 이때 상단 배너가 "카드 정보를 불러오는 중..." 으로 자동 전환됨
   });
@@ -953,7 +955,7 @@ const handleCardSync = async (syncData) => {
     const response = await cardsApi.syncKbCards(requestData);
     // console.log("✅ 카드 동기화 완료:", response);
 
-    alert(`${response.message || '카드 동기화가 완료되었습니다.'}`);
+    await showSuccess(response.message || '카드 동기화가 완료되었습니다.', '동기화 완료');
 
     // 카드 동기화 모달 닫기
     showSyncModal.value = false;
@@ -964,7 +966,7 @@ const handleCardSync = async (syncData) => {
     console.error('❌ 카드 동기화 실패:', error);
 
     if (error.response?.status === 401) {
-      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      await showError('인증이 만료되었습니다. 다시 로그인해주세요.', '인증 만료');
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 400) {
@@ -972,7 +974,7 @@ const handleCardSync = async (syncData) => {
         '입력 정보가 올바르지 않습니다. 카드 ID와 비밀번호를 확인해주세요.'
       );
     } else if (error.response?.status === 500) {
-      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      await showError('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.', 'API 오류');
     } else {
       alert(
         `카드 동기화에 실패했습니다: ${
@@ -1019,7 +1021,7 @@ const handleUpdateTransactions = async (card) => {
   console.log('🔄 거래내역 업데이트:', card.cardName);
 
   if (!userId.value) {
-    alert('로그인이 필요합니다.');
+    await showAlert('로그인이 필요합니다. 로그인 페이지로 이동합니다.', '로그인 필요');
     router.push('/login');
     return;
   }
@@ -1038,12 +1040,12 @@ const handleUpdateTransactions = async (card) => {
     // 업데이트 완료 후 현재 카드의 거래내역 다시 로드
     await loadExistingTransactions(card);
 
-    alert(`${response.message || '거래내역이 업데이트되었습니다.'}`);
+    await showSuccess(response.message || '거래내역이 업데이트되었습니다.', '업데이트 완료');
   } catch (error) {
     console.error('❌ 거래내역 업데이트 실패:', error);
 
     if (error.response?.status === 401) {
-      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      await showError('인증이 만료되었습니다. 다시 로그인해주세요.', '인증 만료');
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 400) {
@@ -1051,9 +1053,9 @@ const handleUpdateTransactions = async (card) => {
         'connectedId가 없거나 카드 정보가 올바르지 않습니다. 카드를 다시 등록해주세요.'
       );
     } else if (error.response?.status === 404) {
-      alert('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.');
+      await showError('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.', '카드 등록 필요');
     } else if (error.response?.status === 500) {
-      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      await showError('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.', 'API 오류');
     } else {
       alert(
         `거래내역 업데이트에 실패했습니다: ${
@@ -1116,7 +1118,7 @@ const handleRequestTransactionSync = () => {
 // 거래내역 동기화 처리
 const handleTransactionSync = async (transactionData) => {
   if (!selectedCard.value || !userId.value) {
-    alert('로그인이 필요합니다.');
+    await showAlert('로그인이 필요합니다. 로그인 페이지로 이동합니다.', '로그인 필요');
     router.push('/login');
     return;
   }
@@ -1144,7 +1146,7 @@ const handleTransactionSync = async (transactionData) => {
       cardTransactionsMap.value[cardKey] = response.result;
 
       // 성공 메시지 표시
-      alert(`${response.message || '거래내역 동기화가 완료되었습니다.'}`);
+      await showSuccess(response.message || '거래내역 동기화가 완료되었습니다.', '동기화 완료');
 
       // 거래내역 동기화 모달 닫기
       showTransactionModal.value = false;
@@ -1153,13 +1155,13 @@ const handleTransactionSync = async (transactionData) => {
       //   `💡 ${response.result.length}건의 거래내역이 동기화되어 즉시 표시됩니다.`
       // );
     } else {
-      alert('거래내역이 없거나 동기화에 실패했습니다.');
+      await showError('거래내역이 없거나 동기화에 실패했습니다.', '동기화 실패');
     }
   } catch (error) {
     console.error('❌ 거래내역 동기화 실패:', error);
 
     if (error.response?.status === 401) {
-      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      await showError('인증이 만료되었습니다. 다시 로그인해주세요.', '인증 만료');
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 400) {
@@ -1167,9 +1169,9 @@ const handleTransactionSync = async (transactionData) => {
         '입력 정보가 올바르지 않습니다. 카드 정보와 날짜 범위를 확인해주세요.'
       );
     } else if (error.response?.status === 404) {
-      alert('카드 정보를 찾을 수 없습니다.');
+      await showError('카드 정보를 찾을 수 없습니다.', '카드 오류');
     } else if (error.response?.status === 500) {
-      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      await showError('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.', 'API 오류');
     } else {
       alert(
         `거래내역 동기화에 실패했습니다: ${
@@ -1819,7 +1821,7 @@ const exportTransactions = () => {
 const syncTransactions = async () => {
   // connectedId 기반 거래내역 업데이트 (모달창 없이 바로 실행)
   if (!userId.value) {
-    alert('로그인이 필요합니다.');
+    await showAlert('로그인이 필요합니다. 로그인 페이지로 이동합니다.', '로그인 필요');
     router.push('/login');
     return;
   }
@@ -1839,12 +1841,12 @@ const syncTransactions = async () => {
       await loadExistingTransactions(selectedSyncedCard.value);
     }
 
-    alert(`${response.message || '거래내역이 업데이트되었습니다.'}`);
+    await showSuccess(response.message || '거래내역이 업데이트되었습니다.', '업데이트 완료');
   } catch (error) {
     console.error('❌ 거래내역 업데이트 실패:', error);
 
     if (error.response?.status === 401) {
-      alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+      await showError('인증이 만료되었습니다. 다시 로그인해주세요.', '인증 만료');
       authStore.logout();
       router.push('/login');
     } else if (error.response?.status === 400) {
@@ -1852,9 +1854,9 @@ const syncTransactions = async () => {
         'connectedId가 없거나 카드 정보가 올바르지 않습니다. 카드를 다시 등록해주세요.'
       );
     } else if (error.response?.status === 404) {
-      alert('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.');
+      await showError('사용자의 카드 정보를 찾을 수 없습니다. 먼저 카드를 등록해주세요.', '카드 등록 필요');
     } else if (error.response?.status === 500) {
-      alert('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      await showError('마이데이터 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.', 'API 오류');
     } else {
       alert(
         `거래내역 업데이트에 실패했습니다: ${
